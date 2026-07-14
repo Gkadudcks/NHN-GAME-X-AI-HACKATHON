@@ -1,0 +1,2 @@
+# NHN-GAME-X-AI-HACKATHON
+NHN 주관 게임 AI 해커톤
