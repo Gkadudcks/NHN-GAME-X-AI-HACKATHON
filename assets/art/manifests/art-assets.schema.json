@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "art-assets.schema.json",
+  "title": "Project art asset registry",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "controlled_values",
+    "profiles",
+    "characters",
+    "assets"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "controlled_values": {
+      "type": "object",
+      "required": ["poses", "expressions", "positions", "framings"]
+    },
+    "profiles": { "type": "object", "minProperties": 1 },
+    "characters": { "type": "object" },
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "profile", "active_version", "versions"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(?:[._][a-z0-9]+)*$" },
+          "kind": { "enum": ["character", "background", "event_cg"] },
+          "profile": { "type": "string" },
+          "active_version": { "type": ["string", "null"], "pattern": "^v[0-9]{3}$" },
+          "versions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["version", "status", "path", "generation_log_id"],
+              "properties": {
+                "version": { "type": "string", "pattern": "^v[0-9]{3}$" },
+                "status": { "enum": ["planned", "draft", "review", "approved", "retired"] },
+                "path": { "type": ["string", "null"] },
+                "generation_log_id": { "type": ["string", "null"] }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

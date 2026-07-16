@@ -1,0 +1,23 @@
+[PROJECT STYLE]
+{{common_style}}
+
+[CHARACTER — LOCKED]
+Character ID: {{character_id}}
+{{character_spec}}
+Primary master reference: {{master_reference}}
+Preserve facial structure, eyes, hair, body proportions, outfit, and accessories exactly.
+
+[ALLOWED CHANGE]
+Pose: {{pose}}
+Expression: {{expression}}
+Hand gesture or held object: {{gesture_or_prop}}
+
+[CAMERA]
+Eye-level, front-facing 3/4 view, {{framing}}, consistent scale and eye/foot lines.
+
+[OUTPUT]
+1024x1536 RGBA PNG, transparent background, one character, clean edges, no background, no text or logo.
+
+[EXCLUSIONS]
+{{negative_style}}
+

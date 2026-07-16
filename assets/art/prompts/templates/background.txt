@@ -1,0 +1,18 @@
+[PROJECT STYLE]
+{{common_style}}
+
+[BACKGROUND]
+Location ID: {{location_id}}
+Modern Korean corporate environment. Preserve the approved location's doors, windows, furniture, paths, perspective, and prop placement.
+Variant: {{variant}}
+Scene-specific change: {{scene_change}}
+
+[CAMERA AND COMPOSITION]
+Eye-level camera, natural 35mm lens feeling, clean perspective, clear foreground space for character sprites and UI, no people.
+
+[OUTPUT]
+1920x1080 RGB image, 16:9, no alpha, no readable text, company logo, or watermark.
+
+[EXCLUSIONS]
+{{negative_style}}
+

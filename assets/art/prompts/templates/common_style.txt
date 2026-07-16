@@ -1,0 +1,10 @@
+[PROJECT VISUAL STYLE | {{prompt_version}}]
+Modern Korean office romance visual novel with light mystery elements.
+Polished commercial anime visual novel illustration.
+Clean, thin, consistent line art.
+Soft 2-to-3-step cel shading with minimal painterly texture.
+Natural anatomy and realistic adult body proportions.
+Warm, low-contrast, low-to-medium-saturation palette using navy, beige, cream, muted brown, and pale blue.
+Soft indoor diffused key light with subtle cool ambient shadows.
+Clean game-ready edges and a consistent finish across all assets.
+

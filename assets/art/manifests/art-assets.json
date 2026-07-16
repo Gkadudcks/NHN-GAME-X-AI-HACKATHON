@@ -1,0 +1,121 @@
+{
+  "$schema": "art-assets.schema.json",
+  "schema_version": 1,
+  "controlled_values": {
+    "poses": [
+      "neutral_standing",
+      "relaxed_standing",
+      "arms_folded",
+      "holding_cup"
+    ],
+    "expressions": [
+      "neutral",
+      "gentle_smile",
+      "embarrassed",
+      "surprised",
+      "concerned",
+      "tired"
+    ],
+    "positions": [
+      "left",
+      "center",
+      "right"
+    ],
+    "framings": [
+      "full_body",
+      "waist_up"
+    ]
+  },
+  "profiles": {
+    "character_sprite": {
+      "width": 1024,
+      "height": 1536,
+      "extensions": [
+        ".png"
+      ],
+      "alpha": "required"
+    },
+    "background_16_9": {
+      "width": 1920,
+      "height": 1080,
+      "extensions": [
+        ".png",
+        ".jpg",
+        ".jpeg"
+      ],
+      "alpha": "forbidden"
+    },
+    "event_cg_16_9": {
+      "width": 1920,
+      "height": 1080,
+      "extensions": [
+        ".png",
+        ".jpg",
+        ".jpeg"
+      ],
+      "alpha": "forbidden"
+    }
+  },
+  "characters": {
+    "seoyeon": {
+      "spec": "assets/art/characters/seoyeon/CHARACTER_SPEC.md",
+      "master_reference": null,
+      "allowed_poses": [
+        "neutral_standing",
+        "relaxed_standing",
+        "arms_folded",
+        "holding_cup"
+      ],
+      "allowed_expressions": [
+        "neutral",
+        "gentle_smile",
+        "embarrassed",
+        "surprised",
+        "concerned",
+        "tired"
+      ]
+    }
+  },
+  "assets": [
+    {
+      "id": "character.seoyeon.neutral_standing.neutral",
+      "kind": "character",
+      "profile": "character_sprite",
+      "character_id": "seoyeon",
+      "pose": "neutral_standing",
+      "expression": "neutral",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "planned",
+          "path": null,
+          "generation_log_id": null,
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    {
+      "id": "background.office.day",
+      "kind": "background",
+      "profile": "background_16_9",
+      "location": "office",
+      "variant": "day",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "planned",
+          "path": null,
+          "generation_log_id": null,
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    }
+  ]
+}
+

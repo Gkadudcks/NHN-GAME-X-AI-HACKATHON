@@ -1,0 +1,24 @@
+[PROJECT STYLE]
+{{common_style}}
+
+[STORY BEAT]
+Scene ID: {{scene_id}}
+Narrative purpose: {{narrative_purpose}}
+Location reference: {{background_reference}}
+
+[CHARACTERS — LOCKED]
+{{character_specs_and_master_references}}
+Preserve every established face, hairstyle, body proportion, outfit, and accessory.
+
+[ACTION AND EMOTION]
+{{explicit_action_and_emotion}}
+
+[CAMERA]
+{{camera_and_composition}}
+
+[OUTPUT]
+1920x1080 RGB image, 16:9, polished event CG, no text, logo, watermark, or unrequested characters.
+
+[EXCLUSIONS]
+{{negative_style}}
+

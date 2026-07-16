@@ -1,0 +1,3 @@
+[STYLE EXCLUSIONS]
+photorealism, semi-realistic Korean webtoon rendering, 3D CGI, oil painting, watercolor, sketchy line art, thick outlines, chibi or extreme anime proportions, oversized eyes, high saturation, neon or cyberpunk colors, excessive bloom, heavy depth of field, unreadable anatomy, text, logo, watermark
+
