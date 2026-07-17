@@ -9,6 +9,8 @@ const titleBgm = document.querySelector("#title-bgm");
 let activeIndex = 0;
 let lastFocusedElement = null;
 let settings = GameSettings.load(window.localStorage);
+const bgmManager = new GameBgmManager(titleBgm, getConfiguredBgmVolume);
+window.BGMManager = bgmManager;
 
 function setActiveMenu(index) {
   activeIndex = (index + menuButtons.length) % menuButtons.length;
@@ -54,24 +56,18 @@ function applySettings() {
   document.documentElement.style.setProperty("--master-volume", settings.masterMuted ? 0 : settings.masterVolume / 100);
   document.documentElement.style.setProperty("--bgm-volume", settings.bgmMuted ? 0 : settings.bgmVolume / 100);
   document.documentElement.style.setProperty("--sfx-volume", settings.sfxMuted ? 0 : settings.sfxVolume / 100);
-  syncTitleBgmVolume();
+  bgmManager.setVolume();
   updateVolumeButtons();
 }
 
-function syncTitleBgmVolume() {
-  if (!titleBgm) return;
+function getConfiguredBgmVolume() {
   const masterVolume = settings.masterMuted ? 0 : settings.masterVolume / 100;
   const bgmVolume = settings.bgmMuted ? 0 : settings.bgmVolume / 100;
-  titleBgm.volume = Math.min(1, Math.max(0, masterVolume * bgmVolume));
+  return Math.min(1, Math.max(0, masterVolume * bgmVolume));
 }
 
 async function startTitleBgm() {
-  if (!titleBgm || !titleBgm.paused) return;
-  try {
-    await titleBgm.play();
-  } catch (_error) {
-    // 소리가 있는 자동 재생은 브라우저 정책상 첫 사용자 입력까지 차단될 수 있습니다.
-  }
+  await bgmManager.resume();
 }
 
 function populateSettingsForm() {
@@ -131,6 +127,7 @@ function runActiveMenu() {
     return;
   }
   if (action === "new-game") {
+    bgmManager.play("daily");
     overlay.classList.add("show");
     overlay.setAttribute("aria-hidden", "false");
     window.setTimeout(() => {
