@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="정직원 전환 PT를 둘러싼 오피스 럽코 추리 게임" />
+  <meta name="description" content="정직원 전환 PT를 준비하는 오피스 로맨스 미스터리 게임" />
   <title>최종본이 바뀌었습니다 | NAN</title>
-  <link rel="stylesheet" href="css/title-screen.css" />
+  <link rel="stylesheet" href="css/title-screen.css?v=4" />
 </head>
 <body>
   <main class="title-screen">
@@ -18,21 +18,21 @@
       <p class="genre">OFFICE ROMANCE × MYSTERY</p>
       <h1 id="game-title">최종본이 바뀌었습니다</h1>
       <p class="deadline">정직원 전환까지 <strong>D-5</strong></p>
-      <p class="tagline">회사에서 살아남으려고 했는데,<br />어느새 그녀와 함께 오해를 풀고 있었다.</p>
+      <p class="tagline">회사에서 살아남으려고 했는데<br />어느새 그와 함께 진실을 찾고 있었다.</p>
     </section>
 
     <nav class="game-menu" aria-label="게임 메뉴">
       <button class="menu-button active" data-action="new-game">
-        <span class="number">01</span><span>새 게임</span><span class="arrow">›</span>
+        <span class="number">01</span><span>새 게임</span><span class="arrow">→</span>
       </button>
       <button class="menu-button" data-action="continue">
-        <span class="number">02</span><span>이어하기</span><span class="arrow">›</span>
+        <span class="number">02</span><span>이어하기</span><span class="arrow">→</span>
       </button>
       <button class="menu-button" data-action="records">
-        <span class="number">03</span><span>기록</span><span class="arrow">›</span>
+        <span class="number">03</span><span>기록</span><span class="arrow">→</span>
       </button>
       <button class="menu-button" data-action="settings">
-        <span class="number">04</span><span>설정</span><span class="arrow">›</span>
+        <span class="number">04</span><span>설정</span><span class="arrow">→</span>
       </button>
     </nav>
 
@@ -46,13 +46,114 @@
     </aside>
 
     <footer class="controls">
-      <span>↑↓ 선택</span><span>ENTER 확인</span><span class="copyright">© NAN TEAM</span>
+      <span>방향키 선택</span><span>ENTER 확인</span><span class="copyright">© NAN TEAM</span>
     </footer>
 
     <section class="start-overlay" aria-hidden="true">
       <p>DAY 1</p><strong>정직원 전환 과제</strong>
     </section>
   </main>
-  <script src="js/title-screen.js"></script>
+
+  <dialog class="settings-dialog" id="settings-dialog" aria-labelledby="settings-title">
+    <form class="settings-panel" id="settings-form" method="dialog">
+      <header class="settings-header">
+        <div>
+          <p class="settings-eyebrow">SYSTEM PREFERENCES</p>
+          <h2 id="settings-title">설정</h2>
+        </div>
+        <button class="icon-button" type="button" data-settings-close aria-label="설정 닫기">×</button>
+      </header>
+
+      <div class="settings-scroll">
+        <fieldset class="settings-section">
+          <legend>사운드</legend>
+          <div class="range-setting volume-setting">
+            <button class="volume-button" type="button" data-volume="masterVolume" data-mute="masterMuted" aria-label="전체 음량 음소거" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path class="speaker" d="M4 9v6h4l5 4V5L8 9H4Z"/><path class="wave wave-low" d="M16 9.5a4 4 0 0 1 0 5"/><path class="wave wave-high" d="M18.5 7a7 7 0 0 1 0 10"/><path class="mute-slash" d="m4 4 16 16"/></svg>
+            </button>
+            <label class="setting-label" for="master-volume"><strong>전체 음량</strong><small>모든 소리의 기준 음량</small></label>
+            <label class="range-control" for="master-volume"><input id="master-volume" name="masterVolume" type="range" min="0" max="100" step="5" /><output for="master-volume">80%</output></label>
+          </div>
+          <div class="range-setting volume-setting">
+            <button class="volume-button" type="button" data-volume="bgmVolume" data-mute="bgmMuted" aria-label="BGM 음량 음소거" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path class="speaker" d="M4 9v6h4l5 4V5L8 9H4Z"/><path class="wave wave-low" d="M16 9.5a4 4 0 0 1 0 5"/><path class="wave wave-high" d="M18.5 7a7 7 0 0 1 0 10"/><path class="mute-slash" d="m4 4 16 16"/></svg>
+            </button>
+            <label class="setting-label" for="bgm-volume"><strong>BGM 음량</strong><small>배경 음악 음량</small></label>
+            <label class="range-control" for="bgm-volume"><input id="bgm-volume" name="bgmVolume" type="range" min="0" max="100" step="5" /><output for="bgm-volume">70%</output></label>
+          </div>
+          <div class="range-setting volume-setting">
+            <button class="volume-button" type="button" data-volume="sfxVolume" data-mute="sfxMuted" aria-label="효과음 음량 음소거" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path class="speaker" d="M4 9v6h4l5 4V5L8 9H4Z"/><path class="wave wave-low" d="M16 9.5a4 4 0 0 1 0 5"/><path class="wave wave-high" d="M18.5 7a7 7 0 0 1 0 10"/><path class="mute-slash" d="m4 4 16 16"/></svg>
+            </button>
+            <label class="setting-label" for="sfx-volume"><strong>효과음 음량</strong><small>버튼과 연출 효과음</small></label>
+            <label class="range-control" for="sfx-volume"><input id="sfx-volume" name="sfxVolume" type="range" min="0" max="100" step="5" /><output for="sfx-volume">80%</output></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="settings-section">
+          <legend>화면</legend>
+          <label class="select-setting" for="screen-mode">
+            <span><strong>화면 모드</strong><small>전체 화면은 브라우저 권한이 필요합니다</small></span>
+            <select id="screen-mode" name="screenMode"><option value="windowed">창 모드</option><option value="fullscreen">전체 화면</option></select>
+          </label>
+          <label class="toggle-setting" for="reduce-effects">
+            <span><strong>화면 효과 줄이기</strong><small>화면 흔들림, 깜빡임, 빠른 전환 애니메이션을 최소화합니다</small></span>
+            <input id="reduce-effects" name="reduceEffects" type="checkbox" role="switch" />
+          </label>
+        </fieldset>
+
+        <fieldset class="settings-section">
+          <legend>대화</legend>
+          <div class="choice-setting">
+            <span><strong>진행 방식</strong><small>자동 모드도 선택지에서는 멈춥니다</small></span>
+            <div class="segmented-control">
+              <input id="dialogue-click" name="dialogueMode" type="radio" value="click" /><label for="dialogue-click">클릭</label>
+              <input id="dialogue-auto" name="dialogueMode" type="radio" value="auto" /><label for="dialogue-auto">자동</label>
+            </div>
+          </div>
+          <div class="choice-setting">
+            <span><strong>글자 출력 속도</strong><small>문장이 나타나는 속도</small></span>
+            <div class="segmented-control speed-control">
+              <input id="text-speed-slow" name="textSpeed" type="radio" value="slow" /><label for="text-speed-slow">느림</label>
+              <input id="text-speed-normal" name="textSpeed" type="radio" value="normal" /><label for="text-speed-normal">중간</label>
+              <input id="text-speed-fast" name="textSpeed" type="radio" value="fast" /><label for="text-speed-fast">빠름</label>
+            </div>
+          </div>
+          <label class="range-setting" for="auto-delay">
+            <span><strong>자동 진행 대기시간</strong><small>문장 출력이 끝난 뒤 기다리는 시간</small></span>
+            <span class="range-control"><input id="auto-delay" name="autoDelay" type="range" min="0.5" max="5" step="0.5" /><output for="auto-delay">1.5초</output></span>
+          </label>
+          <label class="range-setting" for="text-size">
+            <span><strong>글자 크기</strong><small>대화문과 선택지에 적용됩니다</small></span>
+            <span class="range-control"><input id="text-size" name="textSize" type="range" min="90" max="130" step="10" /><output for="text-size">100%</output></span>
+          </label>
+          <label class="range-setting" for="dialogue-opacity">
+            <span><strong>대화창 투명도</strong><small>높을수록 배경과 분리되어 잘 보입니다</small></span>
+            <span class="range-control"><input id="dialogue-opacity" name="dialogueOpacity" type="range" min="0" max="100" step="5" /><output for="dialogue-opacity">90%</output></span>
+          </label>
+          <label class="toggle-setting" for="skip-read-only">
+            <span><strong>읽은 대사만 건너뛰기</strong><small>처음 보는 대사가 실수로 넘어가지 않습니다</small></span>
+            <input id="skip-read-only" name="skipReadOnly" type="checkbox" role="switch" />
+          </label>
+
+          <div class="dialogue-preview" aria-label="대화 설정 미리보기">
+            <span class="preview-name">서하림</span>
+            <p>괜찮아요. 이번엔 제가 옆에 있을게요.</p>
+          </div>
+        </fieldset>
+      </div>
+
+      <footer class="settings-footer">
+        <p id="settings-status" role="status" aria-live="polite">변경 사항은 자동으로 저장됩니다.</p>
+        <div>
+          <button class="secondary-button" id="reset-settings" type="button">기본값 복원</button>
+          <button class="primary-button" type="button" data-settings-close>완료</button>
+        </div>
+      </footer>
+    </form>
+  </dialog>
+
+  <script src="js/settings-store.js?v=3"></script>
+  <script src="js/title-screen.js?v=3"></script>
 </body>
 </html>
