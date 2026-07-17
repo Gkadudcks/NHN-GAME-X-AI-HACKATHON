@@ -36,14 +36,19 @@
       </button>
     </nav>
 
-    <aside class="nana-notification" role="status" aria-live="polite">
-      <span class="nana-icon">N</span>
-      <div>
-        <p class="notification-meta"><strong>나나봇</strong> · 방금 전</p>
-        <p id="notification-text">발표 자료를 더 보기 좋은 문장으로 수정했습니다!</p>
+    <section class="save-panel" aria-labelledby="save-panel-title" aria-hidden="true">
+      <div class="save-dialog">
+        <header class="save-header">
+          <div>
+            <p>CONTINUE</p>
+            <h2 id="save-panel-title">저장된 기록</h2>
+          </div>
+          <button class="close-save-panel" type="button" aria-label="저장 슬롯 닫기">×</button>
+        </header>
+        <div class="save-slots" aria-label="저장 슬롯 목록"></div>
+        <p class="save-help">불러올 슬롯을 선택하세요. 저장 데이터는 이 브라우저에 보관됩니다.</p>
       </div>
-      <button class="close-notification" type="button" aria-label="알림 닫기">×</button>
-    </aside>
+    </section>
 
     <footer class="controls">
       <span>↑↓ 선택</span><span>ENTER 확인</span><span class="copyright">© NAN TEAM</span>
