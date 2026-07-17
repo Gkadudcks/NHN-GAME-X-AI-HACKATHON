@@ -5,6 +5,7 @@ const saveSlots = document.querySelector(".save-slots");
 const settingsDialog = document.querySelector("#settings-dialog");
 const settingsForm = document.querySelector("#settings-form");
 const settingsStatus = document.querySelector("#settings-status");
+const titleBgm = document.querySelector("#title-bgm");
 let activeIndex = 0;
 let lastFocusedElement = null;
 let settings = GameSettings.load(window.localStorage);
@@ -53,7 +54,24 @@ function applySettings() {
   document.documentElement.style.setProperty("--master-volume", settings.masterMuted ? 0 : settings.masterVolume / 100);
   document.documentElement.style.setProperty("--bgm-volume", settings.bgmMuted ? 0 : settings.bgmVolume / 100);
   document.documentElement.style.setProperty("--sfx-volume", settings.sfxMuted ? 0 : settings.sfxVolume / 100);
+  syncTitleBgmVolume();
   updateVolumeButtons();
+}
+
+function syncTitleBgmVolume() {
+  if (!titleBgm) return;
+  const masterVolume = settings.masterMuted ? 0 : settings.masterVolume / 100;
+  const bgmVolume = settings.bgmMuted ? 0 : settings.bgmVolume / 100;
+  titleBgm.volume = Math.min(1, Math.max(0, masterVolume * bgmVolume));
+}
+
+async function startTitleBgm() {
+  if (!titleBgm || !titleBgm.paused) return;
+  try {
+    await titleBgm.play();
+  } catch (_error) {
+    // 소리가 있는 자동 재생은 브라우저 정책상 첫 사용자 입력까지 차단될 수 있습니다.
+  }
 }
 
 function populateSettingsForm() {
@@ -287,3 +305,6 @@ savePanel.addEventListener("click", (event) => {
 });
 
 applySettings();
+startTitleBgm();
+document.addEventListener("pointerdown", startTitleBgm, { once: true });
+document.addEventListener("keydown", startTitleBgm, { once: true });
