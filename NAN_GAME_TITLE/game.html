@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DAY 1 | NAN</title>
+  <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+<main class="game" id="game">
+  <section class="stage" id="stage">
+    <div class="shade"></div>
+    <header class="hud">
+      <a href="index.html">← TITLE</a><b>DAY 1</b><span id="clock">09:00</span>
+      <div class="stats"><i>업무력 <strong id="work">0</strong></i><i>체력 <strong id="stamina">5</strong></i></div>
+      <button id="mute" aria-label="배경 음악 켜기 또는 끄기">♪</button>
+    </header>
+    <button class="sound-prompt" id="sound-prompt" type="button">♪ 클릭해서 BGM 시작</button>
+    <img class="character" id="character" alt="등장인물">
+    <div class="scene-label" id="scene-label">게임사업실 · 오전</div>
+    <div class="toast" id="toast"></div>
+    <aside class="choice-result" id="choice-result" aria-live="polite" aria-hidden="true">
+      <div class="choice-result-head"><span>CHOICE RESULT</span><b id="choice-result-title">선택이 반영되었습니다</b></div>
+      <div class="choice-result-list" id="choice-result-list"></div>
+    </aside>
+
+    <section class="dialogue-card" aria-live="polite">
+      <div class="speaker-row"><b id="speaker"></b><span>STORY</span></div>
+      <p id="dialogue"></p>
+      <button class="next" id="next">다음 ›</button>
+    </section>
+    <div class="stage-choices" id="stage-choices" aria-live="polite"></div>
+
+    <section class="minigame" id="minigame">
+      <div class="minigame-shell">
+        <section class="minigame-intro" id="minigame-intro">
+          <span class="mini-badge">MINI GAME</span>
+          <div class="coffee-icon" aria-hidden="true">☕</div>
+          <p class="mini-kicker">잠깐, 커피 심부름이 생겼습니다!</p>
+          <h2>팀원의 커피 취향을 기억하세요</h2>
+          <p>세 사람의 주문이 5초 동안 공개됩니다.<br>주문이 사라지면 각 팀원의 커피를 골라주세요.</p>
+          <div class="mini-rules"><span><b>01</b> 주문 확인</span><i></i><span><b>02</b> 5초 암기</span><i></i><span><b>03</b> 정답 선택</span></div>
+          <button id="coffee-start" class="coffee-start" type="button">미니게임 시작하기 <span>›</span></button>
+        </section>
+        <section class="minigame-play" id="minigame-play" hidden>
+          <header class="mini-head"><div><small>COFFEE MEMORY</small><h2 id="coffee-title">팀원의 커피 취향을 기억하세요</h2><p id="coffee-help"></p></div><div class="countdown" id="coffee-countdown"><strong id="coffee-seconds">5</strong><span>SEC</span></div></header>
+          <div class="timer-track" id="timer-track"><i id="timer-fill"></i></div>
+          <div id="orders" class="orders"></div><div id="coffee-controls" class="coffee-controls"></div>
+        </section>
+        <section class="minigame-result" id="minigame-result" hidden>
+          <span class="result-badge">RESULT</span>
+          <div class="result-icon" id="result-icon" aria-hidden="true">✓</div>
+          <p class="result-kicker" id="result-kicker">미니게임 완료</p>
+          <h2 id="result-title">완벽하게 기억했습니다!</h2>
+          <p class="result-summary" id="result-summary"></p>
+          <div class="result-score"><span>정답</span><strong id="result-score">3 / 3</strong></div>
+          <div class="result-stats" id="result-stats"></div>
+          <button id="result-continue" class="coffee-start" type="button">결과 확인하고 계속하기 <span>›</span></button>
+        </section>
+      </div>
+    </section>
+  </section>
+
+  <aside class="messenger" id="messenger">
+    <header class="messenger-appbar">
+      <div class="app-mark">N</div>
+      <div><b>NAN WORKS</b><small>사내 메신저</small></div>
+      <span class="online"><i></i> ONLINE</span>
+    </header>
+    <section class="chat-list" id="chat-list">
+      <header class="chat-list-head"><div><small>MESSAGES</small><h1>채팅</h1></div><button type="button" aria-label="새 채팅">＋</button></header>
+      <div class="chat-list-body">
+        <div class="chat-list-empty" id="chat-list-empty"><span>✦</span><b>아직 도착한 메시지가 없습니다</b><p>새 메시지가 도착하면 채팅방이 여기에 표시됩니다.</p></div>
+        <button class="chat-item" id="chat-pt" type="button" data-room="pt" hidden>
+          <span class="chat-avatar group"><i>박</i><i>서</i></span>
+          <span class="chat-copy"><b>PT 전환과제 TF</b><small id="pt-preview">아직 도착한 메시지가 없습니다</small></span>
+          <span class="chat-meta"><time id="pt-time"></time><em id="pt-unread" hidden>1</em></span>
+        </button>
+        <button class="chat-item" id="chat-harin" type="button" data-room="harin" hidden>
+          <span class="chat-avatar harin">서</span>
+          <span class="chat-copy"><b>서하린 사수</b><small>아직 대화가 없습니다</small></span>
+          <span class="chat-meta"><time></time></span>
+        </button>
+        <button class="chat-item" id="chat-minjae" type="button" data-room="minjae" hidden>
+          <span class="chat-avatar minjae">강</span>
+          <span class="chat-copy"><b>강민재 동기</b><small>아직 대화가 없습니다</small></span>
+          <span class="chat-meta"><time></time></span>
+        </button>
+      </div>
+    </section>
+    <section class="chat-room" id="chat-room" hidden>
+      <section class="channel-head">
+        <button class="chat-back" id="chat-back" type="button" aria-label="채팅 목록으로 돌아가기">‹</button>
+        <div><small id="room-type">PROJECT CHANNEL</small><h1 id="room-title"># PT 전환과제 TF</h1></div>
+        <div class="member-stack" id="room-members"><span>박</span><span>서</span><span>한</span></div>
+      </section>
+      <div class="date-divider"><span>DAY 1 · MONDAY</span></div>
+      <div class="messages" id="messages"></div>
+    </section>
+
+    <section class="status-panel" aria-label="현재 스탯">
+      <div class="status-head"><div><span>PLAYER STATUS</span><b>현재 스탯</b></div><small>선택 결과 실시간 반영</small></div>
+      <div class="system-grid">
+        <p><i>◆</i><span>업무력</span><b id="sys-work">0</b></p>
+        <p><i>♥</i><span>체력</span><b id="sys-stamina">5</b></p>
+        <p><i>♡</i><span>호감도</span><b id="affection">0</b></p>
+        <p><i>◇</i><span>신뢰도</span><b id="trust">0</b></p>
+      </div>
+      <div class="side-actions"><button id="save">진행 저장</button><button id="restart">DAY 1 재시작</button></div>
+    </section>
+    <div id="clue-list" hidden></div>
+    <span id="unread" hidden></span>
+  </aside>
+</main>
+<audio id="bgm" loop preload="auto"></audio>
+<script src="js/game.js"></script>
+</body>
+</html>

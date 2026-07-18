@@ -6,6 +6,8 @@ const settingsDialog = document.querySelector("#settings-dialog");
 const settingsForm = document.querySelector("#settings-form");
 const settingsStatus = document.querySelector("#settings-status");
 const titleBgm = document.querySelector("#title-bgm");
+const pageTurnSfx = new Audio("assets/audio/page-turn.wav");
+pageTurnSfx.preload = "auto";
 let activeIndex = 0;
 let lastFocusedElement = null;
 let settings = GameSettings.load(window.localStorage);
@@ -127,12 +129,14 @@ function runActiveMenu() {
     return;
   }
   if (action === "new-game") {
-    bgmManager.play("daily");
+    bgmManager.stop({ fadeOut: 220 });
+    pageTurnSfx.currentTime = 0;
+    pageTurnSfx.volume = settings.sfxMuted ? 0 : (settings.masterMuted ? 0 : settings.masterVolume / 100) * (settings.sfxVolume / 100);
+    pageTurnSfx.play().catch(() => {});
     overlay.classList.add("show");
     overlay.setAttribute("aria-hidden", "false");
     window.setTimeout(() => {
-      overlay.classList.remove("show");
-      overlay.setAttribute("aria-hidden", "true");
+      window.location.href = "game.html?new=1";
     }, 2200);
     return;
   }
