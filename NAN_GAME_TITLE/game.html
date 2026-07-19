@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>DAY 1 | NAN</title>
-  <link rel="stylesheet" href="css/game.css">
+  <link rel="stylesheet" href="css/game.css?v=2">
 </head>
 <body>
 <main class="game" id="game">
@@ -101,18 +101,19 @@
     <section class="status-panel" aria-label="현재 스탯">
       <div class="status-head"><div><span>PLAYER STATUS</span><b>현재 스탯</b></div><small>선택 결과 실시간 반영</small></div>
       <div class="system-grid">
-        <p><i>◆</i><span>업무력</span><b id="sys-work">0</b></p>
-        <p><i>♥</i><span>체력</span><b id="sys-stamina">5</b></p>
-        <p><i>♡</i><span>호감도</span><b id="affection">0</b></p>
-        <p><i>◇</i><span>신뢰도</span><b id="trust">0</b></p>
+        <p><i>◆</i><span class="stat-label">업무력 <button class="stat-help" type="button" data-stat="work" aria-label="업무력 설명 보기" aria-controls="stat-help-popover" aria-expanded="false">?</button></span><b id="sys-work">0</b></p>
+        <p><i>♥</i><span class="stat-label">체력 <button class="stat-help" type="button" data-stat="stamina" aria-label="체력 설명 보기" aria-controls="stat-help-popover" aria-expanded="false">?</button></span><b id="sys-stamina">5</b></p>
+        <p><i>♡</i><span class="stat-label">호감도 <button class="stat-help" type="button" data-stat="affection" aria-label="호감도 설명 보기" aria-controls="stat-help-popover" aria-expanded="false">?</button></span><b id="affection">0</b></p>
+        <p><i>◇</i><span class="stat-label">신뢰도 <button class="stat-help" type="button" data-stat="trust" aria-label="신뢰도 설명 보기" aria-controls="stat-help-popover" aria-expanded="false">?</button></span><b id="trust">0</b></p>
       </div>
       <div class="side-actions"><button id="save">진행 저장</button><button id="restart">DAY 1 재시작</button></div>
     </section>
     <div id="clue-list" hidden></div>
     <span id="unread" hidden></span>
   </aside>
+  <div class="stat-help-popover" id="stat-help-popover" role="tooltip" hidden></div>
 </main>
 <audio id="bgm" loop preload="auto"></audio>
-<script src="js/game.js"></script>
+<script src="js/game.js?v=3"></script>
 </body>
 </html>

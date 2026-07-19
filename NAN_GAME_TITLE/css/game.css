@@ -13,3 +13,44 @@
 .minigame-result{padding:clamp(30px,5vw,58px);text-align:center}.result-badge{display:inline-block;padding:6px 13px;color:#d9636d;border:1px solid #edc1bd;border-radius:999px;font-size:9px;font-weight:900;letter-spacing:.17em}.result-icon{width:76px;height:76px;display:grid;place-items:center;margin:20px auto 12px;color:#fff;border-radius:50%;background:linear-gradient(145deg,#77c998,#48aa76);box-shadow:0 13px 30px #4fa9783b;font-size:35px;font-weight:900}.result-icon.fail{background:linear-gradient(145deg,#ee8a82,#d85a67);box-shadow:0 13px 30px #d85a673b}.result-kicker{margin:0;color:#c0666d;font-size:11px;font-weight:900;letter-spacing:.12em}.result-summary{margin:0 auto;color:#75646a;font-size:13px;line-height:1.6}.result-score{width:min(400px,100%);display:flex;align-items:center;justify-content:space-between;margin:24px auto 10px;padding:14px 18px;border:1px solid #ecdad6;border-radius:13px;background:#fff}.result-score span{color:#89777d;font-size:12px}.result-score strong{color:#da616b;font-size:21px}.result-stats{width:min(400px,100%);display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:0 auto 25px}.result-stats article{display:grid;grid-template-columns:1fr auto;align-items:center;padding:15px;text-align:left;border-radius:13px;background:#f6f1ef}.result-stats span{color:#6f5e64;font-size:12px;font-weight:800}.result-stats strong{font-size:20px}.result-stats small{grid-column:1/-1;margin-top:5px;color:#9e8e93;font-size:9px}.result-stats .up strong{color:#3fa876}.result-stats .down strong{color:#dc5e68}.result-stats .same strong{color:#96868b}
 .mini-head h2 span{display:inline-block;padding-bottom:2px;color:#d95f69;border-bottom:3px solid #efaaa6}.order b em{display:inline-block;margin-left:4px;padding:3px 7px;color:#d85f69;border-radius:999px;background:#fff0ec;font-size:9px;font-style:normal;vertical-align:2px}
 @media(max-width:900px){.game{grid-template-columns:minmax(0,58fr) minmax(320px,42fr)}.dialogue-card{padding-right:105px}.character{right:-8%;max-width:82%}.stage-choices{width:88%}}@media(max-width:680px){html,body{overflow:auto}.game{min-height:100dvh;height:auto;grid-template-columns:1fr;grid-template-rows:68vh 70vh}.messenger{border-left:0;border-top:1px solid #ddd}.stats i:first-child{display:none}.dialogue-card{min-height:155px;padding:16px 95px 16px 16px}.stage-choices{top:48%;width:90%;gap:11px}.stage-choices button{min-height:58px;padding:13px 18px;font-size:16px}.character{height:72%}}
+
+/* Keep the message area and status controls reachable at short viewport heights. */
+.messenger{height:100dvh;min-height:0;grid-template-rows:62px minmax(0,1fr) auto;overflow:hidden}
+.chat-list,.chat-room,.chat-list-body,.messages{min-height:0}
+.chat-list-body,.messages{overscroll-behavior:contain}
+.chat-list-empty,.message-empty{min-height:0}
+.status-panel{min-height:0;max-height:min(44dvh,300px);overflow-y:auto;overscroll-behavior:contain}
+
+.stat-label{display:flex!important;align-items:center;gap:5px}
+.stat-help{width:17px;height:17px;display:inline-grid;place-items:center;padding:0;color:#9b7f86;border:1px solid #d9c9cd;border-radius:50%;background:#fff;cursor:pointer;font-size:10px;font-weight:900;line-height:1}
+.stat-help:hover,.stat-help[aria-expanded="true"]{color:#fff;border-color:var(--coral);background:var(--coral)}
+.stat-help:focus-visible{outline:3px solid #dd586640;outline-offset:2px}
+.stat-help-popover{position:fixed;z-index:100;width:min(310px,calc(100vw - 24px));padding:11px 13px;color:#fff;border:1px solid #ffffff38;border-radius:10px;background:#35292eeb;box-shadow:0 12px 30px #1a0d1347;backdrop-filter:blur(10px);font-size:11px;line-height:1.55}
+
+@media(max-height:600px) and (min-width:681px){
+  .messenger{grid-template-rows:54px minmax(0,1fr) auto}
+  .messenger-appbar{padding:0 14px}
+  .app-mark{width:29px;height:29px;border-radius:8px}
+  .chat-list{grid-template-rows:58px minmax(0,1fr)}
+  .chat-list-head{padding:7px 14px}
+  .chat-list-head h1{font-size:17px}
+  .chat-list-empty span,.message-empty span{width:38px;height:38px;margin-bottom:7px}
+  .status-panel{max-height:42dvh;padding:9px 12px 10px;border-top-width:3px}
+  .status-panel:before{top:-3px;height:3px}
+  .status-head{margin-bottom:7px}
+  .status-head b{font-size:13px}
+  .status-head small{font-size:8px}
+  .system-grid{gap:6px}
+  .system-grid p{grid-template-columns:26px 1fr auto;gap:6px;padding:6px 8px}
+  .system-grid i{width:24px;height:24px;border-radius:7px;font-size:10px}
+  .system-grid span{font-size:10px}
+  .system-grid b{font-size:18px}
+  .side-actions{margin-top:6px}
+  .side-actions button{padding:6px}
+}
+
+@media(max-width:680px){
+  .game{grid-template-rows:68vh auto}
+  .messenger{height:auto;min-height:70vh;grid-template-rows:62px minmax(260px,1fr) auto;overflow:visible}
+  .status-panel{max-height:none;overflow:visible}
+}

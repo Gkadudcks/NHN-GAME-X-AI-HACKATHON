@@ -363,7 +363,13 @@ h1 {
   backdrop-filter: blur(5px);
 }
 
-.settings-panel { display: flex; max-height: inherit; flex-direction: column; }
+.settings-panel {
+  display: flex;
+  max-height: inherit;
+  flex-direction: column;
+  -webkit-user-select: none;
+  user-select: none;
+}
 
 .settings-header,
 .settings-footer {
