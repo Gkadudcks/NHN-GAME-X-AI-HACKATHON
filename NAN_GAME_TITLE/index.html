@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="정직원 전환 PT를 준비하는 오피스 로맨스 미스터리 게임" />
   <title>최종본이 바뀌었습니다 | NAN</title>
-  <link rel="stylesheet" href="css/title-screen.css?v=5" />
+  <link rel="stylesheet" href="css/title-screen.css?v=7" />
 </head>
 <body>
   <main class="title-screen">
@@ -49,6 +49,23 @@
         <p class="save-help">불러올 슬롯을 선택하세요. 저장 데이터는 이 브라우저에 보관됩니다.</p>
       </div>
     </section>
+
+    <section class="records-panel" aria-labelledby="records-panel-title" aria-hidden="true">
+      <div class="records-dialog">
+        <header class="records-header">
+          <div><p>MEMORY ARCHIVE</p><h2 id="records-panel-title">CG 기록</h2></div>
+          <div class="records-progress" aria-live="polite"><strong id="records-count">0</strong><span>CG 수집</span></div>
+          <button class="close-records-panel" type="button" aria-label="CG 기록 닫기">×</button>
+        </header>
+        <div class="records-grid" id="records-grid" aria-label="CG 기록 목록"></div>
+        <p class="records-help">게임에서 감상한 장면이 기록됩니다. 해금된 CG를 선택하면 크게 볼 수 있습니다.</p>
+      </div>
+    </section>
+
+    <div class="cg-viewer" id="cg-viewer" aria-hidden="true">
+      <button class="cg-viewer-close" type="button" aria-label="CG 크게 보기 닫기">×</button>
+      <figure><img id="cg-viewer-image" alt="" /><figcaption><small id="cg-viewer-day"></small><strong id="cg-viewer-title"></strong></figcaption></figure>
+    </div>
 
     <footer class="controls">
       <span>방향키 선택</span><span>ENTER 확인</span><span class="copyright">© NAN TEAM</span>
@@ -161,6 +178,6 @@
   <audio id="title-bgm" src="assets/audio/1. 기본 테마.wav" preload="auto" autoplay loop playsinline></audio>
   <script src="js/settings-store.js?v=3"></script>
   <script src="js/bgm-manager.js?v=1"></script>
-  <script src="js/title-screen.js?v=5"></script>
+  <script src="js/title-screen.js?v=7"></script>
 </body>
 </html>

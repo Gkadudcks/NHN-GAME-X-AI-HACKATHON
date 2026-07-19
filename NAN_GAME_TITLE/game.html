@@ -4,19 +4,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>DAY 1 | NAN</title>
-  <link rel="stylesheet" href="css/game.css?v=2">
+<link rel="stylesheet" href="css/game.css?v=7">
 </head>
 <body>
 <main class="game" id="game">
   <section class="stage" id="stage">
     <div class="shade"></div>
+    <figure class="event-cg" id="event-cg" aria-hidden="true">
+      <img id="event-cg-image" alt="">
+    </figure>
     <header class="hud">
       <a href="index.html">← TITLE</a><b>DAY 1</b><span id="clock">09:00</span>
       <div class="stats"><i>업무력 <strong id="work">0</strong></i><i>체력 <strong id="stamina">5</strong></i></div>
       <button id="mute" aria-label="배경 음악 켜기 또는 끄기">♪</button>
     </header>
     <button class="sound-prompt" id="sound-prompt" type="button">♪ 클릭해서 BGM 시작</button>
-    <img class="character" id="character" alt="등장인물">
+    <div class="character-layer" id="character-layer" aria-label="등장인물"></div>
     <div class="scene-label" id="scene-label">게임사업실 · 오전</div>
     <div class="toast" id="toast"></div>
     <aside class="choice-result" id="choice-result" aria-live="polite" aria-hidden="true">
@@ -24,7 +27,7 @@
       <div class="choice-result-list" id="choice-result-list"></div>
     </aside>
 
-    <section class="dialogue-card" aria-live="polite">
+    <section class="dialogue-card" id="dialogue-card" aria-live="polite">
       <div class="speaker-row"><b id="speaker"></b><span>STORY</span></div>
       <p id="dialogue"></p>
       <button class="next" id="next">다음 ›</button>
@@ -67,6 +70,12 @@
       <div><b>NAN WORKS</b><small>사내 메신저</small></div>
       <span class="online"><i></i> ONLINE</span>
     </header>
+    <nav class="tabs messenger-tabs" aria-label="정보 패널">
+      <button class="active" type="button" data-tab="messages-view">메신저</button>
+      <button type="button" data-tab="clues-view">단서 <em id="clue-new" hidden>NEW</em></button>
+    </nav>
+    <div class="messenger-main">
+    <div class="view side-view active" id="messages-view">
     <section class="chat-list" id="chat-list">
       <header class="chat-list-head"><div><small>MESSAGES</small><h1>채팅</h1></div><button type="button" aria-label="새 채팅">＋</button></header>
       <div class="chat-list-body">
@@ -97,6 +106,13 @@
       <div class="date-divider"><span>DAY 1 · MONDAY</span></div>
       <div class="messages" id="messages"></div>
     </section>
+    </div>
+
+    <section class="view side-view clue-view" id="clues-view">
+      <header class="clue-head"><div><small>INVESTIGATION NOTES</small><h1>수집한 단서</h1></div><strong id="clue-count">0</strong></header>
+      <div class="clue-list" id="clue-list"></div>
+    </section>
+    </div>
 
     <section class="status-panel" aria-label="현재 스탯">
       <div class="status-head"><div><span>PLAYER STATUS</span><b>현재 스탯</b></div><small>선택 결과 실시간 반영</small></div>
@@ -108,12 +124,12 @@
       </div>
       <div class="side-actions"><button id="save">진행 저장</button><button id="restart">DAY 1 재시작</button></div>
     </section>
-    <div id="clue-list" hidden></div>
     <span id="unread" hidden></span>
   </aside>
   <div class="stat-help-popover" id="stat-help-popover" role="tooltip" hidden></div>
 </main>
 <audio id="bgm" loop preload="auto"></audio>
-<script src="js/game.js?v=3"></script>
+<audio id="message-sfx" src="assets/audio/message-notification.wav" preload="auto"></audio>
+<script src="js/game.js?v=10"></script>
 </body>
 </html>

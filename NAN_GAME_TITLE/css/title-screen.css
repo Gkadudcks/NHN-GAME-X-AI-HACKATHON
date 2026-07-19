@@ -312,6 +312,29 @@ h1 {
 .latest-badge { position: absolute; top: 12px; right: 12px; padding: 5px 8px; color: #fff; border-radius: 999px; background: var(--coral); font-size: 9px; }
 .save-help { margin: 18px 0 0; color: #998b90; text-align: center; font-size: 11px; }
 
+.records-panel{position:absolute;z-index:12;inset:0;display:grid;place-items:center;padding:32px;background:#211a1f9c;backdrop-filter:blur(9px);opacity:0;visibility:hidden;transition:.28s}
+.records-panel.open{opacity:1;visibility:visible}
+.records-dialog{width:min(1080px,94vw);max-height:90dvh;padding:28px;overflow:auto;border:1px solid #ffffff7d;border-radius:22px;background:#fffaf6f5;box-shadow:0 28px 90px #21111857}
+.records-header{display:grid;grid-template-columns:1fr auto 42px;align-items:center;gap:22px;margin-bottom:24px}
+.records-header p{margin:0 0 5px;color:var(--coral);font:700 9px monospace;letter-spacing:.2em}
+.records-header h2{margin:0;color:#4f474c;font-size:28px}
+.records-progress{display:flex;align-items:baseline;gap:5px;color:#9a8c91;font-size:11px}.records-progress strong{color:var(--coral);font-size:25px}
+.close-records-panel,.cg-viewer-close{width:40px;height:40px;color:#7d6b71;border:1px solid #dfd3d0;border-radius:50%;background:#fff;cursor:pointer;font-size:24px}
+.records-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.records-empty{grid-column:1/-1;min-height:260px;display:grid;place-content:center;gap:9px;color:#9d8f94;text-align:center;border:1px dashed #d9cacc;border-radius:16px;background:#fff9}.records-empty span{color:#c58b90;font:700 9px monospace;letter-spacing:.2em}.records-empty strong{color:#716269;font-size:17px}.records-empty p{margin:0;font-size:11px}
+.record-card{position:relative;display:grid;padding:0;overflow:hidden;color:#5c5055;text-align:left;border:1px solid #dfd3d0;border-radius:16px;background:#fff;cursor:pointer;transition:.22s}
+.record-card.unlocked:hover,.record-card.unlocked:focus-visible{outline:none;border-color:var(--coral-light);box-shadow:0 16px 34px #7c46511f;transform:translateY(-4px)}
+.record-image{position:relative;aspect-ratio:16/9;display:grid;place-items:center;overflow:hidden;background:linear-gradient(135deg,#dfd8d7,#bcb3b7)}
+.record-image img{width:100%;height:100%;display:block;object-fit:cover;transition:transform .5s}.record-card:hover .record-image img{transform:scale(1.035)}
+.record-card.locked .record-image:before{position:absolute;inset:0;content:"";background:repeating-linear-gradient(135deg,#ffffff0b 0 8px,#00000008 8px 16px)}
+.record-lock{z-index:1;padding:7px 11px;color:#fff;border:1px solid #ffffff80;border-radius:999px;font:700 9px monospace;letter-spacing:.18em}
+.record-copy{display:grid;gap:6px;padding:15px 16px 18px}.record-copy small{color:#b16d73;font:700 9px monospace;letter-spacing:.08em}.record-copy strong{font-size:15px}
+.record-number{position:absolute;top:10px;left:10px;padding:5px 7px;color:#fff;border-radius:6px;background:#2e252ab8;font:700 8px monospace;letter-spacing:.1em}
+.records-help{margin:20px 0 0;color:#998b90;text-align:center;font-size:11px}
+.cg-viewer{position:fixed;z-index:30;inset:0;display:grid;place-items:center;padding:5vw;background:#100c0edb;backdrop-filter:blur(10px);opacity:0;visibility:hidden;transition:.3s}
+.cg-viewer.open{opacity:1;visibility:visible}.cg-viewer figure{width:min(1180px,92vw);margin:0;overflow:hidden;border:1px solid #ffffff6b;border-radius:18px;background:#1f191c;box-shadow:0 30px 100px #0009}.cg-viewer img{width:100%;max-height:76dvh;display:block;object-fit:contain}.cg-viewer figcaption{display:flex;align-items:center;gap:18px;padding:15px 20px;color:#fff}.cg-viewer figcaption small{color:#f38a85;font:700 9px monospace;letter-spacing:.13em}.cg-viewer figcaption strong{font-size:14px}.cg-viewer-close{position:absolute;top:24px;right:28px;color:#fff;border-color:#ffffff61;background:#2a2226b8}
+@media(max-width:760px){.records-grid{grid-template-columns:1fr}.records-panel{padding:14px}.records-dialog{padding:20px}.records-header{grid-template-columns:1fr auto}.records-progress{display:none}.close-records-panel{grid-column:2;grid-row:1}.cg-viewer{padding:14px}.cg-viewer-close{top:12px;right:12px}}
+
 .controls {
   position: absolute;
   right: 0;

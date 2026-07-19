@@ -2,6 +2,13 @@ const menuButtons = [...document.querySelectorAll(".menu-button")];
 const overlay = document.querySelector(".start-overlay");
 const savePanel = document.querySelector(".save-panel");
 const saveSlots = document.querySelector(".save-slots");
+const recordsPanel = document.querySelector(".records-panel");
+const recordsGrid = document.querySelector("#records-grid");
+const recordsCount = document.querySelector("#records-count");
+const cgViewer = document.querySelector("#cg-viewer");
+const cgViewerImage = document.querySelector("#cg-viewer-image");
+const cgViewerDay = document.querySelector("#cg-viewer-day");
+const cgViewerTitle = document.querySelector("#cg-viewer-title");
 const settingsDialog = document.querySelector("#settings-dialog");
 const settingsForm = document.querySelector("#settings-form");
 const settingsStatus = document.querySelector("#settings-status");
@@ -144,6 +151,10 @@ function runActiveMenu() {
     openSavePanel();
     return;
   }
+  if (action === "records") {
+    openRecordsPanel();
+    return;
+  }
 
 }
 
@@ -241,6 +252,60 @@ function closeSavePanel() {
   menuButtons[activeIndex].focus();
 }
 
+function getCgArchive() {
+  const legacy = { id: "day1-harin-convenience-cg-v2.png", day: "DAY 1 · 20:18", title: "퇴근 후, 뜻밖의 이웃", image: "assets/CG/day1-harin-convenience-cg-v2.png" };
+  try {
+    const saved = JSON.parse(localStorage.getItem("nan-unlocked-cgs-v1")) || [];
+    return saved.map((entry) => typeof entry === "string" ? legacy : entry).filter((entry) => entry?.id && entry?.image);
+  } catch { return []; }
+}
+
+function openCgViewer(entry) {
+  cgViewerImage.src = entry.image;
+  cgViewerImage.alt = entry.title;
+  cgViewerDay.textContent = entry.day;
+  cgViewerTitle.textContent = entry.title;
+  cgViewer.classList.add("open");
+  cgViewer.setAttribute("aria-hidden", "false");
+  document.querySelector(".cg-viewer-close").focus();
+}
+
+function closeCgViewer() {
+  cgViewer.classList.remove("open");
+  cgViewer.setAttribute("aria-hidden", "true");
+  recordsGrid.querySelector("button:not(:disabled)")?.focus();
+}
+
+function renderRecords() {
+  const archive = getCgArchive();
+  recordsCount.textContent = String(archive.length);
+  if (!archive.length) {
+    recordsGrid.innerHTML = '<div class="records-empty"><span>NO MEMORY</span><strong>아직 기록된 CG가 없습니다</strong><p>게임에서 특별한 장면을 감상하면 이곳에 자동으로 전시됩니다.</p></div>';
+    return;
+  }
+  recordsGrid.replaceChildren(...archive.map((entry, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "record-card unlocked";
+    button.innerHTML = `<span class="record-image"><img src="${escapeHtml(entry.image)}" alt="" /></span><span class="record-copy"><small>${escapeHtml(entry.day || "SPECIAL CG")}</small><strong>${escapeHtml(entry.title || "기록된 장면")}</strong></span><span class="record-number">CG ${String(index + 1).padStart(2, "0")}</span>`;
+    button.addEventListener("click", () => openCgViewer(entry));
+    return button;
+  }));
+}
+
+function openRecordsPanel() {
+  renderRecords();
+  recordsPanel.classList.add("open");
+  recordsPanel.setAttribute("aria-hidden", "false");
+  document.querySelector(".close-records-panel").focus();
+}
+
+function closeRecordsPanel() {
+  recordsPanel.classList.remove("open");
+  recordsPanel.setAttribute("aria-hidden", "true");
+  menuButtons[activeIndex].focus();
+}
+
 menuButtons.forEach((button, index) => {
   button.addEventListener("mouseenter", () => setActiveMenu(index));
   button.addEventListener("focus", () => setActiveMenu(index));
@@ -290,6 +355,14 @@ document.addEventListener("fullscreenchange", () => {
 });
 
 document.addEventListener("keydown", (event) => {
+  if (cgViewer.classList.contains("open")) {
+    if (event.key === "Escape") closeCgViewer();
+    return;
+  }
+  if (recordsPanel.classList.contains("open")) {
+    if (event.key === "Escape") closeRecordsPanel();
+    return;
+  }
   if (savePanel.classList.contains("open")) {
     if (event.key === "Escape") closeSavePanel();
     return;
@@ -301,8 +374,16 @@ document.addEventListener("keydown", (event) => {
 });
 
 document.querySelector(".close-save-panel").addEventListener("click", closeSavePanel);
+document.querySelector(".close-records-panel").addEventListener("click", closeRecordsPanel);
+document.querySelector(".cg-viewer-close").addEventListener("click", closeCgViewer);
 savePanel.addEventListener("click", (event) => {
   if (event.target === savePanel) closeSavePanel();
+});
+recordsPanel.addEventListener("click", (event) => {
+  if (event.target === recordsPanel) closeRecordsPanel();
+});
+cgViewer.addEventListener("click", (event) => {
+  if (event.target === cgViewer) closeCgViewer();
 });
 
 applySettings();
