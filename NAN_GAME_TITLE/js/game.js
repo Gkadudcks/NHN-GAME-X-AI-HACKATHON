@@ -41,6 +41,15 @@ const scenes=[
 const state={index:0,work:0,stamina:5,affection:0,trust:0,readMessage:false,clues:[],coffeeDone:false,decisions:{}};
 const $=s=>document.querySelector(s);const audio=$('#bgm');let currentTrack='';let fadeToken=0;let currentRoom='';
 const refs={stage:$('#stage'),char:$('#character'),clock:$('#clock'),speaker:$('#speaker'),dialogue:$('#dialogue'),stageChoices:$('#stage-choices'),next:$('#next'),toast:$('#toast'),soundPrompt:$('#sound-prompt')};
+const statDescriptions={
+ work:'PT 준비와 업무 수행 성과를 나타냅니다. 높은 업무력은 업무 평가와 최종 결과에 유리하게 작용합니다.',
+ stamina:'하루 동안 업무를 수행할 수 있는 여유를 나타냅니다. 실수하거나 무리하면 감소할 수 있습니다.',
+ affection:'서하린과의 감정적 거리를 나타냅니다. 대화 선택과 관계 중심 결과에 영향을 줍니다.',
+ trust:'회사 팀이 플레이어를 업무 파트너로서 얼마나 신뢰하는지 나타냅니다. 팀 내 협업과 업무 관련 결과에 영향을 줍니다.'
+};
+const statHelpPopover=$('#stat-help-popover');let activeStatHelp=null;
+function closeStatHelp({restoreFocus=false}={}){if(!activeStatHelp)return;const button=activeStatHelp;activeStatHelp=null;button.setAttribute('aria-expanded','false');button.removeAttribute('aria-describedby');statHelpPopover.hidden=true;if(restoreFocus)button.focus()}
+function openStatHelp(button){closeStatHelp();activeStatHelp=button;button.setAttribute('aria-expanded','true');button.setAttribute('aria-describedby','stat-help-popover');statHelpPopover.textContent=statDescriptions[button.dataset.stat];statHelpPopover.hidden=false;const rect=button.getBoundingClientRect(),popoverRect=statHelpPopover.getBoundingClientRect(),gap=8;let left=Math.min(innerWidth-popoverRect.width-12,Math.max(12,rect.left+rect.width/2-popoverRect.width/2));let top=rect.bottom+gap;if(top+popoverRect.height>innerHeight-12)top=Math.max(12,rect.top-popoverRect.height-gap);statHelpPopover.style.left=`${left}px`;statHelpPopover.style.top=`${top}px`}
 function save(){localStorage.setItem('nan-day1-save',JSON.stringify({...state,savedAt:new Date().toISOString()}));toast('진행 상황을 저장했습니다.')}
 function load(){try{Object.assign(state,JSON.parse(localStorage.getItem('nan-day1-save'))||{});state.decisions=state.decisions||{}}catch{}}
 function getBgmVolume(){try{const s=JSON.parse(localStorage.getItem('nan-game-settings-v1'))||{};if(s.masterMuted||s.bgmMuted)return 0;return Math.min(1,Math.max(0,((s.masterVolume??80)/100)*((s.bgmVolume??70)/100)))}catch{return .56}}
@@ -79,4 +88,5 @@ function resultStat(label,delta,total){const sign=delta>0?'+':'';const tone=delt
 function closeCoffeeResult(){$('#minigame').classList.remove('active');playBgm('daily');state.index++;render()}
 function saveSilently(){localStorage.setItem('nan-day1-save',JSON.stringify({...state,savedAt:new Date().toISOString()}))}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));document.querySelectorAll('.chat-item').forEach(b=>b.onclick=()=>openChat(b.dataset.room));$('#chat-back').onclick=closeChat;refs.next.onclick=next;$('#save').onclick=save;$('#restart').onclick=()=>{localStorage.removeItem('nan-day1-save');location.href='game.html?new=1'};$('#mute').onclick=async()=>{if(audio.paused)await unlockAudio();else{audio.pause();$('#mute').classList.add('muted');refs.soundPrompt.classList.remove('hidden')}};refs.soundPrompt.onclick=unlockAudio;
+document.querySelectorAll('.stat-help').forEach(button=>{button.addEventListener('mouseenter',()=>openStatHelp(button));button.addEventListener('mouseleave',()=>{if(activeStatHelp===button)closeStatHelp()});button.addEventListener('focus',()=>openStatHelp(button));button.addEventListener('blur',()=>{if(activeStatHelp===button)closeStatHelp()});button.addEventListener('click',event=>{event.stopPropagation();if(matchMedia('(hover: hover)').matches)return;if(activeStatHelp===button)closeStatHelp();else openStatHelp(button)})});statHelpPopover.addEventListener('click',event=>event.stopPropagation());document.addEventListener('click',()=>closeStatHelp());document.addEventListener('keydown',event=>{if(event.key==='Escape'&&activeStatHelp)closeStatHelp({restoreFocus:true})});window.addEventListener('resize',()=>closeStatHelp());document.addEventListener('scroll',()=>closeStatHelp(),true);
 if(new URLSearchParams(location.search).has('new'))localStorage.removeItem('nan-day1-save');else load();renderMessages();syncStats();render();document.addEventListener('pointerdown',unlockAudio,{once:true});document.addEventListener('keydown',unlockAudio,{once:true});
