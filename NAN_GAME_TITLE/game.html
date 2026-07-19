@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>DAY 1 | NAN</title>
 <link rel="stylesheet" href="css/game.css?v=7">
+<link rel="stylesheet" href="css/coffee-minigame.css?v=1">
 </head>
 <body>
 <main class="game" id="game">
@@ -34,34 +35,6 @@
     </section>
     <div class="stage-choices" id="stage-choices" aria-live="polite"></div>
 
-    <section class="minigame" id="minigame">
-      <div class="minigame-shell">
-        <section class="minigame-intro" id="minigame-intro">
-          <span class="mini-badge">MINI GAME</span>
-          <div class="coffee-icon" aria-hidden="true">☕</div>
-          <p class="mini-kicker">잠깐, 커피 심부름이 생겼습니다!</p>
-          <h2>팀원의 커피 취향을 기억하세요</h2>
-          <p>세 사람의 주문이 5초 동안 공개됩니다.<br>주문이 사라지면 각 팀원의 커피를 골라주세요.</p>
-          <div class="mini-rules"><span><b>01</b> 주문 확인</span><i></i><span><b>02</b> 5초 암기</span><i></i><span><b>03</b> 정답 선택</span></div>
-          <button id="coffee-start" class="coffee-start" type="button">미니게임 시작하기 <span>›</span></button>
-        </section>
-        <section class="minigame-play" id="minigame-play" hidden>
-          <header class="mini-head"><div><small>COFFEE MEMORY</small><h2 id="coffee-title">팀원의 커피 취향을 기억하세요</h2><p id="coffee-help"></p></div><div class="countdown" id="coffee-countdown"><strong id="coffee-seconds">5</strong><span>SEC</span></div></header>
-          <div class="timer-track" id="timer-track"><i id="timer-fill"></i></div>
-          <div id="orders" class="orders"></div><div id="coffee-controls" class="coffee-controls"></div>
-        </section>
-        <section class="minigame-result" id="minigame-result" hidden>
-          <span class="result-badge">RESULT</span>
-          <div class="result-icon" id="result-icon" aria-hidden="true">✓</div>
-          <p class="result-kicker" id="result-kicker">미니게임 완료</p>
-          <h2 id="result-title">완벽하게 기억했습니다!</h2>
-          <p class="result-summary" id="result-summary"></p>
-          <div class="result-score"><span>정답</span><strong id="result-score">3 / 3</strong></div>
-          <div class="result-stats" id="result-stats"></div>
-          <button id="result-continue" class="coffee-start" type="button">결과 확인하고 계속하기 <span>›</span></button>
-        </section>
-      </div>
-    </section>
   </section>
 
   <aside class="messenger" id="messenger">
@@ -127,9 +100,73 @@
     <span id="unread" hidden></span>
   </aside>
   <div class="stat-help-popover" id="stat-help-popover" role="tooltip" hidden></div>
+
+  <section class="coffee-game" id="minigame" aria-label="탕비실 커피 제조 미니게임" aria-hidden="true">
+    <div class="coffee-game-shell">
+      <section class="coffee-screen coffee-intro" id="coffee-intro">
+        <span class="coffee-badge">DAY 1 · MINI GAME</span>
+        <div class="coffee-title-icon" aria-hidden="true">☕</div>
+        <p class="coffee-kicker">회의 전, 탕비실에 주문이 몰렸습니다!</p>
+        <h2>탕비실 커피 대작전</h2>
+        <p>재료를 직접 컵에 넣고, 마무리 게이지를 맞춘 뒤<br>완성된 커피를 트레이에 전달하세요.</p>
+        <div class="coffee-rules" aria-label="게임 진행 순서">
+          <span><b>01</b> 재료 넣기</span><i></i><span><b>02</b> 타이밍 맞추기</span><i></i><span><b>03</b> 트레이 전달</span>
+        </div>
+        <button id="coffee-start" class="coffee-primary" type="button">조작 연습 시작 <span>›</span></button>
+      </section>
+
+      <section class="coffee-screen coffee-order-screen" id="coffee-order-screen" hidden>
+        <span class="coffee-badge">ORDER CHECK</span>
+        <p class="coffee-kicker">취향은 한 번만 알려줄 거야. 잘 기억해!</p>
+        <h2>오늘의 커피 주문</h2>
+        <div class="coffee-order-cards" id="coffee-order-cards"></div>
+        <p class="coffee-order-countdown">주문표가 접히기까지 <strong id="coffee-order-seconds">4</strong>초</p>
+        <button id="coffee-order-ready" class="coffee-primary" type="button">주문 기억했어요 <span>›</span></button>
+      </section>
+
+      <section class="coffee-screen coffee-play" id="coffee-play" hidden>
+        <header class="coffee-hud">
+          <div><small id="coffee-phase">PRACTICE</small><h2 id="coffee-task">강민재의 믹스커피를 연습하세요</h2></div>
+          <div class="coffee-hud-values"><span>점수 <strong id="coffee-score">0</strong></span><span class="coffee-time"><b id="coffee-time">--</b> SEC</span></div>
+        </header>
+        <div class="coffee-order-drawer" id="coffee-order-drawer" hidden></div>
+        <div class="coffee-workspace">
+          <section class="coffee-cup-rack" id="coffee-cups" aria-label="주문 컵"></section>
+          <section class="coffee-machine" aria-label="커피 마무리 머신">
+            <div class="machine-face"><span></span><b>NAN<br>BREW</b><i></i></div>
+            <div class="coffee-meter" id="coffee-meter" aria-label="마무리 타이밍 게이지">
+              <span class="meter-zone bad"></span><span class="meter-zone good"></span><span class="meter-zone perfect"></span><i id="coffee-meter-needle"></i>
+            </div>
+            <button id="coffee-finish-action" type="button" disabled>컵을 선택하세요</button>
+          </section>
+          <section class="coffee-ingredient-shelf" id="coffee-ingredients" aria-label="커피 재료"></section>
+          <button class="coffee-trash" id="coffee-trash" type="button"><span aria-hidden="true">↺</span><b>컵 비우기</b><small>잘못 만들었을 때</small></button>
+          <button class="coffee-tray" id="coffee-tray" type="button"><span aria-hidden="true">▰</span><b>전달 트레이</b><small>완성 컵을 놓으세요</small></button>
+        </div>
+        <footer class="coffee-play-footer">
+          <p id="coffee-feedback" role="status" aria-live="polite">재료를 선택하거나 컵으로 끌어다 놓으세요.</p>
+          <button id="coffee-order-toggle" type="button" aria-expanded="false">주문표 다시 보기</button>
+        </footer>
+      </section>
+
+      <section class="coffee-screen coffee-result" id="coffee-result" hidden>
+        <span class="coffee-badge">SHIFT RESULT</span>
+        <div class="coffee-result-icon" id="coffee-result-icon" aria-hidden="true">★</div>
+        <p class="coffee-kicker" id="coffee-result-kicker">PERFECT SERVICE</p>
+        <h2 id="coffee-result-title">세 잔 모두 훌륭하게 완성했습니다!</h2>
+        <p id="coffee-result-summary"></p>
+        <div class="coffee-result-score"><span>총점</span><strong id="coffee-result-score">0 / 300</strong></div>
+        <div class="coffee-result-drinks" id="coffee-result-drinks"></div>
+        <div class="coffee-result-stats" id="coffee-result-stats"></div>
+        <button id="coffee-result-continue" class="coffee-primary" type="button">결과 확인하고 계속하기 <span>›</span></button>
+      </section>
+    </div>
+    <div class="coffee-drag-ghost" id="coffee-drag-ghost" hidden></div>
+  </section>
 </main>
 <audio id="bgm" loop preload="auto"></audio>
 <audio id="message-sfx" src="assets/audio/message-notification.wav" preload="auto"></audio>
-<script src="js/game.js?v=10"></script>
+<script src="js/coffee-minigame.js?v=2"></script>
+<script src="js/game.js?v=11"></script>
 </body>
 </html>

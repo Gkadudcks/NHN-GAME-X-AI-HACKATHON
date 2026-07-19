@@ -20,6 +20,13 @@ body {
   color: var(--text);
   background: #f5f3ef;
   font-family: Pretendard, "Noto Sans KR", "Malgun Gothic", sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+body * {
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 button { font: inherit; }
