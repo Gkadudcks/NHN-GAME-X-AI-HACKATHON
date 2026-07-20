@@ -20,9 +20,9 @@
   }
 
   function gradeForScore(score) {
-    if (score >= 240) return { grade: "perfect", workDelta: 2, staminaDelta: 0 };
-    if (score >= 180) return { grade: "good", workDelta: 1, staminaDelta: 0 };
-    return { grade: "messy", workDelta: -1, staminaDelta: -1 };
+    if (score >= 240) return { grade: "perfect", workDelta: 2 };
+    if (score >= 180) return { grade: "good", workDelta: 1 };
+    return { grade: "messy", workDelta: -1 };
   }
 
   function isRecipeStepCorrect(recipe, currentSteps, ingredient) {
@@ -74,7 +74,10 @@
   let selectedIngredient = null;
   let selectedCupKey = null;
   let currentScore = 0;
+  let currentOrderIndex = 0;
+  let completedCups = [];
   let gameStartedAt = 0;
+  let roundStartedAt = 0;
   let timeRemaining = 60;
   let timerInterval = null;
   let orderInterval = null;
@@ -118,14 +121,14 @@
     return `${word}${hasFinalConsonant ? "을" : "를"}`;
   }
 
-  function ingredientMarkup(key) {
+  function ingredientMarkup(key, detailed = false, step = 0) {
     const ingredient = INGREDIENTS[key];
-    return `<i title="${ingredient.label}">${ingredient.icon}</i>`;
+    return `<i title="${ingredient.label}">${detailed ? `<b class="recipe-step">${step}</b>` : ""}<span>${ingredient.icon}</span>${detailed ? `<small>${ingredient.label}</small>` : ""}</i>`;
   }
 
   function orderCardMarkup(order, compact = false) {
     if (compact) return `<article class="coffee-order-mini"><b>${order.name} · ${order.role}</b><span>${order.drink}</span></article>`;
-    return `<article class="coffee-order-card"><small>${order.role.toUpperCase()} ORDER</small><b>${order.name}</b><p>${order.drink}</p><div class="coffee-order-recipe">${order.recipe.map(ingredientMarkup).join("")}</div></article>`;
+    return `<article class="coffee-order-card"><small>${order.role.toUpperCase()} ORDER</small><b>${order.name}</b><p>${order.drink}</p><div class="coffee-order-recipe">${order.recipe.map((key, index) => `${index ? '<em aria-hidden="true">→</em>' : ''}${ingredientMarkup(key, true, index + 1)}`).join("")}<em aria-hidden="true">→</em><i class="recipe-method"><b class="recipe-step">${order.recipe.length + 1}</b><span>✓</span><small>${order.method}</small></i></div></article>`;
   }
 
   function renderOrders() {
@@ -360,7 +363,7 @@
   }
 
   function calculateCupScore(cup) {
-    const elapsed = (performance.now() - gameStartedAt) / 1000;
+    const elapsed = (performance.now() - roundStartedAt) / 1000;
     const recipeScore = Math.max(20, 60 - cup.resets * 10);
     const speedScore = elapsed <= 25 ? 15 : elapsed <= 45 ? 10 : 5;
     return Math.max(0, recipeScore + cup.timing + speedScore);
@@ -380,14 +383,34 @@
     }
     cup.score = calculateCupScore(cup);
     currentScore += cup.score;
+    completedCups.push({ ...cup, recipe: [...cup.recipe], ingredients: [...cup.ingredients] });
     refs.score.textContent = currentScore;
     setFeedback(cup.timing === 25 ? `${cup.name}의 표정이 밝아졌습니다. 완벽한 한 잔!` : `${cup.name}에게 커피를 전달했습니다.`, cup.timing === 25 ? "success" : "normal");
     renderCups();
-    if (cups.every((item) => item.served)) {
+    if (currentOrderIndex >= ORDERS.length - 1) {
       finishing = true;
       clearInterval(timerInterval);
       transitionTimer = setTimeout(finishMainGame, 650);
+    } else {
+      currentOrderIndex += 1;
+      transitionTimer = setTimeout(beginRound, 700);
     }
+  }
+
+  function beginRound() {
+    const order = ORDERS[currentOrderIndex];
+    selectedIngredient = null;
+    selectedCupKey = order.key;
+    cups = [cloneCup(order)];
+    roundStartedAt = performance.now();
+    refs.phase.textContent = `ROUND ${currentOrderIndex + 1} / ${ORDERS.length}`;
+    refs.task.textContent = `${order.name} · ${order.drink} 한 잔`;
+    refs.orderDrawer.hidden = true;
+    refs.orderToggle.setAttribute("aria-expanded", "false");
+    refs.orderToggle.textContent = "주문표 다시 보기";
+    renderIngredients();
+    renderCups();
+    setFeedback(`${order.name}의 주문입니다. 기억한 순서대로 재료를 넣어주세요.`);
   }
 
   function beginTutorial() {
@@ -414,7 +437,7 @@
     mode = "orders";
     showScreen(refs.orderScreen);
     renderOrders();
-    let seconds = 4;
+    let seconds = 10;
     refs.orderSeconds.textContent = seconds;
     clearInterval(orderInterval);
     orderInterval = setInterval(() => {
@@ -431,11 +454,9 @@
     mode = "playing";
     finishing = false;
     selectedIngredient = null;
-    selectedCupKey = "boss";
     currentScore = 0;
-    cups = ORDERS.map(cloneCup);
-    refs.phase.textContent = "COFFEE RUSH";
-    refs.task.textContent = "세 잔을 완성해 트레이에 전달하세요";
+    currentOrderIndex = 0;
+    completedCups = [];
     refs.score.textContent = "0";
     refs.time.textContent = "60";
     refs.time.parentElement.classList.remove("danger");
@@ -445,9 +466,7 @@
     timeRemaining = 60;
     gameStartedAt = performance.now();
     showScreen(refs.play);
-    renderIngredients();
-    renderCups();
-    setFeedback("주문표는 언제든 다시 볼 수 있지만 시간은 멈추지 않습니다.");
+    beginRound();
     timerInterval = setInterval(updateTimer, 100);
   }
 
@@ -465,7 +484,10 @@
     finishing = true;
     clearTimers();
     const gradeData = gradeForScore(currentScore);
-    const result = { score: currentScore, grade: gradeData.grade, correctDrinks: cups.filter((cup) => cup.served).length, mistakes: cups.reduce((sum, cup) => sum + cup.resets, 0), workDelta: gradeData.workDelta, staminaDelta: gradeData.staminaDelta, drinks: cups.map((cup) => ({ key: cup.key, name: cup.name, drink: cup.drink, score: cup.score, served: cup.served })) };
+    const finishedCups = [...completedCups];
+    if (cups[0] && !finishedCups.some((cup) => cup.key === cups[0].key)) finishedCups.push(cups[0]);
+    const drinks = ORDERS.map((order) => finishedCups.find((cup) => cup.key === order.key) || { ...order, score: 0, served: false, resets: 0 });
+    const result = { score: currentScore, grade: gradeData.grade, correctDrinks: drinks.filter((cup) => cup.served).length, mistakes: drinks.reduce((sum, cup) => sum + cup.resets, 0), workDelta: gradeData.workDelta, drinks: drinks.map((cup) => ({ key: cup.key, name: cup.name, drink: cup.drink, score: cup.score, served: cup.served })) };
     renderResult(result);
     showScreen(refs.result);
     refs.resultContinue.onclick = () => complete(result);
@@ -486,7 +508,7 @@
     refs.resultScore.textContent = `${result.score} / 300`;
     refs.resultDrinks.innerHTML = result.drinks.map((drink) => `<article><b>${drink.name}</b><small>${drink.drink}</small><strong>${drink.served ? drink.score : "미완성"}</strong></article>`).join("");
     const statMarkup = (label, delta) => `<article><span>${label}</span><strong class="${delta > 0 ? "up" : delta < 0 ? "down" : ""}">${delta > 0 ? "+" : ""}${delta}</strong></article>`;
-    refs.resultStats.innerHTML = statMarkup("업무력", result.workDelta) + statMarkup("체력", result.staminaDelta);
+    refs.resultStats.innerHTML = statMarkup("업무력", result.workDelta);
   }
 
   function complete(result) {
@@ -512,6 +534,8 @@
     selectedIngredient = null;
     selectedCupKey = null;
     currentScore = 0;
+    currentOrderIndex = 0;
+    completedCups = [];
     finishing = false;
     completionSent = false;
     onComplete = options.onComplete;

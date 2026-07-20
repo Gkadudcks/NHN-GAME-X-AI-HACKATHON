@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>DAY 1 | NAN</title>
-<link rel="stylesheet" href="css/game.css?v=7">
-<link rel="stylesheet" href="css/coffee-minigame.css?v=1">
+<link rel="stylesheet" href="css/game.css?v=8">
+<link rel="stylesheet" href="css/coffee-minigame.css?v=3">
 </head>
 <body>
 <main class="game" id="game">
@@ -16,7 +16,7 @@
     </figure>
     <header class="hud">
       <a href="index.html">← TITLE</a><b>DAY 1</b><span id="clock">09:00</span>
-      <div class="stats"><i>업무력 <strong id="work">0</strong></i><i>체력 <strong id="stamina">5</strong></i></div>
+      <div class="stats"><i>업무력 <strong id="work">0</strong></i></div>
       <button id="mute" aria-label="배경 음악 켜기 또는 끄기">♪</button>
     </header>
     <button class="sound-prompt" id="sound-prompt" type="button">♪ 클릭해서 BGM 시작</button>
@@ -91,7 +91,6 @@
       <div class="status-head"><div><span>PLAYER STATUS</span><b>현재 스탯</b></div><small>선택 결과 실시간 반영</small></div>
       <div class="system-grid">
         <p><i>◆</i><span class="stat-label">업무력 <button class="stat-help" type="button" data-stat="work" aria-label="업무력 설명 보기" aria-controls="stat-help-popover" aria-expanded="false">?</button></span><b id="sys-work">0</b></p>
-        <p><i>♥</i><span class="stat-label">체력 <button class="stat-help" type="button" data-stat="stamina" aria-label="체력 설명 보기" aria-controls="stat-help-popover" aria-expanded="false">?</button></span><b id="sys-stamina">5</b></p>
         <p><i>♡</i><span class="stat-label">호감도 <button class="stat-help" type="button" data-stat="affection" aria-label="호감도 설명 보기" aria-controls="stat-help-popover" aria-expanded="false">?</button></span><b id="affection">0</b></p>
         <p><i>◇</i><span class="stat-label">신뢰도 <button class="stat-help" type="button" data-stat="trust" aria-label="신뢰도 설명 보기" aria-controls="stat-help-popover" aria-expanded="false">?</button></span><b id="trust">0</b></p>
       </div>
@@ -100,6 +99,22 @@
     <span id="unread" hidden></span>
   </aside>
   <div class="stat-help-popover" id="stat-help-popover" role="tooltip" hidden></div>
+
+  <section class="day-summary" id="day-summary" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="day-summary-title">
+    <div class="day-summary-card">
+      <header class="day-summary-head">
+        <div><small id="day-summary-kicker">DAY 1 · DAILY REPORT</small><h2 id="day-summary-title">오늘의 업무 정산</h2></div>
+        <span id="day-summary-grade">GOOD</span>
+      </header>
+      <div class="day-summary-columns">
+        <section class="day-summary-section"><h3>완료한 업무</h3><div class="day-summary-list" id="day-summary-work"></div></section>
+        <section class="day-summary-section"><h3>능력치 변화</h3><div class="day-summary-list" id="day-summary-stats"></div></section>
+        <section class="day-summary-section"><h3>오늘의 기록</h3><div class="day-summary-list" id="day-summary-records"></div></section>
+        <section class="day-summary-section day-summary-reactions"><h3>팀의 평가</h3><div id="day-summary-reactions"></div></section>
+      </div>
+      <button class="day-summary-exit" id="day-summary-exit" type="button">정산을 마치고 퇴근한다 <span>›</span></button>
+    </div>
+  </section>
 
   <section class="coffee-game" id="minigame" aria-label="탕비실 커피 제조 미니게임" aria-hidden="true">
     <div class="coffee-game-shell">
@@ -117,10 +132,10 @@
 
       <section class="coffee-screen coffee-order-screen" id="coffee-order-screen" hidden>
         <span class="coffee-badge">ORDER CHECK</span>
-        <p class="coffee-kicker">취향은 한 번만 알려줄 거야. 잘 기억해!</p>
-        <h2>오늘의 커피 주문</h2>
+        <p class="coffee-kicker">재료는 왼쪽부터 순서대로 넣어야 합니다</p>
+        <h2>오늘의 커피 레시피</h2>
         <div class="coffee-order-cards" id="coffee-order-cards"></div>
-        <p class="coffee-order-countdown">주문표가 접히기까지 <strong id="coffee-order-seconds">4</strong>초</p>
+        <p class="coffee-order-countdown">세 사람의 레시피를 외워주세요. <strong id="coffee-order-seconds">10</strong>초 후 시작합니다.</p>
         <button id="coffee-order-ready" class="coffee-primary" type="button">주문 기억했어요 <span>›</span></button>
       </section>
 
@@ -140,8 +155,10 @@
             <button id="coffee-finish-action" type="button" disabled>컵을 선택하세요</button>
           </section>
           <section class="coffee-ingredient-shelf" id="coffee-ingredients" aria-label="커피 재료"></section>
-          <button class="coffee-trash" id="coffee-trash" type="button"><span aria-hidden="true">↺</span><b>컵 비우기</b><small>잘못 만들었을 때</small></button>
-          <button class="coffee-tray" id="coffee-tray" type="button"><span aria-hidden="true">▰</span><b>전달 트레이</b><small>완성 컵을 놓으세요</small></button>
+          <div class="coffee-actions">
+            <button class="coffee-trash" id="coffee-trash" type="button"><span aria-hidden="true">↺</span><b>컵 비우기</b><small>잘못 만들었을 때</small></button>
+            <button class="coffee-tray" id="coffee-tray" type="button"><span aria-hidden="true">▰</span><b>완성된 커피 전달하기</b><small>완성 컵을 이곳에 놓으세요</small></button>
+          </div>
         </div>
         <footer class="coffee-play-footer">
           <p id="coffee-feedback" role="status" aria-live="polite">재료를 선택하거나 컵으로 끌어다 놓으세요.</p>
@@ -166,7 +183,8 @@
 </main>
 <audio id="bgm" loop preload="auto"></audio>
 <audio id="message-sfx" src="assets/audio/message-notification.wav" preload="auto"></audio>
-<script src="js/coffee-minigame.js?v=2"></script>
+<script src="js/ui-sfx.js?v=1"></script>
+<script src="js/coffee-minigame.js?v=5"></script>
 <script src="js/game.js?v=11"></script>
 </body>
 </html>
