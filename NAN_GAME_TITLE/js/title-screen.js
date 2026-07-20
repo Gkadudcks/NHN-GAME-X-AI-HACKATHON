@@ -136,6 +136,7 @@ function runActiveMenu() {
     return;
   }
   if (action === "new-game") {
+    GameProgress.startNewGame(window.localStorage);
     bgmManager.stop({ fadeOut: 220 });
     pageTurnSfx.currentTime = 0;
     pageTurnSfx.volume = settings.sfxMuted ? 0 : (settings.masterMuted ? 0 : settings.masterVolume / 100) * (settings.sfxVolume / 100);
@@ -159,7 +160,7 @@ function runActiveMenu() {
 }
 
 function getSaveSlots() {
-  return Array.from({ length: 5 }, (_, index) => {
+  const manualSlots = Array.from({ length: 5 }, (_, index) => {
     const slotId = index + 1;
     const rawData = localStorage.getItem(`nan-save-slot-${slotId}`);
     if (!rawData) return { slotId, empty: true };
@@ -170,6 +171,23 @@ function getSaveSlots() {
       return { slotId, empty: true };
     }
   });
+  const progress = GameProgress.load(window.localStorage);
+  if (!progress.savedAt) return manualSlots;
+  const day = progress.currentDay === 2 ? 2 : 1;
+  manualSlots[0] = {
+    slotId: 1,
+    empty: false,
+    day,
+    sceneTitle: day === 2 ? "이상한 익숙함" : "정직원 전환 과제",
+    savedAt: progress.savedAt,
+    resumeUrl: day === 2 ? "day2.html" : "game.html",
+    lastDialogue: {
+      speaker: "시스템",
+      text: day === 2 ? "DAY 2 진행 기록" : "DAY 1 진행 기록",
+    },
+    thumbnail: "assets/image/office-background.png",
+  };
+  return manualSlots;
 }
 
 function formatSavedAt(savedAt) {
@@ -234,6 +252,7 @@ function renderSaveSlots() {
       ${slot.savedAt === latestSavedAt ? '<span class="latest-badge">최근 플레이</span>' : ""}`;
     button.addEventListener("click", () => {
       closeSavePanel();
+      window.location.href = slot.resumeUrl || (Number(slot.day) === 2 ? "day2.html" : "game.html");
     });
     return button;
   }));
