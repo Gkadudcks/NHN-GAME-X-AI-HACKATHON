@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DAY 2 | NAN</title>
+  <link rel="stylesheet" href="css/game.css?v=8">
+  <link rel="stylesheet" href="css/day2.css?v=1">
+  <link rel="stylesheet" data-work-alert-style href="css/work-alert-minigame.css?v=1">
+</head>
+<body>
+<main class="game" id="game">
+  <section class="stage" id="stage">
+    <div class="shade"></div>
+    <div class="scene-placeholder" id="scene-placeholder" aria-hidden="true">
+      <div><small>VISUAL PLACEHOLDER</small><strong id="placeholder-title"></strong><p id="placeholder-detail"></p></div>
+    </div>
+    <div class="system-panel" id="system-panel" aria-hidden="true">
+      <small id="system-panel-title"></small>
+      <div id="system-panel-rows"></div>
+    </div>
+    <div class="character-placeholder" id="character-placeholder" aria-hidden="true">
+      <small>CHARACTER PLACEHOLDER</small><strong id="character-placeholder-name"></strong><p id="character-placeholder-detail"></p>
+    </div>
+    <header class="hud">
+      <a href="index.html">← TITLE</a><b>DAY 2</b><span id="clock">08:52</span>
+      <div class="stats"><i>업무력 <strong id="work">0</strong></i></div>
+      <button id="mute" aria-label="배경 음악 켜기 또는 끄기">♪</button>
+    </header>
+    <button class="sound-prompt" id="sound-prompt" type="button">♪ 클릭해서 BGM 시작</button>
+    <div class="character-layer" id="character-layer" aria-label="등장인물"></div>
+    <div class="scene-label" id="scene-label">게임사업실 · 오전</div>
+    <div class="toast" id="toast"></div>
+    <aside class="choice-result" id="choice-result" aria-live="polite" aria-hidden="true">
+      <div class="choice-result-head"><span>CHOICE RESULT</span><b id="choice-result-title">선택이 반영되었습니다</b></div>
+      <div class="choice-result-list" id="choice-result-list"></div>
+    </aside>
+
+    <section class="dialogue-card" id="dialogue-card" aria-live="polite">
+      <div class="speaker-row"><b id="speaker"></b><span>STORY</span></div>
+      <p id="dialogue"></p>
+      <button class="next" id="next">다음 ›</button>
+    </section>
+    <div class="stage-choices" id="stage-choices" aria-live="polite"></div>
+  </section>
+
+  <aside class="messenger" id="messenger">
+    <header class="messenger-appbar">
+      <div class="app-mark">N</div>
+      <div><b>NAN WORKS</b><small>사내 메신저</small></div>
+      <span class="online"><i></i> ONLINE</span>
+    </header>
+    <nav class="tabs messenger-tabs" aria-label="정보 패널">
+      <button class="active" type="button" data-tab="messages-view">메신저</button>
+      <button type="button" data-tab="clues-view">단서 <em id="clue-new" hidden>NEW</em></button>
+    </nav>
+    <div class="messenger-main">
+      <div class="view side-view active" id="messages-view">
+        <section class="chat-list" id="chat-list">
+          <header class="chat-list-head"><div><small>MESSAGES</small><h1>채팅</h1></div><button type="button" aria-label="새 채팅">＋</button></header>
+          <div class="chat-list-body">
+            <div class="chat-list-empty" id="chat-list-empty"><span>✦</span><b>아직 도착한 메시지가 없습니다</b><p>새 메시지가 도착하면 채팅방이 여기에 표시됩니다.</p></div>
+            <button class="chat-item" id="chat-pt" type="button" data-room="pt" hidden>
+              <span class="chat-avatar group"><i>박</i><i>서</i></span>
+              <span class="chat-copy"><b>PT 전환과제 TF</b><small></small></span>
+              <span class="chat-meta"><time></time><em hidden>1</em></span>
+            </button>
+            <button class="chat-item" id="chat-harin" type="button" data-room="harin" hidden>
+              <span class="chat-avatar harin">서</span>
+              <span class="chat-copy"><b>서하린 사수</b><small></small></span>
+              <span class="chat-meta"><time></time><em hidden>1</em></span>
+            </button>
+            <button class="chat-item" id="chat-minjae" type="button" data-room="minjae" hidden>
+              <span class="chat-avatar minjae">강</span>
+              <span class="chat-copy"><b>강민재 동기</b><small></small></span>
+              <span class="chat-meta"><time></time><em hidden>1</em></span>
+            </button>
+            <button class="chat-item" id="chat-sea" type="button" data-room="sea" hidden>
+              <span class="chat-avatar sea">윤</span>
+              <span class="chat-copy"><b>윤세아</b><small></small></span>
+              <span class="chat-meta"><time></time><em hidden>1</em></span>
+            </button>
+          </div>
+        </section>
+        <section class="chat-room" id="chat-room" hidden>
+          <section class="channel-head">
+            <button class="chat-back" id="chat-back" type="button" aria-label="채팅 목록으로 돌아가기">‹</button>
+            <div><small id="room-type">DIRECT MESSAGE</small><h1 id="room-title"></h1></div>
+            <div class="member-stack" id="room-members"></div>
+          </section>
+          <div class="date-divider"><span>DAY 2 · TUESDAY</span></div>
+          <div class="messages" id="messages"></div>
+        </section>
+      </div>
+
+      <section class="view side-view clue-view" id="clues-view">
+        <header class="clue-head"><div><small>INVESTIGATION NOTES</small><h1>수집한 단서</h1></div><strong id="clue-count">0</strong></header>
+        <div class="clue-list" id="clue-list"></div>
+      </section>
+    </div>
+
+    <section class="status-panel" aria-label="현재 스탯">
+      <div class="status-head"><div><span>PLAYER STATUS</span><b>현재 스탯</b></div><small>DAY 1에서 이어짐</small></div>
+      <div class="system-grid">
+        <p><i>◆</i><span class="stat-label">업무력 <button class="stat-help" type="button" data-stat="work" aria-label="업무력 설명 보기" aria-controls="stat-help-popover" aria-expanded="false">?</button></span><b id="sys-work">0</b></p>
+        <p><i>♡</i><span class="stat-label">호감도 <button class="stat-help" type="button" data-stat="affection" aria-label="호감도 설명 보기" aria-controls="stat-help-popover" aria-expanded="false">?</button></span><b id="affection">0</b></p>
+        <p><i>◇</i><span class="stat-label">신뢰도 <button class="stat-help" type="button" data-stat="trust" aria-label="신뢰도 설명 보기" aria-controls="stat-help-popover" aria-expanded="false">?</button></span><b id="trust">0</b></p>
+      </div>
+      <div class="side-actions"><button id="save">진행 저장</button><button id="restart">DAY 2 재시작</button></div>
+    </section>
+  </aside>
+  <div class="stat-help-popover" id="stat-help-popover" role="tooltip" hidden></div>
+
+  <section class="day-summary" id="day-summary" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="day-summary-title">
+    <div class="day-summary-card">
+      <header class="day-summary-head">
+        <div><small id="day-summary-kicker">DAY 2 · DAILY REPORT</small><h2 id="day-summary-title">오늘의 업무 정산</h2></div>
+        <span id="day-summary-grade">GOOD</span>
+      </header>
+      <div class="day-summary-columns">
+        <section class="day-summary-section"><h3>완료한 업무</h3><div class="day-summary-list" id="day-summary-work"></div></section>
+        <section class="day-summary-section"><h3>능력치 변화</h3><div class="day-summary-list" id="day-summary-stats"></div></section>
+        <section class="day-summary-section"><h3>오늘의 기록</h3><div class="day-summary-list" id="day-summary-records"></div></section>
+        <section class="day-summary-section day-summary-reactions"><h3>팀의 평가</h3><div id="day-summary-reactions"></div></section>
+      </div>
+      <button class="day-summary-exit" id="day-summary-exit" type="button">정산을 마치고 퇴근 준비를 한다 <span>›</span></button>
+    </div>
+  </section>
+</main>
+<audio id="bgm" loop preload="auto"></audio>
+<audio id="message-sfx" src="assets/audio/message-notification.wav" preload="auto"></audio>
+<script src="js/ui-sfx.js?v=1"></script>
+<script src="js/progress-store.js?v=1"></script>
+<script src="js/day2-story.js?v=1"></script>
+<script src="js/work-alert-minigame.js?v=1"></script>
+<script src="js/day2.js?v=1"></script>
+</body>
+</html>
