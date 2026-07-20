@@ -76,7 +76,7 @@ function getConfiguredBgmVolume() {
 }
 
 async function startTitleBgm() {
-  await bgmManager.resume();
+  await bgmManager.play("title", { fadeIn: 300 });
 }
 
 function populateSettingsForm() {

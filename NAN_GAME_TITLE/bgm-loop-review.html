@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BGM 루프 검수</title>
+  <style>
+    :root { color-scheme: dark; font-family: Pretendard, "Noto Sans KR", sans-serif; background:#111722; color:#edf2f7; }
+    * { box-sizing:border-box; }
+    body { min-height:100vh; margin:0; display:grid; place-items:center; padding:24px; background:radial-gradient(circle at top,#263348,#111722 55%); }
+    main { width:min(680px,100%); padding:32px; border:1px solid #3b4b64; border-radius:20px; background:#17202e; box-shadow:0 24px 70px #0008; }
+    small { color:#92a7c2; letter-spacing:.12em; }
+    h1 { margin:8px 0 12px; font-size:clamp(26px,5vw,40px); }
+    p { color:#b9c6d7; line-height:1.7; }
+    label { display:grid; gap:8px; margin:24px 0; color:#dbe5f2; font-weight:700; }
+    select, button { min-height:48px; border-radius:10px; border:1px solid #4c607d; color:inherit; background:#222f43; font:inherit; }
+    select { padding:0 14px; }
+    .actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    button { padding:10px 14px; cursor:pointer; font-weight:800; }
+    button:hover { background:#2e415c; }
+    button.primary { border-color:#75a8ff; background:#285caa; }
+    button:disabled { cursor:wait; opacity:.55; }
+    .status { margin-top:20px; padding:16px; border-radius:12px; background:#101722; color:#dce8f8; }
+    .status strong { color:#82b5ff; }
+    .phase { margin:14px 0 4px; padding:18px; border:1px solid #48617f; border-radius:12px; background:#19263a; color:#d9e8fb; font-size:clamp(20px,5vw,30px); font-weight:900; text-align:center; font-variant-numeric:tabular-nums; }
+    .phase.flash { animation:loop-flash .9s ease-out; }
+    .meter { height:7px; margin-top:12px; overflow:hidden; border-radius:10px; background:#34445b; }
+    .meter i { display:block; width:0; height:100%; background:#78aaff; transition:width .1s linear; }
+    .hint { margin-bottom:0; font-size:14px; }
+    @keyframes loop-flash { 0%{background:#cce2ff;color:#10223b;transform:scale(1.025)} 100%{background:#19263a;color:#d9e8fb;transform:scale(1)} }
+    @media (max-width:520px) { main{padding:22px}.actions{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <main>
+    <small>INTERNAL AUDIO REVIEW</small>
+    <h1>BGM 루프 검수</h1>
+    <p>게임을 진행하지 않고 반복 경계만 바로 확인합니다. 헤드폰으로 박자 튐, 클릭음, 갑작스러운 악기 변화를 들어보세요.</p>
+
+    <label>BGM 선택
+      <select id="track"></select>
+    </label>
+
+    <div class="actions">
+      <button class="primary" id="seam" type="button">경계 5초 전부터 듣기</button>
+      <button id="intro" type="button">도입부부터 듣기</button>
+      <button id="loop" type="button">루프 시작부터 듣기</button>
+      <button id="stop" type="button">정지</button>
+    </div>
+
+    <div class="status" role="status" aria-live="polite">
+      <strong id="status-title">곡을 선택한 뒤 경계 테스트를 눌러주세요.</strong>
+      <div id="status-detail">경계 테스트는 루프 끝 5초 전부터 시작해 반복 시작 후 8초까지 재생합니다.</div>
+      <div class="phase" id="phase">재생 대기 중</div>
+      <div class="meter" aria-hidden="true"><i id="meter"></i></div>
+    </div>
+    <p class="hint">같은 버튼을 여러 번 눌러 비교해도 됩니다. 다른 곡을 선택하면 현재 재생은 자동으로 멈춥니다.</p>
+  </main>
+  <script src="js/bgm-manager.js?v=2"></script>
+  <script src="js/bgm-loop-review.js?v=2"></script>
+</body>
+</html>

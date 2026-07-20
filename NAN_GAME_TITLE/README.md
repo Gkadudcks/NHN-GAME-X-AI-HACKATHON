@@ -151,7 +151,9 @@ NAN_GAME_TITLE/
 │  ├─ backgrounds/               # 게임 배경
 │  ├─ characters/                # 캐릭터 스탠딩
 │  ├─ CG/                        # 이벤트 CG
-│  ├─ audio/                     # BGM 및 효과음
+│  ├─ audio/                     # 효과음과 BGM 자산
+│  │  ├─ original/              # 편집 전 BGM 원본
+│  │  └─ looped/                # 게임에서 사용하는 루프 편집본
 │  └─ image/                     # 타이틀 이미지
 └─ README.md                     # 프로젝트 안내
 ```
