@@ -58,3 +58,14 @@ test('타이틀은 도입부 이후 지점부터 반복 재생한다', async () 
   assert.equal(manager.sourceNode.loopStart, 11.75);
   assert.equal(manager.sourceNode.loopEnd, 31.75);
 });
+
+test('타이틀 화면 사운드 구성은 현재 자동재생 방식으로 고정한다', () => {
+  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const titleScript = fs.readFileSync(path.join(root, 'js', 'title-screen.js'), 'utf8');
+
+  assert.match(html, /<audio id="title-bgm" src="assets\/audio\/looped\/title\.ogg" preload="auto" autoplay loop playsinline><\/audio>/);
+  assert.match(titleScript, /new GameBgmManager\(titleBgm, getConfiguredBgmVolume, \{ preferHtmlAudio: true \}\)/);
+  assert.match(titleScript, /startTitleBgm\(\);/);
+  assert.match(titleScript, /document\.addEventListener\("pointerdown", unlockAndStartTitleBgm, \{ once: true \}\)/);
+  assert.match(source, /if \(this\.audio && !this\.preferHtmlAudio\)/);
+});

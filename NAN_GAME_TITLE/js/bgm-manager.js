@@ -13,9 +13,10 @@
   });
 
   class BGMManager {
-    constructor(audio, getVolume) {
+    constructor(audio, getVolume, options = {}) {
       this.audio = audio;
       this.getVolume = getVolume;
+      this.preferHtmlAudio = options.preferHtmlAudio === true;
       this.context = null;
       this.gain = null;
       this.sourceNode = null;
@@ -27,7 +28,7 @@
       this.paused = true;
 
       // 기존 audio 요소는 Web Audio 미지원 시의 폴백으로만 사용합니다.
-      if (this.audio) {
+      if (this.audio && !this.preferHtmlAudio) {
         this.audio.pause();
         this.audio.removeAttribute("src");
         this.audio.loop = false;
@@ -36,6 +37,7 @@
     }
 
     ensureContext() {
+      if (this.preferHtmlAudio) return false;
       if (this.context) return true;
       const AudioContext = global.AudioContext || global.webkitAudioContext;
       if (!AudioContext) return false;
@@ -75,6 +77,7 @@
     }
 
     async resume() {
+      if (this.preferHtmlAudio) return this.resumeFallback();
       if (!this.ensureContext()) return this.resumeFallback();
       try {
         await this.context.resume();
@@ -148,6 +151,8 @@
         this.setVolume();
         return this.resume();
       }
+
+      if (this.preferHtmlAudio) return this.playFallback(scene, track, options);
 
       const transitionId = ++this.transitionId;
       if (this.animationFrame) cancelAnimationFrame(this.animationFrame);

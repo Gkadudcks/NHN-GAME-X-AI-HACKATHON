@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="정직원 전환 PT를 준비하는 오피스 로맨스 미스터리 게임" />
   <title>최종본이 바뀌었습니다 | NAN</title>
-  <link rel="stylesheet" href="css/title-screen.css?v=7" />
+  <link rel="stylesheet" href="css/title-screen.css?v=9" />
 </head>
 <body>
   <main class="title-screen">
@@ -70,6 +70,9 @@
     <footer class="controls">
       <span>방향키 선택</span><span>ENTER 확인</span><span class="copyright">© NAN TEAM</span>
     </footer>
+    <button class="title-sound-prompt" id="title-sound-prompt" type="button" aria-label="타이틀 배경 음악 시작">
+      <span aria-hidden="true">♪</span> 사운드 시작
+    </button>
 
     <section class="start-overlay" aria-hidden="true">
       <p>DAY 1</p><strong>정직원 전환 과제</strong>
@@ -175,11 +178,11 @@
     </form>
   </dialog>
 
-  <audio id="title-bgm" preload="none" playsinline></audio>
+  <audio id="title-bgm" src="assets/audio/looped/title.ogg" preload="auto" autoplay loop playsinline></audio>
   <script src="js/settings-store.js?v=3"></script>
-  <script src="js/bgm-manager.js?v=2"></script>
+  <script src="js/bgm-manager.js?v=4"></script>
   <script src="js/ui-sfx.js?v=1"></script>
   <script src="js/progress-store.js?v=1"></script>
-  <script src="js/title-screen.js?v=8"></script>
+  <script src="js/title-screen.js?v=11"></script>
 </body>
 </html>
