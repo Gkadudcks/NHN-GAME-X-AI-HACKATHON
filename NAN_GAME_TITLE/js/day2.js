@@ -1,18 +1,11 @@
 "use strict";
 
 const ASSET = "assets/";
-const TRACKS = {
-  daily: `${ASSET}audio/2. 일상.mp3`,
-  minigame: `${ASSET}audio/MiniGame-theme.mp3`,
-  harin: `${ASSET}audio/3. 서하린과의 일상.mp3`,
-  overtime: `${ASSET}audio/4. 야근.mp3`,
-  mystery: `${ASSET}audio/5. 추리.mp3`,
-};
 const CHARACTER_PROFILES = {
   harin: { name: "서하린", heightCm: 165, image: "harin-standing.png" },
   minjae: { name: "강민재", heightCm: 182, image: "minjae-standing.png" },
   boss: { name: "박태식", heightCm: 176, image: "boss-standing.png" },
-  sea: { name: "윤세아", heightCm: 161, image: "sea-standing.png" },
+  sea: { name: "윤세아", heightCm: 161, assetId: "character.sea.neutral_standing.gentle_smile" },
   nanabot: { name: "나나봇", heightCm: 110, image: "nanabot-standing.png", scale: 0.52, defaultPosition: "center" },
 };
 const CHARACTER_POSITIONS = { farLeft: 18, left: 31, center: 50, right: 69, farRight: 82 };
@@ -69,8 +62,6 @@ const state = {
 };
 
 let currentRoom = "";
-let currentTrack = "";
-let fadeToken = 0;
 let choiceResultTimer;
 const audio = $("#bgm");
 
@@ -111,48 +102,26 @@ function getSfxVolume() {
   return Math.min(1, Math.max(0, ((settings.masterVolume ?? 80) / 100) * ((settings.sfxVolume ?? 80) / 100)));
 }
 
-function fade(to, milliseconds, token) {
-  const from = audio.volume;
-  const start = performance.now();
-  return new Promise((resolve) => {
-    function step(now) {
-      if (token !== fadeToken) return resolve();
-      const progressRatio = Math.min(1, (now - start) / milliseconds);
-      audio.volume = from + (to - from) * progressRatio;
-      if (progressRatio < 1) requestAnimationFrame(step);
-      else resolve();
-    }
-    requestAnimationFrame(step);
-  });
+const bgmManager = new GameBgmManager(audio, getBgmVolume);
+window.BGMManager = bgmManager;
+bgmManager.preload(["daily", "minigame", "mystery", "overtime", "happyEnding", "middleEnding", "badEnding"]);
+
+function syncBgmUi(played) {
+  refs.soundPrompt.classList.toggle("hidden", played);
+  $("#mute").classList.toggle("muted", !played || getBgmVolume() === 0);
 }
 
 async function unlockAudio() {
-  audio.volume = getBgmVolume();
-  try {
-    await audio.play();
-    refs.soundPrompt.classList.add("hidden");
-    $("#mute").classList.remove("muted");
-    return true;
-  } catch (_error) {
-    refs.soundPrompt.classList.remove("hidden");
-    return false;
-  }
+  const played = await bgmManager.resume();
+  syncBgmUi(played);
+  return played;
 }
 
 async function playBgm(name) {
-  if (!name || !TRACKS[name]) return;
-  if (name === currentTrack) {
-    await unlockAudio();
-    return;
-  }
-  const token = ++fadeToken;
-  if (currentTrack && !audio.paused) await fade(0, 500, token);
-  if (token !== fadeToken) return;
-  audio.src = TRACKS[name];
-  audio.load();
-  audio.volume = getBgmVolume();
-  currentTrack = name;
-  if (await unlockAudio()) await fade(getBgmVolume(), 420, token);
+  if (!name) return false;
+  const played = await bgmManager.play(name);
+  syncBgmUi(played);
+  return played;
 }
 
 function playMessageSfx() {
@@ -236,14 +205,12 @@ function renderClues() {
     list.innerHTML = '<div class="clue-empty"><span>◇</span><strong>아직 기록된 단서가 없습니다</strong><p>대화와 자료를 조사하면 중요한 정보가 여기에 정리됩니다.</p></div>';
     return;
   }
-  list.replaceChildren(...state.clues.slice().reverse().map((text, index) => {
-    const card = document.createElement("article");
-    card.className = "clue-card";
-    const label = document.createElement("small");
-    label.textContent = `CLUE ${String(state.clues.length - index).padStart(2, "0")}`;
-    card.append(label, document.createTextNode(text));
-    return card;
-  }));
+  const day1Count = progress.day2StartSnapshot?.clues?.length || 0;
+  ClueMindmap.render(list, {
+    clues: state.clues,
+    currentDay: 2,
+    dayForIndex: (index) => index < day1Count ? 1 : 2,
+  });
 }
 
 function setTab(name) {
@@ -305,10 +272,13 @@ function renderMessages() {
     const latest = messages.at(-1);
     button.querySelector(".chat-copy small").textContent = `${latest.sender}: ${latest.text}`;
     button.querySelector("time").textContent = latest.time;
-    const unread = state.seenNotifications[`unread:${room}`] === true && currentRoom !== room;
+    const count = unreadCount(room);
+    const unread = count > 0 && currentRoom !== room;
+    button.querySelector("em").textContent = String(count);
     button.querySelector("em").hidden = !unread;
     button.classList.toggle("unread-pulse", unread);
   });
+  renderMessageTabAlert();
 
   const box = $("#messages");
   if (!currentRoom) return;
@@ -329,8 +299,9 @@ function openChat(room) {
   $("#room-members").innerHTML = info.members.map((member) => `<span>${escapeHtml(member)}</span>`).join("");
   $("#chat-list").hidden = true;
   $("#chat-room").hidden = false;
-  state.seenNotifications[`unread:${room}`] = false;
+  clearUnread(room);
   renderMessages();
+  renderMessageTabAlert();
   saveProgress();
 }
 
@@ -346,14 +317,49 @@ function notificationRoom(id) {
   return message?.room || null;
 }
 
+function unreadCount(room) {
+  const count = Number(state.seenNotifications[`unread:count:${room}`]);
+  if (Number.isFinite(count) && count > 0) return Math.floor(count);
+  return state.seenNotifications[`unread:${room}`] === true ? 1 : 0;
+}
+
+function markUnread(room, count = 1) {
+  if (!room || count < 1) return;
+  const nextCount = unreadCount(room) + count;
+  state.seenNotifications[`unread:${room}`] = true;
+  state.seenNotifications[`unread:count:${room}`] = nextCount;
+}
+
+function clearUnread(room) {
+  state.seenNotifications[`unread:${room}`] = false;
+  state.seenNotifications[`unread:count:${room}`] = 0;
+}
+
+function renderMessageTabAlert({ pulse = false } = {}) {
+  const button = document.querySelector('[data-tab="messages-view"]');
+  const badge = $("#message-new");
+  const count = Object.keys(Day2Story.ROOMS).reduce((sum, room) => sum + unreadCount(room), 0);
+  const hasUnread = count > 0;
+  badge.textContent = String(count);
+  badge.hidden = !hasUnread;
+  button.classList.toggle("has-unread", hasUnread);
+  if (pulse && hasUnread && $("#clues-view").classList.contains("active")) {
+    button.classList.remove("message-tab-alert");
+    void button.offsetWidth;
+    button.classList.add("message-tab-alert");
+    window.setTimeout(() => button.classList.remove("message-tab-alert"), 1900);
+  }
+}
+
 function notifyMessage(id) {
   if (!id || state.seenNotifications[`notified:${id}`]) return;
   state.seenNotifications[`notified:${id}`] = true;
   const room = notificationRoom(id);
-  if (room) state.seenNotifications[`unread:${room}`] = true;
+  if (room) markUnread(room);
   refs.messenger.classList.remove("message-arrived");
   void refs.messenger.offsetWidth;
   refs.messenger.classList.add("message-arrived");
+  renderMessageTabAlert({ pulse: true });
   playMessageSfx();
   if (room) toast(`${Day2Story.ROOMS[room].title.replace(/^# /, "")}에 새 메시지가 도착했습니다.`);
   window.setTimeout(() => refs.messenger.classList.remove("message-arrived"), 1900);
@@ -413,7 +419,7 @@ function renderCharacters(scene) {
     const image = document.createElement("img");
     const position = entry.position || profile.defaultPosition || (characters.length === 1 ? "right" : characters.length === 2 ? (index === 0 ? "left" : "right") : index === 0 ? "left" : index === 1 ? "center" : "right");
     image.className = `character character-${entry.id} visible ${entry.id === active ? "speaking" : "listening"}`;
-    image.src = `${ASSET}characters/${profile.image}`;
+    image.src = profile.assetId ? ArtAssets.resolve(profile.assetId) : `${ASSET}characters/${profile.image}`;
     image.alt = profile.name;
     image.style.setProperty("--position-x", CHARACTER_POSITIONS[position] ?? CHARACTER_POSITIONS.right);
     image.style.setProperty("--sprite-height", `${84 * (profile.heightCm / 182) * (profile.scale || 1)}cqh`);
@@ -456,6 +462,7 @@ function renderVisuals(scene) {
 
   refs.systemPanel.classList.toggle("show", Boolean(scene.systemPanel));
   refs.systemPanel.setAttribute("aria-hidden", String(!scene.systemPanel));
+  refs.stage.classList.toggle("system-panel-active", Boolean(scene.systemPanel));
   if (scene.systemPanel) {
     refs.systemPanelTitle.textContent = scene.systemPanel.title;
     refs.systemPanelRows.innerHTML = scene.systemPanel.rows.map((row) => `<p>${escapeHtml(row)}</p>`).join("");
@@ -514,6 +521,7 @@ function finishWorkAlert(result) {
   state.work += result.workDelta;
   if (result.grade === "perfect") state.trust += 1;
   if (result.grade === "perfect" && result.harinHandled) state.affection += 1;
+  result.results.slice(0, 8).forEach((entry) => markUnread(roomForSender(entry.sender)));
   state.index = nextVisibleIndex(state.index + 1);
   syncStats();
   saveProgress();
@@ -635,7 +643,6 @@ function next() {
     return;
   }
   state.index = nextVisibleIndex(state.index + 1);
-  setTab("messages-view");
   saveProgress();
   render();
 }
@@ -652,9 +659,9 @@ $("#restart").onclick = () => {
   location.href = "day2.html";
 };
 $("#mute").onclick = async () => {
-  if (audio.paused) await unlockAudio();
+  if (bgmManager.isPaused()) await unlockAudio();
   else {
-    audio.pause();
+    await bgmManager.pause();
     $("#mute").classList.add("muted");
     refs.soundPrompt.classList.remove("hidden");
   }

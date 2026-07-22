@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>DAY 1 | NAN</title>
-<link rel="stylesheet" href="css/game.css?v=8">
+<link rel="stylesheet" href="css/game.css?v=11">
 <link rel="stylesheet" href="css/coffee-minigame.css?v=3">
 </head>
 <body>
@@ -44,7 +44,7 @@
       <span class="online"><i></i> ONLINE</span>
     </header>
     <nav class="tabs messenger-tabs" aria-label="정보 패널">
-      <button class="active" type="button" data-tab="messages-view">메신저</button>
+      <button class="active" type="button" data-tab="messages-view">메신저 <em id="message-new" hidden>0</em></button>
       <button type="button" data-tab="clues-view">단서 <em id="clue-new" hidden>NEW</em></button>
     </nav>
     <div class="messenger-main">
@@ -61,12 +61,12 @@
         <button class="chat-item" id="chat-harin" type="button" data-room="harin" hidden>
           <span class="chat-avatar harin">서</span>
           <span class="chat-copy"><b>서하린 사수</b><small>아직 대화가 없습니다</small></span>
-          <span class="chat-meta"><time></time></span>
+          <span class="chat-meta"><time></time><em hidden>0</em></span>
         </button>
         <button class="chat-item" id="chat-minjae" type="button" data-room="minjae" hidden>
           <span class="chat-avatar minjae">강</span>
           <span class="chat-copy"><b>강민재 동기</b><small>아직 대화가 없습니다</small></span>
-          <span class="chat-meta"><time></time></span>
+          <span class="chat-meta"><time></time><em hidden>0</em></span>
         </button>
       </div>
     </section>
@@ -82,7 +82,7 @@
     </div>
 
     <section class="view side-view clue-view" id="clues-view">
-      <header class="clue-head"><div><small>INVESTIGATION NOTES</small><h1>수집한 단서</h1></div><strong id="clue-count">0</strong></header>
+      <header class="clue-head"><div><small>INVESTIGATION MIND MAP</small><h1>사건 단서 맵</h1></div><strong id="clue-count">0</strong></header>
       <div class="clue-list" id="clue-list"></div>
     </section>
     </div>
@@ -181,11 +181,13 @@
     <div class="coffee-drag-ghost" id="coffee-drag-ghost" hidden></div>
   </section>
 </main>
-<audio id="bgm" loop preload="auto"></audio>
+<audio id="bgm" preload="auto" playsinline></audio>
 <audio id="message-sfx" src="assets/audio/message-notification.wav" preload="auto"></audio>
-<script src="js/ui-sfx.js?v=1"></script>
+<script src="js/ui-sfx.js?v=3"></script>
 <script src="js/progress-store.js?v=1"></script>
+<script src="js/clue-mindmap.js?v=7"></script>
+<script src="js/bgm-manager.js?v=3"></script>
 <script src="js/coffee-minigame.js?v=5"></script>
-<script src="js/game.js?v=12"></script>
+<script src="js/game.js?v=13"></script>
 </body>
 </html>

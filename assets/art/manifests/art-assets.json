@@ -74,6 +74,16 @@
         "concerned",
         "tired"
       ]
+    },
+    "sea": {
+      "spec": "assets/art/characters/sea/CHARACTER_SPEC.md",
+      "master_reference": "assets/art/characters/sea/references/sea_master_reference.png",
+      "allowed_poses": [
+        "neutral_standing"
+      ],
+      "allowed_expressions": [
+        "gentle_smile"
+      ]
     }
   },
   "assets": [
@@ -113,6 +123,26 @@
           "sha256": null,
           "reviewed_by": null,
           "reviewed_at": null
+        }
+      ]
+    },
+    {
+      "id": "character.sea.neutral_standing.gentle_smile",
+      "kind": "character",
+      "profile": "character_sprite",
+      "character_id": "sea",
+      "pose": "neutral_standing",
+      "expression": "gentle_smile",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/characters/sea/approved/sea_neutral_standing_gentle_smile_v001.png",
+          "generation_log_id": "sea-neutral-standing-gentle-smile-v001-local-matte",
+          "sha256": "b621f5c1e5c6d259e7cdac31f1061b4e323ea44d4d02eb29c0da82c85f4175f0",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-23T00:53:31.2290107+09:00"
         }
       ]
     }

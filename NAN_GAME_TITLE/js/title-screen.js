@@ -20,6 +20,7 @@ let lastFocusedElement = null;
 let settings = GameSettings.load(window.localStorage);
 const bgmManager = new GameBgmManager(titleBgm, getConfiguredBgmVolume);
 window.BGMManager = bgmManager;
+bgmManager.preload(["title"]);
 
 function setActiveMenu(index) {
   activeIndex = (index + menuButtons.length) % menuButtons.length;
@@ -76,7 +77,7 @@ function getConfiguredBgmVolume() {
 }
 
 async function startTitleBgm() {
-  await bgmManager.resume();
+  await bgmManager.play("title", { fadeOut: 0, fadeIn: 250 });
 }
 
 function populateSettingsForm() {
