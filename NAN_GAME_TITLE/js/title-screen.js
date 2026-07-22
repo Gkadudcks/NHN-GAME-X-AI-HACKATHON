@@ -13,14 +13,17 @@ const settingsDialog = document.querySelector("#settings-dialog");
 const settingsForm = document.querySelector("#settings-form");
 const settingsStatus = document.querySelector("#settings-status");
 const titleBgm = document.querySelector("#title-bgm");
+const titleSoundPrompt = document.querySelector("#title-sound-prompt");
 const pageTurnSfx = new Audio("assets/audio/page-turn.wav");
 pageTurnSfx.preload = "auto";
 let activeIndex = 0;
 let lastFocusedElement = null;
 let settings = GameSettings.load(window.localStorage);
-const bgmManager = new GameBgmManager(titleBgm, getConfiguredBgmVolume);
+// 타이틀은 첫 사용자 입력에서 즉시 play()가 호출되도록 기본 audio 요소를 사용합니다.
+// Web Audio의 비동기 디코딩은 브라우저의 자동 재생 허용 시점을 놓칠 수 있습니다.
+const bgmManager = new GameBgmManager(titleBgm, getConfiguredBgmVolume, { preferHtmlAudio: true });
 window.BGMManager = bgmManager;
-bgmManager.preload(["title"]);
+let titleBgmPromise = null;
 
 function setActiveMenu(index) {
   activeIndex = (index + menuButtons.length) % menuButtons.length;
@@ -77,7 +80,22 @@ function getConfiguredBgmVolume() {
 }
 
 async function startTitleBgm() {
-  await bgmManager.play("title", { fadeOut: 0, fadeIn: 250 });
+  if (!titleBgmPromise) {
+    titleBgmPromise = bgmManager.play("title", { fadeIn: 300 }).finally(() => {
+      if (bgmManager.currentScene !== "title") titleBgmPromise = null;
+    });
+  }
+  const played = await titleBgmPromise;
+  titleSoundPrompt.classList.toggle("hidden", played || getConfiguredBgmVolume() === 0);
+  return played;
+}
+
+async function unlockAndStartTitleBgm() {
+  // 사용자 입력이 유효한 바로 그 순간 AudioContext를 먼저 해제합니다.
+  // 곡 디코딩을 기다린 뒤 resume하면 브라우저의 자동 재생 허용 시점을 놓칠 수 있습니다.
+  const resumed = await bgmManager.resume();
+  const played = resumed || await startTitleBgm();
+  titleSoundPrompt.classList.toggle("hidden", played || getConfiguredBgmVolume() === 0);
 }
 
 function populateSettingsForm() {
@@ -172,22 +190,6 @@ function getSaveSlots() {
       return { slotId, empty: true };
     }
   });
-  const progress = GameProgress.load(window.localStorage);
-  if (!progress.savedAt) return manualSlots;
-  const day = progress.currentDay === 2 ? 2 : 1;
-  manualSlots[0] = {
-    slotId: 1,
-    empty: false,
-    day,
-    sceneTitle: day === 2 ? "이상한 익숙함" : "정직원 전환 과제",
-    savedAt: progress.savedAt,
-    resumeUrl: day === 2 ? "day2.html" : "game.html",
-    lastDialogue: {
-      speaker: "시스템",
-      text: day === 2 ? "DAY 2 진행 기록" : "DAY 1 진행 기록",
-    },
-    thumbnail: "assets/image/office-background.png",
-  };
   return manualSlots;
 }
 
@@ -252,6 +254,9 @@ function renderSaveSlots() {
       </span>
       ${slot.savedAt === latestSavedAt ? '<span class="latest-badge">최근 플레이</span>' : ""}`;
     button.addEventListener("click", () => {
+      if (slot.progress) localStorage.setItem(GameProgress.STORAGE_KEY, JSON.stringify(slot.progress));
+      if (slot.day1Save) localStorage.setItem(GameProgress.LEGACY_DAY1_KEY, JSON.stringify(slot.day1Save));
+      else localStorage.removeItem(GameProgress.LEGACY_DAY1_KEY);
       closeSavePanel();
       window.location.href = slot.resumeUrl || (Number(slot.day) === 2 ? "day2.html" : "game.html");
     });
@@ -287,12 +292,14 @@ function openCgViewer(entry) {
   cgViewerTitle.textContent = entry.title;
   cgViewer.classList.add("open");
   cgViewer.setAttribute("aria-hidden", "false");
+  document.documentElement.classList.add("cg-viewer-active");
   document.querySelector(".cg-viewer-close").focus();
 }
 
 function closeCgViewer() {
   cgViewer.classList.remove("open");
   cgViewer.setAttribute("aria-hidden", "true");
+  document.documentElement.classList.remove("cg-viewer-active");
   recordsGrid.querySelector("button:not(:disabled)")?.focus();
 }
 
@@ -408,5 +415,6 @@ cgViewer.addEventListener("click", (event) => {
 
 applySettings();
 startTitleBgm();
-document.addEventListener("pointerdown", startTitleBgm, { once: true });
-document.addEventListener("keydown", startTitleBgm, { once: true });
+titleSoundPrompt.addEventListener("click", unlockAndStartTitleBgm);
+document.addEventListener("pointerdown", unlockAndStartTitleBgm, { once: true });
+document.addEventListener("keydown", unlockAndStartTitleBgm, { once: true });

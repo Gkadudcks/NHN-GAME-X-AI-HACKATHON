@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>DAY 1 | NAN</title>
-<link rel="stylesheet" href="css/game.css?v=11">
+<link rel="stylesheet" href="css/game.css?v=13">
 <link rel="stylesheet" href="css/coffee-minigame.css?v=3">
 </head>
 <body>
@@ -61,12 +61,12 @@
         <button class="chat-item" id="chat-harin" type="button" data-room="harin" hidden>
           <span class="chat-avatar harin">서</span>
           <span class="chat-copy"><b>서하린 사수</b><small>아직 대화가 없습니다</small></span>
-          <span class="chat-meta"><time></time><em hidden>0</em></span>
+          <span class="chat-meta"><time></time></span>
         </button>
         <button class="chat-item" id="chat-minjae" type="button" data-room="minjae" hidden>
           <span class="chat-avatar minjae">강</span>
           <span class="chat-copy"><b>강민재 동기</b><small>아직 대화가 없습니다</small></span>
-          <span class="chat-meta"><time></time><em hidden>0</em></span>
+          <span class="chat-meta"><time></time></span>
         </button>
       </div>
     </section>
@@ -87,6 +87,7 @@
     </section>
     </div>
 
+    <div class="game-controls">
     <section class="status-panel" aria-label="현재 스탯">
       <div class="status-head"><div><span>PLAYER STATUS</span><b>현재 스탯</b></div><small>선택 결과 실시간 반영</small></div>
       <div class="system-grid">
@@ -94,8 +95,20 @@
         <p><i>♡</i><span class="stat-label">호감도 <button class="stat-help" type="button" data-stat="affection" aria-label="호감도 설명 보기" aria-controls="stat-help-popover" aria-expanded="false">?</button></span><b id="affection">0</b></p>
         <p><i>◇</i><span class="stat-label">신뢰도 <button class="stat-help" type="button" data-stat="trust" aria-label="신뢰도 설명 보기" aria-controls="stat-help-popover" aria-expanded="false">?</button></span><b id="trust">0</b></p>
       </div>
-      <div class="side-actions"><button id="save">진행 저장</button><button id="restart">DAY 1 재시작</button></div>
     </section>
+    <section class="save-progress-panel" aria-label="진행 저장 및 불러오기">
+      <button class="save-progress-button" id="save" type="button">
+        <span class="save-progress-icon">▣</span>
+        <span class="save-progress-copy"><small>PROGRESS SAVE</small><strong>현재 진행 저장</strong></span>
+        <span class="save-progress-action">저장하기 <b>›</b></span>
+      </button>
+      <button class="save-progress-button load-progress-button" id="load" type="button">
+        <span class="save-progress-icon">↶</span>
+        <span class="save-progress-copy"><small>PROGRESS LOAD</small><strong>저장한 진행 불러오기</strong></span>
+        <span class="save-progress-action">불러오기 <b>›</b></span>
+      </button>
+    </section>
+    </div>
     <span id="unread" hidden></span>
   </aside>
   <div class="stat-help-popover" id="stat-help-popover" role="tooltip" hidden></div>
@@ -113,6 +126,31 @@
         <section class="day-summary-section day-summary-reactions"><h3>팀의 평가</h3><div id="day-summary-reactions"></div></section>
       </div>
       <button class="day-summary-exit" id="day-summary-exit" type="button">정산을 마치고 퇴근한다 <span>›</span></button>
+    </div>
+  </section>
+
+  <section class="day-complete" id="day-complete" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="day-complete-title">
+    <div class="day-complete-card">
+      <small>DAY 1 · COMPLETE</small>
+      <h2 id="day-complete-title">오늘 하루가 끝났습니다</h2>
+      <p>진행 상황이 저장되었습니다.<br>다음 날을 시작하거나 메인 메뉴로 돌아갈 수 있습니다.</p>
+      <div class="day-complete-actions">
+        <button class="day-complete-next" id="day-complete-next" type="button"><span>DAY 2</span>다음 날로 넘어가기 <b>›</b></button>
+        <button class="day-complete-menu" id="day-complete-menu" type="button">메인 메뉴</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="day-transition" id="day-transition" aria-hidden="true">
+    <p>DAY 2</p><strong>이상한 익숙함</strong>
+  </section>
+
+  <section class="game-save-modal" id="game-save-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="game-save-title">
+    <div class="game-save-dialog">
+      <header class="game-save-header"><div><small id="game-save-kicker">SAVE PROGRESS</small><h2 id="game-save-title">진행 저장</h2></div><button id="game-save-close" type="button" aria-label="저장 슬롯 닫기">×</button></header>
+      <p class="game-save-guide" id="game-save-guide">저장할 카드를 선택하세요. 타이틀의 이어하기와 같은 슬롯에 연동됩니다.</p>
+      <div class="game-save-list" id="game-save-list" aria-label="저장 슬롯 목록"></div>
+      <p class="game-save-help" id="game-save-help">빈 슬롯에는 새로 저장하고, 사용 중인 슬롯에는 확인 후 덮어씁니다.</p>
     </div>
   </section>
 
@@ -185,9 +223,9 @@
 <audio id="message-sfx" src="assets/audio/message-notification.wav" preload="auto"></audio>
 <script src="js/ui-sfx.js?v=3"></script>
 <script src="js/progress-store.js?v=1"></script>
-<script src="js/clue-mindmap.js?v=7"></script>
-<script src="js/bgm-manager.js?v=3"></script>
+<script src="js/clue-mindmap.js?v=8"></script>
 <script src="js/coffee-minigame.js?v=5"></script>
-<script src="js/game.js?v=13"></script>
+<script src="js/bgm-manager.js?v=5"></script>
+<script src="js/game.js?v=18"></script>
 </body>
 </html>

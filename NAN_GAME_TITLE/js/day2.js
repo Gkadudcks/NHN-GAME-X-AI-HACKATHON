@@ -40,6 +40,10 @@ const refs = {
   daySummaryRecords: $("#day-summary-records"),
   daySummaryReactions: $("#day-summary-reactions"),
   daySummaryExit: $("#day-summary-exit"),
+  dayComplete: $("#day-complete"),
+  dayCompleteNext: $("#day-complete-next"),
+  dayCompleteMenu: $("#day-complete-menu"),
+  dayTransition: $("#day-transition"),
 };
 
 const progress = new URLSearchParams(location.search).has("new")
@@ -63,6 +67,7 @@ const state = {
 
 let currentRoom = "";
 let choiceResultTimer;
+let sceneTransitionLocked = false;
 const audio = $("#bgm");
 
 const statDescriptions = {
@@ -134,6 +139,88 @@ function toast(message) {
   refs.toast.textContent = message;
   refs.toast.classList.add("show");
   window.setTimeout(() => refs.toast.classList.remove("show"), 1700);
+}
+
+function formatGameSavedAt(value) {
+  if (!value) return "아직 수동 저장하지 않음";
+  return new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date(value));
+}
+
+function getGameSaveSlots() {
+  return Array.from({ length: 5 }, (_, index) => {
+    const slotId = index + 1;
+    try {
+      const value = JSON.parse(localStorage.getItem(`nan-save-slot-${slotId}`));
+      return value ? { slotId, empty: false, ...value } : { slotId, empty: true };
+    } catch (_error) { return { slotId, empty: true }; }
+  });
+}
+
+let gameSaveMode = "save";
+
+function renderGameSaveSlots() {
+  const list = $("#game-save-list");
+  const scene = scenes[state.index] || scenes[0];
+  const loading = gameSaveMode === "load";
+  list.replaceChildren(...getGameSaveSlots().map((slot) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `game-save-slot${slot.empty ? " empty" : ""}`;
+    button.disabled = loading && slot.empty;
+    const day = slot.empty ? 2 : slot.day;
+    const time = slot.empty ? scene.time : (slot.sceneTime || "--:--");
+    const title = slot.empty ? "빈 저장 슬롯" : `DAY ${slot.day} · ${slot.sceneTitle}`;
+    const stats = slot.empty ? (loading ? "불러올 저장 데이터가 없습니다." : "현재 진행을 이 슬롯에 새로 저장합니다.") : `업무력 ${slot.work} · 호감도 ${slot.affection} · 신뢰도 ${slot.trust}`;
+    const command = loading ? (slot.empty ? "빈 슬롯" : "불러오기") : (slot.empty ? "새로 저장" : "덮어쓰기");
+    button.innerHTML = `<span class="game-save-thumbnail${slot.empty ? " empty" : ""}"><b>${slot.empty ? "SLOT" : "DAY"} <em>${slot.empty ? String(slot.slotId).padStart(2, "0") : day}</em></b><small>${slot.empty ? "EMPTY" : time}</small></span><span class="game-save-body"><small>SLOT ${String(slot.slotId).padStart(2, "0")} · ${slot.empty ? "EMPTY SLOT" : "SAVED PROGRESS"}</small><strong>${title}</strong><span>${stats}</span><time>${slot.empty ? "저장 데이터 없음" : formatGameSavedAt(slot.savedAt)}</time></span><span class="game-save-command">${command} <b>›</b></span>`;
+    button.onclick = () => loading ? loadFromGameSlot(slot) : saveToGameSlot(slot.slotId, !slot.empty);
+    return button;
+  }));
+}
+
+function openGameSave(mode = "save") {
+  gameSaveMode = mode;
+  const loading = mode === "load";
+  $("#game-save-kicker").textContent = loading ? "LOAD PROGRESS" : "SAVE PROGRESS";
+  $("#game-save-title").textContent = loading ? "진행 불러오기" : "진행 저장";
+  $("#game-save-guide").textContent = loading ? "불러올 카드를 선택하세요. 현재 진행은 선택한 저장 시점으로 바뀝니다." : "저장할 카드를 선택하세요. 타이틀의 이어하기와 같은 슬롯에 연동됩니다.";
+  $("#game-save-help").textContent = loading ? "빈 슬롯은 선택할 수 없습니다. 다른 DAY의 저장도 바로 불러올 수 있습니다." : "빈 슬롯에는 새로 저장하고, 사용 중인 슬롯에는 확인 후 덮어씁니다.";
+  renderGameSaveSlots();
+  $("#game-save-modal").classList.add("open");
+  $("#game-save-modal").setAttribute("aria-hidden", "false");
+  window.setTimeout(() => $("#game-save-list button:not(:disabled)")?.focus(), 50);
+}
+
+function closeGameSave() {
+  $("#game-save-modal").classList.remove("open");
+  $("#game-save-modal").setAttribute("aria-hidden", "true");
+  $(`#${gameSaveMode === "load" ? "load" : "save"}`).focus();
+}
+
+function saveToGameSlot(slotId, occupied) {
+  if (occupied && !confirm(`SLOT ${String(slotId).padStart(2, "0")}의 기존 저장을 덮어쓸까요?`)) return;
+  saveProgress();
+  const scene = scenes[state.index] || scenes[0];
+  const saved = GameProgress.load(localStorage);
+  localStorage.setItem(`nan-save-slot-${slotId}`, JSON.stringify({
+    slotId, day: 2, sceneTitle: "이상한 익숙함", sceneTime: scene.time,
+    savedAt: saved.savedAt, resumeUrl: "day2.html",
+    work: state.work, affection: state.affection, trust: state.trust,
+    lastDialogue: { speaker: scene.speaker, text: scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text },
+    thumbnail: "assets/image/office-background.png", progress: saved,
+    day1Save: localStorage.getItem("nan-day1-save") ? JSON.parse(localStorage.getItem("nan-day1-save")) : null,
+  }));
+  toast(`SLOT ${String(slotId).padStart(2, "0")}에 저장했습니다.`);
+  closeGameSave();
+}
+
+function loadFromGameSlot(slot) {
+  if (slot.empty || !slot.progress) return;
+  if (!confirm(`SLOT ${String(slot.slotId).padStart(2, "0")}의 진행을 불러올까요?\n현재 저장하지 않은 진행은 사라집니다.`)) return;
+  localStorage.setItem(GameProgress.STORAGE_KEY, JSON.stringify(slot.progress));
+  if (slot.day1Save) localStorage.setItem(GameProgress.LEGACY_DAY1_KEY, JSON.stringify(slot.day1Save));
+  else localStorage.removeItem(GameProgress.LEGACY_DAY1_KEY);
+  location.href = slot.resumeUrl || (Number(slot.day) === 2 ? "day2.html" : "game.html");
 }
 
 function saveProgress({ announce = false } = {}) {
@@ -325,9 +412,8 @@ function unreadCount(room) {
 
 function markUnread(room, count = 1) {
   if (!room || count < 1) return;
-  const nextCount = unreadCount(room) + count;
   state.seenNotifications[`unread:${room}`] = true;
-  state.seenNotifications[`unread:count:${room}`] = nextCount;
+  state.seenNotifications[`unread:count:${room}`] = unreadCount(room) + count;
 }
 
 function clearUnread(room) {
@@ -438,8 +524,18 @@ function inheritedPlaceholder(index) {
   return null;
 }
 
+function inheritedSceneValue(index, key) {
+  for (let cursor = index; cursor >= 0; cursor -= 1) {
+    const candidate = scenes[cursor];
+    if (!Day2Story.isVisible(candidate, state.decisions)) continue;
+    if (candidate[key]) return candidate[key];
+  }
+  return null;
+}
+
 function renderVisuals(scene) {
   const backgroundMap = { office: "day1-office.png" };
+  const effectiveBg = inheritedSceneValue(state.index, "bg");
   const placeholder = scene.placeholder === "inherit" ? inheritedPlaceholder(state.index) : scene.placeholder;
   refs.scenePlaceholder.classList.toggle("show", Boolean(placeholder));
   refs.scenePlaceholder.setAttribute("aria-hidden", String(!placeholder));
@@ -448,8 +544,8 @@ function renderVisuals(scene) {
     refs.placeholderTitle.textContent = placeholder.title;
     refs.placeholderDetail.textContent = placeholder.detail;
     refs.stage.style.backgroundImage = "none";
-  } else if (scene.bg && backgroundMap[scene.bg]) {
-    refs.stage.style.backgroundImage = `url('${ASSET}backgrounds/${backgroundMap[scene.bg]}')`;
+  } else if (effectiveBg && backgroundMap[effectiveBg]) {
+    refs.stage.style.backgroundImage = `url('${ASSET}backgrounds/${backgroundMap[effectiveBg]}')`;
   }
 
   const characterPlaceholder = scene.placeholderCharacter;
@@ -462,7 +558,6 @@ function renderVisuals(scene) {
 
   refs.systemPanel.classList.toggle("show", Boolean(scene.systemPanel));
   refs.systemPanel.setAttribute("aria-hidden", String(!scene.systemPanel));
-  refs.stage.classList.toggle("system-panel-active", Boolean(scene.systemPanel));
   if (scene.systemPanel) {
     refs.systemPanelTitle.textContent = scene.systemPanel.title;
     refs.systemPanelRows.innerHTML = scene.systemPanel.rows.map((row) => `<p>${escapeHtml(row)}</p>`).join("");
@@ -521,7 +616,6 @@ function finishWorkAlert(result) {
   state.work += result.workDelta;
   if (result.grade === "perfect") state.trust += 1;
   if (result.grade === "perfect" && result.harinHandled) state.affection += 1;
-  result.results.slice(0, 8).forEach((entry) => markUnread(roomForSender(entry.sender)));
   state.index = nextVisibleIndex(state.index + 1);
   syncStats();
   saveProgress();
@@ -598,6 +692,7 @@ function closeDaySummary() {
 function render() {
   state.index = nextVisibleIndex(state.index);
   const scene = scenes[state.index] || scenes[0];
+  const effectiveBgm = inheritedSceneValue(state.index, "bgm");
   if (scene.daySummary && state.summariesSeen[2]) {
     state.index = nextVisibleIndex(state.index + 1);
     render();
@@ -611,7 +706,7 @@ function render() {
   $("#scene-label").textContent = scene.location || (Number(scene.time.split(":")[0]) >= 12 ? "게임사업실 · 오후" : "게임사업실 · 오전");
   renderVisuals(scene);
   renderCharacters(scene);
-  if (scene.bgm) playBgm(scene.bgm);
+  if (effectiveBgm) playBgm(effectiveBgm);
   if (scene.clue) addClue(scene.clue);
   if (scene.notification) notifyMessage(scene.notification);
   renderMessages();
@@ -634,17 +729,32 @@ function render() {
   if (scene.daySummary) showDaySummary();
 }
 
+function hasBlockingUi() {
+  return refs.daySummary.classList.contains("show")
+    || refs.dayComplete.classList.contains("show")
+    || $("#game-save-modal").classList.contains("open")
+    || !!document.querySelector(".work-alert-minigame:not([hidden])");
+}
+
 function next() {
+  if (sceneTransitionLocked || hasBlockingUi()) return;
+  sceneTransitionLocked = true;
+  refs.next.disabled = true;
   const scene = scenes[state.index];
   if (scene.end) {
     progress.days[2].complete = true;
     saveProgress();
-    location.href = "index.html";
+    refs.dayComplete.classList.add("show");
+    refs.dayComplete.setAttribute("aria-hidden", "false");
+    refs.next.disabled = true;
+    window.setTimeout(() => refs.dayCompleteMenu.focus(), 50);
+    sceneTransitionLocked = false;
     return;
   }
   state.index = nextVisibleIndex(state.index + 1);
   saveProgress();
   render();
+  sceneTransitionLocked = false;
 }
 
 document.querySelectorAll(".tabs button").forEach((button) => { button.onclick = () => setTab(button.dataset.tab); });
@@ -652,12 +762,11 @@ document.querySelectorAll(".chat-item").forEach((button) => { button.onclick = (
 $("#chat-back").onclick = closeChat;
 refs.next.onclick = next;
 refs.daySummaryExit.onclick = closeDaySummary;
-$("#save").onclick = () => saveProgress({ announce: true });
-$("#restart").onclick = () => {
-  if (!confirm("DAY 2 진행을 처음부터 다시 시작할까요? DAY 1의 수치와 선택은 유지됩니다.")) return;
-  GameProgress.resetDay2(localStorage);
-  location.href = "day2.html";
-};
+refs.dayCompleteMenu.onclick = () => { location.href = "index.html"; };
+$("#save").onclick = () => openGameSave("save");
+$("#load").onclick = () => openGameSave("load");
+$("#game-save-close").onclick = closeGameSave;
+$("#game-save-modal").onclick = (event) => { if (event.target.id === "game-save-modal") closeGameSave(); };
 $("#mute").onclick = async () => {
   if (bgmManager.isPaused()) await unlockAudio();
   else {
