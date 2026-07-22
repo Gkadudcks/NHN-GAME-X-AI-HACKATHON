@@ -1,0 +1,32 @@
+[PROJECT VISUAL STYLE | background-prompt-v001]
+Modern Korean office romance visual novel with light mystery elements.
+Polished commercial anime visual novel background illustration. Clean, thin line art and soft 2-to-3-step cel painting with restrained texture and medium environmental detail.
+Warm, low-contrast, low-to-medium-saturation navy, gray, beige, cream, muted brown, pale blue, and natural-wood palette.
+Preserve the supplied office reference's game-ready finish.
+
+[BACKGROUND — STRUCTURE LOCKED]
+Asset ID: background.office.night
+Location: the established game-business office.
+Variant: night.
+Primary location reference: day1-office.png.
+
+Edit day1-office.png instead of inventing a new office. Preserve the exact camera position, crop, 35mm perspective, horizon, room dimensions, windows, ceiling grid, exposed ducts, air-conditioning unit, desk rows, monitors, chairs, central open floor, wall display, shelves, plants, coffee station, glass partition, doors, furniture placement, and prop placement. Do not move, add, remove, resize, or redesign structural elements or furniture.
+
+[ALLOWED SCENE CHANGE]
+Change only the time of day and lighting to late-evening overtime.
+Outside the windows, replace the daytime sky and city with a believable deep-blue Korean business-district night containing restrained distant window lights and no readable signs.
+Turn off approximately half of the overhead lights in alternating work zones. Keep a few warm overhead fixtures, desk lamps, and selected computer monitors illuminated. Create soft pools of warm task light balanced by cool blue monitor glow and faint night ambience from the windows.
+Most monitors remain dark. Selected monitors may show dim abstract interface blocks with no readable text. The office is quiet and nearly empty but maintained and safe, never abandoned.
+
+[CAMERA AND COMPOSITION]
+Maintain the reference image's exact camera, crop, perspective, and open foreground. Preserve the lower-center floor area for full-body character sprites and dialogue UI. Do not crop tighter or change the lens.
+
+[LIGHTING AND MOOD]
+Quiet late-night work atmosphere: subdued, slightly weary, intimate but professional. Preserve enough visibility to read furniture and composite sprites cleanly. Avoid romantic candlelight, total darkness, horror shadows, noir contrast, emergency lighting, or cyberpunk blue.
+
+[OUTPUT]
+1920x1080 RGB PNG or high-quality JPEG, 16:9, no alpha channel, no people, no character, no readable screen text, no company logo, no watermark.
+
+[EXCLUSIONS]
+photorealism, semi-realistic Korean webtoon rendering, 3D CGI, oil painting, watercolor, sketchy line art, thick outlines, chibi styling, high saturation, neon or cyberpunk colors, excessive bloom, heavy depth of field, changed camera, changed crop, changed perspective, moved desks, moved chairs, moved monitors, changed windows, changed doors, changed coffee station, new furniture, missing furniture, structural redesign, people, human silhouettes, reflections of people, faces, readable monitor text, logo, trademark, watermark, sunrise, sunset, daylight, all lights on, all lights off, pitch-black room, horror lighting, red emergency light, cyberpunk city, rain unless visible in the reference, clutter blocking sprite placement
+

@@ -2,11 +2,11 @@
   "use strict";
 
   const DAY_META = Object.freeze({
-    1: { title: "최초 기록", subtitle: "원본과 업무 지시", image: "assets/CG/day1-harin-convenience-cg-v2.png" },
-    2: { title: "검증과 흔적", subtitle: "수치·자동화·복원", image: "assets/backgrounds/day1-office.png" },
-    3: { title: "첫 번째 변조", subtitle: "변경된 문장", image: "assets/image/office-background.png" },
-    4: { title: "사건의 연결", subtitle: "로그와 관계", image: "assets/backgrounds/day1-office-lounge.png" },
-    5: { title: "최종 증명", subtitle: "원본 복구", image: "assets/image/office-background.png" },
+    1: { title: "최초 기록", subtitle: "원본과 업무 지시", image: "../assets/CG/day1-harin-convenience-cg-v2.png" },
+    2: { title: "검증과 흔적", subtitle: "수치·자동화·복원", image: "../assets/backgrounds/day1-office.png" },
+    3: { title: "첫 번째 변조", subtitle: "변경된 문장", image: "../assets/image/office-background.png" },
+    4: { title: "사건의 연결", subtitle: "로그와 관계", image: "../assets/backgrounds/day1-office-lounge.png" },
+    5: { title: "최종 증명", subtitle: "원본 복구", image: "../assets/image/office-background.png" },
   });
 
   function clueDay(text) {
@@ -32,6 +32,15 @@
     return "주요 단서";
   }
 
+  function clueSummary(text) {
+    const value = String(text).trim();
+    const separators = [" — ", " - ", ": "];
+    const separator = separators.find((candidate) => value.includes(candidate));
+    const first = separator ? value.split(separator)[0] : value.split(/[.!?]\s/)[0];
+    if (first.length <= 42) return first;
+    return `${first.slice(0, 39).trim()}…`;
+  }
+
   function element(tag, className, text) {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -54,9 +63,11 @@
     svg.append(path);
   }
 
-  function groupClues(clues, day) {
+  function groupClues(clues, day, dayForIndex) {
     const grouped = new Map();
-    clues.filter((text) => clueDay(text) === day).forEach((text) => {
+    clues.forEach((text, index) => {
+      const assignedDay = dayForIndex ? Number(dayForIndex(index, text)) : clueDay(text);
+      if (assignedDay !== day) return;
       const theme = clueTheme(text, day);
       if (!grouped.has(theme)) grouped.set(theme, []);
       grouped.get(theme).push(text);
@@ -77,7 +88,7 @@
     apply();
 
     viewport.addEventListener("pointerdown", (event) => {
-      if (event.target.closest(".clue-day-orbit")) {
+      if (event.target.closest(".clue-day-orbit, .clue-detail-orbit, .clue-inspector")) {
         moved = false;
         return;
       }
@@ -113,6 +124,7 @@
 
   function render(container, options) {
     const clues = Array.isArray(options.clues) ? options.clues.map(String) : [];
+    const dayForIndex = typeof options.dayForIndex === "function" ? options.dayForIndex : null;
     const currentDay = Math.min(5, Math.max(1, Number(options.currentDay) || 1));
     let selectedDay = container.dataset.selectedDay ? Number(container.dataset.selectedDay) : 0;
     if (selectedDay > currentDay) selectedDay = 0;
@@ -128,11 +140,12 @@
 
     const viewport = element("div", "clue-canvas-viewport");
     const world = element("div", "clue-canvas-world");
+    let inspector;
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class", "clue-connections");
     world.append(svg);
 
-    const grouped = selectedDay ? groupClues(clues, selectedDay) : [];
+    const grouped = selectedDay ? groupClues(clues, selectedDay, dayForIndex) : [];
     const bandHeights = grouped.map(([, items]) => Math.max(175, Math.ceil(items.length / 2) * 158 + 28));
     const worldHeight = Math.max(620, bandHeights.reduce((sum, height) => sum + height, 0) + 80);
     const worldWidth = selectedDay ? 1010 : 620;
@@ -148,7 +161,7 @@
       const y = selectedDay ? (active ? centerY : 88 + (day - 1) * 96) : centerY;
       const size = active ? 142 : 112;
       const meta = DAY_META[day];
-      const count = clues.filter((text) => clueDay(text) === day).length;
+      const count = clues.filter((text, index) => (dayForIndex ? Number(dayForIndex(index, text)) : clueDay(text)) === day).length;
       const button = element("button", `clue-orbit-node clue-day-orbit${active ? " active" : ""}`);
       button.type = "button";
       button.style.setProperty("--node-image", `url('${meta.image}')`);
@@ -185,9 +198,29 @@
           const clueY = themeY + (row - (rows - 1) / 2) * 158 + (column ? 34 : -14);
           const cluePoint = { x: clueX, y: clueY };
           curve(svg, themePoint, cluePoint, "clue-link detail-link");
-          const clueNode = element("article", "clue-orbit-node clue-detail-orbit");
-          clueNode.innerHTML = `<small>CLUE ${String(clueIndex + 1).padStart(2, "0")}</small><p></p>`;
-          clueNode.querySelector("p").textContent = text;
+          const clueNode = element("button", "clue-orbit-node clue-detail-orbit");
+          clueNode.type = "button";
+          clueNode.setAttribute("aria-expanded", "false");
+          clueNode.setAttribute("aria-controls", "clue-inspector");
+          clueNode.innerHTML = `<small>CLUE ${String(clueIndex + 1).padStart(2, "0")}</small><p></p><span>클릭해 자세히</span>`;
+          clueNode.querySelector("p").textContent = clueSummary(text);
+          clueNode.addEventListener("click", () => {
+            if (viewport.wasDragged()) return;
+            const wasOpen = clueNode.classList.contains("active");
+            viewport.querySelectorAll(".clue-detail-orbit.active").forEach((node) => {
+              node.classList.remove("active");
+              node.setAttribute("aria-expanded", "false");
+            });
+            if (wasOpen) {
+              inspector.hidden = true;
+              return;
+            }
+            clueNode.classList.add("active");
+            clueNode.setAttribute("aria-expanded", "true");
+            inspector.querySelector("strong").textContent = theme;
+            inspector.querySelector("p").textContent = text;
+            inspector.hidden = false;
+          });
           place(clueNode, clueX, clueY, 166);
           clueNode.style.animationDelay = `${themeIndex * 90 + clueIndex * 55 + 210}ms`;
           world.append(clueNode);
@@ -196,8 +229,19 @@
       });
     }
 
+    inspector = element("aside", "clue-inspector");
+    inspector.id = "clue-inspector";
+    inspector.hidden = true;
+    inspector.innerHTML = '<small>CLUE DETAIL</small><strong></strong><p></p><button type="button" aria-label="상세 단서 닫기">×</button>';
+    inspector.querySelector("button").addEventListener("click", () => {
+      inspector.hidden = true;
+      viewport.querySelectorAll(".clue-detail-orbit.active").forEach((node) => {
+        node.classList.remove("active");
+        node.setAttribute("aria-expanded", "false");
+      });
+    });
     viewport.append(world);
-    shell.append(toolbar, viewport);
+    shell.append(toolbar, viewport, inspector);
     container.append(shell);
     const initialX = 12;
     const initialY = Math.min(10, Math.round((viewport.clientHeight - worldHeight) / 2));
@@ -205,5 +249,5 @@
     reset.addEventListener("click", () => viewport.resetPan());
   }
 
-  global.ClueMindmap = Object.freeze({ render, clueDay, clueTheme });
+  global.ClueMindmap = Object.freeze({ render, clueDay, clueTheme, clueSummary });
 })(window);

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>DAY 1 | NAN</title>
-<link rel="stylesheet" href="css/game.css?v=12">
+<link rel="stylesheet" href="css/game.css?v=13">
 <link rel="stylesheet" href="css/coffee-minigame.css?v=3">
 </head>
 <body>
@@ -44,7 +44,7 @@
       <span class="online"><i></i> ONLINE</span>
     </header>
     <nav class="tabs messenger-tabs" aria-label="정보 패널">
-      <button class="active" type="button" data-tab="messages-view">메신저</button>
+      <button class="active" type="button" data-tab="messages-view">메신저 <em id="message-new" hidden>0</em></button>
       <button type="button" data-tab="clues-view">단서 <em id="clue-new" hidden>NEW</em></button>
     </nav>
     <div class="messenger-main">
@@ -219,13 +219,13 @@
     <div class="coffee-drag-ghost" id="coffee-drag-ghost" hidden></div>
   </section>
 </main>
-<audio id="bgm" preload="none"></audio>
+<audio id="bgm" preload="auto" playsinline></audio>
 <audio id="message-sfx" src="assets/audio/message-notification.wav" preload="auto"></audio>
-<script src="js/ui-sfx.js?v=1"></script>
+<script src="js/ui-sfx.js?v=3"></script>
 <script src="js/progress-store.js?v=1"></script>
-<script src="js/clue-mindmap.js?v=6"></script>
+<script src="js/clue-mindmap.js?v=8"></script>
 <script src="js/coffee-minigame.js?v=5"></script>
-<script src="js/bgm-manager.js?v=2"></script>
-<script src="js/game.js?v=17"></script>
+<script src="js/bgm-manager.js?v=5"></script>
+<script src="js/game.js?v=18"></script>
 </body>
 </html>

@@ -1,16 +1,23 @@
 (function () {
-  const NAMES = {
+  const names = {
     title: "1. 기본 테마",
-    daily: "2. 일상",
+    daily: "2. 일상 · 개선판 v2",
+    dailyLegacy: "2. 일상 · 기존판 비교",
     harin: "3. 서하린과의 일상",
     overtime: "4. 야근",
     mystery: "5. 추리",
     minigame: "미니게임 테마",
-    happyEnding: "주말에 시간 있어요 1차 엔딩",
-    middleEnding: "중간 엔딩 · 말하지 못한 마음",
-    badEnding: "배드 엔딩 · 계약 종료",
+    happyEnding: "해피 엔딩",
+    middleEnding: "중간 엔딩",
+    badEnding: "배드 엔딩",
   };
   const tracks = Object.entries(GameBgmTracks).filter(([, track]) => track);
+  tracks.splice(2, 0, ["dailyLegacy", {
+    source: "assets/audio/looped/daily.ogg",
+    loopSource: "assets/audio/looped/daily-loop.ogg",
+    loopStart: 9.25,
+  }]);
+
   const select = document.querySelector("#track");
   const statusTitle = document.querySelector("#status-title");
   const statusDetail = document.querySelector("#status-detail");
@@ -19,11 +26,12 @@
   const buttons = [...document.querySelectorAll("button")];
   let context;
   let source;
+  let htmlAudio;
   let stopTimer;
   let meterFrame;
   const buffers = new Map();
 
-  select.innerHTML = tracks.map(([id]) => `<option value="${id}">${NAMES[id]}</option>`).join("");
+  select.innerHTML = tracks.map(([id]) => `<option value="${id}">${names[id]}</option>`).join("");
 
   function stop(message = "정지했습니다.") {
     clearTimeout(stopTimer);
@@ -33,6 +41,10 @@
       source.disconnect();
       source = null;
     }
+    if (htmlAudio) {
+      htmlAudio.pause();
+      htmlAudio = null;
+    }
     meter.style.width = "0";
     phase.textContent = "재생 대기 중";
     phase.classList.remove("flash");
@@ -41,7 +53,6 @@
 
   async function load(track) {
     if (!context) context = new (window.AudioContext || window.webkitAudioContext)();
-    // 일부 내장 브라우저는 resume() Promise를 오래 보류하므로 디코딩을 막지 않습니다.
     context.resume().catch(() => {});
     if (!buffers.has(track.source)) {
       buffers.set(track.source, fetch(track.source)
@@ -64,7 +75,7 @@
         phase.textContent = `루프 전환까지 ${(boundaryAt - elapsed).toFixed(1)}초`;
       } else if (boundaryAt !== null && !boundaryShown) {
         boundaryShown = true;
-        phase.textContent = "↺ 지금 루프 시작점으로 전환했습니다";
+        phase.textContent = "지금 루프 시작점으로 전환됐습니다";
         phase.classList.remove("flash");
         void phase.offsetWidth;
         phase.classList.add("flash");
@@ -79,7 +90,7 @@
     meterFrame = requestAnimationFrame(update);
   }
 
-  async function play(mode) {
+  async function playWebAudio(mode) {
     stop("음원을 준비하고 있습니다…");
     buttons.forEach((button) => { button.disabled = true; });
     const [id, track] = tracks.find(([trackId]) => trackId === select.value);
@@ -88,7 +99,6 @@
       source = context.createBufferSource();
       source.buffer = buffer;
       source.connect(context.destination);
-
       let offset = 0;
       let duration = Math.min(15, buffer.duration);
       if (mode === "seam") {
@@ -97,17 +107,12 @@
         source.loop = true;
         source.loopStart = track.loopStart;
         source.loopEnd = buffer.duration;
-        statusTitle.textContent = `${NAMES[id]} · 반복 경계 확인 중`;
-        statusDetail.textContent = `끝 5초 → ${track.loopStart.toFixed(2)}초 지점으로 이동 → 시작 후 8초`;
-      } else if (mode === "loop") {
-        offset = track.loopStart;
-        statusTitle.textContent = `${NAMES[id]} · 루프 시작점부터 재생 중`;
-        statusDetail.textContent = `반복이 돌아오는 지점: ${track.loopStart.toFixed(2)}초`;
+        statusTitle.textContent = `${names[id]} · 반복 경계 확인 중`;
+        statusDetail.textContent = `끝 5초 → ${track.loopStart.toFixed(2)}초 지점 → 시작 뒤 8초`;
       } else {
-        statusTitle.textContent = `${NAMES[id]} · 도입부부터 재생 중`;
-        statusDetail.textContent = `도입부 종료: ${track.loopStart.toFixed(2)}초`;
+        statusTitle.textContent = `${names[id]} · 인트로부터 재생 중`;
+        statusDetail.textContent = `인트로 종료: ${track.loopStart.toFixed(2)}초`;
       }
-
       source.start(0, offset);
       showProgress(duration, mode === "seam" ? 5 : null);
       stopTimer = setTimeout(() => stop("검수 구간 재생이 끝났습니다."), duration * 1000);
@@ -119,9 +124,25 @@
     }
   }
 
-  document.querySelector("#seam").addEventListener("click", () => play("seam"));
-  document.querySelector("#intro").addEventListener("click", () => play("intro"));
-  document.querySelector("#loop").addEventListener("click", () => play("loop"));
+  function playNativeLoop() {
+    stop("반복 전용 파일을 준비하고 있습니다…");
+    const [id, track] = tracks.find(([trackId]) => trackId === select.value);
+    htmlAudio = new Audio(track.loopSource);
+    htmlAudio.loop = true;
+    htmlAudio.play().then(() => {
+      statusTitle.textContent = `${names[id]} · 직접 실행용 루프 재생 중`;
+      statusDetail.textContent = "반복 전용 파일의 처음과 끝이 자연스럽게 연결되는지 확인해 주세요.";
+      showProgress(20);
+      stopTimer = setTimeout(() => stop("직접 실행용 루프 검수가 끝났습니다."), 20000);
+    }).catch((error) => {
+      stop("재생하지 못했습니다.");
+      statusDetail.textContent = error.message;
+    });
+  }
+
+  document.querySelector("#seam").addEventListener("click", () => playWebAudio("seam"));
+  document.querySelector("#intro").addEventListener("click", () => playWebAudio("intro"));
+  document.querySelector("#native-loop").addEventListener("click", playNativeLoop);
   document.querySelector("#stop").addEventListener("click", () => stop());
   select.addEventListener("change", () => stop("새 곡을 선택했습니다."));
 })();

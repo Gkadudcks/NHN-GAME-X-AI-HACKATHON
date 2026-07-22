@@ -1,0 +1,29 @@
+[PROJECT VISUAL STYLE | background-prompt-v001]
+Modern Korean office romance visual novel with light mystery elements.
+Polished commercial anime visual novel background illustration. Clean, thin line art and soft 2-to-3-step cel painting with restrained texture and medium environmental detail.
+Natural proportions and believable contemporary office equipment. Warm, low-contrast, low-to-medium-saturation navy, gray, beige, cream, muted brown, and pale blue palette.
+Match the materials, lighting language, perspective quality, and finish of day1-office.png.
+
+[BACKGROUND]
+Asset ID: background.qa_test_space.incident
+Location: a compact QA game-testing area inside the same modern Korean game company.
+Variant: incident.
+This is a new room. Use day1-office.png as a company-wide visual-style reference, not as an exact floor-plan reference.
+
+Create a practical QA test space with muted-gray worktables, ergonomic black chairs, organized charging docks, two or three test smartphones or tablets, a desktop monitor, a compact device rack, headphones, controllers, neatly managed cables, blank colored sticky notes, and a glass partition or partial view toward the office.
+
+Make the incident readable without text. On the prominent center-back test monitor or large test tablet, show a generic game screen with exactly two visually identical pale-blue tutorial popup panels displayed simultaneously. Both panels have the exact same size, border, neutral icon placement, and blank line blocks. Offset the second panel slightly so it clearly overlaps the first. Use only abstract rectangles, blank lines, and one generic icon—no readable tutorial text, letters, numbers, game title, logo, or recognizable game artwork.
+
+[CAMERA AND COMPOSITION]
+Eye-level camera with a natural 35mm lens feeling. Place the duplicated-popup display near the upper center so it stays visible between character sprites composited on the left and right. Keep the lower center open for dialogue UI.
+Do not use an extreme device close-up. This must remain a reusable environmental background rather than a UI screenshot or event CG. Keep every device in believable scale and perspective.
+
+[LIGHTING AND MOOD]
+Neutral afternoon office lighting, soft daylight, and restrained cool screen glow. The room feels functional and ordinary; the duplicated popup is a small technical anomaly. Avoid horror, ominous red alarms, glitch effects, dramatic darkness, futuristic control rooms, or hacker aesthetics.
+
+[OUTPUT]
+1920x1080 RGB PNG or high-quality JPEG, 16:9, no alpha channel, no people, no character, no readable text, no game or company logo, no watermark.
+
+[EXCLUSIONS]
+photorealism, semi-realistic Korean webtoon rendering, 3D CGI, oil painting, watercolor, sketchy line art, thick outlines, chibi styling, high saturation, neon or cyberpunk colors, excessive bloom, heavy depth of field, fisheye distortion, tilted camera, extreme wide angle, people, testers, human silhouettes, reflections of people, faces, readable UI text, letters, numbers, game title, recognizable game franchise, logo, trademark, watermark, only one popup, mismatched popup designs, three or more popups, giant floating hologram, sci-fi laboratory, server room, hacker den, red alert lighting, horror glitch, clutter blocking sprite placement
+
