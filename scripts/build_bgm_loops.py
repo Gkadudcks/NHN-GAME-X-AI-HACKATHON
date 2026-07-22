@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import os
 import subprocess
 from pathlib import Path
@@ -20,7 +21,9 @@ DEFAULT_FFMPEG = next(
 # loudness-envelope comparison, then rounded to stable edit points.
 TRACKS = {
     "title": ("1. 기본 테마.wav", "title.ogg", 10.25, 31.75, 1.50),
-    "daily": ("2. 일상.mp3", "daily.ogg", 7.75, 49.58, 1.50),
+    # 40.33s is the near-16-bar candidate around the detected 94 BPM pulse.
+    # Its slightly higher spectral score is outweighed by the cleaner phrase boundary.
+    "daily": ("2. 일상.mp3", "daily.ogg", 7.50, 47.83, 1.50),
     "harin": ("3. 서하린과의 일상.mp3", "harin.ogg", 13.25, 53.58, 1.50),
     "overtime": ("4. 야근.mp3", "overtime.ogg", 16.50, 251.13, 1.50),
     "mystery": ("5. 추리.mp3", "mystery.ogg", 24.50, 206.00, 1.50),
@@ -51,12 +54,52 @@ def build(ffmpeg: Path, source: Path, target: Path, start: float, end: float, cr
     subprocess.run(command, check=True)
 
 
+def build_fallback_loop(ffmpeg: Path, source: Path, target: Path, loop_start: float) -> None:
+    """Create a native-loop file for file:// HTML Audio playback.
+
+    The intro-inclusive edit already has a crossfaded end that meets loop_start.
+    Trimming that loop body into its own OGG lets HTML Audio use native looping
+    instead of repeatedly seeking a finished element.
+    """
+    command = [
+        str(ffmpeg), "-y", "-v", "warning", "-i", str(source),
+        "-filter:a", f"atrim=start={loop_start},asetpts=N/SR/TB",
+        "-c:a", "libvorbis", "-q:a", "6", str(target),
+    ]
+    subprocess.run(command, check=True)
+
+
+def find_original(source_name: str) -> Path:
+    archived = ORIGINAL / source_name
+    return archived if archived.exists() else AUDIO / source_name
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--fallback-only",
+        action="store_true",
+        help="Keep current intro edits and only create native-loop fallback files.",
+    )
+    parser.add_argument("--track", action="append", choices=TRACKS, help="Build only this track (repeatable).")
+    parser.add_argument("--suffix", default="", help="Append a non-destructive version suffix to output names.")
+    args = parser.parse_args()
     ffmpeg = Path(os.environ.get("FFMPEG", DEFAULT_FFMPEG or "ffmpeg"))
     OUTPUT.mkdir(parents=True, exist_ok=True)
     for track_id, (source_name, output_name, start, end, crossfade) in TRACKS.items():
-        build(ffmpeg, ORIGINAL / source_name, OUTPUT / output_name, start, end, crossfade)
-        print(f"{track_id}: intro 0-{start + crossfade:.2f}s, loop {start + crossfade:.2f}-{end:.2f}s")
+        if args.track and track_id not in args.track:
+            continue
+        output_path = Path(output_name)
+        versioned_name = f"{output_path.stem}-{args.suffix}{output_path.suffix}" if args.suffix else output_name
+        edited = OUTPUT / versioned_name
+        loop_start = start + crossfade
+        if not args.fallback_only:
+            build(ffmpeg, find_original(source_name), edited, start, end, crossfade)
+        if not edited.exists():
+            raise FileNotFoundError(f"Missing intro edit: {edited}")
+        loop_target = OUTPUT / f"{edited.stem}-loop.ogg"
+        build_fallback_loop(ffmpeg, edited, loop_target, loop_start)
+        print(f"{track_id}: intro 0-{loop_start:.2f}s, loop {loop_start:.2f}-{end:.2f}s, fallback {loop_target.name}")
 
 
 if __name__ == "__main__":

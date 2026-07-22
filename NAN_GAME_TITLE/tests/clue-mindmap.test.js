@@ -41,11 +41,20 @@ test('Day 1과 Day 2 페이지가 공용 단서 마인드맵을 먼저 불러온
 test('단서 보드는 원형 노드와 곡선 연결선으로 구성하고 드래그 이동을 지원한다', () => {
   const css = fs.readFileSync(path.join(root, 'css', 'game.css'), 'utf8');
   assert.match(source, /function enablePan\(/);
-  assert.match(source, /event\.target\.closest\("\.clue-day-orbit"\)/);
+  assert.match(source, /event\.target\.closest\("\.clue-day-orbit, \.clue-detail-orbit, \.clue-inspector"\)/);
   assert.match(source, /clue-day-orbit/);
   assert.match(source, /clue-theme-orbit/);
   assert.match(source, /clue-detail-orbit/);
   assert.match(source, /createElementNS\("http:\/\/www\.w3\.org\/2000\/svg", "path"\)/);
   assert.match(css, /\.clue-orbit-node\{/);
   assert.match(css, /\.clue-canvas-viewport\{/);
+  assert.match(css, /\.clue-inspector\{/);
+});
+
+test('단서 원문은 저장 문자열을 바꾸지 않고 클릭식 상세 패널에 표시한다', () => {
+  const mindmap = loadMindmap();
+  assert.equal(mindmap.clueSummary('DAY 2 검증 기준 — 신규 설치 12,480명'), 'DAY 2 검증 기준');
+  assert.match(source, /clueNode\.addEventListener\("click"/);
+  assert.match(source, /inspector\.querySelector\("p"\)\.textContent = text/);
+  assert.match(source, /aria-expanded/);
 });

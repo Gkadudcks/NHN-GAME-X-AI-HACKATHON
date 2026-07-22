@@ -54,38 +54,73 @@
 .system-panel {
   position: absolute;
   z-index: 6;
-  top: 118px;
-  left: 4vw;
-  width: min(470px, 67%);
+  top: 42%;
+  left: 50%;
+  width: min(620px, 78%);
+  max-height: calc(100% - 270px);
   display: none;
-  padding: 18px;
+  padding: clamp(22px, 3vw, 34px);
+  overflow: auto;
   color: #41363b;
-  border: 1px solid #ffffffa8;
-  border-radius: 15px;
-  background: #fffdf7f2;
-  box-shadow: 0 16px 42px #160c123b;
-  backdrop-filter: blur(14px);
+  border: 1px solid #ffffffd1;
+  border-radius: 22px;
+  background: #fffdf8f7;
+  box-shadow: 0 28px 80px #10080d8c, 0 0 0 1px #dd68712b;
+  backdrop-filter: blur(18px);
+  transform: translate(-50%, -50%);
+  animation: system-panel-in .28s ease both;
 }
 
 .system-panel.show {
   display: block;
 }
 
+.system-panel > small {
+  font-size: clamp(10px, 1vw, 13px);
+}
+
 .system-panel > div {
   display: grid;
-  gap: 7px;
-  margin-top: 11px;
+  gap: 9px;
+  margin-top: 16px;
 }
 
 .system-panel p {
   margin: 0;
-  padding: 9px 11px;
-  border-left: 3px solid #df6871;
-  border-radius: 0 9px 9px 0;
+  padding: 12px 15px;
+  border-left: 4px solid #df6871;
+  border-radius: 0 11px 11px 0;
   background: #f5efec;
-  font-size: 12px;
-  font-weight: 750;
-  line-height: 1.45;
+  font-size: clamp(13px, 1.25vw, 17px);
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.system-panel p:first-child {
+  color: #a94e58;
+  background: #fff0ec;
+  font-size: clamp(15px, 1.45vw, 20px);
+}
+
+.stage.system-panel-active:before {
+  content: "";
+  position: absolute;
+  z-index: 5;
+  inset: 58px 0 0;
+  pointer-events: none;
+  background: #160e147a;
+  backdrop-filter: blur(3px) saturate(.72);
+  animation: system-dim-in .22s ease both;
+}
+
+@keyframes system-panel-in {
+  from { opacity: 0; transform: translate(-50%, -47%) scale(.96); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes system-dim-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .character-placeholder {
@@ -143,12 +178,16 @@
   }
 
   .system-panel {
-    top: 104px;
-    left: 5%;
+    top: 35%;
+    left: 50%;
     width: 90%;
-    max-height: 180px;
-    overflow: auto;
+    max-height: calc(100% - 250px);
+    padding: 17px;
   }
+
+  .system-panel > div { gap: 6px; margin-top: 10px; }
+  .system-panel p { padding: 8px 10px; font-size: 11px; }
+  .system-panel p:first-child { font-size: 13px; }
 
   .character-placeholder {
     right: 4%;
