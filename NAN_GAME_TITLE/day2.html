@@ -5,8 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>DAY 2 | NAN</title>
   <link rel="stylesheet" href="css/game.css?v=13">
+  <link rel="stylesheet" href="css/message-day-groups.css?v=1">
+  <link rel="stylesheet" href="css/clue-mindmap-theme.css?v=1">
   <link rel="stylesheet" href="css/day2.css?v=2">
   <link rel="stylesheet" data-work-alert-style href="css/work-alert-minigame.css?v=1">
+  <link rel="stylesheet" href="css/fonts.css?v=1">
 </head>
 <body>
 <main class="game" id="game">
@@ -82,13 +85,12 @@
             </button>
           </div>
         </section>
-        <section class="chat-room" id="chat-room" hidden>
+        <section class="chat-room grouped-message-room" id="chat-room" hidden>
           <section class="channel-head">
             <button class="chat-back" id="chat-back" type="button" aria-label="채팅 목록으로 돌아가기">‹</button>
             <div><small id="room-type">DIRECT MESSAGE</small><h1 id="room-title"></h1></div>
             <div class="member-stack" id="room-members"></div>
           </section>
-          <div class="date-divider"><span>DAY 2 · TUESDAY</span></div>
           <div class="messages" id="messages"></div>
         </section>
       </div>

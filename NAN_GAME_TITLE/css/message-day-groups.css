@@ -1,0 +1,28 @@
+.chat-room.grouped-message-room {
+  grid-template-rows: 88px minmax(0, 1fr);
+}
+
+.message-day-divider {
+  min-height: 40px;
+  margin: 4px 0 20px;
+  background: transparent;
+}
+
+.message-day-divider:not(:first-child) {
+  margin-top: 30px;
+}
+
+.message-day-divider span {
+  white-space: nowrap;
+}
+
+@media (max-height: 650px) and (min-width: 681px) {
+  .chat-room.grouped-message-room {
+    grid-template-rows: 76px minmax(0, 1fr);
+  }
+
+  .message-day-divider {
+    min-height: 34px;
+    margin-bottom: 14px;
+  }
+}

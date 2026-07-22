@@ -338,8 +338,26 @@ function workAlertMessages() {
       room,
       sender: result.sender,
       text: result.outcome === "correct" ? result.response : result.outcome === "missed" ? `${result.request} · 응답하지 못함` : `${result.request} · 다른 행동으로 처리`,
+      day: 2,
       time: `10:${String(39 + index).padStart(2, "0")}`,
     }));
+}
+
+const MESSAGE_DAY_NAMES = Object.freeze(["", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]);
+
+function messageDay(message, fallbackDay = 2) {
+  const explicitDay = Number(message.day);
+  if (explicitDay >= 1 && explicitDay <= 5) return explicitDay;
+  const embeddedDay = String(message.time || "").match(/DAY\s*([1-5])/i);
+  return embeddedDay ? Number(embeddedDay[1]) : fallbackDay;
+}
+
+function messageClock(message) {
+  return String(message.time || "").replace(/^DAY\s*[1-5]\s*·\s*/i, "");
+}
+
+function messageDayDivider(day) {
+  return `<div class="date-divider message-day-divider"><span>DAY ${day} · ${MESSAGE_DAY_NAMES[day]}</span></div>`;
 }
 
 function visibleMessages(room) {
@@ -374,7 +392,13 @@ function renderMessages() {
     box.innerHTML = '<div class="message-empty"><span>✦</span><b>아직 대화가 없습니다</b><p>새 메시지가 도착하면 여기에 표시됩니다.</p></div>';
     return;
   }
-  box.innerHTML = messages.map((message) => `<article class="message"><b>${escapeHtml(message.sender)}</b><p>${escapeHtml(message.text)}</p><small>${escapeHtml(message.time)}</small></article>`).join("");
+  let renderedDay = 0;
+  box.innerHTML = messages.map((message) => {
+    const day = messageDay(message);
+    const divider = day === renderedDay ? "" : messageDayDivider(day);
+    renderedDay = day;
+    return `${divider}<article class="message" data-message-day="${day}"><b>${escapeHtml(message.sender)}</b><p>${escapeHtml(message.text)}</p><small>${escapeHtml(messageClock(message))}</small></article>`;
+  }).join("");
   box.scrollTop = box.scrollHeight;
 }
 

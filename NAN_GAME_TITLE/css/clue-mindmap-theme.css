@@ -1,0 +1,192 @@
+/* Case board palette and controls aligned with the game's coral/cream UI. */
+.clue-canvas-shell {
+  grid-template-rows: 56px minmax(0, 1fr);
+  background: #f8f1ec;
+}
+
+.clue-canvas-toolbar {
+  padding: 0 12px 0 16px;
+  color: #4b3b41;
+  border-bottom: 1px solid #ead6d1;
+  background: linear-gradient(135deg, #fffaf5f7, #fff4eef2);
+  box-shadow: 0 8px 24px #5b303a12;
+}
+
+.clue-canvas-toolbar > span {
+  min-width: 0;
+}
+
+.clue-canvas-toolbar > span b {
+  color: #d75f69;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .19em;
+}
+
+.clue-canvas-toolbar > span small {
+  overflow: hidden;
+  color: #947e84;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clue-canvas-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  padding: 4px;
+  border: 1px solid #ead6d1;
+  border-radius: 12px;
+  background: #fffdfacc;
+  box-shadow: 0 4px 12px #6336400d;
+}
+
+.clue-canvas-control,
+.clue-canvas-fit {
+  height: 28px;
+  display: grid;
+  place-items: center;
+  color: #7a5b63;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 900;
+  transition: .16s;
+}
+
+.clue-canvas-control {
+  width: 28px;
+  font-size: 17px;
+}
+
+.clue-canvas-fit {
+  padding: 0 9px;
+  color: #c15460;
+  background: #fff0eb;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.clue-canvas-zoom {
+  min-width: 38px;
+  color: #5b454c;
+  font-size: 9px;
+  font-weight: 850;
+  text-align: center;
+}
+
+.clue-canvas-control:hover,
+.clue-canvas-control:focus-visible,
+.clue-canvas-fit:hover,
+.clue-canvas-fit:focus-visible {
+  color: #fff;
+  background: #df6871;
+  outline: none;
+}
+
+.clue-canvas-viewport {
+  background-color: #f8f1ec;
+  background-image:
+    radial-gradient(circle at 1px 1px, #d9c9c5 1px, transparent 1.2px),
+    radial-gradient(circle at 52% 8%, #fffaf5 0, transparent 54%),
+    linear-gradient(145deg, #fbf5f0, #f2e8e5);
+  background-size: 20px 20px, 100% 100%, 100% 100%;
+}
+
+.clue-canvas-world.radial::before,
+.clue-canvas-world.radial::after {
+  position: absolute;
+  inset: 50%;
+  content: "";
+  pointer-events: none;
+  border: 1px dashed #dbaeb044;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.clue-canvas-world.radial::before {
+  width: 496px;
+  height: 496px;
+  box-shadow: 0 0 0 1px #fff8f3, inset 0 0 70px #e9656e08;
+}
+
+.clue-canvas-world.radial::after {
+  width: 890px;
+  height: 890px;
+  border-color: #cda6aa2e;
+}
+
+.clue-day-orbit {
+  color: #fff9f7;
+  border-color: #fff8f3;
+  background-image: linear-gradient(145deg, #df747bc7, #442d36eb 78%), var(--node-image);
+  background-blend-mode: multiply, normal;
+  box-shadow: 0 0 0 6px #e9656e24, 0 16px 36px #5b303a3d;
+}
+
+.clue-day-orbit::after {
+  inset: 8px;
+  border-color: #fff4ef70;
+}
+
+.clue-day-orbit:hover,
+.clue-day-orbit:focus-visible {
+  border-color: #fffaf6;
+  box-shadow: 0 0 0 8px #e9656e31, 0 19px 42px #6d33434a;
+}
+
+.clue-day-orbit.active {
+  border-color: #fff5ef;
+  box-shadow: 0 0 0 8px #e9656e38, 0 20px 44px #6d334352;
+}
+
+.clue-day-orbit span { color: #ffc8c2; }
+.clue-day-orbit strong { text-shadow: 0 2px 10px #25161d; }
+
+.clue-theme-orbit {
+  border-color: #fff8f4;
+  background: linear-gradient(145deg, #ee8582, #c95260 72%);
+  box-shadow: 0 0 0 5px #e9656e22, 0 14px 30px #71343f35;
+}
+
+.clue-theme-orbit span { color: #ffe2dd; }
+
+.clue-detail-orbit {
+  color: #4c3b42;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition: transform .18s;
+}
+
+.clue-detail-orbit::before { display: none; }
+.clue-detail-orbit small {
+  color: #cf5964;
+  text-shadow: 0 1px #fffaf5, 0 0 8px #fffaf5;
+}
+.clue-detail-orbit p {
+  color: #44363b;
+  text-shadow: 0 1px #fffaf5, 0 0 9px #fffaf5, 0 0 14px #fffaf5;
+}
+.clue-detail-orbit:hover {
+  z-index: 4;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  transform: scale(1.06);
+}
+.theme-link { stroke: #df6871; }
+.detail-link { stroke: #c9a9aa; }
+
+@media (max-width: 440px) {
+  .clue-canvas-shell { grid-template-rows: 52px minmax(0, 1fr); }
+  .clue-canvas-toolbar { padding-left: 10px; }
+  .clue-canvas-toolbar > span small { display: none; }
+  .clue-canvas-fit { padding: 0 7px; }
+  .clue-canvas-zoom { min-width: 34px; }
+}

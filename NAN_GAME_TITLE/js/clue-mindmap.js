@@ -57,8 +57,15 @@
 
   function curve(svg, from, to, className) {
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    const bend = Math.max(60, (to.x - from.x) * 0.48);
-    path.setAttribute("d", `M ${from.x} ${from.y} C ${from.x + bend} ${from.y}, ${to.x - bend} ${to.y}, ${to.x} ${to.y}`);
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const distance = Math.max(1, Math.hypot(dx, dy));
+    const offset = Math.min(46, distance * 0.14);
+    const normalX = -dy / distance;
+    const normalY = dx / distance;
+    const c1 = { x: from.x + dx * 0.36 + normalX * offset, y: from.y + dy * 0.36 + normalY * offset };
+    const c2 = { x: from.x + dx * 0.7 + normalX * offset, y: from.y + dy * 0.7 + normalY * offset };
+    path.setAttribute("d", `M ${from.x} ${from.y} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${to.x} ${to.y}`);
     path.setAttribute("class", className);
     svg.append(path);
   }
@@ -75,16 +82,43 @@
     return [...grouped.entries()];
   }
 
-  function enablePan(viewport, world, initialX, initialY) {
+  function enablePan(viewport, world, initialX, initialY, options = {}) {
     let x = initialX;
     let y = initialY;
+    let scale = 1;
     let startX = 0;
     let startY = 0;
     let originX = 0;
     let originY = 0;
     let dragging = false;
     let moved = false;
-    const apply = () => { world.style.transform = `translate3d(${x}px,${y}px,0)`; };
+    const minScale = Number(options.minScale) || 0.1;
+    const maxScale = Number(options.maxScale) || 1.6;
+    const worldWidth = Number(options.worldWidth) || world.offsetWidth;
+    const worldHeight = Number(options.worldHeight) || world.offsetHeight;
+    const zoomLabel = options.zoomLabel;
+    const apply = () => {
+      world.style.transform = `translate3d(${x}px,${y}px,0) scale(${scale})`;
+      if (zoomLabel) zoomLabel.textContent = `${Math.round(scale * 100)}%`;
+    };
+    const fitToView = () => {
+      const padding = 28;
+      const availableWidth = Math.max(1, viewport.clientWidth - padding * 2);
+      const availableHeight = Math.max(1, viewport.clientHeight - padding * 2);
+      scale = Math.min(1, Math.max(minScale, Math.min(availableWidth / worldWidth, availableHeight / worldHeight)));
+      x = Math.round((viewport.clientWidth - worldWidth * scale) / 2);
+      y = Math.round((viewport.clientHeight - worldHeight * scale) / 2);
+      apply();
+    };
+    const setScale = (nextScale, anchorX = viewport.clientWidth / 2, anchorY = viewport.clientHeight / 2) => {
+      const bounded = Math.min(maxScale, Math.max(minScale, nextScale));
+      const worldX = (anchorX - x) / scale;
+      const worldY = (anchorY - y) / scale;
+      scale = bounded;
+      x = anchorX - worldX * scale;
+      y = anchorY - worldY * scale;
+      apply();
+    };
     apply();
 
     viewport.addEventListener("pointerdown", (event) => {
@@ -118,8 +152,22 @@
     };
     viewport.addEventListener("pointerup", finish);
     viewport.addEventListener("pointercancel", finish);
+    viewport.addEventListener("wheel", (event) => {
+      if (!event.ctrlKey && !event.metaKey) return;
+      event.preventDefault();
+      const bounds = viewport.getBoundingClientRect();
+      const factor = event.deltaY < 0 ? 1.05 : 0.95;
+      setScale(scale * factor, event.clientX - bounds.left, event.clientY - bounds.top);
+    }, { passive: false });
     viewport.wasDragged = () => moved;
-    viewport.resetPan = () => { x = initialX; y = initialY; apply(); };
+    viewport.zoomBy = (factor) => setScale(scale * factor);
+    viewport.fitToView = fitToView;
+    viewport.resetPan = fitToView;
+    fitToView();
+    if (typeof ResizeObserver !== "undefined") {
+      viewport.resizeObserver = new ResizeObserver(() => fitToView());
+      viewport.resizeObserver.observe(viewport);
+    }
   }
 
   function render(container, options) {
@@ -136,7 +184,22 @@
     toolbar.innerHTML = `<span><b>CASE BOARD</b><small>원을 선택하고 보드를 드래그하세요</small></span>`;
     const reset = element("button", "clue-canvas-reset", "중앙으로");
     reset.type = "button";
-    toolbar.append(reset);
+    reset.className = "clue-canvas-fit";
+    reset.textContent = "전체 보기";
+    reset.title = "마인드맵 전체를 화면에 맞추기";
+    const controls = element("div", "clue-canvas-controls");
+    const zoomOut = element("button", "clue-canvas-control", "−");
+    zoomOut.type = "button";
+    zoomOut.title = "축소";
+    zoomOut.setAttribute("aria-label", "마인드맵 축소");
+    const zoomLabel = element("output", "clue-canvas-zoom", "100%");
+    zoomLabel.setAttribute("aria-live", "polite");
+    const zoomIn = element("button", "clue-canvas-control", "+");
+    zoomIn.type = "button";
+    zoomIn.title = "확대";
+    zoomIn.setAttribute("aria-label", "마인드맵 확대");
+    controls.append(zoomOut, zoomLabel, zoomIn, reset);
+    toolbar.append(controls);
 
     const viewport = element("div", "clue-canvas-viewport");
     const world = element("div", "clue-canvas-world");
@@ -146,20 +209,22 @@
     world.append(svg);
 
     const grouped = selectedDay ? groupClues(clues, selectedDay, dayForIndex) : [];
-    const bandHeights = grouped.map(([, items]) => Math.max(175, Math.ceil(items.length / 2) * 158 + 28));
-    const worldHeight = Math.max(620, bandHeights.reduce((sum, height) => sum + height, 0) + 80);
-    const worldWidth = selectedDay ? 1010 : 620;
+    const worldHeight = selectedDay ? 1120 : 620;
+    const worldWidth = selectedDay ? 1120 : 620;
+    if (selectedDay) world.classList.add("radial");
     world.style.width = `${worldWidth}px`;
     world.style.height = `${worldHeight}px`;
     svg.setAttribute("viewBox", `0 0 ${worldWidth} ${worldHeight}`);
+    const centerX = worldWidth / 2;
     const centerY = worldHeight / 2;
 
     const dayPositions = new Map();
     for (let day = 1; day <= currentDay; day += 1) {
       const active = day === selectedDay;
-      const x = selectedDay ? 112 : 180 + (day - 1) * 185;
-      const y = selectedDay ? (active ? centerY : 88 + (day - 1) * 96) : centerY;
-      const size = active ? 142 : 112;
+      const inactiveIndex = day - (day > selectedDay ? 1 : 0);
+      const x = selectedDay ? (active ? centerX : 72 + inactiveIndex * 92) : 180 + (day - 1) * 185;
+      const y = selectedDay ? (active ? centerY : 66) : centerY;
+      const size = active ? 154 : (selectedDay ? 76 : 112);
       const meta = DAY_META[day];
       const count = clues.filter((text, index) => (dayForIndex ? Number(dayForIndex(index, text)) : clueDay(text)) === day).length;
       const button = element("button", `clue-orbit-node clue-day-orbit${active ? " active" : ""}`);
@@ -178,11 +243,15 @@
 
     if (selectedDay) {
       const root = dayPositions.get(selectedDay);
-      let cursorY = 40;
       grouped.forEach(([theme, items], themeIndex) => {
-        const bandHeight = bandHeights[themeIndex];
-        const themeY = cursorY + bandHeight / 2;
-        const themePoint = { x: 320, y: themeY };
+        const themeCount = Math.max(1, grouped.length);
+        const sector = (Math.PI * 2) / themeCount;
+        const themeAngle = -Math.PI / 2 + themeIndex * sector;
+        const themeRadius = 248;
+        const themePoint = {
+          x: centerX + Math.cos(themeAngle) * themeRadius,
+          y: centerY + Math.sin(themeAngle) * themeRadius,
+        };
         curve(svg, root, themePoint, "clue-link theme-link");
         const themeNode = element("div", "clue-orbit-node clue-theme-orbit");
         themeNode.innerHTML = `<small>TOPIC ${String(themeIndex + 1).padStart(2, "0")}</small><strong>${theme}</strong><span>${items.length}개 연결</span>`;
@@ -191,11 +260,12 @@
         world.append(themeNode);
 
         items.forEach((text, clueIndex) => {
-          const column = clueIndex % 2;
-          const row = Math.floor(clueIndex / 2);
-          const clueX = 555 + column * 225;
-          const rows = Math.ceil(items.length / 2);
-          const clueY = themeY + (row - (rows - 1) / 2) * 158 + (column ? 34 : -14);
+          const maxSpread = Math.min(sector * 0.68, Math.PI * 0.72);
+          const spread = items.length > 1 ? Math.min(maxSpread, (items.length - 1) * 0.38) : 0;
+          const clueAngle = themeAngle + (items.length > 1 ? -spread / 2 + spread * clueIndex / (items.length - 1) : 0);
+          const clueRadius = 445 + (clueIndex % 2) * 24;
+          const clueX = centerX + Math.cos(clueAngle) * clueRadius;
+          const clueY = centerY + Math.sin(clueAngle) * clueRadius;
           const cluePoint = { x: clueX, y: clueY };
           curve(svg, themePoint, cluePoint, "clue-link detail-link");
           const clueNode = element("button", "clue-orbit-node clue-detail-orbit");
@@ -225,7 +295,6 @@
           clueNode.style.animationDelay = `${themeIndex * 90 + clueIndex * 55 + 210}ms`;
           world.append(clueNode);
         });
-        cursorY += bandHeight;
       });
     }
 
@@ -245,7 +314,9 @@
     container.append(shell);
     const initialX = 12;
     const initialY = Math.min(10, Math.round((viewport.clientHeight - worldHeight) / 2));
-    enablePan(viewport, world, initialX, initialY);
+    enablePan(viewport, world, initialX, initialY, { worldWidth, worldHeight, zoomLabel });
+    zoomOut.addEventListener("click", () => viewport.zoomBy(0.92));
+    zoomIn.addEventListener("click", () => viewport.zoomBy(1.09));
     reset.addEventListener("click", () => viewport.resetPan());
   }
 
