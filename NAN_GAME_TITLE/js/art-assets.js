@@ -8,6 +8,7 @@
   // file:// compatible runtime map. A test keeps this path aligned with the
   // active version in assets/art/manifests/art-assets.json.
   const ACTIVE = Object.freeze({
+    "character.harin.holding_cup.tired": "../assets/art/characters/harin/approved/harin_holding_cup_tired_v001.png",
     "character.sea.neutral_standing.gentle_smile": "../assets/art/characters/sea/approved/sea_neutral_standing_gentle_smile_v001.png",
   });
 

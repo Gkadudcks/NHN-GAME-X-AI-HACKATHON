@@ -1,7 +1,7 @@
 (function (global) {
   const TRACKS = Object.freeze({
     title: { source: "assets/audio/looped/title.ogg", loopSource: "assets/audio/looped/title-loop.ogg", loopStart: 11.75 },
-    daily: { source: "assets/audio/looped/daily-v2.ogg", loopSource: "assets/audio/looped/daily-v2-loop.ogg", loopStart: 9.0 },
+    daily: { source: "assets/audio/looped/daily.ogg", loopSource: "assets/audio/looped/daily-loop.ogg", loopStart: 9.25 },
     harin: { source: "assets/audio/looped/harin.ogg", loopSource: "assets/audio/looped/harin-loop.ogg", loopStart: 14.75 },
     overtime: { source: "assets/audio/looped/overtime.ogg", loopSource: "assets/audio/looped/overtime-loop.ogg", loopStart: 18.0 },
     mystery: { source: "assets/audio/looped/mystery.ogg", loopSource: "assets/audio/looped/mystery-loop.ogg", loopStart: 26.0 },

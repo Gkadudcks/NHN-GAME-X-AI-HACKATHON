@@ -505,7 +505,8 @@ function renderCharacters(scene) {
     const image = document.createElement("img");
     const position = entry.position || profile.defaultPosition || (characters.length === 1 ? "right" : characters.length === 2 ? (index === 0 ? "left" : "right") : index === 0 ? "left" : index === 1 ? "center" : "right");
     image.className = `character character-${entry.id} visible ${entry.id === active ? "speaking" : "listening"}`;
-    image.src = profile.assetId ? ArtAssets.resolve(profile.assetId) : `${ASSET}characters/${profile.image}`;
+    const assetId = entry.assetId || profile.assetId;
+    image.src = assetId ? ArtAssets.resolve(assetId) : `${ASSET}characters/${profile.image}`;
     image.alt = profile.name;
     image.style.setProperty("--position-x", CHARACTER_POSITIONS[position] ?? CHARACTER_POSITIONS.right);
     image.style.setProperty("--sprite-height", `${84 * (profile.heightCm / 182) * (profile.scale || 1)}cqh`);

@@ -21,9 +21,7 @@ DEFAULT_FFMPEG = next(
 # loudness-envelope comparison, then rounded to stable edit points.
 TRACKS = {
     "title": ("1. 기본 테마.wav", "title.ogg", 10.25, 31.75, 1.50),
-    # 40.33s is the near-16-bar candidate around the detected 94 BPM pulse.
-    # Its slightly higher spectral score is outweighed by the cleaner phrase boundary.
-    "daily": ("2. 일상.mp3", "daily.ogg", 7.50, 47.83, 1.50),
+    "daily": ("2. 일상.mp3", "daily.ogg", 7.75, 49.58, 1.50),
     "harin": ("3. 서하린과의 일상.mp3", "harin.ogg", 13.25, 53.58, 1.50),
     "overtime": ("4. 야근.mp3", "overtime.ogg", 16.50, 251.13, 1.50),
     "mystery": ("5. 추리.mp3", "mystery.ogg", 24.50, 206.00, 1.50),

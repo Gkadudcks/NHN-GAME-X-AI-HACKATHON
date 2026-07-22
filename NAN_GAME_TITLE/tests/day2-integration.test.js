@@ -105,7 +105,7 @@ test("DAY 2 BGM은 실제 루프 편집본을 사용한다", () => {
   for (const track of ["minigame", "harin", "overtime", "mystery"]) {
     assert.match(manager, new RegExp(`audio/looped/${track}\\.ogg`));
   }
-  assert.match(manager, /audio\/looped\/daily-v2\.ogg/);
+  assert.match(manager, /audio\/looped\/daily\.ogg/);
   assert.match(day2, /new GameBgmManager/);
   assert.doesNotMatch(script, /audio\/(?:2\. 일상|3\. 서하린과의 일상|4\. 야근|5\. 추리|MiniGame-theme)\.mp3/);
 });
@@ -171,4 +171,19 @@ test("장면 전환은 연속 입력과 모달 뒤쪽 진행을 차단한다", (
 test("왼쪽 대사 진행은 오른쪽 메신저·단서 탭을 바꾸지 않는다", () => {
   assert.doesNotMatch(read("js/game.js"), /setTab\('messages-view'\)/);
   assert.doesNotMatch(read("js/day2.js"), /setTab\("messages-view"\)/);
+});
+
+test("DAY 2 야근 커피 장면은 승인된 서하린 피곤 스프라이트를 사용한다", () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, "..", "assets", "art", "manifests", "art-assets.json"), "utf8"));
+  const runtime = require("../js/art-assets.js");
+  const id = "character.harin.holding_cup.tired";
+  const asset = manifest.assets.find((entry) => entry.id === id);
+  const version = asset.versions.find((entry) => entry.version === asset.active_version);
+  const runtimePath = runtime.resolve(id).replace(/^\.\.\//, "");
+  const story = read("js/day2-story.js");
+
+  assert.equal(runtimePath, version.path);
+  assert.equal(fs.existsSync(path.resolve(root, runtime.resolve(id))), true);
+  assert.match(story, /day2CoffeeHarin[^\n]+character\.harin\.holding_cup\.tired/);
+  assert.doesNotMatch(story, /day2CoffeeHarin[^\n]+placeholderCharacter/);
 });

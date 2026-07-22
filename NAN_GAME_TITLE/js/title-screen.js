@@ -19,9 +19,8 @@ pageTurnSfx.preload = "auto";
 let activeIndex = 0;
 let lastFocusedElement = null;
 let settings = GameSettings.load(window.localStorage);
-// 타이틀은 첫 사용자 입력에서 즉시 play()가 호출되도록 기본 audio 요소를 사용합니다.
-// Web Audio의 비동기 디코딩은 브라우저의 자동 재생 허용 시점을 놓칠 수 있습니다.
-const bgmManager = new GameBgmManager(titleBgm, getConfiguredBgmVolume, { preferHtmlAudio: true });
+// Web Audio의 loopStart를 사용해 도입부는 한 번만 재생하고 편집된 본체만 반복합니다.
+const bgmManager = new GameBgmManager(titleBgm, getConfiguredBgmVolume);
 window.BGMManager = bgmManager;
 let titleBgmPromise = null;
 

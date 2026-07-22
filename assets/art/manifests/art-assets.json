@@ -131,16 +131,16 @@
       "character_id": "harin",
       "pose": "holding_cup",
       "expression": "tired",
-      "active_version": null,
+      "active_version": "v001",
       "versions": [
         {
           "version": "v001",
-          "status": "planned",
-          "path": null,
-          "generation_log_id": null,
-          "sha256": null,
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "approved",
+          "path": "assets/art/characters/harin/approved/harin_holding_cup_tired_v001.png",
+          "generation_log_id": "harin-holding-cup-tired-v001-chatgpt-user-export",
+          "sha256": "36a6aa870e490be4ddd73ee4f4dcf412455c0aec4ca39925384e0c473ca708e2",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-23T02:50:56.4855719+09:00"
         }
       ]
     },

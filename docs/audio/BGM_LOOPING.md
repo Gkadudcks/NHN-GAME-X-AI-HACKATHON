@@ -40,20 +40,21 @@ python scripts/build_bgm_loops.py --track daily --suffix v2
 자동 분석은 후보를 좁히는 용도다. 파형 유사도뿐 아니라 박/마디 끝과 구문이 맞는지 듣고 결정한다.
 
 ```powershell
-python scripts/analyze_bgm_loops.py "NAN_GAME_TITLE/assets/audio/2. 일상.mp3"
+python scripts/analyze_bgm_loops.py "NAN_GAME_TITLE/assets/audio/original/2. 일상.mp3"
 ```
 
-`NAN_GAME_TITLE/bgm-loop-review.html`에서는 일상곡 기존판/개선판, Web Audio 경계,
-직접 실행용 기본 루프를 각각 들을 수 있다.
+`NAN_GAME_TITLE/bgm-loop-review.html`에서는 Web Audio 경계와 직접 실행용 기본 루프를
+각각 들을 수 있다.
 
-## 일상곡 v2 결정 기록
+## 일상곡 루프 결정 기록
 
 - 원본 분석의 상위 후보는 `7.75–49.58초`와 `7.50–47.83초`였다.
-- 기존판은 파형 점수가 가장 낮은 첫 후보였지만, 약 94 BPM 검출 기준으로 반복 길이가 구문 끝과
-  덜 맞아 연결이 어색하게 들릴 수 있었다.
-- v2는 `7.50–47.83초` 후보를 사용한다. 1.5초 크로스페이드 뒤 런타임 `loopStart`는 9.00초다.
-- 기존 `daily.ogg`와 `daily-loop.ogg`는 비교와 복구를 위해 보존하고, 런타임만
-  `daily-v2.ogg`와 `daily-v2-loop.ogg`를 사용한다.
+- 실제 청취 검수에서 자연스럽다고 승인된 값은 `7.75–49.58초`다. 1.5초 크로스페이드 뒤
+  런타임 `loopStart`는 9.25초다.
+- 이후 `daily-v2`의 `7.50–47.83초` 후보로 변경됐으나 루프가 어색해졌다는 회귀가 보고되어
+  2026-07-23에 승인된 `daily.ogg`와 `daily-loop.ogg`로 복구했다.
+- 타이틀에서 HTML Audio를 강제하면 인트로 파일에서 반복 전용 파일로 넘어갈 때 경계가 생길
+  수 있으므로, 일반 웹 실행에서는 Web Audio의 `loopStart`를 우선한다.
 
 ## 의존성·권한 문제 해결 기록
 

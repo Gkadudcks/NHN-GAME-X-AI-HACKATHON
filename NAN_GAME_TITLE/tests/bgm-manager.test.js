@@ -38,7 +38,7 @@ function loadManager({ protocol = 'http:' } = {}) {
     constructor() { this.state = 'suspended'; }
     createGain() { return { gain: { value: 0 }, connect() {} }; }
     createBufferSource() { return new MockSource(); }
-    decodeAudioData() { return Promise.resolve({ duration: 47.83 }); }
+    decodeAudioData() { return Promise.resolve({ duration: 49.58 }); }
     resume() { this.state = 'running'; return Promise.resolve(); }
     suspend() { this.state = 'suspended'; return Promise.resolve(); }
   }
@@ -84,8 +84,8 @@ test('HTTP에서는 Web Audio가 인트로 뒤 loopStart부터 샘플 단위로 
   assert.equal(manager.backend, 'webaudio');
   assert.equal(manager.sourceNode.started, true);
   assert.equal(manager.sourceNode.loop, true);
-  assert.equal(manager.sourceNode.loopStart, 9);
-  assert.equal(manager.sourceNode.loopEnd, 47.83);
+  assert.equal(manager.sourceNode.loopStart, 9.25);
+  assert.equal(manager.sourceNode.loopEnd, 49.58);
 });
 
 test('file URL에서는 인트로 종료 후 반복 전용 파일로 전환하고 기본 loop를 사용한다', async () => {
@@ -96,10 +96,10 @@ test('file URL에서는 인트로 종료 후 반복 전용 파일로 전환하�
 
   assert.equal(played, true);
   assert.equal(manager.backend, 'html');
-  assert.equal(audio.src, 'assets/audio/looped/daily-v2.ogg');
+  assert.equal(audio.src, 'assets/audio/looped/daily.ogg');
   assert.equal(audio.loop, false);
   assert.equal(createdAudio.length, 1);
-  assert.equal(createdAudio[0].src, 'assets/audio/looped/daily-v2-loop.ogg');
+  assert.equal(createdAudio[0].src, 'assets/audio/looped/daily-loop.ogg');
 
   await audio.onended();
   assert.equal(manager.activeFallbackAudio, createdAudio[0]);
@@ -131,7 +131,7 @@ test('루프 파일을 만들 수 없는 브라우저에서도 끝난 원본을 
   await manager.play('daily');
   await audio.onended();
 
-  assert.equal(audio.currentTime, 9);
+  assert.equal(audio.currentTime, 9.25);
   assert.equal(audio.playCalls, 2);
   assert.equal(manager.isPaused(), false);
 });

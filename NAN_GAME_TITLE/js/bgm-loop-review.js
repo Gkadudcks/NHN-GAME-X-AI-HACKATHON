@@ -1,8 +1,7 @@
 (function () {
   const names = {
     title: "1. 기본 테마",
-    daily: "2. 일상 · 개선판 v2",
-    dailyLegacy: "2. 일상 · 기존판 비교",
+    daily: "2. 일상",
     harin: "3. 서하린과의 일상",
     overtime: "4. 야근",
     mystery: "5. 추리",
@@ -12,11 +11,6 @@
     badEnding: "배드 엔딩",
   };
   const tracks = Object.entries(GameBgmTracks).filter(([, track]) => track);
-  tracks.splice(2, 0, ["dailyLegacy", {
-    source: "assets/audio/looped/daily.ogg",
-    loopSource: "assets/audio/looped/daily-loop.ogg",
-    loopStart: 9.25,
-  }]);
 
   const select = document.querySelector("#track");
   const statusTitle = document.querySelector("#status-title");
