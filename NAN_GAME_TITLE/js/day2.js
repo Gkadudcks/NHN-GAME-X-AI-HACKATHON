@@ -343,7 +343,7 @@ function workAlertMessages() {
     }));
 }
 
-const MESSAGE_DAY_NAMES = Object.freeze(["", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]);
+const MESSAGE_DAY_NAMES = Object.freeze(["", "월요일", "화요일", "수요일", "목요일", "금요일"]);
 
 function messageDay(message, fallbackDay = 2) {
   const explicitDay = Number(message.day);
@@ -357,7 +357,7 @@ function messageClock(message) {
 }
 
 function messageDayDivider(day) {
-  return `<div class="date-divider message-day-divider"><span>DAY ${day} · ${MESSAGE_DAY_NAMES[day]}</span></div>`;
+  return `<div class="date-divider message-day-label message-day-divider"><span>DAY ${day} · ${MESSAGE_DAY_NAMES[day]}</span></div>`;
 }
 
 function visibleMessages(room) {
