@@ -145,6 +145,63 @@
           "reviewed_at": "2026-07-23T00:53:31.2290107+09:00"
         }
       ]
+    },
+    {
+      "id": "background.restaurant.lunch",
+      "kind": "background",
+      "profile": "background_16_9",
+      "location": "restaurant",
+      "variant": "lunch",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "planned",
+          "path": null,
+          "generation_log_id": null,
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    {
+      "id": "background.qa_test_space.incident",
+      "kind": "background",
+      "profile": "background_16_9",
+      "location": "qa_test_space",
+      "variant": "incident",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "planned",
+          "path": null,
+          "generation_log_id": null,
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    {
+      "id": "background.office.night",
+      "kind": "background",
+      "profile": "background_16_9",
+      "location": "office",
+      "variant": "night",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "planned",
+          "path": null,
+          "generation_log_id": null,
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
     }
   ]
 }
