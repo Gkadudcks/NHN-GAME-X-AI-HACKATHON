@@ -57,9 +57,9 @@
     }
   },
   "characters": {
-    "seoyeon": {
-      "spec": "assets/art/characters/seoyeon/CHARACTER_SPEC.md",
-      "master_reference": null,
+    "harin": {
+      "spec": "assets/art/characters/harin/CHARACTER_SPEC.md",
+      "master_reference": "NAN_GAME_TITLE/assets/characters/harin-source.png",
       "allowed_poses": [
         "neutral_standing",
         "relaxed_standing",
@@ -74,16 +74,113 @@
         "concerned",
         "tired"
       ]
+    },
+    "minjae": {
+      "spec": "assets/art/characters/minjae/CHARACTER_SPEC.md",
+      "master_reference": "NAN_GAME_TITLE/assets/characters/minjae-source.png",
+      "allowed_poses": [
+        "neutral_standing",
+        "relaxed_standing",
+        "arms_folded"
+      ],
+      "allowed_expressions": [
+        "neutral",
+        "gentle_smile",
+        "embarrassed",
+        "surprised",
+        "concerned",
+        "tired"
+      ]
     }
   },
   "assets": [
     {
-      "id": "character.seoyeon.neutral_standing.neutral",
+      "id": "character.harin.neutral_standing.neutral",
       "kind": "character",
       "profile": "character_sprite",
-      "character_id": "seoyeon",
+      "character_id": "harin",
       "pose": "neutral_standing",
       "expression": "neutral",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "planned",
+          "path": null,
+          "generation_log_id": null,
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    {
+      "id": "character.harin.holding_cup.tired",
+      "kind": "character",
+      "profile": "character_sprite",
+      "character_id": "harin",
+      "pose": "holding_cup",
+      "expression": "tired",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "planned",
+          "path": null,
+          "generation_log_id": null,
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    {
+      "id": "character.harin.arms_folded.concerned",
+      "kind": "character",
+      "profile": "character_sprite",
+      "character_id": "harin",
+      "pose": "arms_folded",
+      "expression": "concerned",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "planned",
+          "path": null,
+          "generation_log_id": null,
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    {
+      "id": "character.minjae.neutral_standing.embarrassed",
+      "kind": "character",
+      "profile": "character_sprite",
+      "character_id": "minjae",
+      "pose": "neutral_standing",
+      "expression": "embarrassed",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "planned",
+          "path": null,
+          "generation_log_id": null,
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    {
+      "id": "character.minjae.arms_folded.concerned",
+      "kind": "character",
+      "profile": "character_sprite",
+      "character_id": "minjae",
+      "pose": "arms_folded",
+      "expression": "concerned",
       "active_version": null,
       "versions": [
         {
@@ -115,7 +212,63 @@
           "reviewed_at": null
         }
       ]
+    },
+    {
+      "id": "background.restaurant.lunch",
+      "kind": "background",
+      "profile": "background_16_9",
+      "location": "restaurant",
+      "variant": "lunch",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "planned",
+          "path": null,
+          "generation_log_id": null,
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    {
+      "id": "background.qa_test_space.incident",
+      "kind": "background",
+      "profile": "background_16_9",
+      "location": "qa_test_space",
+      "variant": "incident",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "planned",
+          "path": null,
+          "generation_log_id": null,
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    {
+      "id": "background.office.night",
+      "kind": "background",
+      "profile": "background_16_9",
+      "location": "office",
+      "variant": "night",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "planned",
+          "path": null,
+          "generation_log_id": null,
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
     }
   ]
 }
-

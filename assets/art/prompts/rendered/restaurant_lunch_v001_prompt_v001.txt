@@ -1,0 +1,32 @@
+[PROJECT VISUAL STYLE | background-prompt-v001]
+Modern Korean office romance visual novel with light mystery elements.
+Polished commercial anime visual novel background illustration.
+Clean, thin, consistent line art.
+Soft 2-to-3-step cel painting with restrained texture and medium environmental detail.
+Warm, low-contrast, low-to-medium-saturation palette using navy, beige, cream, muted brown, pale blue, and natural wood.
+Soft daylight with warm practical interior lighting.
+Clean game-ready edges and a consistent finish with the supplied office and office-lounge style references.
+
+[BACKGROUND]
+Asset ID: background.restaurant.lunch
+Location: a small independent Korean lunch restaurant located within walking distance of a modern office district.
+Variant: lunch.
+New location: use day1-office-lounge.png only as a visual-style, palette, finish, and perspective-quality reference. Do not copy its office furniture or floor plan.
+
+Create a modest, believable restaurant used by office workers on weekdays: warm light-wood tables, simple dark chairs, cream walls, muted-navy accents, a compact service counter toward the rear, a partially visible open kitchen pass, stacked stainless-steel cups, water pitchers, trays, tissue holders, and neatly organized tableware. The entrance and waiting lane should imply a busy lunch queue just outside or off-frame through floor markers, a narrow guided path, several prepared trays, pushed-back chairs, and an active lunch-rush atmosphere.
+
+Do not depict customers, staff, silhouettes, reflections of people, portraits, or human figures. The visual-novel character sprites will be composited separately. Do not show readable menus, prices, restaurant names, queue numbers, company names, or signs. Any menu board must use only indistinct blocks or abstract food icons with no legible characters.
+
+[CAMERA AND COMPOSITION]
+Eye-level camera with a natural 35mm lens feeling, looking diagonally across the restaurant from near the entrance. Maintain clean one-point or gentle two-point perspective with level verticals.
+Keep the lower center and lower-right foreground visually open for a full-body character sprite and dialogue UI. Place the service counter and strongest environmental detail toward the back-left or upper-center. Avoid a large table, chair back, plant, or counter blocking the character zone. Preserve clear walking paths and believable spacing.
+
+[LIGHTING AND MOOD]
+Bright early-afternoon daylight entering through a side window, mixed with warm pendant lighting. The space should feel busy but ordinary, friendly, slightly cramped, and popular with nearby office workers. Avoid romantic restaurant styling, luxury dining, retro diner aesthetics, or an empty abandoned atmosphere.
+
+[OUTPUT]
+1920x1080 RGB PNG or high-quality JPEG, 16:9, no alpha channel, no people, no character, no readable text, no company logo, no restaurant brand, no watermark.
+
+[EXCLUSIONS]
+photorealism, semi-realistic Korean webtoon rendering, 3D CGI, oil painting, watercolor, sketchy line art, thick outlines, chibi styling, high saturation, neon or cyberpunk colors, excessive bloom, heavy depth of field, fisheye distortion, tilted camera, extreme wide angle, people, customers, staff, human silhouettes, reflections of people, faces, crowd, readable Hangul, readable menu, readable prices, restaurant name, company logo, trademark, watermark, luxury restaurant, romantic date restaurant, fast-food franchise branding, empty abandoned room, clutter blocking sprite placement
+

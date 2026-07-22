@@ -43,7 +43,7 @@ assets/art/
 
 ```json
 {
-  "sprite_id": "character.seoyeon.neutral_standing.neutral",
+  "sprite_id": "character.harin.neutral_standing.neutral",
   "position": "center"
 }
 ```
@@ -57,4 +57,3 @@ assets/art/
 - 승인 파일을 덮어쓰지 않음
 - 검사 스크립트 오류 0건
 - 새 pose/expression/background가 실제로 필요한 이유가 검토 기록에 남음
-

@@ -12,10 +12,10 @@
 
 | 종류 | 패턴 | 예시 |
 |---|---|---|
-| 캐릭터 | `<character>_<pose>_<expression>_vNNN.png` | `seoyeon_neutral_standing_neutral_v001.png` |
+| 캐릭터 | `<character>_<pose>_<expression>_vNNN.png` | `harin_neutral_standing_neutral_v001.png` |
 | 배경 | `<location>_<variant>_vNNN.<ext>` | `office_day_v001.png` |
-| 이벤트 CG | `cg_<scene>_<beat>_vNNN.<ext>` | `cg_seoyeon_reveal_v001.png` |
-| 렌더링 프롬프트 | `<asset-file-stem>_prompt_vNNN.txt` | `seoyeon_neutral_standing_neutral_v001_prompt_v001.txt` |
+| 이벤트 CG | `cg_<scene>_<beat>_vNNN.<ext>` | `cg_harin_reveal_v001.png` |
+| 렌더링 프롬프트 | `<asset-file-stem>_prompt_vNNN.txt` | `harin_neutral_standing_neutral_v001_prompt_v001.txt` |
 
 ## 안정 ID
 
@@ -24,4 +24,3 @@
 - 이벤트 CG: `event_cg.<scene>.<beat>`
 
 코드는 안정 ID만 참조합니다. 실제 파일 경로는 manifest의 `active_version`으로 해석합니다. 버전은 `v001`부터 1씩 올리며, 번호를 재사용하거나 중간 버전을 덮어쓰지 않습니다.
-

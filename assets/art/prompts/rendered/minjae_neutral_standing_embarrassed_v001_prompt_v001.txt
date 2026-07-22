@@ -1,0 +1,31 @@
+[PROJECT VISUAL STYLE | prompt-v001]
+Modern Korean office romance visual novel with light mystery elements.
+Polished commercial anime visual novel illustration.
+Clean, thin, consistent line art.
+Soft 2-to-3-step cel shading with minimal painterly texture.
+Natural anatomy and realistic adult body proportions.
+Warm, low-contrast, low-to-medium-saturation palette using navy, beige, cream, muted brown, and pale blue.
+Soft indoor diffused key light with subtle cool ambient shadows.
+Clean game-ready edges and a consistent finish across all assets.
+
+[CHARACTER — LOCKED]
+Character ID: minjae
+Adult Korean man, 182 cm, lean oval face with a defined jaw, warm dark-brown slightly narrow eyes, very dark-brown short hair softly parted near the center with curved forelocks and a lightly tousled crown. Tall, lean, realistic adult proportions. Tailored black suit jacket and trousers, crisp white dress shirt, plain black necktie, black leather belt, black dress shoes, dark-navy lanyard, and plain white employee ID card.
+Primary master reference: NAN_GAME_TITLE/assets/characters/minjae-source.png
+Use the supplied master reference as the identity and costume source. Preserve his facial structure, eyes, hairstyle, apparent age, height impression, body proportions, suit construction, accessories, and color palette exactly. This is an edit/variation of the established character, not a redesign.
+
+[ALLOWED CHANGE]
+Pose: neutral_standing
+Expression: embarrassed
+Hand gesture or held object: stand upright with slightly tense shoulders; hands relaxed and fully visible, with no document, tablet, phone, or other prop.
+Scene intent: DAY 5 admission that his misguided attempt to reuse an old presentation triggered the synchronization problem. Show quiet guilt and hesitation: faint warmth in the cheeks, eyes briefly angled aside, and a small uncertain closed-mouth expression. He is remorseful and decent, not romantically bashful, childish, comedic, deceitful, or sinister.
+
+[CAMERA]
+Eye-level, front-facing 3/4 view, full body, consistent scale and eye/foot lines with the master reference. Keep the entire hair silhouette, both hands, ID card, trouser hems, and both shoes visible. Preserve generous transparent padding around the figure.
+
+[OUTPUT]
+1024x1536 RGBA PNG, truly transparent background, one character only, clean anti-aliased edges, no environment, no cast shadow, no text, no logo. Keep the character suitable for placement on the left, center, or right side of a visual-novel scene.
+
+[EXCLUSIONS]
+photorealism, semi-realistic Korean webtoon rendering, 3D CGI, oil painting, watercolor, sketchy line art, thick outlines, chibi or extreme anime proportions, oversized eyes, high saturation, neon or cyberpunk colors, excessive bloom, heavy depth of field, unreadable anatomy, extra fingers, fused fingers, missing fingers, duplicated limbs, distorted hands, inconsistent face, changed hairstyle, changed eye color, changed suit, casual clothing, loosened or missing tie, added accessories, missing lanyard, missing ID card, exaggerated blush, romantic shyness, comic sweat drops, evil smirk, villainous expression, readable text, logo, watermark, background
+

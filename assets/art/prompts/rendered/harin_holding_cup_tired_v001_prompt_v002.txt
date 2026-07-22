@@ -1,0 +1,35 @@
+[PROJECT VISUAL STYLE | prompt-v002]
+Modern Korean office romance visual novel with light mystery elements.
+Polished commercial anime visual novel illustration.
+Clean, thin, consistent line art.
+Soft 2-to-3-step cel shading with minimal painterly texture.
+Natural anatomy and realistic adult body proportions.
+Warm, low-contrast, low-to-medium-saturation palette using navy, beige, cream, muted brown, and pale blue.
+Soft indoor diffused key light with subtle cool ambient shadows.
+Clean game-ready edges and a consistent finish across all assets.
+
+[CHARACTER — LOCKED]
+Character ID: harin
+Adult Korean woman, 165 cm, soft oval face, warm-brown almond-shaped eyes, dark-brown chin-to-shoulder-length bob curved softly inward at the ends, side-swept bangs, and loose strands near the cheeks. Slender realistic adult proportions. Fitted black office blazer, crisp white collared blouse, high-waisted black knee-length pencil skirt, black low-heeled pumps, small silver drop earrings, dark-navy lanyard, and plain white employee ID card.
+Primary master reference: harin-source.png
+Use the supplied master reference as the absolute identity and costume source. Preserve her facial structure, eyes, hair silhouette and length, apparent age, body proportions, outfit construction, accessories, and color palette exactly. This is an edit/variation of the established character, not a redesign.
+
+[ALLOWED CHANGE]
+Pose: holding_cup
+Expression: tired
+Hand gesture or held object: hold one lidded takeaway paper coffee cup naturally at chest-to-waist height with one hand. The cup is warm cream or muted kraft-paper brown and has exactly one small, simple coffee-bean emblem printed on its front. The emblem contains no letters, words, numbers, brand name, or additional graphic. The other arm rests naturally. No folder, can, mug, phone, or additional prop.
+
+[EXPRESSION — IMPORTANT]
+She must look unmistakably like a tired office worker near the end of a long overtime shift, not shy, embarrassed, flustered, romantic, or coy.
+Use visibly heavy and slightly lowered upper eyelids, mildly unfocused but still attentive eyes, subtly relaxed facial muscles, a neutral or faintly downturned closed mouth, and gently lowered shoulders. Add only very subtle natural under-eye fatigue and no cosmetic dark circles. Keep her posture professional but low-energy, as if she has been concentrating for hours and is relying on the coffee to finish the last task.
+Do not use blushing cheeks, a bashful smile, averted shy eyes, lip biting, playful warmth, nervousness, embarrassment, comic sweat marks, or an exaggerated exhausted slump. She remains competent and composed despite obvious fatigue.
+
+[CAMERA]
+Eye-level, front-facing 3/4 view, full body, consistent scale and eye/foot lines with the master reference. Keep the entire hair silhouette, both hands, the coffee cup and its single coffee-bean emblem, ID card, skirt hem, and both shoes visible. Preserve generous transparent padding around the figure.
+
+[OUTPUT]
+1024x1536 RGBA PNG, truly transparent background, one character only, clean anti-aliased edges, no environment, no cast shadow, no readable text, no brand name, no trademark, no signature, and no watermark. The only permitted graphic is the single small non-text coffee-bean emblem on the paper cup. Keep the character suitable for placement on the left, center, or right side of a visual-novel scene.
+
+[EXCLUSIONS]
+photorealism, semi-realistic Korean webtoon rendering, 3D CGI, oil painting, watercolor, sketchy line art, thick outlines, chibi or extreme anime proportions, oversized eyes, high saturation, neon or cyberpunk colors, excessive bloom, heavy depth of field, unreadable anatomy, extra fingers, fused fingers, missing fingers, duplicated limbs, distorted hands, inconsistent face, changed hairstyle, longer hair, changed eye color, changed outfit, casual clothing, shortened skirt, high heels, added jewelry, missing lanyard, missing ID card, aluminum can, ceramic mug, transparent plastic cup, straw, beverage splash, multiple cups, letters on cup, words on cup, numbers on cup, branded cafe logo, real-world trademark, multiple emblems, blushing, bashful smile, shy expression, coy expression, romantic embarrassment, comic sweat drops, crying, illness, intoxication, extreme eye bags, exaggerated slouch, background
+
