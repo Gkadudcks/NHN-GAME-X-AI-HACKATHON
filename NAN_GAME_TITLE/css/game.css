@@ -86,11 +86,14 @@
 /* A cinematic CG is shown alone for three seconds, then only the dialogue UI fades in. */
 .event-cg{inset:0}
 .stage.cinematic-only .hud,.stage.cinematic-only .scene-label,.stage.cinematic-only .sound-prompt,.stage.cinematic-only .character-layer,.stage.cinematic-only .dialogue-card{opacity:0;visibility:hidden;pointer-events:none}
+.stage.cinematic-only.sprite-cinematic .character-layer{opacity:1;visibility:visible;pointer-events:none}
+.stage.cinematic-only.sprite-cinematic .character.speaking{animation:cinematic-sprite-reveal 1.15s cubic-bezier(.2,.75,.25,1) both}
 .stage.cinematic-only .dialogue-card{transform:translateY(18px)}
 .stage.cinematic-only.cinematic-ready .dialogue-card{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0)}
 .stage.cinematic-only .event-cg.show{animation:cinematic-cg-reveal 1.15s cubic-bezier(.2,.75,.25,1) both}
 .stage.cinematic-only .event-cg:after{position:absolute;inset:0;content:"";pointer-events:none;background:linear-gradient(0deg,#211217a8 0,transparent 42%),radial-gradient(circle at 50% 42%,transparent 48%,#130b104a 100%)}
 @keyframes cinematic-cg-reveal{from{opacity:0;transform:scale(1.035)}to{opacity:1;transform:scale(1)}}
+@keyframes cinematic-sprite-reveal{from{opacity:0;transform:translateX(-50%) scale(.985)}to{opacity:1;transform:translateX(-50%) scale(1)}}
 
 /* Message arrival is readable even with sound disabled. */
 .messenger.message-arrived{animation:messenger-alert .58s ease 3}

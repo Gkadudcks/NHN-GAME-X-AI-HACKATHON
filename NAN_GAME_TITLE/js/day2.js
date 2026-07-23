@@ -11,6 +11,14 @@ const CHARACTER_PROFILES = {
 const CHARACTER_POSITIONS = { farLeft: 18, left: 31, center: 50, right: 69, farRight: 82 };
 const scenes = Day2Story.scenes;
 const $ = (selector) => document.querySelector(selector);
+const pageParams = new URLSearchParams(location.search);
+const devSkipMinigames = pageParams.get("dev") === "skip-minigames";
+const BACKGROUND_SOURCES = Object.freeze({
+  office: `${ASSET}backgrounds/day1-office.png`,
+  office_night: ArtAssets.resolve("background.office.night"),
+  qa_test_space_incident: ArtAssets.resolve("background.qa_test_space.incident"),
+  restaurant_lunch: ArtAssets.resolve("background.restaurant.lunch"),
+});
 
 const refs = {
   stage: $("#stage"),
@@ -46,7 +54,7 @@ const refs = {
   dayTransition: $("#day-transition"),
 };
 
-const progress = new URLSearchParams(location.search).has("new")
+const progress = pageParams.has("new")
   ? GameProgress.resetDay2(localStorage)
   : GameProgress.startDay2(localStorage);
 const savedDay2 = progress.days[2];
@@ -68,6 +76,8 @@ const state = {
 let currentRoom = "";
 let choiceResultTimer;
 let sceneTransitionLocked = false;
+let cinematicLocked = false;
+let cinematicTimer;
 const audio = $("#bgm");
 
 const statDescriptions = {
@@ -317,30 +327,6 @@ function isAtOrAfter(id) {
   return target >= 0 && state.index >= target;
 }
 
-function roomForSender(sender) {
-  if (sender.includes("서하린")) return "harin";
-  if (sender.includes("박태식")) return "pt";
-  if (sender.includes("강민재")) return "minjae";
-  if (sender.includes("윤세아")) return "sea";
-  return null;
-}
-
-function workAlertMessages() {
-  if (!state.minigameResult || !isAtOrAfter("day2RequestResult")) return [];
-  return state.minigameResult.results
-    .map((result, index) => ({ result, room: roomForSender(result.sender), index }))
-    .filter((entry) => entry.room)
-    .slice(0, 8)
-    .map(({ result, room, index }) => ({
-      id: `work-alert-${result.id}`,
-      room,
-      sender: result.sender,
-      text: result.outcome === "correct" ? result.response : result.outcome === "missed" ? `${result.request} · 응답하지 못함` : `${result.request} · 다른 행동으로 처리`,
-      day: 2,
-      time: `10:${String(39 + index).padStart(2, "0")}`,
-    }));
-}
-
 const MESSAGE_DAY_NAMES = Object.freeze(["", "월요일", "화요일", "수요일", "목요일", "금요일"]);
 
 function messageDay(message, fallbackDay = 2) {
@@ -359,8 +345,7 @@ function messageDayDivider(day) {
 }
 
 function visibleMessages(room) {
-  const storyMessages = Day2Story.MESSAGES.filter((message) => message.room === room && isAtOrAfter(message.at));
-  return [...storyMessages, ...workAlertMessages().filter((message) => message.room === room)];
+  return Day2Story.MESSAGES.filter((message) => message.room === room && isAtOrAfter(message.at));
 }
 
 function renderMessages() {
@@ -557,7 +542,6 @@ function inheritedSceneValue(index, key) {
 }
 
 function renderVisuals(scene) {
-  const backgroundMap = { office: "day1-office.png" };
   const effectiveBg = inheritedSceneValue(state.index, "bg");
   const placeholder = scene.placeholder === "inherit" ? inheritedPlaceholder(state.index) : scene.placeholder;
   refs.scenePlaceholder.classList.toggle("show", Boolean(placeholder));
@@ -567,8 +551,8 @@ function renderVisuals(scene) {
     refs.placeholderTitle.textContent = placeholder.title;
     refs.placeholderDetail.textContent = placeholder.detail;
     refs.stage.style.backgroundImage = "none";
-  } else if (effectiveBg && backgroundMap[effectiveBg]) {
-    refs.stage.style.backgroundImage = `url('${ASSET}backgrounds/${backgroundMap[effectiveBg]}')`;
+  } else if (effectiveBg && BACKGROUND_SOURCES[effectiveBg]) {
+    refs.stage.style.backgroundImage = `url('${BACKGROUND_SOURCES[effectiveBg]}')`;
   }
 
   const characterPlaceholder = scene.placeholderCharacter;
@@ -585,6 +569,44 @@ function renderVisuals(scene) {
     refs.systemPanelTitle.textContent = scene.systemPanel.title;
     refs.systemPanelRows.innerHTML = scene.systemPanel.rows.map((row) => `<p>${escapeHtml(row)}</p>`).join("");
   }
+}
+
+function resetCinematic() {
+  window.clearTimeout(cinematicTimer);
+  cinematicLocked = false;
+  refs.stage.classList.remove("cinematic-only", "cinematic-ready", "sprite-cinematic");
+}
+
+function startCinematic(scene) {
+  cinematicLocked = true;
+  refs.stage.classList.add("cinematic-only");
+  if (scene.cinematicTarget === "sprite") refs.stage.classList.add("sprite-cinematic");
+  refs.next.disabled = true;
+  cinematicTimer = window.setTimeout(() => {
+    refs.speaker.textContent = scene.speaker;
+    refs.dialogue.textContent = scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text;
+    cinematicLocked = false;
+    refs.stage.classList.add("cinematic-ready");
+    refs.next.disabled = false;
+  }, scene.cinematicDelay);
+}
+
+function preloadSceneImages(scene) {
+  if (!scene?.cinematicDelay) return Promise.resolve();
+  const sources = [];
+  if (scene.bg && BACKGROUND_SOURCES[scene.bg]) sources.push(BACKGROUND_SOURCES[scene.bg]);
+  (scene.characters || []).forEach((entry) => {
+    if (entry.assetId) sources.push(ArtAssets.resolve(entry.assetId));
+  });
+  return Promise.all(sources.map((source) => new Promise((resolve) => {
+    const image = new Image();
+    const done = () => resolve();
+    image.onload = done;
+    image.onerror = done;
+    image.src = source;
+    if (image.complete) resolve();
+    window.setTimeout(resolve, 2500);
+  })));
 }
 
 function nextVisibleIndex(fromIndex) {
@@ -647,6 +669,19 @@ function finishWorkAlert(result) {
 }
 
 function startWorkAlert() {
+  if (devSkipMinigames) {
+    console.info("[DEV] 업무 알림 미니게임을 GOOD 결과로 스킵했습니다.");
+    finishWorkAlert({
+      score: 0,
+      grade: "good",
+      workDelta: 1,
+      harinHandled: false,
+      missedCritical: [],
+      results: [],
+      skipped: true,
+    });
+    return;
+  }
   const commonRequests = WorkAlertMinigame.core.REQUESTS.slice(0, 13);
   const subtaskRequests = WorkAlertMinigame.core.SUBTASK_REQUESTS[state.decisions.day2Subtask || "competitor"];
   const requests = [...commonRequests, ...subtaskRequests];
@@ -716,16 +751,18 @@ function closeDaySummary() {
 function render() {
   state.index = nextVisibleIndex(state.index);
   const scene = scenes[state.index] || scenes[0];
+  const cinematic = Boolean(scene.cinematicDelay);
   const effectiveBgm = inheritedSceneValue(state.index, "bgm");
+  resetCinematic();
   if (scene.daySummary && state.summariesSeen[2]) {
     state.index = nextVisibleIndex(state.index + 1);
     render();
     return;
   }
   refs.clock.textContent = scene.time;
-  refs.speaker.textContent = scene.speaker;
-  refs.dialogue.textContent = scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text;
-  refs.next.disabled = false;
+  refs.speaker.textContent = cinematic ? "" : scene.speaker;
+  refs.dialogue.textContent = cinematic ? "" : (scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text);
+  refs.next.disabled = cinematic;
   refs.next.textContent = scene.end ? "타이틀로　›" : "다음　›";
   $("#scene-label").textContent = scene.location || (Number(scene.time.split(":")[0]) >= 12 ? "게임사업실 · 오후" : "게임사업실 · 오전");
   renderVisuals(scene);
@@ -744,6 +781,7 @@ function render() {
     refs.stage.classList.add("choice-mode");
     refs.next.disabled = true;
   }
+  if (cinematic) startCinematic(scene);
   syncStats();
   saveProgress();
   if (scene.startWorkAlert && !state.minigameResult) {
@@ -760,8 +798,8 @@ function hasBlockingUi() {
     || !!document.querySelector(".work-alert-minigame:not([hidden])");
 }
 
-function next() {
-  if (sceneTransitionLocked || hasBlockingUi()) return;
+async function next() {
+  if (cinematicLocked || sceneTransitionLocked || hasBlockingUi()) return;
   sceneTransitionLocked = true;
   refs.next.disabled = true;
   const scene = scenes[state.index];
@@ -775,7 +813,9 @@ function next() {
     sceneTransitionLocked = false;
     return;
   }
-  state.index = nextVisibleIndex(state.index + 1);
+  const targetIndex = nextVisibleIndex(state.index + 1);
+  await preloadSceneImages(scenes[targetIndex]);
+  state.index = targetIndex;
   saveProgress();
   render();
   sceneTransitionLocked = false;

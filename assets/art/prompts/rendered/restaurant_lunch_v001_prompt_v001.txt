@@ -1,0 +1,4 @@
+Use case: precise-object-edit
+Asset type: 16:9 visual-novel restaurant background
+Primary request: Remove only the readable Korean menu names from the five white menu panels above the counter. Replace the lettering with clean blank panel space while keeping the food photos on those panels.
+Constraints: Preserve the entire restaurant image exactly: same composition, camera, furniture, lighting, colors, food photos, panel shapes, and all object positions. Change only the readable lettering. Do not add any new text, logos, people, watermarks, or objects. Keep the visual-novel background style and wide 16:9 framing.

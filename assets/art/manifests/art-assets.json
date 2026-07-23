@@ -151,16 +151,16 @@
       "character_id": "harin",
       "pose": "arms_folded",
       "expression": "concerned",
-      "active_version": null,
+      "active_version": "v001",
       "versions": [
         {
           "version": "v001",
-          "status": "planned",
-          "path": null,
-          "generation_log_id": null,
-          "sha256": null,
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "approved",
+          "path": "assets/art/characters/harin/approved/harin_arms_folded_concerned_v001.png",
+          "generation_log_id": "harin-arms-folded-concerned-v001-user-export",
+          "sha256": "e96c682556cf7307b765bd69268c01dca839c07876a74a9818ab6036d91cf4a4",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-23T23:44:26.6548966+09:00"
         }
       ]
     },
@@ -249,16 +249,16 @@
       "profile": "background_16_9",
       "location": "restaurant",
       "variant": "lunch",
-      "active_version": null,
+      "active_version": "v001",
       "versions": [
         {
           "version": "v001",
-          "status": "planned",
-          "path": null,
-          "generation_log_id": null,
-          "sha256": null,
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "approved",
+          "path": "assets/art/backgrounds/approved/restaurant_lunch_v001.png",
+          "generation_log_id": "restaurant-lunch-v001-text-removal",
+          "sha256": "8f53374ab9fd622c49416f84173440f504fbc60e74bba2551efd3a70c0d0cefb",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-23T23:52:12.1510616+09:00"
         }
       ]
     },
@@ -268,16 +268,16 @@
       "profile": "background_16_9",
       "location": "qa_test_space",
       "variant": "incident",
-      "active_version": null,
+      "active_version": "v001",
       "versions": [
         {
           "version": "v001",
-          "status": "planned",
-          "path": null,
-          "generation_log_id": null,
-          "sha256": null,
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "approved",
+          "path": "assets/art/backgrounds/approved/qa_test_space_incident_v001.png",
+          "generation_log_id": "qa-test-space-incident-v001-user-export",
+          "sha256": "7cf9c3982dcd95705c30717b44b3882245e40cfca9d78ff71ab1d337411144e1",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-23T23:44:26.6548966+09:00"
         }
       ]
     },
@@ -287,16 +287,16 @@
       "profile": "background_16_9",
       "location": "office",
       "variant": "night",
-      "active_version": null,
+      "active_version": "v001",
       "versions": [
         {
           "version": "v001",
-          "status": "planned",
-          "path": null,
-          "generation_log_id": null,
-          "sha256": null,
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "approved",
+          "path": "assets/art/backgrounds/approved/office_night_v001.png",
+          "generation_log_id": "office-night-v001-user-export",
+          "sha256": "64e1e30a531884eb4520a7f5ae0a8529fdec6f7358d9d4ee4052a31f5a6079d2",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-23T23:44:26.6548966+09:00"
         }
       ]
     }
