@@ -1,6 +1,29 @@
 (function (global) {
   "use strict";
 
+  const DEDUCTION_CLUE_PREFIXES = Object.freeze([
+    "박태식의 최초 지시:",
+    "서하린이 담당했던 2024 온보딩 개선 프로젝트 폴더",
+    "강민재가 과거 발표 자료와 구버전 폴더의 위치를 알고 있음",
+    "나나봇 자동 정리 활성화",
+    "나나봇 자동 요약 활성화",
+    "Day 1 원본 초안:",
+    "DAY 2 검증 기준",
+    "강민재의 제안",
+    "과거 폴더의 비활성 자동화",
+    "DAY 2 검증 완료 기록",
+  ]);
+
+  function isDeductionClue(text) {
+    const value = String(text || "");
+    return DEDUCTION_CLUE_PREFIXES.some((prefix) => value.startsWith(prefix));
+  }
+
+  function pruneClues(clues) {
+    if (!Array.isArray(clues)) return [];
+    return [...new Set(clues.map(String).filter(isDeductionClue))];
+  }
+
   const DAY_META = Object.freeze({
     1: { title: "최초 기록", subtitle: "원본과 업무 지시", image: "../assets/CG/day1-harin-convenience-cg-v2.png" },
     2: { title: "검증과 흔적", subtitle: "수치·자동화·복원", image: "../assets/backgrounds/day1-office.png" },
@@ -96,16 +119,18 @@
     const maxScale = Number(options.maxScale) || 1.6;
     const worldWidth = Number(options.worldWidth) || world.offsetWidth;
     const worldHeight = Number(options.worldHeight) || world.offsetHeight;
+    const initialScaleMultiplier = Math.max(1, Number(options.initialScaleMultiplier) || 1);
     const zoomLabel = options.zoomLabel;
     const apply = () => {
       world.style.transform = `translate3d(${x}px,${y}px,0) scale(${scale})`;
       if (zoomLabel) zoomLabel.textContent = `${Math.round(scale * 100)}%`;
     };
-    const fitToView = () => {
+    const fitToView = (scaleMultiplier = 1) => {
       const padding = 28;
       const availableWidth = Math.max(1, viewport.clientWidth - padding * 2);
       const availableHeight = Math.max(1, viewport.clientHeight - padding * 2);
-      scale = Math.min(1, Math.max(minScale, Math.min(availableWidth / worldWidth, availableHeight / worldHeight)));
+      const fitScale = Math.min(1, Math.max(minScale, Math.min(availableWidth / worldWidth, availableHeight / worldHeight)));
+      scale = Math.min(maxScale, fitScale * scaleMultiplier);
       x = Math.round((viewport.clientWidth - worldWidth * scale) / 2);
       y = Math.round((viewport.clientHeight - worldHeight * scale) / 2);
       apply();
@@ -163,9 +188,9 @@
     viewport.zoomBy = (factor) => setScale(scale * factor);
     viewport.fitToView = fitToView;
     viewport.resetPan = fitToView;
-    fitToView();
+    fitToView(initialScaleMultiplier);
     if (typeof ResizeObserver !== "undefined") {
-      viewport.resizeObserver = new ResizeObserver(() => fitToView());
+      viewport.resizeObserver = new ResizeObserver(() => fitToView(initialScaleMultiplier));
       viewport.resizeObserver.observe(viewport);
     }
   }
@@ -314,11 +339,16 @@
     container.append(shell);
     const initialX = 12;
     const initialY = Math.min(10, Math.round((viewport.clientHeight - worldHeight) / 2));
-    enablePan(viewport, world, initialX, initialY, { worldWidth, worldHeight, zoomLabel });
+    enablePan(viewport, world, initialX, initialY, {
+      worldWidth,
+      worldHeight,
+      zoomLabel,
+      initialScaleMultiplier: selectedDay ? 1.22 : 1,
+    });
     zoomOut.addEventListener("click", () => viewport.zoomBy(0.92));
     zoomIn.addEventListener("click", () => viewport.zoomBy(1.09));
     reset.addEventListener("click", () => viewport.resetPan());
   }
 
-  global.ClueMindmap = Object.freeze({ render, clueDay, clueTheme, clueSummary });
+  global.ClueMindmap = Object.freeze({ render, clueDay, clueTheme, clueSummary, isDeductionClue, pruneClues });
 })(window);

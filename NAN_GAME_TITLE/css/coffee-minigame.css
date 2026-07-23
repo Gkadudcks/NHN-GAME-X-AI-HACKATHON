@@ -132,14 +132,19 @@
 .coffee-order-card small { color: #b89ca2; font-size: 9px; font-weight: 800; letter-spacing: .12em; }
 .coffee-order-card b { display: block; margin: 9px 0 4px; font-size: 17px; }
 .coffee-order-card p { margin: 0; color: #d26069; font-weight: 850; }
-.coffee-order-recipe { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; margin-top: 15px; }
-.coffee-order-recipe i { position: relative; min-width: 52px; display: grid; place-items: center; gap: 3px; padding: 10px 6px 8px; border-radius: 10px; background: #f7efec; font-style: normal; }
-.coffee-order-recipe i span { font-size: 19px; }
-.coffee-order-recipe i small { color: #765f67; font-size: 8px; font-weight: 800; letter-spacing: 0; }
-.coffee-order-recipe i .recipe-step { position: absolute; top: -6px; left: -5px; width: 18px; height: 18px; display: grid; place-items: center; margin: 0; color: #fff; border-radius: 50%; background: #6c555d; font-size: 8px; }
-.coffee-order-recipe em { align-self: center; color: #d86770; font-size: 14px; font-style: normal; font-weight: 900; }
-.coffee-order-recipe .recipe-method { color: #fff; background: #df6871; }
-.coffee-order-recipe .recipe-method small { color: #fff; }
+.coffee-recipe-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 18px; padding: 0 3px 7px; border-bottom: 1px solid #eadbd7; }
+.coffee-recipe-label span { color: #c45e67; font-size: 9px; font-weight: 900; letter-spacing: .14em; }
+.coffee-recipe-label em { color: #a28e94; font-size: 8px; font-style: normal; font-weight: 700; }
+.coffee-order-recipe { position: relative; display: grid; gap: 6px; margin-top: 8px; }
+.coffee-order-recipe::before { position: absolute; top: 18px; bottom: 18px; left: 16px; width: 2px; content: ""; background: #ead8d5; }
+.coffee-order-recipe i { position: relative; min-width: 0; display: grid; grid-template-columns: 27px 31px minmax(0, 1fr); align-items: center; gap: 8px; min-height: 43px; padding: 6px 11px 6px 6px; border-radius: 11px; background: #f7efec; font-style: normal; text-align: left; }
+.coffee-order-recipe .coffee-ingredient-icon { width: 27px; height: 27px; }
+.coffee-order-recipe i small { color: #5f4b52; font-size: 10px; font-weight: 850; letter-spacing: 0; }
+.coffee-order-recipe i .recipe-step { position: relative; z-index: 1; width: 22px; height: 22px; display: grid; place-items: center; margin: 0; color: #fff; border: 3px solid #f7efec; border-radius: 50%; background: #6c555d; font-size: 8px; }
+.coffee-order-recipe .recipe-method { color: #fff; background: #ce7076; }
+.coffee-order-recipe .recipe-method .recipe-step { border-color: #ce7076; background: #55434a; }
+.coffee-order-recipe .recipe-method span { width: 27px; display: grid; place-items: center; font-size: 17px; font-weight: 900; }
+.coffee-order-recipe .recipe-method small { color: #fff; font-size: 11px; }
 .coffee-order-countdown { margin: 0 0 18px; color: #927d84; font-size: 12px; }
 .coffee-order-countdown strong { color: var(--coffee-coral); font-size: 20px; }
 
@@ -233,7 +238,7 @@
 .coffee-cup-rack .coffee-cup { min-height: 250px; padding: 18px 22px; }
 .coffee-cup-rack .coffee-cup-head b { font-size: 18px; }
 .coffee-cup-rack .coffee-cup-head small { font-size: 11px; }
-.coffee-cup-rack .coffee-cup-state { font-size: 11px; text-align: center; }
+.coffee-cup-rack .coffee-cup-state { font-size: 13px; text-align: center; }
 
 .coffee-cup:hover,
 .coffee-cup.selected,
@@ -263,11 +268,25 @@
 }
 
 .cup-body::after { content: ""; position: absolute; right: -22px; top: 19px; width: 28px; height: 34px; border: 7px solid #eee5df; border-left: 0; border-radius: 0 18px 18px 0; }
-.cup-body strong { position: relative; z-index: 2; color: #d8616b; font-size: 15px; }
+.cup-body strong { position: relative; z-index: 2; color: #d8616b; font-size: 10px; font-weight: 900; letter-spacing: .14em; }
 .cup-fill { position: absolute; left: 4px; right: 4px; bottom: 4px; height: var(--fill, 0%); border-radius: 2px 2px 16px 16px; background: var(--liquid, #a96f4d); transition: height .25s; }
-.coffee-cup-steps { min-height: 27px; display: flex; flex-wrap: wrap; gap: 4px; }
-.coffee-cup-steps i { min-width: 24px; padding: 4px; border-radius: 7px; background: #f1e9e6; font-size: 11px; font-style: normal; text-align: center; }
-.coffee-cup-state { color: #9b858c; font-size: 9px; }
+.coffee-cup-state {
+  justify-self: center;
+  min-width: 150px;
+  padding: 7px 13px;
+  color: #624d55;
+  border: 1px solid #e5d5d1;
+  border-radius: 999px;
+  background: #f7efec;
+  box-shadow: inset 0 1px #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -.01em;
+}
+.coffee-cup.error .coffee-cup-state { color: #b43e4b; border-color: #efb8bd; background: #fff0f1; }
+.coffee-cup.ready .coffee-cup-state { color: #277d57; border-color: #addbc4; background: #edfaf3; }
+.coffee-cup.served .coffee-cup-state { color: #6f6570; border-color: #d8d0d4; background: #f2eff1; }
 
 .coffee-machine {
   grid-area: machine;
@@ -327,7 +346,25 @@
 
 .coffee-ingredient:hover,
 .coffee-ingredient.selected { color: #fff; border-color: #df6871; background: #df6871; transform: translateY(-3px); }
-.coffee-ingredient span { font-size: 23px; }
+.coffee-ingredient-icon {
+  width: 31px;
+  height: 31px;
+  display: inline-grid;
+  place-items: center;
+  color: #72545b;
+}
+.coffee-ingredient-icon svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.coffee-ingredient:hover .coffee-ingredient-icon,
+.coffee-ingredient.selected .coffee-ingredient-icon { color: #fff; }
 .coffee-ingredient b { overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 
 .coffee-trash,

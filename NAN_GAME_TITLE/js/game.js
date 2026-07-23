@@ -24,12 +24,12 @@ const scenes=[
  {id:'messageNotice',time:'09:15',speaker:'시스템',text:'PT 전환과제 TF에 새 메시지가 도착했습니다.\n우측 패널의 메신저 탭에서 확인하세요.',char:'harin',requireMessage:true,notification:'pt-first'},
  {id:'afterMessage',time:'09:22',speaker:'서하린',text:'좋아요. 요구사항은 기록해 두죠. 나중에 말이 달라지면 원문이 제일 정확하니까요.',char:'harin',clue:'박태식의 최초 지시: 유저 경험 중심·검증된 수치 사용'},
  {id:'workPlan',time:'09:30',speaker:'서하린',text:'금요일까지 시간이 많지 않아요. 오늘 어떤 자료부터 확인할 생각이에요?',char:'harin',choiceKey:'workPlan',choices:[
-   {text:'신규 유저가 이탈하는 구간부터 조사한다.',delta:{work:1},clue:'조사 자료: 구간별 이탈 데이터',reply:'“좋아요. 먼저 어디에서 빠져나가는지 알아야 개선안도 설득력이 생기죠.”'},
-   {text:'경쟁 게임의 신규 유저 경험부터 조사한다.',delta:{work:1},clue:'조사 자료: 경쟁 게임 사례',reply:'“비교 기준을 잡는 것도 좋겠네요. 그대로 따라 하지는 말고 이유를 찾아봐요.”'},
-   {text:'눈에 띄는 AI 기능 아이디어부터 정리한다.',delta:{work:0,trust:1},clue:'조사 자료: AI 기능 아이디어',reply:'“아이디어는 괜찮지만, 부장님이 말한 건 AI 자체보다 유저 경험에 가까웠어요.”'}]},
+   {text:'신규 유저가 이탈하는 구간부터 조사한다.',delta:{work:1},reply:'“좋아요. 먼저 어디에서 빠져나가는지 알아야 개선안도 설득력이 생기죠.”'},
+   {text:'경쟁 게임의 신규 유저 경험부터 조사한다.',delta:{work:1},reply:'“비교 기준을 잡는 것도 좋겠네요. 그대로 따라 하지는 말고 이유를 찾아봐요.”'},
+   {text:'눈에 띄는 AI 기능 아이디어부터 정리한다.',delta:{work:0,trust:1},reply:'“아이디어는 괜찮지만, 부장님이 말한 건 AI 자체보다 유저 경험에 가까웠어요.”'}]},
  {id:'researchStart',time:'10:00',speaker:'한도윤',text:'하린이 공유한 사내 자료실에서 이탈 데이터, 고객 리뷰, 기존 안내 문서를 차례로 열었다.'},
- {id:'researchData',time:'10:06',speaker:'시스템',text:'자료 조사 결과\n· 초반 안내가 길다는 의견이 많다.\n· 첫 전투에 진입하기 전에 이탈하는 유저가 많다.',clue:'조사 결과: 긴 초반 안내·늦은 첫 전투'},
- {id:'fileVersions',time:'10:14',speaker:'한도윤',text:'신규유저_개선안, 신규유저_개선안_수정, 신규유저_개선안_최종, 신규유저_개선안_최종진짜…\n비슷한 이름의 문서가 너무 많았다.',clue:'자료실에 비슷한 이름의 문서가 여러 개 존재'},
+ {id:'researchData',time:'10:06',speaker:'시스템',text:'자료 조사 결과\n· 초반 안내가 길다는 의견이 많다.\n· 첫 전투에 진입하기 전에 이탈하는 유저가 많다.'},
+ {id:'fileVersions',time:'10:14',speaker:'한도윤',text:'신규유저_개선안, 신규유저_개선안_수정, 신규유저_개선안_최종, 신규유저_개선안_최종진짜…\n비슷한 이름의 문서가 너무 많았다.'},
  {id:'fileJoke',time:'10:16',speaker:'서하린',text:'웃지 마세요. 금요일이면 도윤 씨 폴더도 저렇게 될 수 있어요.',char:'harin'},
  {id:'fileJokeReply',time:'10:17',speaker:'한도윤',text:'저는 파일명 정리 잘합니다.',char:'harin'},
  {id:'fileJokeEnd',time:'10:18',speaker:'서하린',text:'그 말도 금요일에 확인해볼게요.',char:'harin'},
@@ -42,15 +42,15 @@ const scenes=[
  {id:'coffeeIntro',time:'10:30',speaker:'서하린',text:'주문은 적어두는 게 안전한데… 도윤 씨 표정을 보니 그냥 외우려는 것 같네요.',characters:[{id:'minjae',position:'left'},{id:'harin',position:'right'}],activeCharacter:'harin',startCoffee:true},
  {id:'coffeeResult',time:'10:45',speaker:'박태식',text:'커피 고마워. 요구사항도 지금처럼 놓치지 말고. 예상 수치는 검증된 것만 써.',characters:[{id:'minjae',position:'left'},{id:'boss',position:'center'},{id:'harin',position:'right'}],activeCharacter:'boss'},
  {id:'bossVerbal',time:'11:00',speaker:'박태식',text:'아, 발표는 너무 딱딱하지 않게 해. 눈에 들어오게. 아까 말한 느낌 알지?',characters:[{id:'boss',position:'left'},{id:'harin',position:'right'}],activeCharacter:'boss'},
- {id:'harinInterpret',time:'11:02',speaker:'서하린',text:'방금 말씀은 표현 방식에 대한 이야기겠죠? 방향을 바꾸라는 건 아닐 거예요.',characters:[{id:'boss',position:'left'},{id:'harin',position:'right'}],activeCharacter:'harin',clue:'박태식의 구두 지시: 발표를 눈에 들어오게'},
+ {id:'harinInterpret',time:'11:02',speaker:'서하린',text:'방금 말씀은 표현 방식에 대한 이야기겠죠? 방향을 바꾸라는 건 아닐 거예요.',characters:[{id:'boss',position:'left'},{id:'harin',position:'right'}],activeCharacter:'harin'},
  {id:'lunchLead',time:'12:18',speaker:'한도윤',text:'점심을 마친 뒤 민재와 사무실 라운지에 잠시 앉았다.\n한동안 메뉴 이야기만 하던 민재는 주변 사람들이 뜸해지자 조심스럽게 전환 심사 이야기를 꺼냈다.',bg:'lounge',char:'minjae',location:'게임사업실 라운지 · 점심'},
  {id:'lunchMinjaeConcern',time:'12:20',speaker:'강민재',text:'우리 둘 다 전환 심사 대상이잖아. 네가 잘하면 내가 비교될 것 같고, 솔직히 신경 쓰이는 건 맞아.',bg:'lounge',char:'minjae',location:'게임사업실 라운지 · 점심'},
  {id:'lunchMinjae',time:'12:21',speaker:'강민재',text:'그래도 네가 망해서 내가 붙는 건 싫어. 경쟁은 경쟁이고, 일부러 발목 잡는 건 다른 문제니까.',bg:'lounge',char:'minjae',location:'게임사업실 라운지 · 점심'},
  {id:'lunchArchive',time:'12:22',speaker:'강민재',text:'그래서 말인데, 작년 신규 유저 개선 발표가 자료실 구버전 폴더에 있어. 방향 잡을 때 참고는 될 거야. 파일명이 비슷하니까 잘 보고 열어.',bg:'lounge',char:'minjae',location:'게임사업실 라운지 · 점심',clue:'강민재가 과거 발표 자료와 구버전 폴더의 위치를 알고 있음'},
  {id:'direction',time:'13:30',speaker:'한도윤',text:'라운지에서 자리로 돌아왔다. 이제 오전에 모은 조사 자료를 하나의 개선 방향으로 좁혀야 한다.',bg:'office',choiceKey:'direction',choices:[
-   {text:'긴 튜토리얼을 줄이고 핵심 행동부터 경험하게 한다.',delta:{work:2},clue:'PT 방향: 튜토리얼 단축',reply:'조사 결과와 가장 직접적으로 연결되는 방향이다. 문제와 개선안의 흐름이 선명해졌다.'},
-   {text:'첫 전투까지 상황별 가이드를 제공한다.',delta:{work:1,trust:1},clue:'PT 방향: 상황별 가이드',reply:'필요한 순간에만 도움을 제공하면 안내 피로를 줄일 수 있다. 서하린도 고개를 끄덕였다.'},
-   {text:'AI가 플레이 상황에 맞는 도움말을 추천한다.',delta:{work:1},clue:'PT 방향: AI 맞춤 도움말',reply:'눈에 띄는 아이디어지만 AI 자체가 목적처럼 보이지 않도록 사용자 근거를 더 보강해야 한다.'}]},
+   {text:'긴 튜토리얼을 줄이고 핵심 행동부터 경험하게 한다.',delta:{work:2},reply:'조사 결과와 가장 직접적으로 연결되는 방향이다. 문제와 개선안의 흐름이 선명해졌다.'},
+   {text:'첫 전투까지 상황별 가이드를 제공한다.',delta:{work:1,trust:1},reply:'필요한 순간에만 도움을 제공하면 안내 피로를 줄일 수 있다. 서하린도 고개를 끄덕였다.'},
+   {text:'AI가 플레이 상황에 맞는 도움말을 추천한다.',delta:{work:1},reply:'눈에 띄는 아이디어지만 AI 자체가 목적처럼 보이지 않도록 사용자 근거를 더 보강해야 한다.'}]},
  {id:'directionOutline',time:'14:10',speaker:'한도윤',text:'선택한 방향을 기준으로 문제 원인, 개선안, 검증 방법의 순서를 잡았다.\n흩어져 있던 조사 자료가 조금씩 발표의 형태를 갖추기 시작했다.'},
  {id:'harinOutlineReview',time:'14:18',speaker:'서하린',text:'방향은 좋아요. 다만 주장 옆에 근거를 바로 붙여주세요. 보기 좋은 문장보다, 왜 그렇게 판단했는지가 먼저 보여야 해요.',char:'harin'},
  {id:'nanaLead',time:'14:55',speaker:'한도윤',text:'문제는 문장이었다. 조사 내용을 그대로 옮기자 슬라이드가 보고서처럼 빽빽해졌다.\n그때 화면 한쪽에서 나나봇의 문장 추천 알림이 떠올랐다.'},
@@ -68,7 +68,7 @@ const scenes=[
  {id:'versionReview',time:'17:21',speaker:'서하린',text:'파일명이 v0.1인 건 합격이에요. “최종”이라고 적었으면 당장 이름부터 바꾸라고 했을 거예요. 우리 팀 폴더에는 “최종본”이 너무 많거든요.',char:'harin'},
  {id:'finalJoke',time:'17:22',speaker:'한도윤',text:'설마 제 폴더까지 최종본이 여러 개가 되겠어요?',char:'harin'},
  {id:'finalJoke2',time:'17:23',speaker:'서하린',text:'그 말을 한 사람들 문서함에는 보통 최종본이 세 개씩 있어요.',char:'harin'},
- {id:'originalWarning',time:'17:24',speaker:'서하린',text:'도윤 씨가 만든 원본은 따로 보관하세요. 나중에 누구 말이 맞았는지 확인하려면 처음 기록이 필요하니까.',char:'harin',clue:'서하린의 경고: 정상 원본과 최초 기록을 따로 보관할 것'},
+ {id:'originalWarning',time:'17:24',speaker:'서하린',text:'도윤 씨가 만든 원본은 따로 보관하세요. 나중에 누구 말이 맞았는지 확인하려면 처음 기록이 필요하니까.',char:'harin'},
  {id:'originalSaved',time:'17:27',speaker:'한도윤',text:'하린이 보는 앞에서 v0.1을 원본 폴더에 복사하고 읽기 전용으로 설정했다.\n오늘의 지시와 조사 출처도 같은 폴더에 함께 저장했다.'},
  {id:'harinSavedReaction',time:'17:28',speaker:'서하린',text:'좋아요. 이렇게 처음 상태가 남아 있으면, 나중에 무슨 일이 생겨도 비교할 수 있어요.',char:'harin'},
  {id:'day1Summary',time:'18:00',speaker:'시스템',text:'오늘의 업무를 정산합니다.',bg:'office',location:'게임사업실 · 퇴근 전',daySummary:1},
@@ -88,7 +88,7 @@ const scenes=[
  {id:'eveningMessage',time:'20:25',speaker:'시스템',text:'서하린에게 새 개인 메시지가 도착했습니다.\n“내일 오전에 숫자부터 같이 검증해요. 그리고 오늘 만든 v0.1, 절대 덮어쓰지 말고요.”',bg:'store',location:'동네 편의점 · 저녁',notification:'harin-evening'},
  {id:'end',time:'20:27',speaker:'시스템',text:'DAY 1 완료\n정상 원본 신규유저_이탈개선_PT_v0.1이 저장되었습니다.\n아직 파일에 이상 현상은 없습니다.',bg:'store',location:'동네 편의점 · 저녁',end:true}
 ];
-const state={version:3,index:0,sceneId:'intro',work:0,affection:0,trust:0,readMessage:false,clues:[],unreadClues:false,coffeeDone:false,coffeeResult:null,decisions:{},seenNotifications:{},summariesSeen:{}};
+const state={version:3,index:0,sceneId:'intro',work:0,affection:0,trust:0,readMessage:false,clues:ClueMindmap.pruneClues([]),unreadClues:false,coffeeDone:false,coffeeResult:null,decisions:{},seenNotifications:{},summariesSeen:{}};
 const $=s=>document.querySelector(s);const audio=$('#bgm');let bgmManager;let currentRoom='',cinematicLocked=false,sceneTransitionLocked=false,cinematicTimer;
 const refs={stage:$('#stage'),characterLayer:$('#character-layer'),cg:$('#event-cg'),cgImage:$('#event-cg-image'),dialogueCard:$('#dialogue-card'),messenger:$('#messenger'),messageSfx:$('#message-sfx'),clock:$('#clock'),speaker:$('#speaker'),dialogue:$('#dialogue'),stageChoices:$('#stage-choices'),next:$('#next'),toast:$('#toast'),soundPrompt:$('#sound-prompt'),daySummary:$('#day-summary'),daySummaryKicker:$('#day-summary-kicker'),daySummaryTitle:$('#day-summary-title'),daySummaryGrade:$('#day-summary-grade'),daySummaryWork:$('#day-summary-work'),daySummaryStats:$('#day-summary-stats'),daySummaryRecords:$('#day-summary-records'),daySummaryReactions:$('#day-summary-reactions'),daySummaryExit:$('#day-summary-exit'),dayComplete:$('#day-complete'),dayCompleteNext:$('#day-complete-next'),dayCompleteMenu:$('#day-complete-menu'),dayTransition:$('#day-transition')};
 const DAY_SUMMARIES={
@@ -117,7 +117,7 @@ function openGameSave(mode='save'){gameSaveMode=mode;const loading=mode==='load'
 function closeGameSave(){const modal=$('#game-save-modal');modal.classList.remove('open');modal.setAttribute('aria-hidden','true');$(`#${gameSaveMode==='load'?'load':'save'}`).focus()}
 function saveToGameSlot(slotId,occupied){if(occupied&&!confirm(`SLOT ${String(slotId).padStart(2,'0')}의 기존 저장을 덮어쓸까요?`))return;save();const scene=scenes[state.index]||scenes[0],progress=GameProgress.load(localStorage),day1Save=JSON.parse(localStorage.getItem('nan-day1-save')||'null');localStorage.setItem(`nan-save-slot-${slotId}`,JSON.stringify({slotId,day:1,sceneTitle:'정직원 전환 과제',sceneTime:scene.time,savedAt:progress.savedAt,resumeUrl:'game.html',work:state.work,affection:state.affection,trust:state.trust,lastDialogue:{speaker:scene.speaker,text:scene.text},thumbnail:'assets/image/office-background.png',progress,day1Save}));toast(`SLOT ${String(slotId).padStart(2,'0')}에 저장했습니다.`);closeGameSave()}
 function loadFromGameSlot(slot){if(slot.empty||!slot.progress)return;if(!confirm(`SLOT ${String(slot.slotId).padStart(2,'0')}의 진행을 불러올까요?\n현재 저장하지 않은 진행은 사라집니다.`))return;localStorage.setItem(GameProgress.STORAGE_KEY,JSON.stringify(slot.progress));if(slot.day1Save)localStorage.setItem(GameProgress.LEGACY_DAY1_KEY,JSON.stringify(slot.day1Save));else localStorage.removeItem(GameProgress.LEGACY_DAY1_KEY);location.href=slot.resumeUrl||(Number(slot.day)===2?'day2.html':'game.html')}
-function load(){try{const saved=JSON.parse(localStorage.getItem('nan-day1-save'))||{};if(saved.version!==3)return;delete saved.stamina;Object.assign(state,saved);const savedIndex=scenes.findIndex(scene=>scene.id===saved.sceneId);state.index=savedIndex>=0?savedIndex:0;state.decisions=state.decisions||{};state.clues=state.clues||[];state.unreadClues=!!state.unreadClues;state.seenNotifications=state.seenNotifications||{};if(state.seenNotifications['pt-first']&&!Object.prototype.hasOwnProperty.call(state.seenNotifications,'unread:pt'))state.seenNotifications['unread:pt']=!state.readMessage;if(state.seenNotifications['harin-evening']&&!Object.prototype.hasOwnProperty.call(state.seenNotifications,'unread:harin'))state.seenNotifications['unread:harin']=true;['pt','harin'].forEach(room=>{const key=`unread:count:${room}`;if(!Object.prototype.hasOwnProperty.call(state.seenNotifications,key))state.seenNotifications[key]=state.seenNotifications[`unread:${room}`]===true?1:0});state.summariesSeen=state.summariesSeen||{}}catch{}}
+function load(){try{const saved=JSON.parse(localStorage.getItem('nan-day1-save'))||{};if(saved.version!==3)return;delete saved.stamina;Object.assign(state,saved);const savedIndex=scenes.findIndex(scene=>scene.id===saved.sceneId);state.index=savedIndex>=0?savedIndex:0;state.decisions=state.decisions||{};state.clues=ClueMindmap.pruneClues(state.clues);state.unreadClues=!!state.unreadClues;state.seenNotifications=state.seenNotifications||{};if(state.seenNotifications['pt-first']&&!Object.prototype.hasOwnProperty.call(state.seenNotifications,'unread:pt'))state.seenNotifications['unread:pt']=!state.readMessage;if(state.seenNotifications['harin-evening']&&!Object.prototype.hasOwnProperty.call(state.seenNotifications,'unread:harin'))state.seenNotifications['unread:harin']=true;['pt','harin'].forEach(room=>{const key=`unread:count:${room}`;if(!Object.prototype.hasOwnProperty.call(state.seenNotifications,key))state.seenNotifications[key]=state.seenNotifications[`unread:${room}`]===true?1:0});state.summariesSeen=state.summariesSeen||{}}catch{}}
 function getBgmVolume(){try{const s=JSON.parse(localStorage.getItem('nan-game-settings-v1'))||{};if(s.masterMuted||s.bgmMuted)return 0;return Math.min(1,Math.max(0,((s.masterVolume??80)/100)*((s.bgmVolume??70)/100)))}catch{return .56}}
 bgmManager=new GameBgmManager(audio,getBgmVolume);window.BGMManager=bgmManager;
 bgmManager.preload(['daily','minigame','harin']);

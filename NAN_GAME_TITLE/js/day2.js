@@ -56,7 +56,7 @@ const state = {
   work: progress.shared.work,
   affection: progress.shared.affection,
   trust: progress.shared.trust,
-  clues: progress.shared.clues.slice(),
+  clues: ClueMindmap.pruneClues(progress.shared.clues),
   decisions: { ...savedDay2.decisions },
   seenNotifications: { ...savedDay2.seenNotifications },
   summariesSeen: { ...savedDay2.summariesSeen },

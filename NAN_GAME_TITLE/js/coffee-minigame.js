@@ -1,10 +1,18 @@
 (function (global) {
   const INGREDIENTS = Object.freeze({
-    espresso: { label: "커피 원액", icon: "☕" },
-    "hot-water": { label: "뜨거운 물", icon: "♨" },
-    ice: { label: "얼음", icon: "◆" },
-    milk: { label: "우유", icon: "▣" },
-    mix: { label: "믹스커피", icon: "✦" },
+    espresso: { label: "커피 원액", icon: "cup" },
+    "hot-water": { label: "뜨거운 물", icon: "kettle" },
+    ice: { label: "얼음", icon: "ice" },
+    milk: { label: "우유", icon: "milk" },
+    mix: { label: "믹스커피", icon: "packet" },
+  });
+
+  const ICONS = Object.freeze({
+    cup: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 11h16v8a7 7 0 0 1-7 7h-2a7 7 0 0 1-7-7z"/><path d="M23 14h2.5a3.5 3.5 0 0 1 0 7H23M10 7c0-2 2-2 2-4m4 4c0-2 2-2 2-4"/></svg>',
+    kettle: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M9 13h13l2 12H7z"/><path d="M11 13V9h8v4m3 3 5 3-3 3M12 6c0-2 2-2 2-4m4 4c0-2 2-2 2-4"/></svg>',
+    ice: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="m8 11 8-5 8 5v10l-8 5-8-5z"/><path d="m8 11 8 5 8-5m-8 5v10"/></svg>',
+    milk: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 8h11l3 5v13H8V13z"/><path d="M10 8 8 13h16m-9-5v5m4-5 3 5"/></svg>',
+    packet: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M9 5h14l2 3-2 3 2 3-2 3 2 3-2 3 2 4H7l2-4-2-3 2-3-2-3 2-3-2-3z"/><path d="M13 12h6m-7 4h8m-7 4h6"/></svg>',
   });
 
   const ORDERS = Object.freeze([
@@ -121,14 +129,18 @@
     return `${word}${hasFinalConsonant ? "을" : "를"}`;
   }
 
+  function ingredientIconMarkup(key) {
+    return `<span class="coffee-ingredient-icon coffee-ingredient-icon-${key}">${ICONS[INGREDIENTS[key].icon]}</span>`;
+  }
+
   function ingredientMarkup(key, detailed = false, step = 0) {
     const ingredient = INGREDIENTS[key];
-    return `<i title="${ingredient.label}">${detailed ? `<b class="recipe-step">${step}</b>` : ""}<span>${ingredient.icon}</span>${detailed ? `<small>${ingredient.label}</small>` : ""}</i>`;
+    return `<i title="${ingredient.label}">${detailed ? `<b class="recipe-step">${step}</b>` : ""}${ingredientIconMarkup(key)}${detailed ? `<small>${ingredient.label}</small>` : ""}</i>`;
   }
 
   function orderCardMarkup(order, compact = false) {
     if (compact) return `<article class="coffee-order-mini"><b>${order.name} · ${order.role}</b><span>${order.drink}</span></article>`;
-    return `<article class="coffee-order-card"><small>${order.role.toUpperCase()} ORDER</small><b>${order.name}</b><p>${order.drink}</p><div class="coffee-order-recipe">${order.recipe.map((key, index) => `${index ? '<em aria-hidden="true">→</em>' : ''}${ingredientMarkup(key, true, index + 1)}`).join("")}<em aria-hidden="true">→</em><i class="recipe-method"><b class="recipe-step">${order.recipe.length + 1}</b><span>✓</span><small>${order.method}</small></i></div></article>`;
+    return `<article class="coffee-order-card"><small>${order.role.toUpperCase()} ORDER</small><b>${order.name}</b><p>${order.drink}</p><div class="coffee-recipe-label"><span>RECIPE</span><em>위에서부터 순서대로</em></div><div class="coffee-order-recipe">${order.recipe.map((key, index) => ingredientMarkup(key, true, index + 1)).join("")}<i class="recipe-method"><b class="recipe-step">${order.recipe.length + 1}</b><span>✓</span><small>${order.method}</small></i></div></article>`;
   }
 
   function renderOrders() {
@@ -160,8 +172,7 @@
       const classes = ["coffee-cup", selectedCupKey === cup.key ? "selected" : "", cup.hasError ? "error" : "", cup.ready ? "ready" : "", cup.served ? "served" : ""].filter(Boolean).join(" ");
       return `<button class="${classes}" type="button" data-cup="${cup.key}" ${cup.served ? "disabled" : ""}>
         <span class="coffee-cup-head"><b>${cup.name}</b><small>${cup.role}</small></span>
-        <span class="coffee-cup-visual"><span class="cup-body"><span class="cup-fill" style="--fill:${fill}%;--liquid:${cupLiquid(cup)}"></span><strong>${cup.name[0]}</strong></span></span>
-        <span class="coffee-cup-steps">${cup.ingredients.map(ingredientMarkup).join("")}</span>
+        <span class="coffee-cup-visual"><span class="cup-body"><span class="cup-fill" style="--fill:${fill}%;--liquid:${cupLiquid(cup)}"></span><strong>NAN</strong></span></span>
         <span class="coffee-cup-state">${cupStateLabel(cup)}</span>
       </button>`;
     }).join("");
@@ -174,7 +185,7 @@
   }
 
   function renderIngredients() {
-    refs.ingredients.innerHTML = Object.entries(INGREDIENTS).map(([key, ingredient]) => `<button class="coffee-ingredient${selectedIngredient === key ? " selected" : ""}" type="button" data-ingredient="${key}"><span>${ingredient.icon}</span><b>${ingredient.label}</b></button>`).join("");
+    refs.ingredients.innerHTML = Object.entries(INGREDIENTS).map(([key, ingredient]) => `<button class="coffee-ingredient${selectedIngredient === key ? " selected" : ""}" type="button" data-ingredient="${key}">${ingredientIconMarkup(key)}<b>${ingredient.label}</b></button>`).join("");
     refs.ingredients.querySelectorAll(".coffee-ingredient").forEach((element) => {
       const key = element.dataset.ingredient;
       attachPointerAction(element, () => ({ type: "ingredient", key, label: INGREDIENTS[key].label }), () => selectIngredient(key));
