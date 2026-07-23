@@ -1,0 +1,42 @@
+Use case: identity-preserve
+Asset type: full-body visual-novel character sprite
+Asset ID: character.harin.arms_folded.concerned
+Output filename: harin_arms_folded_concerned_v001.png
+Prompt version: prompt-v002
+
+[INPUT IMAGE]
+Use the attached harin-source.png as the only identity, costume, anatomy, color, and rendering reference. This is a tightly constrained character variation, not a redesign.
+
+[PRIMARY REQUEST]
+Create exactly one full-body sprite of the same adult Korean woman, Seo Harin, with her arms folded naturally and loosely below the chest and a restrained concerned expression. She is worried that a coworker is trying to handle everything alone. Her emotion must read as thoughtful, protective professional concern through slightly knitted brows, focused warm-brown eyes, and gently pressed lips. She remains calm, competent, and approachable—never angry, cold, suspicious, hostile, or accusatory.
+
+[IDENTITY AND COSTUME LOCK]
+Preserve the attached reference exactly:
+- same soft oval adult face, apparent age, straight small nose, natural lips, and warm-brown almond-shaped eyes
+- same dark-brown chin-to-shoulder-length bob, inward-curved ends, side-swept bangs, and loose cheek-framing strands
+- same slender realistic adult proportions and 165 cm apparent scale
+- same fitted black office blazer, crisp white collared blouse, high-waisted black knee-length pencil skirt, black low-heeled pumps
+- same small silver drop earrings, dark-navy lanyard, and plain white employee ID card
+
+Do not change, add, remove, simplify, or reinterpret any facial feature, hairstyle detail, body proportion, garment, shoe, lanyard, ID card, or earring.
+
+[POSE AND HANDS]
+Pose: arms_folded.
+Both forearms cross comfortably below the chest without hiding the lanyard or employee ID card. Both hands must be anatomically readable with five fingers per visible hand. Keep natural shoulder height and relaxed elbows. No prop, phone, folder, cup, bag, tablet, or jewelry.
+
+[STYLE]
+Polished commercial anime visual-novel illustration for a modern Korean office-romance game with light mystery elements. Clean thin consistent line art, soft 2-to-3-step cel shading, minimal painterly texture, realistic adult anatomy, low-to-medium saturation, restrained navy/cream/muted-brown palette, soft indoor diffused key light, subtle cool ambient shadows, clean game-ready silhouette. Match the attached reference rather than inventing a new style.
+
+[COMPOSITION]
+Eye-level, front-facing three-quarter view, full body. Keep the complete hair silhouette, both folded arms, ID card, skirt hem, legs, and both shoes visible. Match the reference character's scale and eye/foot alignment. Leave generous empty transparent padding on every side so the sprite can be placed at left, center, or right in a visual-novel scene.
+
+[OUTPUT]
+Exactly 1024 x 1536 pixels, vertical 2:3, RGBA PNG with real alpha transparency.
+The background must be truly transparent—not white, gray, colored, gradient, or a baked checkerboard pattern.
+Exactly one character. No environment, floor plane, contact shadow, cast shadow, reflection, frame, text, speech balloon, logo, signature, or watermark.
+
+[REJECT IF]
+Reject and regenerate if the face or hair drifts from harin-source.png; if the outfit, earrings, lanyard, ID card, or shoes change; if fingers or folded arms are malformed; if the emotion looks angry or villainous; if the body is sexualized or juvenile; if any background or checkerboard is baked into the pixels; or if the output is not a single full-body 1024 x 1536 transparent PNG.
+
+[AVOID]
+photorealism, semi-realistic Korean webtoon rendering, 3D CGI, watercolor, oil painting, sketch lines, thick outlines, chibi anatomy, oversized eyes, exaggerated curves, shortened skirt, high heels, high saturation, neon, cyberpunk, bloom, strong depth of field, dramatic rim light, manga reaction symbols, extreme blush, glare, extra fingers, fused fingers, missing fingers, duplicated limbs, hidden shoes, added accessories, readable text, logo, watermark

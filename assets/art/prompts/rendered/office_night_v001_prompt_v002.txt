@@ -1,0 +1,46 @@
+Use case: lighting-weather
+Asset type: structure-locked visual-novel background edit
+Asset ID: background.office.night
+Output filename: office_night_v001.png
+Prompt version: background-prompt-v002
+
+[EDIT TARGET]
+Edit the attached day1-office.png directly. It is the absolute structural and compositional source of truth. This is not permission to generate a different office.
+
+[PRIMARY REQUEST]
+Change only the time of day and lighting from daytime to a quiet late-evening overtime atmosphere.
+
+[STRUCTURE LOCK]
+Preserve the exact camera position, crop, horizon, natural 35 mm perspective, room dimensions, windows, ceiling grid, exposed ducts, air-conditioning unit, desk rows, monitors, chairs, central open floor, wall display, shelving, plants, coffee station, glass partitions, doors, furniture arrangement, walking paths, and prop placement from day1-office.png.
+
+Do not move, add, remove, resize, replace, simplify, redesign, or reinterpret any structural element, furniture item, device, plant, or prop. Do not crop tighter and do not change the lens.
+
+[ALLOWED CHANGES ONLY]
+- Outside the existing windows, change the daytime sky and city to a believable deep-blue late-night Seoul-like city with restrained distant window lights and no readable signs.
+- Turn off approximately half of the existing overhead office lights in alternating work zones.
+- Keep a few existing warm overhead fixtures illuminated.
+- Illuminate only several selected existing computer monitors and desk lamps.
+- Use soft pools of warm task light balanced with restrained cool monitor glow and faint blue night ambience from the windows.
+- Most monitors remain dark. Lit monitors may show only dim abstract interface blocks with no readable text.
+
+[STYLE AND MOOD]
+Preserve the attached image's polished commercial anime visual-novel background style, thin consistent line art, soft 2-to-3-step cel painting, restrained texture, low-to-medium saturation, navy/gray/beige/cream/muted-brown/pale-blue/natural-wood palette, and clean game-ready finish.
+
+The office is quiet, maintained, safe, slightly weary, and intimate in a professional coworker sense. Keep enough visibility to read furniture and composite character sprites cleanly. It must not feel abandoned, romantic, noir, ominous, horror-themed, or cyberpunk.
+
+[COMPOSITION]
+Maintain the reference's exact open lower-center floor area for full-body character sprites and dialogue UI. Keep all verticals, desk edges, and perspective lines aligned with the source.
+
+[SEPARATION AND TEXT RULE]
+No people, characters, faces, bodies, hands, silhouettes, portraits, photographs of people, or reflections of people.
+No readable Korean, English, letters, numbers, screen text, signs, company names, logos, trademarks, signatures, or watermarks.
+
+[OUTPUT]
+Exactly 1920 x 1080 pixels, horizontal 16:9, RGB PNG with no alpha channel.
+Return one edited background only—not a contact sheet, multi-panel image, mockup, or before/after comparison.
+
+[REJECT IF]
+Reject and redo the edit if any office structure, camera, crop, furniture, device, plant, or prop changes; if a person or readable text appears; if all lights are on or all lights are off; if the room is too dark for sprites; if the city becomes neon/cyberpunk; or if the output is not one 1920 x 1080 RGB image.
+
+[AVOID]
+new office layout, changed camera, changed crop, changed perspective, moved desks, moved chairs, moved monitors, changed windows, changed doors, changed coffee station, added furniture, missing furniture, photorealism, semi-realistic Korean webtoon rendering, 3D CGI, watercolor, oil painting, sketch lines, thick outlines, high saturation, neon, cyberpunk, bloom, strong depth of field, sunset, sunrise, daylight, rain, all lights on, all lights off, pitch black, horror shadows, noir contrast, red emergency light, people, silhouettes, reflections of people, readable text, logo, watermark

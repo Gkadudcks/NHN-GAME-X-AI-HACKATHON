@@ -56,7 +56,7 @@ const state = {
   work: progress.shared.work,
   affection: progress.shared.affection,
   trust: progress.shared.trust,
-  clues: ClueMindmap.pruneClues(progress.shared.clues),
+  clues: ClueRecords.normalizeList(progress.shared.clues),
   decisions: { ...savedDay2.decisions },
   seenNotifications: { ...savedDay2.seenNotifications },
   summariesSeen: { ...savedDay2.summariesSeen },
@@ -276,9 +276,9 @@ function openStatHelp(button) {
 }
 
 function addClue(clue) {
-  const text = typeof clue === "string" ? clue : clue?.text;
-  if (!text || state.clues.includes(text)) return;
-  state.clues.push(text);
+  const record = ClueRecords.normalize(clue, { defaultDay: 2 });
+  if (!record || state.clues.some((entry) => entry.id === record.id)) return;
+  state.clues.push(record);
   state.unreadClues = !$("#clues-view").classList.contains("active");
   renderClues();
   toast("새 단서가 기록되었습니다.");
@@ -292,11 +292,9 @@ function renderClues() {
     list.innerHTML = '<div class="clue-empty"><span>◇</span><strong>아직 기록된 단서가 없습니다</strong><p>대화와 자료를 조사하면 중요한 정보가 여기에 정리됩니다.</p></div>';
     return;
   }
-  const day1Count = progress.day2StartSnapshot?.clues?.length || 0;
   ClueMindmap.render(list, {
     clues: state.clues,
     currentDay: 2,
-    dayForIndex: (index) => index < day1Count ? 1 : 2,
   });
 }
 
@@ -694,8 +692,9 @@ function showDaySummary() {
     ["♡", "호감도", deltas.affection, "DAY 2 대화와 요청 처리"],
     ["◇", "신뢰도", deltas.trust, "협업 태도와 업무 분담"],
   ].map(([icon, name, value, detail]) => summaryRow(icon, name, detail, `${value >= 0 ? "+" : ""}${value}`)).join("");
-  const dailyClues = state.clues.slice(snapshot.clues.length);
-  refs.daySummaryRecords.innerHTML = dailyClues.slice(-5).map((clue) => summaryRow("◆", clue.split(" — ")[0], clue.includes(" — ") ? clue.split(" — ").slice(1).join(" — ") : "단서 탭에 기록됨")).join("") || summaryRow("◇", "새 기록 없음", "단서 탭을 확인해 주세요.");
+  const snapshotIds = new Set(snapshot.clues.map((clue) => clue.id));
+  const dailyClues = state.clues.filter((clue) => !snapshotIds.has(clue.id));
+  refs.daySummaryRecords.innerHTML = dailyClues.slice(-5).map((clue) => summaryRow("◆", clue.title, clue.detail)).join("") || summaryRow("◇", "새 기록 없음", "단서 탭을 확인해 주세요.");
   const beforeRelationship = relationshipName(snapshot.affection, snapshot.trust);
   const afterRelationship = relationshipName(state.affection, state.trust);
   refs.daySummaryReactions.innerHTML = `<blockquote><b>박태식 부장</b><p>“숫자만 보지 않고 실제 플레이와 유저 반응까지 본 건 좋아. 근거 링크는 그대로 유지해.”</p></blockquote><article class="relationship-result"><small>RELATIONSHIP</small><p><b>서하린</b><em>:</em><strong>${escapeHtml(beforeRelationship)}</strong><i>→</i><strong>${escapeHtml(afterRelationship)}</strong><span>— 여러 종류의 업무를 함께 처리하며 서로의 방식에 익숙해졌습니다.</span></p></article>`;

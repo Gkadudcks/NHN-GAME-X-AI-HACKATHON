@@ -1,0 +1,41 @@
+Use case: stylized-concept
+Asset type: reusable visual-novel background with a story incident detail
+Asset ID: background.qa_test_space.incident
+Output filename: qa_test_space_incident_v001.png
+Prompt version: background-prompt-v002
+
+[INPUT IMAGE]
+Use the attached day1-office.png only as the same-company visual-style, material, palette, lighting, line-art, cel-painting, and finish reference. The QA room is a new location with its own layout. Do not copy or rearrange the day office as the QA room.
+
+[PRIMARY REQUEST]
+Create a compact, practical game QA testing space inside the same contemporary Korean game company. Include muted-gray worktables, ergonomic black chairs, organized charging docks, two or three test smartphones or tablets, one prominent central test display, a desktop monitor, compact device rack, headphones, controllers, and neatly managed cables. Blank colored squares may suggest sticky notes. A glass partition or a partial view toward the office may be included.
+
+[REQUIRED INCIDENT DETAIL]
+On the prominent upper-center test display, show a generic game tutorial screen with exactly two visually identical pale-blue popup panels displayed simultaneously.
+
+The two panels must have exactly the same size, border, corner radius, neutral icon position, button shape, and blank line-block layout. Offset the second panel slightly so it clearly overlaps the first and the duplication is immediately readable without text. Use only abstract rectangles, blank lines, and one simple non-branded icon. Do not show a third popup.
+
+[SEPARATION RULE]
+This image is a background only. Do not depict testers, employees, characters, faces, bodies, hands, silhouettes, photographs of people, or reflections of people. Character sprites and dialogue UI will be composited separately.
+
+[STYLE]
+Modern Korean office-romance visual novel with light mystery elements. Polished commercial anime visual-novel background illustration, clean thin consistent line art, soft 2-to-3-step cel painting, restrained texture, medium environmental detail, believable contemporary equipment, low-to-medium saturation, navy/gray/beige/cream/muted-brown/pale-blue palette, neutral afternoon office light with restrained cool screen glow. Match day1-office.png's finish without copying its layout.
+
+[CAMERA AND COMPOSITION]
+Eye-level camera with a natural 35 mm lens feeling and clean perspective. Keep the duplicated-popup display near the upper center so it remains visible between character sprites placed at the left and right. Keep the lower center open for full-body sprites and dialogue UI. Maintain believable device scale and desk geometry. This is an environmental background, not a close-up UI screenshot or event CG.
+
+[MOOD]
+Functional, orderly, and mildly busy. The duplicate popup is a small workplace anomaly, not a horror or hacker scene. No red alarm, glitch distortion, dramatic darkness, futuristic control room, or sinister lighting.
+
+[TEXT RULE]
+No readable Korean, English, letters, numbers, tutorial copy, game title, company name, brand, logo, trademark, signature, or watermark anywhere. All screens must use only abstract textless blocks and generic non-branded shapes.
+
+[OUTPUT]
+Exactly 1920 x 1080 pixels, horizontal 16:9, RGB PNG with no alpha channel.
+Generate one background only—not a contact sheet, multi-panel image, mockup, or before/after comparison.
+
+[REJECT IF]
+Reject and regenerate if the two popup panels are not exactly identical; if only one or three-or-more popups appear; if any readable text, person, face, body, or reflection appears; if the incident cannot be read at normal background size; if equipment blocks the sprite zone; if the scene becomes a sci-fi lab, server room, hacker den, or horror scene; or if the output is not one 1920 x 1080 RGB background.
+
+[AVOID]
+photorealism, semi-realistic Korean webtoon rendering, 3D CGI, watercolor, oil painting, sketch lines, thick outlines, chibi style, fisheye, tilted camera, extreme wide angle, high saturation, neon, cyberpunk, excessive bloom, strong depth of field, people, testers, silhouettes, faces, reflections of people, readable UI, letters, numbers, real game artwork, logo, watermark, mismatched popup designs, third popup, holograms, red alert lighting, horror glitch, clutter blocking character placement

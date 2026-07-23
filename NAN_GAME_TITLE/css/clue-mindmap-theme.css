@@ -183,6 +183,24 @@
 .theme-link { stroke: #df6871; }
 .detail-link { stroke: #c9a9aa; }
 
+.clue-inspector {
+  border: 1px solid #ee8da059;
+  background: linear-gradient(145deg, #fffdfbf7, #fff7f5f0);
+  box-shadow:
+    0 0 10px #ff7fa31c,
+    0 0 24px #ff8eaa12,
+    0 14px 34px #5c344317;
+}
+
+.clue-inspector small {
+  color: #cf6475;
+}
+
+.clue-inspector button {
+  color: #956d79;
+  background: #f9ecebd9;
+}
+
 @media (max-width: 440px) {
   .clue-canvas-shell { grid-template-rows: 52px minmax(0, 1fr); }
   .clue-canvas-toolbar { padding-left: 10px; }

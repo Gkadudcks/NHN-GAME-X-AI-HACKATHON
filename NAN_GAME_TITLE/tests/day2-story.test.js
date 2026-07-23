@@ -18,7 +18,7 @@ test("세 가지 하위 업무가 각각 전용 장면을 가진다", () => {
 });
 
 test("핵심 추리 단서는 자동화의 소유자만 기록하고 실행자를 단정하지 않는다", () => {
-  const clue = story.CLUES.inactiveAutomation.text;
+  const clue = story.CLUES.inactiveAutomation.detail;
   assert.match(clue, /소유자: 서하린/);
   assert.match(clue, /마지막 실행: 2024-11-07 23:48/);
   assert.doesNotMatch(clue, /범인|실행자: 서하린/);

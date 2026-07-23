@@ -1,0 +1,41 @@
+Use case: stylized-concept
+Asset type: reusable visual-novel background
+Asset ID: background.restaurant.lunch
+Output filename: restaurant_lunch_v001.png
+Prompt version: background-prompt-v002
+
+[INPUT IMAGES]
+- day1-office-lounge.png: use only as the primary visual-style, palette, material, lighting, line-art, cel-painting, and finish reference
+- day1-office.png: use only as a secondary perspective-quality and same-project finish reference
+
+Do not copy either office's furniture, walls, windows, floor plan, or room layout. This is a new restaurant location.
+
+[PRIMARY REQUEST]
+Create a modest, believable independent Korean lunch restaurant within walking distance of a modern office district. It is a practical weekday place popular with nearby office workers, not a romantic or luxury restaurant and not a branded franchise.
+
+Include warm light-wood tables, simple dark chairs, cream walls, muted-navy accents, a compact service counter toward the rear, a partially visible open-kitchen pass, stacked stainless-steel cups, water pitchers, trays, tissue holders, and neatly arranged tableware. Suggest a busy lunch rush without showing any person: a narrow guided waiting path near the entrance, a few prepared trays, several naturally pushed-back chairs, and an active but orderly atmosphere.
+
+[SEPARATION RULE]
+This image is a background only. Do not depict customers, staff, faces, bodies, hands, silhouettes, portraits, photographs of people, or reflections of people. Character sprites and dialogue UI will be composited separately.
+
+[STYLE]
+Modern Korean office-romance visual novel with light mystery elements. Polished commercial anime visual-novel background illustration, clean thin consistent line art, soft 2-to-3-step cel painting, restrained texture, medium environmental detail, low-to-medium saturation, warm low contrast, navy/beige/cream/muted-brown/pale-blue/natural-wood palette, soft daylight and warm practical lighting. Match the supplied project's finish.
+
+[CAMERA AND COMPOSITION]
+Eye-level camera near the entrance, looking diagonally across the restaurant with a natural 35 mm lens feeling. Use clean one-point or gentle two-point perspective with level verticals. Keep the lower center and lower-right foreground visually open for a full-body character sprite and dialogue UI. Place the service counter and strongest detail toward the back-left or upper center. Maintain believable walking paths and spacing. Do not block the sprite zone with a large table, chair back, plant, counter, or foreground prop.
+
+[LIGHTING AND MOOD]
+Bright early-afternoon daylight entering through a side window, mixed with warm pendant lighting. Friendly, ordinary, slightly compact, and popular with workers. The space must not feel empty, abandoned, luxurious, retro, or designed for a date.
+
+[TEXT RULE]
+No readable Korean, English, letters, numbers, menu items, prices, restaurant names, queue numbers, company names, signs, logos, trademarks, signatures, or watermarks. If a menu board is visible, use only small abstract food icons and indistinct non-letter blocks.
+
+[OUTPUT]
+Exactly 1920 x 1080 pixels, horizontal 16:9, RGB PNG with no alpha channel.
+Generate one background only—not a contact sheet, multi-panel image, mockup, or before/after comparison.
+
+[REJECT IF]
+Reject and regenerate if any person or readable text appears; if the image copies the office layout; if the foreground is blocked; if the perspective is distorted; if the location looks like a luxury venue, romantic date restaurant, fast-food franchise, cafeteria, or abandoned room; or if the output is not one 1920 x 1080 RGB background.
+
+[AVOID]
+photorealism, semi-realistic Korean webtoon rendering, 3D CGI, watercolor, oil painting, sketch lines, thick outlines, chibi style, fisheye, tilted camera, extreme wide angle, high saturation, neon, cyberpunk, excessive bloom, strong depth of field, people, crowd, staff, silhouettes, faces, reflections of people, readable menu, readable prices, readable signs, brand logo, watermark, clutter blocking character placement
