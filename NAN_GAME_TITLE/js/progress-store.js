@@ -1,13 +1,19 @@
 (function exposeProgressStore(root, factory) {
-  const store = factory();
+  const clueRecords = typeof module === "object" && module.exports
+    ? require("./clue-records.js")
+    : root && root.ClueRecords;
+  const store = factory(clueRecords);
   if (typeof module === "object" && module.exports) module.exports = store;
   if (root) root.GameProgress = store;
-})(typeof globalThis !== "undefined" ? globalThis : this, function createProgressStore() {
+})(typeof globalThis !== "undefined" ? globalThis : this, function createProgressStore(ClueRecords) {
   "use strict";
 
   const STORAGE_KEY = "nan-game-progress-v1";
   const LEGACY_DAY1_KEY = "nan-day1-save";
-  const SCHEMA_VERSION = 1;
+  const SCHEMA_VERSION = 2;
+  const LEGACY_SCHEMA_VERSION = 1;
+
+  if (!ClueRecords) throw new Error("ClueRecords must load before GameProgress");
 
   const NANA_USE_ALIASES = Object.freeze({
     "manual-core": "manual-core",
@@ -59,8 +65,8 @@
     }
   }
 
-  function stringList(value) {
-    return Array.isArray(value) ? value.filter((entry) => typeof entry === "string").slice() : [];
+  function clueList(value, defaultDay = 1) {
+    return ClueRecords.normalizeList(value, { defaultDay });
   }
 
   function objectCopy(value) {
@@ -151,7 +157,7 @@
       work: finiteNumber(value.work),
       affection: finiteNumber(value.affection),
       trust: finiteNumber(value.trust),
-      clues: stringList(value.clues),
+      clues: clueList(value.clues),
     };
   }
 
@@ -167,7 +173,7 @@
         work: finiteNumber(shared.work),
         affection: finiteNumber(shared.affection),
         trust: finiteNumber(shared.trust),
-        clues: stringList(shared.clues),
+        clues: clueList(shared.clues),
         day1: {
           nanaUse: normalizeNanaUse(day1Carry.nanaUse),
           eveningTrust: normalizeEveningTrust(day1Carry.eveningTrust),
@@ -188,7 +194,7 @@
       work: finiteNumber(shared.work),
       affection: finiteNumber(shared.affection),
       trust: finiteNumber(shared.trust),
-      clues: stringList(shared.clues),
+      clues: clueList(shared.clues),
     };
   }
 
@@ -221,13 +227,13 @@
   }
 
   function fromLegacyDay1(value) {
-    if (!isObject(value) || value.version !== 3) return null;
+    if (!isObject(value) || (value.version !== 3 && value.version !== 4)) return null;
     const decisions = isObject(value.decisions) ? value.decisions : {};
     const progress = defaultProgress();
     progress.shared.work = finiteNumber(value.work);
     progress.shared.affection = finiteNumber(value.affection);
     progress.shared.trust = finiteNumber(value.trust);
-    progress.shared.clues = stringList(value.clues);
+    progress.shared.clues = clueList(value.clues, 1);
     progress.shared.day1.nanaUse = normalizeNanaUse(decisions.nanaUse);
     progress.shared.day1.eveningTrust = normalizeEveningTrust(decisions.eveningTrust);
     progress.shared.day1.coffeeResult = isObject(value.coffeeResult) ? cloneJson(value.coffeeResult) : null;
@@ -256,9 +262,14 @@
     const canonicalRaw = storageGet(storage, STORAGE_KEY);
     if (canonicalRaw !== null) {
       const canonical = parseObject(canonicalRaw);
-      return canonical && canonical.schemaVersion === SCHEMA_VERSION
-        ? sanitize(canonical)
-        : defaultProgress();
+      if (!canonical) return defaultProgress();
+      if (canonical.schemaVersion === SCHEMA_VERSION) return sanitize(canonical);
+      if (canonical.schemaVersion === LEGACY_SCHEMA_VERSION) {
+        const migrated = sanitize(canonical);
+        storageSet(storage, STORAGE_KEY, JSON.stringify(migrated));
+        return migrated;
+      }
+      return defaultProgress();
     }
     return migrateLegacy(storage) || defaultProgress();
   }
@@ -290,7 +301,7 @@
     progress.shared.work = snapshot.work;
     progress.shared.affection = snapshot.affection;
     progress.shared.trust = snapshot.trust;
-    progress.shared.clues = stringList(snapshot.clues);
+    progress.shared.clues = clueList(snapshot.clues);
     progress.currentDay = 2;
     progress.days[1].complete = true;
     progress.days[2] = defaultDay2();

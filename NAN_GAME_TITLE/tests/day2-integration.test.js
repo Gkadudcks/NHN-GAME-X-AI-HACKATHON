@@ -8,6 +8,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
 test("DAY 2 페이지는 필요한 스크립트를 올바른 순서로 불러온다", () => {
   const html = read("day2.html");
+  const records = html.indexOf('src="js/clue-records.js');
   const progress = html.indexOf('src="js/progress-store.js');
   const clues = html.indexOf('src="js/clue-mindmap.js');
   const art = html.indexOf('src="js/art-assets.js');
@@ -15,8 +16,8 @@ test("DAY 2 페이지는 필요한 스크립트를 올바른 순서로 불러온
   const bgm = html.indexOf('src="js/bgm-manager.js');
   const minigame = html.indexOf('src="js/work-alert-minigame.js');
   const engine = html.indexOf('src="js/day2.js');
-  assert.equal([progress, clues, art, story, bgm, minigame, engine].every((index) => index >= 0), true);
-  assert.equal(progress < art && art < story && story < clues && clues < bgm && bgm < minigame && minigame < engine, true);
+  assert.equal([records, progress, clues, art, story, bgm, minigame, engine].every((index) => index >= 0), true);
+  assert.equal(records < progress && progress < art && art < story && story < clues && clues < bgm && bgm < minigame && minigame < engine, true);
 });
 
 test("두 날짜 모두 단서 탭에서 메신저 숫자 배지를 표시할 수 있다", () => {

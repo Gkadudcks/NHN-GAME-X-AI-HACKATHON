@@ -19,23 +19,13 @@
     },
   });
 
+  const clueRecords = global.ClueRecords || (typeof module === "object" && module.exports ? require("./clue-records.js") : null);
+  if (!clueRecords) throw new Error("ClueRecords must load before Day2Story");
   const CLUES = Object.freeze({
-    verifiedBaseline: {
-      id: "d2_verified_baseline",
-      text: "DAY 2 검증 기준 — 최근 7일 신규 설치 12,480명, 첫 전투 도달 8,502명, 첫 전투 이전 이탈률 31.9%.",
-    },
-    minjaeLayout: {
-      id: "d2_minjae_layout_suggestion",
-      text: "강민재의 제안 — 과거 자료의 수치가 아니라 슬라이드 구성만 참고해 보라고 말했다.",
-    },
-    inactiveAutomation: {
-      id: "d2_inactive_automation",
-      text: "과거 폴더의 비활성 자동화 — 2024_온보딩개선_최종대응에 비활성 자동화가 남아 있다. 화면에는 소유자: 서하린, 마지막 실행: 2024-11-07 23:48로 표시되었다.",
-    },
-    cloudRestorePoint: {
-      id: "d2_cloud_restore_point",
-      text: "DAY 2 검증 완료 기록 — 사내 클라우드에 수치와 조사 결과가 포함된 정상 복원 지점이 생성되었다.",
-    },
+    verifiedBaseline: clueRecords.get("d2_verified_baseline"),
+    minjaeLayout: clueRecords.get("d2_minjae_layout_suggestion"),
+    inactiveAutomation: clueRecords.get("d2_inactive_automation"),
+    cloudRestorePoint: clueRecords.get("d2_cloud_restore_point"),
   });
 
   const ROOMS = Object.freeze({

@@ -1,29 +1,6 @@
 (function (global) {
   "use strict";
 
-  const DEDUCTION_CLUE_PREFIXES = Object.freeze([
-    "박태식의 최초 지시:",
-    "서하린이 담당했던 2024 온보딩 개선 프로젝트 폴더",
-    "강민재가 과거 발표 자료와 구버전 폴더의 위치를 알고 있음",
-    "나나봇 자동 정리 활성화",
-    "나나봇 자동 요약 활성화",
-    "Day 1 원본 초안:",
-    "DAY 2 검증 기준",
-    "강민재의 제안",
-    "과거 폴더의 비활성 자동화",
-    "DAY 2 검증 완료 기록",
-  ]);
-
-  function isDeductionClue(text) {
-    const value = String(text || "");
-    return DEDUCTION_CLUE_PREFIXES.some((prefix) => value.startsWith(prefix));
-  }
-
-  function pruneClues(clues) {
-    if (!Array.isArray(clues)) return [];
-    return [...new Set(clues.map(String).filter(isDeductionClue))];
-  }
-
   const DAY_META = Object.freeze({
     1: { title: "최초 기록", subtitle: "원본과 업무 지시", image: "../assets/CG/day1-harin-convenience-cg-v2.png" },
     2: { title: "검증과 흔적", subtitle: "수치·자동화·복원", image: "../assets/backgrounds/day1-office.png" },
@@ -31,38 +8,6 @@
     4: { title: "사건의 연결", subtitle: "로그와 관계", image: "../assets/backgrounds/day1-office-lounge.png" },
     5: { title: "최종 증명", subtitle: "원본 복구", image: "../assets/image/office-background.png" },
   });
-
-  function clueDay(text) {
-    const explicit = String(text).match(/DAY\s*([1-5])/i);
-    if (explicit) return Number(explicit[1]);
-    if (/강민재의 제안|과거 폴더의 비활성 자동화|정상 복원 지점/.test(text)) return 2;
-    return 1;
-  }
-
-  function clueTheme(text, day) {
-    if (day === 1) {
-      if (/원본|초안|보관|최초 기록/.test(text)) return "원본과 기록";
-      if (/나나봇|자동 요약|자동 정리/.test(text)) return "AI 사용 방식";
-      if (/메신저|부장|유저 경험/.test(text)) return "업무 지시";
-      return "조사 근거";
-    }
-    if (day === 2) {
-      if (/자동화|과거 폴더|소유자/.test(text)) return "과거 시스템";
-      if (/강민재|슬라이드/.test(text)) return "동료의 증언";
-      if (/수치|검증|복원 지점/.test(text)) return "검증 기록";
-      return "조사 결과";
-    }
-    return "주요 단서";
-  }
-
-  function clueSummary(text) {
-    const value = String(text).trim();
-    const separators = [" — ", " - ", ": "];
-    const separator = separators.find((candidate) => value.includes(candidate));
-    const first = separator ? value.split(separator)[0] : value.split(/[.!?]\s/)[0];
-    if (first.length <= 42) return first;
-    return `${first.slice(0, 39).trim()}…`;
-  }
 
   function element(tag, className, text) {
     const node = document.createElement(tag);
@@ -93,14 +38,12 @@
     svg.append(path);
   }
 
-  function groupClues(clues, day, dayForIndex) {
+  function groupClues(clues, day) {
     const grouped = new Map();
-    clues.forEach((text, index) => {
-      const assignedDay = dayForIndex ? Number(dayForIndex(index, text)) : clueDay(text);
-      if (assignedDay !== day) return;
-      const theme = clueTheme(text, day);
-      if (!grouped.has(theme)) grouped.set(theme, []);
-      grouped.get(theme).push(text);
+    clues.forEach((clue) => {
+      if (clue.day !== day) return;
+      if (!grouped.has(clue.theme)) grouped.set(clue.theme, []);
+      grouped.get(clue.theme).push(clue);
     });
     return [...grouped.entries()];
   }
@@ -119,21 +62,29 @@
     const maxScale = Number(options.maxScale) || 1.6;
     const worldWidth = Number(options.worldWidth) || world.offsetWidth;
     const worldHeight = Number(options.worldHeight) || world.offsetHeight;
-    const initialScaleMultiplier = Math.max(1, Number(options.initialScaleMultiplier) || 1);
+    const requestedInitialScale = Number(options.initialScale);
+    const initialScale = Number.isFinite(requestedInitialScale) && requestedInitialScale > 0
+      ? requestedInitialScale
+      : null;
     const zoomLabel = options.zoomLabel;
+    let viewportWidth = viewport.clientWidth;
+    let viewportHeight = viewport.clientHeight;
     const apply = () => {
       world.style.transform = `translate3d(${x}px,${y}px,0) scale(${scale})`;
       if (zoomLabel) zoomLabel.textContent = `${Math.round(scale * 100)}%`;
     };
-    const fitToView = (scaleMultiplier = 1) => {
+    const centerAtScale = (nextScale) => {
+      scale = Math.min(maxScale, Math.max(minScale, nextScale));
+      x = Math.round((viewport.clientWidth - worldWidth * scale) / 2);
+      y = Math.round((viewport.clientHeight - worldHeight * scale) / 2);
+      apply();
+    };
+    const fitToView = () => {
       const padding = 28;
       const availableWidth = Math.max(1, viewport.clientWidth - padding * 2);
       const availableHeight = Math.max(1, viewport.clientHeight - padding * 2);
       const fitScale = Math.min(1, Math.max(minScale, Math.min(availableWidth / worldWidth, availableHeight / worldHeight)));
-      scale = Math.min(maxScale, fitScale * scaleMultiplier);
-      x = Math.round((viewport.clientWidth - worldWidth * scale) / 2);
-      y = Math.round((viewport.clientHeight - worldHeight * scale) / 2);
-      apply();
+      centerAtScale(fitScale);
     };
     const setScale = (nextScale, anchorX = viewport.clientWidth / 2, anchorY = viewport.clientHeight / 2) => {
       const bounded = Math.min(maxScale, Math.max(minScale, nextScale));
@@ -178,35 +129,50 @@
     viewport.addEventListener("pointerup", finish);
     viewport.addEventListener("pointercancel", finish);
     viewport.addEventListener("wheel", (event) => {
-      if (!event.ctrlKey && !event.metaKey) return;
+      const delta = Math.max(-120, Math.min(120, Number(event.deltaY) || 0));
+      if (!delta) return;
       event.preventDefault();
       const bounds = viewport.getBoundingClientRect();
-      const factor = event.deltaY < 0 ? 1.05 : 0.95;
+      const factor = Math.exp(-delta * 0.001);
       setScale(scale * factor, event.clientX - bounds.left, event.clientY - bounds.top);
     }, { passive: false });
     viewport.wasDragged = () => moved;
     viewport.zoomBy = (factor) => setScale(scale * factor);
     viewport.fitToView = fitToView;
     viewport.resetPan = fitToView;
-    fitToView(initialScaleMultiplier);
+    if (initialScale === null) fitToView();
+    else centerAtScale(initialScale);
     if (typeof ResizeObserver !== "undefined") {
-      viewport.resizeObserver = new ResizeObserver(() => fitToView(initialScaleMultiplier));
+      viewport.resizeObserver = new ResizeObserver(() => {
+        const nextWidth = viewport.clientWidth;
+        const nextHeight = viewport.clientHeight;
+        if (!nextWidth || !nextHeight || (nextWidth === viewportWidth && nextHeight === viewportHeight)) return;
+        const centerWorldX = (viewportWidth / 2 - x) / scale;
+        const centerWorldY = (viewportHeight / 2 - y) / scale;
+        x = nextWidth / 2 - centerWorldX * scale;
+        y = nextHeight / 2 - centerWorldY * scale;
+        viewportWidth = nextWidth;
+        viewportHeight = nextHeight;
+        apply();
+      });
       viewport.resizeObserver.observe(viewport);
     }
   }
 
   function render(container, options) {
-    const clues = Array.isArray(options.clues) ? options.clues.map(String) : [];
-    const dayForIndex = typeof options.dayForIndex === "function" ? options.dayForIndex : null;
+    const clues = Array.isArray(options.clues)
+      ? options.clues.filter((clue) => global.ClueRecords && global.ClueRecords.isRecord(clue)).map((clue) => ({ ...clue }))
+      : [];
     const currentDay = Math.min(5, Math.max(1, Number(options.currentDay) || 1));
     let selectedDay = container.dataset.selectedDay ? Number(container.dataset.selectedDay) : 0;
     if (selectedDay > currentDay) selectedDay = 0;
     container.dataset.selectedDay = String(selectedDay);
+    if (container.clueResizeObserver) container.clueResizeObserver.disconnect();
     container.replaceChildren();
 
     const shell = element("section", "clue-canvas-shell");
     const toolbar = element("header", "clue-canvas-toolbar");
-    toolbar.innerHTML = `<span><b>CASE BOARD</b><small>원을 선택하고 보드를 드래그하세요</small></span>`;
+    toolbar.innerHTML = `<span><b>CASE BOARD</b><small>휠로 확대·축소하고 보드를 드래그하세요</small></span>`;
     const reset = element("button", "clue-canvas-reset", "중앙으로");
     reset.type = "button";
     reset.className = "clue-canvas-fit";
@@ -233,7 +199,7 @@
     svg.setAttribute("class", "clue-connections");
     world.append(svg);
 
-    const grouped = selectedDay ? groupClues(clues, selectedDay, dayForIndex) : [];
+    const grouped = selectedDay ? groupClues(clues, selectedDay) : [];
     const worldHeight = selectedDay ? 1120 : 620;
     const worldWidth = selectedDay ? 1120 : 620;
     if (selectedDay) world.classList.add("radial");
@@ -251,7 +217,7 @@
       const y = selectedDay ? (active ? centerY : 66) : centerY;
       const size = active ? 154 : (selectedDay ? 76 : 112);
       const meta = DAY_META[day];
-      const count = clues.filter((text, index) => (dayForIndex ? Number(dayForIndex(index, text)) : clueDay(text)) === day).length;
+      const count = clues.filter((clue) => clue.day === day).length;
       const button = element("button", `clue-orbit-node clue-day-orbit${active ? " active" : ""}`);
       button.type = "button";
       button.style.setProperty("--node-image", `url('${meta.image}')`);
@@ -284,7 +250,7 @@
         themeNode.style.animationDelay = `${themeIndex * 90 + 100}ms`;
         world.append(themeNode);
 
-        items.forEach((text, clueIndex) => {
+        items.forEach((clue, clueIndex) => {
           const maxSpread = Math.min(sector * 0.68, Math.PI * 0.72);
           const spread = items.length > 1 ? Math.min(maxSpread, (items.length - 1) * 0.38) : 0;
           const clueAngle = themeAngle + (items.length > 1 ? -spread / 2 + spread * clueIndex / (items.length - 1) : 0);
@@ -298,7 +264,7 @@
           clueNode.setAttribute("aria-expanded", "false");
           clueNode.setAttribute("aria-controls", "clue-inspector");
           clueNode.innerHTML = `<small>CLUE ${String(clueIndex + 1).padStart(2, "0")}</small><p></p><span>클릭해 자세히</span>`;
-          clueNode.querySelector("p").textContent = clueSummary(text);
+          clueNode.querySelector("p").textContent = clue.title;
           clueNode.addEventListener("click", () => {
             if (viewport.wasDragged()) return;
             const wasOpen = clueNode.classList.contains("active");
@@ -312,8 +278,9 @@
             }
             clueNode.classList.add("active");
             clueNode.setAttribute("aria-expanded", "true");
-            inspector.querySelector("strong").textContent = theme;
-            inspector.querySelector("p").textContent = text;
+            inspector.querySelector("small").textContent = `CLUE DETAIL · ${theme}`;
+            inspector.querySelector("strong").textContent = clue.title;
+            inspector.querySelector("p").textContent = clue.detail;
             inspector.hidden = false;
           });
           place(clueNode, clueX, clueY, 166);
@@ -334,8 +301,8 @@
         node.setAttribute("aria-expanded", "false");
       });
     });
-    viewport.append(world);
-    shell.append(toolbar, viewport, inspector);
+    viewport.append(world, inspector);
+    shell.append(toolbar, viewport);
     container.append(shell);
     const initialX = 12;
     const initialY = Math.min(10, Math.round((viewport.clientHeight - worldHeight) / 2));
@@ -343,12 +310,13 @@
       worldWidth,
       worldHeight,
       zoomLabel,
-      initialScaleMultiplier: selectedDay ? 1.22 : 1,
+      initialScale: 1,
     });
+    container.clueResizeObserver = viewport.resizeObserver || null;
     zoomOut.addEventListener("click", () => viewport.zoomBy(0.92));
     zoomIn.addEventListener("click", () => viewport.zoomBy(1.09));
     reset.addEventListener("click", () => viewport.resetPan());
   }
 
-  global.ClueMindmap = Object.freeze({ render, clueDay, clueTheme, clueSummary, isDeductionClue, pruneClues });
+  global.ClueMindmap = Object.freeze({ render });
 })(window);
