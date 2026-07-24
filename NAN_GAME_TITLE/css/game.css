@@ -87,6 +87,7 @@
 .event-cg{inset:0}
 .stage.cinematic-only .hud,.stage.cinematic-only .scene-label,.stage.cinematic-only .sound-prompt,.stage.cinematic-only .character-layer,.stage.cinematic-only .dialogue-card{opacity:0;visibility:hidden;pointer-events:none}
 .stage.cinematic-only.sprite-cinematic .character-layer{opacity:1;visibility:visible;pointer-events:none}
+.stage.cinematic-only.sprite-cinematic .character.framing-waist-up{left:50%;bottom:-55cqh;height:135cqh}
 .stage.cinematic-only.sprite-cinematic .character.speaking{animation:cinematic-sprite-reveal 1.15s cubic-bezier(.2,.75,.25,1) both}
 .stage.cinematic-only .dialogue-card{transform:translateY(18px)}
 .stage.cinematic-only.cinematic-ready .dialogue-card{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0)}

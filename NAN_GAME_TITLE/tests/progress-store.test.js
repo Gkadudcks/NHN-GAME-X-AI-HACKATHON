@@ -160,3 +160,31 @@ test("구조화 단서는 저장·로드 왕복에서 모든 필드를 보존한
 
   assert.deepEqual(progressStore.load(storage).shared.clues, progress.shared.clues);
 });
+
+test("DAY 3 시작과 재시작은 DAY 2 완료 상태와 시작 스냅샷을 보존한다", () => {
+  const storage = createStorage();
+  const progress = progressStore.startNewGame(storage);
+  progress.shared.work = 5;
+  progress.shared.trust = 3;
+  progress.shared.clues = [{
+    id: "d2_cloud_restore_point",
+    day: 2,
+    theme: "검증 기록",
+    title: "DAY 2 검증 완료 기록",
+    detail: "정상 복원 지점",
+  }];
+  progressStore.save(storage, progress);
+
+  const started = progressStore.startDay3(storage);
+  assert.equal(started.currentDay, 3);
+  assert.equal(started.days[2].complete, true);
+  assert.equal(started.day3StartSnapshot.work, 5);
+
+  started.shared.work = 99;
+  started.days[3].sceneId = "day3Decision";
+  progressStore.save(storage, started);
+  const reset = progressStore.resetDay3(storage);
+  assert.equal(reset.shared.work, 5);
+  assert.equal(reset.days[3].sceneId, "day3IntroCard");
+  assert.equal(reset.shared.clues[0].id, "d2_cloud_restore_point");
+});

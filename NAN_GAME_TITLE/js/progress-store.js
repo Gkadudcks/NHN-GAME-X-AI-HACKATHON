@@ -103,6 +103,17 @@
     };
   }
 
+  function defaultDay3() {
+    return {
+      sceneId: "day3IntroCard",
+      decisions: {},
+      seenNotifications: {},
+      summariesSeen: {},
+      minigameResult: null,
+      complete: false,
+    };
+  }
+
   function defaultProgress() {
     return {
       schemaVersion: SCHEMA_VERSION,
@@ -121,8 +132,10 @@
       days: {
         1: defaultDay1(),
         2: defaultDay2(),
+        3: defaultDay3(),
       },
       day2StartSnapshot: null,
+      day3StartSnapshot: null,
       savedAt: null,
     };
   }
@@ -151,6 +164,18 @@
     };
   }
 
+  function sanitizeDay3(value) {
+    const input = isObject(value) ? value : {};
+    return {
+      sceneId: stringOr(input.sceneId, "day3IntroCard"),
+      decisions: objectCopy(input.decisions),
+      seenNotifications: objectCopy(input.seenNotifications),
+      summariesSeen: objectCopy(input.summariesSeen),
+      minigameResult: isObject(input.minigameResult) ? cloneJson(input.minigameResult) : null,
+      complete: input.complete === true,
+    };
+  }
+
   function sanitizeSnapshot(value) {
     if (!isObject(value)) return null;
     return {
@@ -168,7 +193,7 @@
     const days = isObject(input.days) ? input.days : {};
     return {
       schemaVersion: SCHEMA_VERSION,
-      currentDay: input.currentDay === 2 ? 2 : 1,
+      currentDay: [1, 2, 3].includes(Number(input.currentDay)) ? Number(input.currentDay) : 1,
       shared: {
         work: finiteNumber(shared.work),
         affection: finiteNumber(shared.affection),
@@ -183,8 +208,10 @@
       days: {
         1: sanitizeDay1(days[1]),
         2: sanitizeDay2(days[2]),
+        3: sanitizeDay3(days[3]),
       },
       day2StartSnapshot: sanitizeSnapshot(input.day2StartSnapshot),
+      day3StartSnapshot: sanitizeSnapshot(input.day3StartSnapshot),
       savedAt: typeof input.savedAt === "string" ? input.savedAt : null,
     };
   }
@@ -310,15 +337,41 @@
     return load(storage);
   }
 
+  function startDay3(storage) {
+    const progress = load(storage);
+    progress.currentDay = 3;
+    progress.days[1].complete = true;
+    progress.days[2].complete = true;
+    if (!progress.day3StartSnapshot) progress.day3StartSnapshot = snapshotShared(progress.shared);
+    save(storage, progress);
+    return load(storage);
+  }
+
+  function resetDay3(storage) {
+    const progress = load(storage);
+    const snapshot = progress.day3StartSnapshot || snapshotShared(progress.shared);
+    progress.shared.work = snapshot.work;
+    progress.shared.affection = snapshot.affection;
+    progress.shared.trust = snapshot.trust;
+    progress.shared.clues = clueList(snapshot.clues);
+    progress.currentDay = 3;
+    progress.days[1].complete = true;
+    progress.days[2].complete = true;
+    progress.days[3] = defaultDay3();
+    progress.day3StartSnapshot = snapshotShared(snapshot);
+    save(storage, progress);
+    return load(storage);
+  }
+
   function updateDayState(storage, day, patch) {
     const dayNumber = Number(day);
-    if (dayNumber !== 1 && dayNumber !== 2) return load(storage);
+    if (![1, 2, 3].includes(dayNumber)) return load(storage);
     const progress = load(storage);
     const current = progress.days[dayNumber];
     const nextPatch = typeof patch === "function" ? patch(cloneJson(current, {})) : patch;
     if (!isObject(nextPatch)) return progress;
     const merged = { ...current, ...cloneJson(nextPatch, {}) };
-    progress.days[dayNumber] = dayNumber === 1 ? sanitizeDay1(merged) : sanitizeDay2(merged);
+    progress.days[dayNumber] = dayNumber === 1 ? sanitizeDay1(merged) : dayNumber === 2 ? sanitizeDay2(merged) : sanitizeDay3(merged);
     save(storage, progress);
     return load(storage);
   }
@@ -337,6 +390,8 @@
     startNewGame,
     startDay2,
     resetDay2,
+    startDay3,
+    resetDay3,
     updateDayState,
   });
 });

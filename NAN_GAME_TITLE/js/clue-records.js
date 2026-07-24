@@ -94,6 +94,48 @@
       legacy: ["DAY 2 검증 완료 기록 — 사내 클라우드에 수치와 조사 결과가 포함된 정상 복원 지점이 생성되었다."],
       legacyPrefix: "DAY 2 검증 완료 기록",
     },
+    {
+      id: "d3_first_modified_copy",
+      day: 3,
+      theme: "변경된 문장",
+      title: "DAY 3 최초 변경본",
+      detail: "DAY 2 검증 완료본과 달리 검증 수치·출처·측정 방법이 사라지고 과장된 표현이 추가되었다.",
+    },
+    {
+      id: "d3_harin_editor_name",
+      day: 3,
+      theme: "접근 기록",
+      title: "서하린 명의 수정 기록",
+      detail: "변경 이력에 서하린의 이름이 남아 있지만 직접 실행한 계정과 기기는 아직 확인되지 않았다.",
+    },
+    {
+      id: "d3_nanabot_pattern",
+      day: 3,
+      theme: "AI 사용 방식",
+      title: "나나봇 문장 패턴 일치",
+      detail: "변경된 문장의 과장된 표현과 근거 생략 방식이 DAY 1 나나봇 추천 문장과 일치한다.",
+    },
+    {
+      id: "d3_automation_run",
+      day: 3,
+      theme: "자동화 기록",
+      title: "변경 시각의 자동 정리 실행",
+      detail: "작업본이 바뀐 시각에 연결된 자동 정리가 실행되었으나 요청 주체는 권한 부족으로 표시되지 않는다.",
+    },
+    {
+      id: "d3_legacy_phrase_match",
+      day: 3,
+      theme: "과거 시스템",
+      title: "구버전 문장과 변경본의 유사성",
+      detail: "현재 변경본의 문장 구조가 2024 온보딩 개선 구버전 자료의 표현과 유사하다.",
+    },
+    {
+      id: "d3_direct_access_unconfirmed",
+      day: 3,
+      theme: "접근 기록",
+      title: "직접 접근 여부 미확정",
+      detail: "서하린 명의는 남아 있지만 문서 직접 접근 시각과 변경 시각이 맞지 않아 실행자를 단정할 수 없다.",
+    },
   ]);
 
   const catalog = new Map(RECORDS.map((record) => [record.id, record]));

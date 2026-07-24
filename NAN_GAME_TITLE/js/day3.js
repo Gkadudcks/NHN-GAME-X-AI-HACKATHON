@@ -9,7 +9,7 @@ const CHARACTER_PROFILES = {
   nanabot: { name: "나나봇", heightCm: 110, image: "nanabot-standing.png", scale: 0.52, defaultPosition: "center" },
 };
 const CHARACTER_POSITIONS = { farLeft: 18, left: 31, center: 50, right: 69, farRight: 82 };
-const scenes = Day2Story.scenes;
+const scenes = Day3Story.scenes;
 const $ = (selector) => document.querySelector(selector);
 const pageParams = new URLSearchParams(location.search);
 const devSkipMinigames = pageParams.get("dev") === "skip-minigames";
@@ -55,20 +55,20 @@ const refs = {
 };
 
 const progress = pageParams.has("new")
-  ? GameProgress.resetDay2(localStorage)
-  : GameProgress.startDay2(localStorage);
-const savedDay2 = progress.days[2];
-const savedIndex = scenes.findIndex((scene) => scene.id === savedDay2.sceneId);
+  ? GameProgress.resetDay3(localStorage)
+  : GameProgress.startDay3(localStorage);
+const savedDay3 = progress.days[3];
+const savedIndex = scenes.findIndex((scene) => scene.id === savedDay3.sceneId);
 const state = {
   index: savedIndex >= 0 ? savedIndex : 0,
   work: progress.shared.work,
   affection: progress.shared.affection,
   trust: progress.shared.trust,
   clues: ClueRecords.normalizeList(progress.shared.clues),
-  decisions: { ...savedDay2.decisions },
-  seenNotifications: { ...savedDay2.seenNotifications },
-  summariesSeen: { ...savedDay2.summariesSeen },
-  minigameResult: savedDay2.minigameResult,
+  decisions: { ...savedDay3.decisions },
+  seenNotifications: { ...savedDay3.seenNotifications },
+  summariesSeen: { ...savedDay3.summariesSeen },
+  minigameResult: savedDay3.minigameResult,
   day1: { ...progress.shared.day1 },
   unreadClues: false,
 };
@@ -177,7 +177,7 @@ function renderGameSaveSlots() {
     button.type = "button";
     button.className = `game-save-slot${slot.empty ? " empty" : ""}`;
     button.disabled = loading && slot.empty;
-    const day = slot.empty ? 2 : slot.day;
+    const day = slot.empty ? 3 : slot.day;
     const time = slot.empty ? scene.time : (slot.sceneTime || "--:--");
     const title = slot.empty ? "빈 저장 슬롯" : `DAY ${slot.day} · ${slot.sceneTitle}`;
     const stats = slot.empty ? (loading ? "불러올 저장 데이터가 없습니다." : "현재 진행을 이 슬롯에 새로 저장합니다.") : `업무력 ${slot.work} · 호감도 ${slot.affection} · 신뢰도 ${slot.trust}`;
@@ -213,8 +213,8 @@ function saveToGameSlot(slotId, occupied) {
   const scene = scenes[state.index] || scenes[0];
   const saved = GameProgress.load(localStorage);
   localStorage.setItem(`nan-save-slot-${slotId}`, JSON.stringify({
-    slotId, day: 2, sceneTitle: "이상한 익숙함", sceneTime: scene.time,
-    savedAt: saved.savedAt, resumeUrl: "day2.html",
+    slotId, day: 3, sceneTitle: "첫 번째 변조", sceneTime: scene.time,
+    savedAt: saved.savedAt, resumeUrl: "day3.html",
     work: state.work, affection: state.affection, trust: state.trust,
     lastDialogue: { speaker: scene.speaker, text: scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text },
     thumbnail: "assets/image/office-background.png", progress: saved,
@@ -230,7 +230,7 @@ function loadFromGameSlot(slot) {
   localStorage.setItem(GameProgress.STORAGE_KEY, JSON.stringify(slot.progress));
   if (slot.day1Save) localStorage.setItem(GameProgress.LEGACY_DAY1_KEY, JSON.stringify(slot.day1Save));
   else localStorage.removeItem(GameProgress.LEGACY_DAY1_KEY);
-  location.href = slot.resumeUrl || (Number(slot.day) === 2 ? "day2.html" : "game.html");
+  location.href = slot.resumeUrl || (Number(slot.day) === 3 ? "day3.html" : Number(slot.day) === 2 ? "day2.html" : "game.html");
 }
 
 function saveProgress({ announce = false } = {}) {
@@ -238,17 +238,17 @@ function saveProgress({ announce = false } = {}) {
   progress.shared.affection = state.affection;
   progress.shared.trust = state.trust;
   progress.shared.clues = state.clues.slice();
-  progress.days[2] = {
-    sceneId: scenes[state.index]?.id || "day2IntroCard",
+  progress.days[3] = {
+    sceneId: scenes[state.index]?.id || "day3IntroCard",
     decisions: { ...state.decisions },
     seenNotifications: { ...state.seenNotifications },
     summariesSeen: { ...state.summariesSeen },
     minigameResult: state.minigameResult,
     complete: scenes[state.index]?.end === true,
   };
-  progress.currentDay = 2;
+  progress.currentDay = 3;
   GameProgress.save(localStorage, progress);
-  if (announce) toast("DAY 2 진행 상황을 저장했습니다.");
+  if (announce) toast("DAY 3 진행 상황을 저장했습니다.");
 }
 
 function syncStats() {
@@ -286,7 +286,7 @@ function openStatHelp(button) {
 }
 
 function addClue(clue) {
-  const record = ClueRecords.normalize(clue, { defaultDay: 2 });
+  const record = ClueRecords.normalize(clue, { defaultDay: 3 });
   if (!record || state.clues.some((entry) => entry.id === record.id)) return;
   state.clues.push(record);
   state.unreadClues = !$("#clues-view").classList.contains("active");
@@ -304,7 +304,7 @@ function renderClues() {
   }
   ClueMindmap.render(list, {
     clues: state.clues,
-    currentDay: 2,
+    currentDay: 3,
   });
 }
 
@@ -329,7 +329,7 @@ function isAtOrAfter(id) {
 
 const MESSAGE_DAY_NAMES = Object.freeze(["", "월요일", "화요일", "수요일", "목요일", "금요일"]);
 
-function messageDay(message, fallbackDay = 2) {
+function messageDay(message, fallbackDay = 3) {
   const explicitDay = Number(message.day);
   if (explicitDay >= 1 && explicitDay <= 5) return explicitDay;
   const embeddedDay = String(message.time || "").match(/DAY\s*([1-5])/i);
@@ -345,11 +345,11 @@ function messageDayDivider(day) {
 }
 
 function visibleMessages(room) {
-  return Day2Story.MESSAGES.filter((message) => message.room === room && isAtOrAfter(message.at));
+  return Day3Story.MESSAGES.filter((message) => message.room === room && isAtOrAfter(message.at));
 }
 
 function renderMessages() {
-  const allRooms = Object.keys(Day2Story.ROOMS);
+  const allRooms = Object.keys(Day3Story.ROOMS);
   const visibleRooms = allRooms.filter((room) => visibleMessages(room).length);
   $("#chat-list-empty").hidden = visibleRooms.length > 0;
   allRooms.forEach((room) => {
@@ -358,7 +358,8 @@ function renderMessages() {
     button.hidden = messages.length === 0;
     if (!messages.length) return;
     const latest = messages.at(-1);
-    button.querySelector(".chat-copy small").textContent = `${latest.sender}: ${latest.text}`;
+    const latestText = latest.dynamic ? resolveDynamic(latest.dynamic) : latest.text;
+    button.querySelector(".chat-copy small").textContent = `${latest.sender}: ${latestText}`;
     button.querySelector("time").textContent = latest.time;
     const count = unreadCount(room);
     const unread = count > 0 && currentRoom !== room;
@@ -380,14 +381,15 @@ function renderMessages() {
     const day = messageDay(message);
     const divider = day === renderedDay ? "" : messageDayDivider(day);
     renderedDay = day;
-    return `${divider}<article class="message" data-message-day="${day}"><b>${escapeHtml(message.sender)}</b><p>${escapeHtml(message.text)}</p><small>${escapeHtml(messageClock(message))}</small></article>`;
+    const text = message.dynamic ? resolveDynamic(message.dynamic) : message.text;
+    return `${divider}<article class="message" data-message-day="${day}"><b>${escapeHtml(message.sender)}</b><p>${escapeHtml(text)}</p><small>${escapeHtml(messageClock(message))}</small></article>`;
   }).join("");
   box.scrollTop = box.scrollHeight;
 }
 
 function openChat(room) {
   currentRoom = room;
-  const info = Day2Story.ROOMS[room];
+  const info = Day3Story.ROOMS[room];
   $("#room-type").textContent = info.type;
   $("#room-title").textContent = info.title;
   $("#room-members").innerHTML = info.members.map((member) => `<span>${escapeHtml(member)}</span>`).join("");
@@ -407,7 +409,7 @@ function closeChat() {
 }
 
 function notificationRoom(id) {
-  const message = Day2Story.MESSAGES.find((entry) => entry.id === id);
+  const message = Day3Story.MESSAGES.find((entry) => entry.id === id);
   return message?.room || null;
 }
 
@@ -431,7 +433,7 @@ function clearUnread(room) {
 function renderMessageTabAlert({ pulse = false } = {}) {
   const button = document.querySelector('[data-tab="messages-view"]');
   const badge = $("#message-new");
-  const count = Object.keys(Day2Story.ROOMS).reduce((sum, room) => sum + unreadCount(room), 0);
+  const count = Object.keys(Day3Story.ROOMS).reduce((sum, room) => sum + unreadCount(room), 0);
   const hasUnread = count > 0;
   badge.textContent = String(count);
   badge.hidden = !hasUnread;
@@ -454,48 +456,27 @@ function notifyMessage(id) {
   refs.messenger.classList.add("message-arrived");
   renderMessageTabAlert({ pulse: true });
   playMessageSfx();
-  if (room) toast(`${Day2Story.ROOMS[room].title.replace(/^# /, "")}에 새 메시지가 도착했습니다.`);
+  if (room) toast(`${Day3Story.ROOMS[room].title.replace(/^# /, "")}에 새 메시지가 도착했습니다.`);
   window.setTimeout(() => refs.messenger.classList.remove("message-arrived"), 1900);
   renderMessages();
 }
 
 function resolveDynamic(name) {
-  const evening = state.day1.eveningTrust;
-  const subtask = state.decisions.day2Subtask || "competitor";
   const grade = state.minigameResult?.grade || "good";
-  const manualNana = state.day1.nanaUse !== "auto-summary";
-  const coffeeHigh = state.day1.coffeeResult?.grade === "perfect" || state.day1.coffeeResult?.correctDrinks === 3;
   const values = {
-    introHarin: {
-      "accept-help": "어제는 든든하다더니 오늘은 저보다 먼저 왔네요.",
-      "prove-self": "도움받는다고 도윤 씨 일이 사라지는 건 아니라는 말, 생각해 봤어요?",
-      "neighbor-joke": "회사에서는 이웃보다 사수가 먼저예요. 지각하지 않은 건 칭찬해 줄게요.",
-      "work-alone": "오늘도 혼자 하겠다고 하면 오전 일정 전부 제 자리에서 진행할 겁니다.",
-    }[evening] || "오늘은 숫자부터 같이 봐요. 혼자 끝내겠다는 말은 잠깐 보류하고요.",
-    introDoyun: {
-      "accept-help": "같이 보려면 준비는 해둬야 하니까요.",
-      "prove-self": "적어도 오늘은 확인받는 걸 피하지 않겠습니다.",
-      "neighbor-joke": "사수와 이웃을 구분하는 기준이 지각입니까?",
-      "work-alone": "그건 사실상 선택권이 없는 것 아닙니까?",
-    }[evening] || "알겠습니다. 오늘은 같이 확인하겠습니다.",
-    subtaskSelected: `${Day2Story.SUBTASKS[subtask].title}부터 해보자. 숫자와는 다른 방식으로 신규 유저의 첫 경험을 볼 수 있을 것 같다.`,
-    workAlertResult: grade === "perfect" ? "생각보다 잘하네요. 제 요청도 안 놓쳤고." : grade === "good" ? "급한 건 다 처리했어요. 잡담에 너무 성실하게 답한 것만 빼면요." : "도윤 씨, 보안 교육을 스팸으로 보내면 인사팀에서 직접 찾아와요.",
-    workAlertReply: grade === "perfect" ? "선배 메시지만 따로 표시가 눈에 띄었습니다." : grade === "good" ? "점심 메시지도 중요한 의사결정이라고 민재가 주장했습니다." : "제목이 너무 광고 같았습니다.",
-    lunchBranchMinjae: {
-      competitor: "신규 유저 경험이면 내가 하던 게임도 봐봐. 튜토리얼은 짧은데 첫 보스가 너무 세서 절반이 거기서 접었어.",
-      reviews: "리뷰 읽다 보면 상처 안 받아?",
-      journey: "첫 10분이면 로그인 보상 창 닫다가 절반 가겠네.",
-    }[subtask],
-    lunchBranchDoyun: {
-      competitor: "좋은 예시인지 나쁜 예시인지 모르겠습니다.",
-      reviews: "제가 만든 게임은 아니니까 아직은 괜찮습니다.",
-      journey: "과장 아닙니까?",
-    }[subtask],
-    nanaLead: manualNana ? "재현 절차의 표현만 간결하게 정리할까요?" : "재현 결과를 한 문장으로 요약했습니다. ‘사용자 안내 경험을 개선할 기회가 발견되었습니다.’",
-    nanaDoyun: manualNana ? "원문 단계는 유지하고 문장만 다듬어 줘." : "버그가 재현됐다는 말이 사라졌는데요.",
-    nanaHarin: manualNana ? "어제보다 사용법이 확실해졌네요." : "그래서 오늘은 원문 단계를 먼저 적고 요약은 마지막에 써요.",
-    coffeeHarin: coffeeHigh ? "첫날 주문은 정확히 기억하네요." : "이번에는 맞았어요. 첫날보다 발전했네요.",
-    coffeeDoyun: coffeeHigh ? "다시 만들 일은 없었으니까요." : "아직도 기억하고 계셨습니까?",
+    secretChatResult: grade === "perfect"
+      ? "질문 세 개 다 확인했어요. 오늘 아침에는 그 문서를 열지 않았고, 복원 지점은 그대로 두세요."
+      : grade === "good"
+        ? "메시지 확인했어요. 오늘 아침에는 문서를 열지 않았습니다. 오후에 접근 기록을 같이 봐요."
+        : "아까는 부장님 바로 앞이었잖아요. 지금 답할게요. 오늘 아침에는 그 문서를 열지 않았어요.",
+    decisionResponse: {
+      accuse: "의심할 수는 있어요. 하지만 이름 하나만으로 결론부터 내리지는 말아 주세요.",
+      verify: "좋아요. 믿는다는 말보다 그게 더 안심되네요. 기록으로 확인해요.",
+      blindTrust: "그렇게 복원하면 같은 일이 반복돼요. 저를 믿는 것과 기록을 확인하지 않는 건 다른 문제예요.",
+    }[state.decisions.harinSuspicion] || "이름과 실행자가 같은지 끝까지 확인해요.",
+    eveningMessage: state.decisions.harinSuspicion === "verify"
+      ? "오늘 제 이름을 보고도 바로 단정하지 않은 건 고마워요. 그렇다고 그냥 믿지만은 마세요. 내일은 기록을 끝까지 확인해요."
+      : "제 이름이 남은 건 사실이에요. 하지만 사실인 것과 전부인 것은 다릅니다. 내일 기록을 다시 확인해요.",
   };
   return values[name] || "";
 }
@@ -526,7 +507,6 @@ function renderCharacters(scene) {
 function inheritedPlaceholder(index) {
   for (let cursor = index; cursor >= 0; cursor -= 1) {
     const scene = scenes[cursor];
-    if (!Day2Story.isVisible(scene, state.decisions)) continue;
     if (scene.placeholder && scene.placeholder !== "inherit") return scene.placeholder;
     if (scene.bg) return null;
   }
@@ -536,7 +516,6 @@ function inheritedPlaceholder(index) {
 function inheritedSceneValue(index, key) {
   for (let cursor = index; cursor >= 0; cursor -= 1) {
     const candidate = scenes[cursor];
-    if (!Day2Story.isVisible(candidate, state.decisions)) continue;
     if (candidate[key]) return candidate[key];
   }
   return null;
@@ -611,9 +590,7 @@ function preloadSceneImages(scene) {
 }
 
 function nextVisibleIndex(fromIndex) {
-  let index = Math.min(fromIndex, scenes.length - 1);
-  while (index < scenes.length - 1 && !Day2Story.isVisible(scenes[index], state.decisions)) index += 1;
-  return index;
+  return Math.min(fromIndex, scenes.length - 1);
 }
 
 function addStageChoice(choice, key, scene) {
@@ -627,8 +604,8 @@ function addStageChoice(choice, key, scene) {
 function choose(choice, key, scene) {
   const before = { work: state.work, affection: state.affection, trust: state.trust };
   Object.entries(choice.delta || {}).forEach(([stat, delta]) => { state[stat] += delta; });
-  state.decisions[key] = choice.value || choice.text;
-  refs.dialogue.textContent = `서하린: “${choice.reply}”`;
+  state.decisions[key] = choice.id || choice.value || choice.text;
+  refs.dialogue.textContent = choice.reply || choice.text;
   refs.stageChoices.innerHTML = "";
   refs.stageChoices.classList.remove("show");
   refs.stage.classList.remove("choice-mode");
@@ -656,12 +633,11 @@ function showChoiceResult(choice, before, relationshipChoice) {
   }, 3000);
 }
 
-function finishWorkAlert(result) {
+function finishSecretChat(result) {
   if (state.minigameResult) return;
   state.minigameResult = result;
   state.work += result.workDelta;
-  if (result.grade === "perfect") state.trust += 1;
-  if (result.grade === "perfect" && result.harinHandled) state.affection += 1;
+  state.trust += result.trustDelta || 0;
   state.index = nextVisibleIndex(state.index + 1);
   syncStats();
   saveProgress();
@@ -669,30 +645,20 @@ function finishWorkAlert(result) {
   render();
 }
 
-function startWorkAlert() {
+function startSecretChat() {
   if (devSkipMinigames) {
-    console.info("[DEV] 업무 알림 미니게임을 GOOD 결과로 스킵했습니다.");
-    finishWorkAlert({
-      score: 0,
+    console.info("[DEV] 몰래 연락 미니게임을 GOOD 결과로 스킵했습니다.");
+    finishSecretChat({
       grade: "good",
       workDelta: 1,
-      harinHandled: false,
-      missedCritical: [],
-      results: [],
+      trustDelta: 0,
+      sent: 3,
+      warnings: 1,
       skipped: true,
     });
     return;
   }
-  const commonRequests = WorkAlertMinigame.core.REQUESTS.slice(0, 13);
-  const subtaskRequests = WorkAlertMinigame.core.SUBTASK_REQUESTS[state.decisions.day2Subtask || "competitor"];
-  const requests = [...commonRequests, ...subtaskRequests];
-  WorkAlertMinigame.start({
-    seed: 20260720,
-    duration: 45,
-    count: requests.length,
-    requests,
-    onComplete: finishWorkAlert,
-  });
+  SecretChatMinigame.start({ onComplete: finishSecretChat });
 }
 
 function summaryRow(icon, title, detail, value = "") {
@@ -706,7 +672,7 @@ function relationshipName(affection, trust) {
 }
 
 function showDaySummary() {
-  const snapshot = progress.day2StartSnapshot || { work: 0, affection: 0, trust: 0, clues: [] };
+  const snapshot = progress.day3StartSnapshot || { work: 0, affection: 0, trust: 0, clues: [] };
   const deltas = {
     work: state.work - snapshot.work,
     affection: state.affection - snapshot.affection,
@@ -714,26 +680,25 @@ function showDaySummary() {
   };
   const grade = deltas.work >= 4 ? "EXCELLENT" : deltas.work >= 1 ? "GOOD" : "NEEDS CARE";
   refs.daySummaryGrade.textContent = grade;
-  const subtask = Day2Story.SUBTASKS[state.decisions.day2Subtask || "competitor"];
   const tasks = [
-    "DAY 1 조사 수치 교차 확인",
-    subtask.title,
-    `쏟아지는 사내 요청 처리 · ${state.minigameResult?.grade?.toUpperCase() || "완료"}`,
-    "오후 빌드 점검 지원",
-    "조사 결과와 근거 링크 정리",
+    "DAY 3 최초 변경본 보존",
+    "정상 원본과 변경본 비교",
+    `서하린 비공개 확인 · ${state.minigameResult?.grade?.toUpperCase() || "완료"}`,
+    "접근·자동화·폴더 연결 기록 조사",
+    "DAY 2 복원 지점 유지",
   ];
-  refs.daySummaryWork.innerHTML = tasks.map((task, index) => summaryRow(index === 2 ? "✉" : "✓", task, index === 1 ? subtask.summary : "오늘 업무 완료")).join("");
+  refs.daySummaryWork.innerHTML = tasks.map((task, index) => summaryRow(index === 2 ? "✉" : "✓", task, "오늘 업무 완료")).join("");
   refs.daySummaryStats.innerHTML = [
     ["◆", "업무력", deltas.work, "조사·선택·미니게임 결과"],
-    ["♡", "호감도", deltas.affection, "DAY 2 대화와 요청 처리"],
-    ["◇", "신뢰도", deltas.trust, "협업 태도와 업무 분담"],
+    ["♡", "호감도", deltas.affection, "DAY 3 의심과 신뢰 선택"],
+    ["◇", "신뢰도", deltas.trust, "증거를 대하는 태도"],
   ].map(([icon, name, value, detail]) => summaryRow(icon, name, detail, `${value >= 0 ? "+" : ""}${value}`)).join("");
   const snapshotIds = new Set(snapshot.clues.map((clue) => clue.id));
   const dailyClues = state.clues.filter((clue) => !snapshotIds.has(clue.id));
   refs.daySummaryRecords.innerHTML = dailyClues.slice(-5).map((clue) => summaryRow("◆", clue.title, clue.detail)).join("") || summaryRow("◇", "새 기록 없음", "단서 탭을 확인해 주세요.");
   const beforeRelationship = relationshipName(snapshot.affection, snapshot.trust);
   const afterRelationship = relationshipName(state.affection, state.trust);
-  refs.daySummaryReactions.innerHTML = `<blockquote><b>박태식 부장</b><p>“숫자만 보지 않고 실제 플레이와 유저 반응까지 본 건 좋아. 근거 링크는 그대로 유지해.”</p></blockquote><article class="relationship-result"><small>RELATIONSHIP</small><p><b>서하린</b><em>:</em><strong>${escapeHtml(beforeRelationship)}</strong><i>→</i><strong>${escapeHtml(afterRelationship)}</strong><span>— 여러 종류의 업무를 함께 처리하며 서로의 방식에 익숙해졌습니다.</span></p></article>`;
+  refs.daySummaryReactions.innerHTML = `<blockquote><b>박태식 부장</b><p>“복원부터 하지 않고 기록을 남긴 건 잘했어. 내일 실행 계정까지 확인해.”</p></blockquote><article class="relationship-result"><small>RELATIONSHIP</small><p><b>서하린</b><em>:</em><strong>${escapeHtml(beforeRelationship)}</strong><i>→</i><strong>${escapeHtml(afterRelationship)}</strong><span>— 의심스러운 기록 앞에서 어떤 태도를 보였는지가 관계에 남았습니다.</span></p></article>`;
   refs.daySummary.classList.add("show");
   refs.daySummary.setAttribute("aria-hidden", "false");
   refs.next.disabled = true;
@@ -741,23 +706,12 @@ function showDaySummary() {
 }
 
 function closeDaySummary() {
-  state.summariesSeen[2] = true;
+  state.summariesSeen[3] = true;
   refs.daySummary.classList.remove("show");
   refs.daySummary.setAttribute("aria-hidden", "true");
   state.index = nextVisibleIndex(state.index + 1);
   saveProgress();
   render();
-}
-
-function goToDay3() {
-  GameProgress.startDay3(localStorage);
-  refs.dayComplete.classList.remove("show");
-  refs.dayComplete.setAttribute("aria-hidden", "true");
-  refs.dayTransition.classList.add("show");
-  refs.dayTransition.setAttribute("aria-hidden", "false");
-  bgmManager.stop({ fadeOut: 220 });
-  const suffix = devSkipMinigames ? "?new=1&dev=skip-minigames" : "?new=1";
-  window.setTimeout(() => { location.href = `day3.html${suffix}`; }, 2200);
 }
 
 function render() {
@@ -766,7 +720,7 @@ function render() {
   const cinematic = Boolean(scene.cinematicDelay);
   const effectiveBgm = inheritedSceneValue(state.index, "bgm");
   resetCinematic();
-  if (scene.daySummary && state.summariesSeen[2]) {
+  if (scene.daySummary && state.summariesSeen[3]) {
     state.index = nextVisibleIndex(state.index + 1);
     render();
     return;
@@ -796,8 +750,8 @@ function render() {
   if (cinematic) startCinematic(scene);
   syncStats();
   saveProgress();
-  if (scene.startWorkAlert && !state.minigameResult) {
-    startWorkAlert();
+  if (scene.startSecretChat && !state.minigameResult) {
+    startSecretChat();
     return;
   }
   if (scene.daySummary) showDaySummary();
@@ -807,7 +761,7 @@ function hasBlockingUi() {
   return refs.daySummary.classList.contains("show")
     || refs.dayComplete.classList.contains("show")
     || $("#game-save-modal").classList.contains("open")
-    || !!document.querySelector(".work-alert-minigame:not([hidden])");
+    || !!document.querySelector(".secret-chat-minigame:not([hidden])");
 }
 
 async function next() {
@@ -816,7 +770,7 @@ async function next() {
   refs.next.disabled = true;
   const scene = scenes[state.index];
   if (scene.end) {
-    progress.days[2].complete = true;
+    progress.days[3].complete = true;
     saveProgress();
     refs.dayComplete.classList.add("show");
     refs.dayComplete.setAttribute("aria-hidden", "false");
@@ -838,7 +792,6 @@ document.querySelectorAll(".chat-item").forEach((button) => { button.onclick = (
 $("#chat-back").onclick = closeChat;
 refs.next.onclick = next;
 refs.daySummaryExit.onclick = closeDaySummary;
-refs.dayCompleteNext.onclick = goToDay3;
 refs.dayCompleteMenu.onclick = () => { location.href = "index.html"; };
 $("#save").onclick = () => openGameSave("save");
 $("#load").onclick = () => openGameSave("load");

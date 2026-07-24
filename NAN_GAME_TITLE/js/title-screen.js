@@ -257,7 +257,7 @@ function renderSaveSlots() {
       if (slot.day1Save) localStorage.setItem(GameProgress.LEGACY_DAY1_KEY, JSON.stringify(slot.day1Save));
       else localStorage.removeItem(GameProgress.LEGACY_DAY1_KEY);
       closeSavePanel();
-      window.location.href = slot.resumeUrl || (Number(slot.day) === 2 ? "day2.html" : "game.html");
+      window.location.href = slot.resumeUrl || (Number(slot.day) === 3 ? "day3.html" : Number(slot.day) === 2 ? "day2.html" : "game.html");
     });
     return button;
   }));

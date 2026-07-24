@@ -209,7 +209,7 @@
 
     { id: "day2ArchiveSearch", time: "14:32", speaker: "한도윤", text: "조사 결과를 정리할 공용 슬라이드 틀을 검색했다.", bg: "office", bgm: "mystery" },
     { id: "day2ArchivePanel", time: "14:32", speaker: "시스템", text: "사내 클라우드에서 관련 항목을 불러왔습니다.", systemPanel: { title: "RELATED CLOUD ITEM", rows: ["2024_온보딩개선_최종대응", "연결된 자동화 1개", "현재 비활성"] } },
-    { id: "day2ArchiveRecognition", time: "14:33", speaker: "한도윤", text: "이 폴더, 어제 봤던….", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin", cinematicDelay: 3000, cinematicTarget: "sprite" },
+    { id: "day2ArchiveRecognition", time: "14:33", speaker: "한도윤", text: "이 폴더, 어제 봤던….", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned", position: "center", framing: "waist_up" }], activeCharacter: "harin", cinematicDelay: 3000, cinematicTarget: "sprite" },
     { id: "day2ArchiveDetails", time: "14:33", speaker: "시스템", text: "정보 패널이 잠시 열렸습니다.", systemPanel: { title: "AUTOMATION DETAILS", rows: ["온보딩_공용슬라이드_동기화", "상태 · 비활성", "소유자 · 서하린", "마지막 실행 · 2024-11-07 23:48"] }, clue: CLUES.inactiveAutomation },
     { id: "day2ArchiveHarin1", time: "14:34", speaker: "서하린", text: "그건 예전에 쓰던 연결이에요. 지금은 꺼져 있어요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin" },
     { id: "day2ArchiveDoyun", time: "14:34", speaker: "한도윤", text: "선배 이름이 남아 있네요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin" },
