@@ -97,6 +97,9 @@
   let finishing = false;
   let completionSent = false;
   let onComplete = null;
+  let paused = false;
+  let pausedAt = 0;
+  let orderSeconds = 10;
 
   function cloneCup(order) {
     return { ...order, recipe: [...order.recipe], ingredients: [], resets: 0, hasError: false, ready: false, served: false, timing: 0, score: 0 };
@@ -348,13 +351,15 @@
     refs.meterNeedle.style.left = "0%";
     setFeedback(`${cup.name}의 ${cup.method} 중! 초록 구간에서 멈추세요.`, "warning");
     updateFinishAction();
-    const tick = (now) => {
-      const phase = ((now - meterStartedAt) % 1800) / 1800;
-      meterPosition = phase <= 0.5 ? phase * 2 : (1 - phase) * 2;
-      refs.meterNeedle.style.left = `${meterPosition * 100}%`;
-      meterFrame = requestAnimationFrame(tick);
-    };
-    meterFrame = requestAnimationFrame(tick);
+    meterFrame = requestAnimationFrame(tickMeter);
+  }
+
+  function tickMeter(now) {
+    if (paused || !meterCupKey) return;
+    const phase = ((now - meterStartedAt) % 1800) / 1800;
+    meterPosition = phase <= 0.5 ? phase * 2 : (1 - phase) * 2;
+    refs.meterNeedle.style.left = `${meterPosition * 100}%`;
+    meterFrame = requestAnimationFrame(tickMeter);
   }
 
   function stopMeter(cancelled = false) {
@@ -448,15 +453,20 @@
     mode = "orders";
     showScreen(refs.orderScreen);
     renderOrders();
-    let seconds = 10;
-    refs.orderSeconds.textContent = seconds;
-    clearInterval(orderInterval);
-    orderInterval = setInterval(() => {
-      seconds -= 1;
-      refs.orderSeconds.textContent = Math.max(0, seconds);
-      if (seconds <= 0) beginMainGame();
-    }, 1000);
+    orderSeconds = 10;
+    startOrderCountdown();
     refs.orderReady.focus();
+  }
+
+  function startOrderCountdown() {
+    refs.orderSeconds.textContent = orderSeconds;
+    clearInterval(orderInterval);
+    if (paused) return;
+    orderInterval = setInterval(() => {
+      orderSeconds -= 1;
+      refs.orderSeconds.textContent = Math.max(0, orderSeconds);
+      if (orderSeconds <= 0) beginMainGame();
+    }, 1000);
   }
 
   function beginMainGame() {
@@ -482,7 +492,7 @@
   }
 
   function updateTimer() {
-    if (mode !== "playing" || finishing) return;
+    if (paused || mode !== "playing" || finishing) return;
     timeRemaining = Math.max(0, 60 - (performance.now() - gameStartedAt) / 1000);
     refs.time.textContent = Math.ceil(timeRemaining);
     refs.time.parentElement.classList.toggle("danger", timeRemaining <= 10);
@@ -549,6 +559,8 @@
     completedCups = [];
     finishing = false;
     completionSent = false;
+    paused = false;
+    pausedAt = 0;
     onComplete = options.onComplete;
     root.classList.add("active");
     root.setAttribute("aria-hidden", "false");
@@ -563,5 +575,30 @@
   refs.tray.addEventListener("click", () => serveCup());
   refs.orderToggle.addEventListener("click", toggleOrderDrawer);
 
-  global.CoffeeMinigame = Object.freeze({ start, core });
+  function pause() {
+    if (paused || !root.classList.contains("active") || mode === "idle" || mode === "result") return;
+    paused = true;
+    pausedAt = performance.now();
+    clearInterval(timerInterval);
+    clearInterval(orderInterval);
+    if (meterFrame) cancelAnimationFrame(meterFrame);
+    meterFrame = null;
+  }
+
+  function resume() {
+    if (!paused) return;
+    const elapsed = performance.now() - pausedAt;
+    paused = false;
+    if (gameStartedAt) gameStartedAt += elapsed;
+    if (roundStartedAt) roundStartedAt += elapsed;
+    if (meterStartedAt) meterStartedAt += elapsed;
+    if (mode === "playing" && !finishing) timerInterval = setInterval(updateTimer, 100);
+    if (mode === "orders") startOrderCountdown();
+    if (meterCupKey) meterFrame = requestAnimationFrame(tickMeter);
+  }
+
+  document.addEventListener("nan:settings-open", pause);
+  document.addEventListener("nan:settings-close", resume);
+
+  global.CoffeeMinigame = Object.freeze({ start, pause, resume, core });
 })(typeof window !== "undefined" ? window : globalThis);

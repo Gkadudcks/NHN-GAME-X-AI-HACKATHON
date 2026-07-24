@@ -242,8 +242,8 @@
       if (this.preferHtmlAudio) return this.playFallback(scene, track);
 
       const transitionId = ++this.transitionId;
-      const fadeOut = this.currentScene ? (options.fadeOut ?? 650) : 0;
-      const fadeIn = options.fadeIn ?? 450;
+      const fadeOut = this.currentScene ? (options.fadeOut ?? 800) : 0;
+      const fadeIn = options.fadeIn ?? 600;
 
       if (!this.ensureContext()) return this.playFallback(scene, track);
       const bufferPromise = track ? this.load(track) : Promise.resolve(null);

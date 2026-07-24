@@ -78,6 +78,10 @@ let choiceResultTimer;
 let sceneTransitionLocked = false;
 let cinematicLocked = false;
 let cinematicTimer;
+let cinematicScene = null;
+let cinematicDeadline = 0;
+let cinematicRemaining = 0;
+let cinematicPaused = false;
 const audio = $("#bgm");
 
 const statDescriptions = {
@@ -157,13 +161,7 @@ function formatGameSavedAt(value) {
 }
 
 function getGameSaveSlots() {
-  return Array.from({ length: 5 }, (_, index) => {
-    const slotId = index + 1;
-    try {
-      const value = JSON.parse(localStorage.getItem(`nan-save-slot-${slotId}`));
-      return value ? { slotId, empty: false, ...value } : { slotId, empty: true };
-    } catch (_error) { return { slotId, empty: true }; }
-  });
+  return GameProgress.getSaveSlots(localStorage);
 }
 
 let gameSaveMode = "save";
@@ -175,14 +173,14 @@ function renderGameSaveSlots() {
   list.replaceChildren(...getGameSaveSlots().map((slot) => {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = `game-save-slot${slot.empty ? " empty" : ""}`;
+    button.className = `game-save-slot${slot.empty ? " empty" : ""}${slot.saveType === "auto" ? " autosave" : ""}`;
     button.disabled = loading && slot.empty;
     const day = slot.empty ? 2 : slot.day;
     const time = slot.empty ? scene.time : (slot.sceneTime || "--:--");
     const title = slot.empty ? "빈 저장 슬롯" : `DAY ${slot.day} · ${slot.sceneTitle}`;
     const stats = slot.empty ? (loading ? "불러올 저장 데이터가 없습니다." : "현재 진행을 이 슬롯에 새로 저장합니다.") : `업무력 ${slot.work} · 호감도 ${slot.affection} · 신뢰도 ${slot.trust}`;
     const command = loading ? (slot.empty ? "빈 슬롯" : "불러오기") : (slot.empty ? "새로 저장" : "덮어쓰기");
-    button.innerHTML = `<span class="game-save-thumbnail${slot.empty ? " empty" : ""}"><b>${slot.empty ? "SLOT" : "DAY"} <em>${slot.empty ? String(slot.slotId).padStart(2, "0") : day}</em></b><small>${slot.empty ? "EMPTY" : time}</small></span><span class="game-save-body"><small>SLOT ${String(slot.slotId).padStart(2, "0")} · ${slot.empty ? "EMPTY SLOT" : "SAVED PROGRESS"}</small><strong>${title}</strong><span>${stats}</span><time>${slot.empty ? "저장 데이터 없음" : formatGameSavedAt(slot.savedAt)}</time></span><span class="game-save-command">${command} <b>›</b></span>`;
+    button.innerHTML = `<span class="game-save-thumbnail${slot.empty ? " empty" : ""}"><b>${slot.empty ? "SLOT" : "DAY"} <em>${slot.empty ? String(slot.slotId).padStart(2, "0") : day}</em></b><small>${slot.empty ? "EMPTY" : time}</small></span><span class="game-save-body"><small>SLOT ${String(slot.slotId).padStart(2, "0")} · ${slot.empty ? "EMPTY SLOT" : slot.saveType === "auto" ? "AUTO SAVE" : "SAVED PROGRESS"}</small><strong>${title}</strong><span>${stats}</span><time>${slot.empty ? "저장 데이터 없음" : formatGameSavedAt(slot.savedAt)}</time></span>${slot.saveType === "auto" ? '<span class="game-autosave-badge">AUTO SAVE</span>' : ""}<span class="game-save-command">${command} <b>›</b></span>`;
     button.onclick = () => loading ? loadFromGameSlot(slot) : saveToGameSlot(slot.slotId, !slot.empty);
     return button;
   }));
@@ -207,21 +205,39 @@ function closeGameSave() {
   $(`#${gameSaveMode === "load" ? "load" : "save"}`).focus();
 }
 
-function saveToGameSlot(slotId, occupied) {
-  if (occupied && !confirm(`SLOT ${String(slotId).padStart(2, "0")}의 기존 저장을 덮어쓸까요?`)) return;
-  saveProgress();
-  const scene = scenes[state.index] || scenes[0];
+function buildGameSavePayload(scene) {
   const saved = GameProgress.load(localStorage);
-  localStorage.setItem(`nan-save-slot-${slotId}`, JSON.stringify({
-    slotId, day: 2, sceneTitle: "이상한 익숙함", sceneTime: scene.time,
+  return {
+    day: 2, sceneTitle: "이상한 익숙함", sceneTime: scene.time,
     savedAt: saved.savedAt, resumeUrl: "day2.html",
     work: state.work, affection: state.affection, trust: state.trust,
     lastDialogue: { speaker: scene.speaker, text: scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text },
     thumbnail: "assets/image/office-background.png", progress: saved,
     day1Save: localStorage.getItem("nan-day1-save") ? JSON.parse(localStorage.getItem("nan-day1-save")) : null,
-  }));
+  };
+}
+
+function saveToGameSlot(slotId, occupied) {
+  if (occupied && !confirm(`SLOT ${String(slotId).padStart(2, "0")}의 기존 저장을 덮어쓸까요?`)) return;
+  saveProgress();
+  const scene = scenes[state.index] || scenes[0];
+  const result = GameProgress.saveManualSlot(localStorage, slotId, buildGameSavePayload(scene));
+  if (result.status !== "saved") {
+    toast("이 브라우저에서는 슬롯을 저장할 수 없습니다.");
+    return;
+  }
   toast(`SLOT ${String(slotId).padStart(2, "0")}에 저장했습니다.`);
   closeGameSave();
+}
+
+const AUTOSAVE_CHECKPOINTS = new Set(["day2OvertimeLead", "day2End"]);
+
+function autoSaveAtCheckpoint(scene) {
+  if (!AUTOSAVE_CHECKPOINTS.has(scene.id)) return;
+  const result = GameProgress.saveAutoSlot(localStorage, `day2:${scene.id}`, buildGameSavePayload(scene));
+  if (result.status === "saved" || result.status === "updated") {
+    toast(`SLOT ${String(result.slotId).padStart(2, "0")}에 자동 저장했습니다.`);
+  }
 }
 
 function loadFromGameSlot(slot) {
@@ -470,7 +486,7 @@ function resolveDynamic(name) {
       "accept-help": "어제는 든든하다더니 오늘은 저보다 먼저 왔네요.",
       "prove-self": "도움받는다고 도윤 씨 일이 사라지는 건 아니라는 말, 생각해 봤어요?",
       "neighbor-joke": "회사에서는 이웃보다 사수가 먼저예요. 지각하지 않은 건 칭찬해 줄게요.",
-      "work-alone": "오늘도 혼자 하겠다고 하면 오전 일정 전부 제 자리에서 진행할 겁니다.",
+      "work-alone": "오늘도 혼자 하겠다고 하면 오전 일정은 전부 제 자리에서 진행할 거예요.",
     }[evening] || "오늘은 숫자부터 같이 봐요. 혼자 끝내겠다는 말은 잠깐 보류하고요.",
     introDoyun: {
       "accept-help": "같이 보려면 준비는 해둬야 하니까요.",
@@ -575,21 +591,51 @@ function renderVisuals(scene) {
 function resetCinematic() {
   window.clearTimeout(cinematicTimer);
   cinematicLocked = false;
+  cinematicScene = null;
+  cinematicDeadline = 0;
+  cinematicRemaining = 0;
+  cinematicPaused = false;
   refs.stage.classList.remove("cinematic-only", "cinematic-ready", "sprite-cinematic");
 }
 
-function startCinematic(scene) {
-  cinematicLocked = true;
-  refs.stage.classList.add("cinematic-only");
-  if (scene.cinematicTarget === "sprite") refs.stage.classList.add("sprite-cinematic");
-  refs.next.disabled = true;
+function completeCinematic(scene) {
   cinematicTimer = window.setTimeout(() => {
     refs.speaker.textContent = scene.speaker;
     refs.dialogue.textContent = scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text;
     cinematicLocked = false;
+    cinematicScene = null;
+    cinematicDeadline = 0;
+    cinematicRemaining = 0;
     refs.stage.classList.add("cinematic-ready");
     refs.next.disabled = false;
-  }, scene.cinematicDelay);
+  }, cinematicRemaining);
+}
+
+function startCinematic(scene) {
+  cinematicLocked = true;
+  cinematicScene = scene;
+  cinematicRemaining = scene.cinematicDelay;
+  cinematicDeadline = performance.now() + cinematicRemaining;
+  cinematicPaused = false;
+  refs.stage.classList.add("cinematic-only");
+  if (scene.cinematicTarget === "sprite") refs.stage.classList.add("sprite-cinematic");
+  refs.next.disabled = true;
+  completeCinematic(scene);
+}
+
+function pauseCinematic() {
+  if (!cinematicLocked || cinematicPaused || !cinematicTimer) return;
+  cinematicRemaining = Math.max(0, cinematicDeadline - performance.now());
+  window.clearTimeout(cinematicTimer);
+  cinematicTimer = null;
+  cinematicPaused = true;
+}
+
+function resumeCinematic() {
+  if (!cinematicLocked || !cinematicPaused || !cinematicScene) return;
+  cinematicPaused = false;
+  cinematicDeadline = performance.now() + cinematicRemaining;
+  completeCinematic(cinematicScene);
 }
 
 function preloadSceneImages(scene) {
@@ -796,6 +842,7 @@ function render() {
   if (cinematic) startCinematic(scene);
   syncStats();
   saveProgress();
+  autoSaveAtCheckpoint(scene);
   if (scene.startWorkAlert && !state.minigameResult) {
     startWorkAlert();
     return;
@@ -807,6 +854,7 @@ function hasBlockingUi() {
   return refs.daySummary.classList.contains("show")
     || refs.dayComplete.classList.contains("show")
     || $("#game-save-modal").classList.contains("open")
+    || GameSettingsDialog.isOpen()
     || !!document.querySelector(".work-alert-minigame:not([hidden])");
 }
 
@@ -871,6 +919,15 @@ document.addEventListener("click", () => closeStatHelp());
 document.addEventListener("keydown", (event) => { if (event.key === "Escape" && activeStatHelp) closeStatHelp({ restoreFocus: true }); });
 window.addEventListener("resize", () => closeStatHelp());
 document.addEventListener("scroll", () => closeStatHelp(), true);
+document.addEventListener("nan:settings-open", pauseCinematic);
+document.addEventListener("nan:settings-close", resumeCinematic);
+GameSettingsDialog.install({
+  closeOverlay: () => {
+    if ($("#game-save-modal").classList.contains("open")) { closeGameSave(); return true; }
+    if (activeStatHelp) { closeStatHelp({ restoreFocus: true }); return true; }
+    return false;
+  },
+});
 document.addEventListener("pointerdown", unlockAudio, { once: true });
 document.addEventListener("keydown", unlockAudio, { once: true });
 

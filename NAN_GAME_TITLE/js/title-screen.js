@@ -178,18 +178,7 @@ function runActiveMenu() {
 }
 
 function getSaveSlots() {
-  const manualSlots = Array.from({ length: 5 }, (_, index) => {
-    const slotId = index + 1;
-    const rawData = localStorage.getItem(`nan-save-slot-${slotId}`);
-    if (!rawData) return { slotId, empty: true };
-
-    try {
-      return { slotId, empty: false, ...JSON.parse(rawData) };
-    } catch {
-      return { slotId, empty: true };
-    }
-  });
-  return manualSlots;
+  return GameProgress.getSaveSlots(localStorage);
 }
 
 function formatSavedAt(savedAt) {
@@ -224,7 +213,7 @@ function renderSaveSlots() {
   saveSlots.replaceChildren(...slots.map((slot) => {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "save-slot";
+    button.className = `save-slot${slot.saveType === "auto" ? " autosave" : ""}`;
 
     if (slot.empty) {
       button.disabled = true;
@@ -246,11 +235,12 @@ function renderSaveSlots() {
     button.innerHTML = `
       <span class="slot-thumbnail"><img src="${thumbnail}" alt="SLOT ${slot.slotId} 저장 장면" /></span>
       <span class="slot-body">
-        <span class="slot-number">SLOT ${String(slot.slotId).padStart(2, "0")}</span>
+        <span class="slot-number">SLOT ${String(slot.slotId).padStart(2, "0")} · ${slot.saveType === "auto" ? "AUTO SAVE" : "SAVED PROGRESS"}</span>
         <strong class="slot-title">DAY ${escapeHtml(slot.day ?? "-")} · ${escapeHtml(slot.sceneTitle ?? "저장된 장면")}</strong>
         <span class="slot-dialogue">${dialogue}</span>
         <span class="slot-meta">${formatSavedAt(slot.savedAt)}</span>
       </span>
+      ${slot.saveType === "auto" ? '<span class="autosave-badge">AUTO SAVE</span>' : ""}
       ${slot.savedAt === latestSavedAt ? '<span class="latest-badge">최근 플레이</span>' : ""}`;
     button.addEventListener("click", () => {
       if (slot.progress) localStorage.setItem(GameProgress.STORAGE_KEY, JSON.stringify(slot.progress));
@@ -412,6 +402,15 @@ cgViewer.addEventListener("click", (event) => {
   if (event.target === cgViewer) closeCgViewer();
 });
 
+GameSettingsDialog?.install({
+  onApply: () => bgmManager.setVolume(),
+  closeOverlay: () => {
+    if (cgViewer.classList.contains("open")) { closeCgViewer(); return true; }
+    if (recordsPanel.classList.contains("open")) { closeRecordsPanel(); return true; }
+    if (savePanel.classList.contains("open")) { closeSavePanel(); return true; }
+    return false;
+  },
+});
 applySettings();
 startTitleBgm();
 titleSoundPrompt.addEventListener("click", unlockAndStartTitleBgm);

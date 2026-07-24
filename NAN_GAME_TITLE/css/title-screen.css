@@ -317,6 +317,9 @@ h1 {
 .slot-dialogue { margin: 8px 0; overflow: hidden; color: #7c6f75; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 .slot-meta { margin: 0; color: #a09398; font-size: 10px; }
 .latest-badge { position: absolute; top: 12px; right: 12px; padding: 5px 8px; color: #fff; border-radius: 999px; background: var(--coral); font-size: 9px; }
+.autosave-badge { position: absolute; top: 12px; right: 12px; padding: 5px 8px; color: #fff; border-radius: 999px; background: #756a82; font-size: 9px; font-weight: 800; letter-spacing: .08em; }
+.save-slot.autosave { border-color: #cfc6d9; background: #fffdff; }
+.save-slot.autosave .latest-badge { top: 42px; }
 .save-help { margin: 18px 0 0; color: #998b90; text-align: center; font-size: 11px; }
 
 .records-panel{position:absolute;z-index:12;inset:0;display:grid;place-items:center;padding:32px;background:#211a1f9c;backdrop-filter:blur(9px);opacity:0;visibility:hidden;transition:.28s}

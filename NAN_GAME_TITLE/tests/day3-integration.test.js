@@ -10,6 +10,18 @@ const html = fs.readFileSync(path.join(root, "day3.html"), "utf8");
 const engine = fs.readFileSync(path.join(root, "js", "day3.js"), "utf8");
 const day2Engine = fs.readFileSync(path.join(root, "js", "day2.js"), "utf8");
 
+test("DAY 3 loads the DAY 2 story before its own story", () => {
+  const day2Story = html.indexOf('src="js/day2-story.js');
+  const day3Story = html.indexOf('src="js/day3-story.js');
+
+  assert.ok(day2Story >= 0 && day2Story < day3Story);
+});
+
+test("DAY 3 shows prior-day messages immediately and gates DAY 3 messages", () => {
+  assert.match(engine, /messageDay\(message\) < 3 \|\| isAtOrAfter\(message\.at\)/);
+  assert.match(engine, /messageDayDivider/);
+});
+
 test("DAY 3 페이지는 스토리와 몰래 연락 미니게임을 순서대로 불러온다", () => {
   const records = html.indexOf('src="js/clue-records.js');
   const story = html.indexOf('src="js/day3-story.js');

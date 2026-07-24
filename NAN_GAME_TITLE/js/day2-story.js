@@ -81,7 +81,7 @@
       room: "pt",
       at: "day2IntroCard",
       sender: "서하린 사수",
-      text: "v0.1 확인했어요. 방향은 괜찮습니다. 파일 버전 이름은 계속 유지해주세요.",
+      text: "v0.1 확인했어요. 방향은 괜찮아요. 파일 버전 이름은 계속 유지해 주세요.",
       time: "DAY 1 · 17:18",
     },
     {
@@ -129,7 +129,7 @@
       room: "pt",
       at: "day2CloudPanel",
       sender: "서하린 사수",
-      text: "DAY 2 검증 완료 복원 지점을 만들었습니다. 통계 원본과 조사 링크도 연결했어요.",
+      text: "DAY 2 검증 완료 복원 지점을 만들어 뒀어요. 통계 원본과 조사 링크도 연결해 뒀어요.",
       time: "16:23",
     },
   ]);
@@ -157,7 +157,7 @@
       notification: "harin-metrics-link",
     },
 
-    { id: "day2SubtaskLead", time: "09:25", speaker: "서하린", text: "숫자만 보고 있으면 발표가 또 보고서가 돼요. 오전에는 작은 조사 하나를 끝내봅시다.", char: "harin" },
+    { id: "day2SubtaskLead", time: "09:25", speaker: "서하린", text: "숫자만 보고 있으면 발표가 또 보고서가 돼요. 오전에는 작은 조사 하나를 끝내봐요.", char: "harin" },
     { id: "day2SubtaskQuestion", time: "09:26", speaker: "한도윤", text: "어떤 조사가 필요합니까?", char: "harin" },
     {
       id: "day2SubtaskChoice",
@@ -202,7 +202,7 @@
     { id: "day2SubtaskB1", time: "13:35", speaker: "한도윤", text: "‘길다’는 리뷰와 ‘모르겠다’는 리뷰가 비슷해 보여도 원인은 달랐다.", bg: "office", when: { decision: "day2Subtask", equals: "reviews" } },
     { id: "day2SubtaskB2", time: "13:42", speaker: "서하린", text: "맞아요. 하나는 피로고 하나는 불안이에요. 같은 해결책을 쓰면 한쪽은 더 불편해질 수 있어요.", char: "harin", when: { decision: "day2Subtask", equals: "reviews" } },
     { id: "day2SubtaskB3", time: "13:48", speaker: "한도윤", text: "숫자만 봤을 때보다 문제 정의가 선명해졌습니다.", char: "harin", when: { decision: "day2Subtask", equals: "reviews" } },
-    { id: "day2SubtaskC1", time: "13:35", speaker: "서하린", text: "설치 완료. 시작합니다.", bg: "office", char: "harin", when: { decision: "day2Subtask", equals: "journey" } },
+    { id: "day2SubtaskC1", time: "13:35", speaker: "서하린", text: "설치 끝났어요. 시작할게요.", bg: "office", char: "harin", when: { decision: "day2Subtask", equals: "journey" } },
     { id: "day2SubtaskC2", time: "13:38", speaker: "한도윤", text: "로그인 보상, 출석 보상, 패키지 알림… 아직 캐릭터도 못 움직였습니다.", char: "harin", when: { decision: "day2Subtask", equals: "journey" } },
     { id: "day2SubtaskC3", time: "13:40", speaker: "서하린", text: "1분 42초. 민재 말이 아주 과장은 아니었네요.", char: "harin", when: { decision: "day2Subtask", equals: "journey" } },
     { id: "day2SubtaskC4", time: "13:41", speaker: "한도윤", text: "그 말을 본인에게 알려줄 필요는 없습니다.", char: "harin", when: { decision: "day2Subtask", equals: "journey" } },
@@ -215,7 +215,7 @@
     { id: "day2ArchiveDoyun", time: "14:34", speaker: "한도윤", text: "선배 이름이 남아 있네요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin" },
     { id: "day2ArchiveHarin2", time: "14:35", speaker: "서하린", text: "제가 만들었으니까요. 지금 필요한 틀은 그 아래 ‘공용 발표 기본형’이에요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin" },
     { id: "day2BuildNotice", time: "14:35", speaker: "시스템", text: "윤세아에게 새 메시지가 도착했습니다.\n“오후 빌드 점검 10분 뒤 시작합니다.”", notification: "sea-build" },
-    { id: "day2ArchiveExit", time: "14:36", speaker: "서하린", text: "빌드부터 보고 와요. 이건 나중에 확인해도 됩니다.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin", bgm: "daily" },
+    { id: "day2ArchiveExit", time: "14:36", speaker: "서하린", text: "빌드부터 보고 와요. 이건 나중에 확인해도 돼요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin", bgm: "daily" },
 
     { id: "day2BuildSea", time: "14:45", speaker: "윤세아", text: "새 빌드에서 튜토리얼 팝업이 두 번 뜬다는 제보가 있어요. 재현되는지만 확인 부탁드려요.", bg: "qa_test_space_incident", char: "sea", location: "QA 테스트 공간 · 오후" },
     { id: "day2BuildDoyun", time: "14:48", speaker: "한도윤", text: "첫 전투 전에 같은 안내가 두 번 나옵니다.", char: "sea", placeholder: "inherit" },
@@ -232,7 +232,7 @@
     { id: "day2CloudPanel", time: "16:24", speaker: "시스템", text: "정상 작업 상태가 사내 클라우드에 기록되었습니다.", systemPanel: { title: "CLOUD RESTORE POINT", rows: ["DAY 1 기준본 · 잠금 유지", "DAY 2 변경 이력 · 기록 완료", "통계 원본·조사 링크 · 연결 완료", "복원 지점 · DAY 2 검증 완료", "감사 로그 · 활성"] }, clue: CLUES.cloudRestorePoint, notification: "pt-restore-point" },
 
     { id: "day2OvertimeLead", time: "19:25", speaker: "한도윤", text: "오후 빌드 점검 결과까지 전달하고 나니 사무실에 남은 사람은 거의 없었다.", bg: "office_night", bgm: "overtime", location: "게임사업실 · 야간" },
-    { id: "day2OvertimeHarin1", time: "19:26", speaker: "서하린", text: "오늘 하위 조사 문장만 정리하면 끝나요. 한 시간 안에 갑시다.", char: "harin", placeholder: "inherit" },
+    { id: "day2OvertimeHarin1", time: "19:26", speaker: "서하린", text: "오늘 하위 조사 문장만 정리하면 끝나요. 한 시간 안에 끝내고 가요.", char: "harin", placeholder: "inherit" },
     { id: "day2OvertimeDoyun", time: "19:27", speaker: "한도윤", text: "선배는 먼저 가셔도 됩니다.", char: "harin", placeholder: "inherit" },
     { id: "day2OvertimeHarin2", time: "19:28", speaker: "서하린", text: "오전부터 그렇게 많은 요청을 같이 쳐냈는데 마지막 한 시간만 혼자 하겠다고요?", char: "harin", placeholder: "inherit" },
     { id: "day2OvertimeDoyun2", time: "19:29", speaker: "한도윤", text: "말하고 보니 이상하긴 합니다.", char: "harin", placeholder: "inherit" },
@@ -259,8 +259,8 @@
       choices: [
         { value: "finish-together", text: "오늘 남은 일은 같이 끝내죠.", delta: { affection: 1, trust: 2 }, reply: "그 말이면 충분해요. 이번에는 진짜로 같이 끝내요." },
         { value: "wait-until-ready", text: "말하고 싶을 때 이야기해 주세요.", delta: { affection: 2, trust: 1 }, reply: "재촉하지 않는 사람한테는 오히려 먼저 말하게 되더라고요." },
-        { value: "verify-record", text: "이름이 남은 기록은 언젠가 확인해야 합니다.", delta: { work: 1 }, reply: "맞아요. 확인은 해야 해요. 이름만 보고 결론 내리지만 않으면 됩니다." },
-        { value: "take-responsibility", text: "이번 일만큼은 제가 책임지고 싶습니다.", delta: { work: 1, trust: -1 }, reply: "책임지는 것과 혼자 남는 건 다르다고 했어요. 오늘은 같이 갑시다." },
+        { value: "verify-record", text: "이름이 남은 기록은 언젠가 확인해야 합니다.", delta: { work: 1 }, reply: "맞아요. 확인은 해야 해요. 이름만 보고 결론 내리지만 않으면 돼요." },
+        { value: "take-responsibility", text: "이번 일만큼은 제가 책임지고 싶습니다.", delta: { work: 1, trust: -1 }, reply: "책임지는 것과 혼자 남는 건 다르다고 했어요. 오늘은 같이 가요." },
       ],
     },
 

@@ -88,6 +88,21 @@ test('HTTP에서는 Web Audio가 인트로 뒤 loopStart부터 샘플 단위로 
   assert.equal(manager.sourceNode.loopEnd, 49.58);
 });
 
+test('기본 BGM 전환은 800ms 페이드아웃과 600ms 페이드인을 사용한다', async () => {
+  const { GameBgmManager } = loadManager();
+  const manager = new GameBgmManager(new MockAudio(), () => 0.5);
+  const fades = [];
+  manager.fade = async (from, to, duration) => {
+    fades.push({ from, to, duration });
+    manager.setInternalVolume(to);
+  };
+
+  await manager.play('daily');
+  await manager.play('mystery');
+
+  assert.deepEqual(fades.map(({ duration }) => duration), [0, 600, 800, 600]);
+});
+
 test('file URL에서는 인트로 종료 후 반복 전용 파일로 전환하고 기본 loop를 사용한다', async () => {
   const { GameBgmManager, createdAudio } = loadManager({ protocol: 'file:' });
   const audio = new MockAudio();
@@ -146,4 +161,12 @@ test('게임 화면은 HTML audio 전체 파일 loop 속성을 사용하지 않�
   assert.match(day2Html, /<audio id="bgm" preload="auto" playsinline><\/audio>/);
   assert.doesNotMatch(day1Html, /<audio id="bgm"[^>]*\sloop/);
   assert.doesNotMatch(day2Html, /<audio id="bgm"[^>]*\sloop/);
+});
+
+test('모든 BGM 진입 페이지는 같은 매니저 캐시 버전을 참조한다', () => {
+  const pages = ['index.html', 'game.html', 'day2.html', 'day3.html', 'bgm-loop-review.html'];
+  pages.forEach((page) => {
+    const html = fs.readFileSync(path.join(root, page), 'utf8');
+    assert.match(html, /src="js\/bgm-manager\.js\?v=7"/, page);
+  });
 });

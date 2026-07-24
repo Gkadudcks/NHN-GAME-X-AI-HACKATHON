@@ -67,6 +67,16 @@ test("DAY 2 엔진이 참조하는 정적 ID가 페이지에 존재한다", () =
   assert.deepEqual(missing, []);
 });
 
+test("DAY 1·2 런타임의 서하린 팀 채팅과 동적 대사는 해요체를 유지한다", () => {
+  const day1Script = read("js/game.js");
+  const day2Script = read("js/day2.js");
+
+  assert.match(day1Script, /v0\.1 확인했어요\. 방향은 괜찮아요\. 파일 버전 이름은 계속 유지해 주세요\./);
+  assert.doesNotMatch(day1Script, /v0\.1 확인했어요\. 방향은 괜찮습니다\./);
+  assert.match(day2Script, /오늘도 혼자 하겠다고 하면 오전 일정은 전부 제 자리에서 진행할 거예요\./);
+  assert.doesNotMatch(day2Script, /오전 일정 전부 제 자리에서 진행할 겁니다\./);
+});
+
 test("DAY 1 종료는 공유 진행을 저장하고 DAY 2로 이동한다", () => {
   const html = read("game.html");
   const script = read("js/game.js");
@@ -80,7 +90,8 @@ test("타이틀 이어하기는 선택한 수동 슬롯의 진행과 날짜를 �
   const html = read("index.html");
   const script = read("js/title-screen.js");
   assert.match(html, /progress-store\.js/);
-  assert.match(script, /nan-save-slot-/);
+  assert.match(read("js/progress-store.js"), /nan-save-slot-/);
+  assert.match(script, /GameProgress\.getSaveSlots/);
   assert.match(script, /GameProgress\.STORAGE_KEY/);
   assert.match(script, /GameProgress\.LEGACY_DAY1_KEY/);
   assert.match(script, /day2\.html/);
@@ -129,8 +140,8 @@ test("진행 저장은 이어하기와 연동되는 카드형 슬롯을 연다",
   }
   assert.match(read("js/game.js"), /function openGameSave\(mode='save'\)/);
   assert.match(read("js/day2.js"), /function openGameSave\(mode = "save"\)/);
-  assert.match(read("js/game.js"), /Array\.from\(\{length:5\}/);
-  assert.match(read("js/day2.js"), /Array\.from\(\{ length: 5 \}/);
+  assert.match(read("js/game.js"), /GameProgress\.getSaveSlots/);
+  assert.match(read("js/day2.js"), /GameProgress\.getSaveSlots/);
   assert.match(read("js/title-screen.js"), /slot\.progress/);
 });
 

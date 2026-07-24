@@ -320,7 +320,7 @@
   }
 
   function tick(now) {
-    if (!state || state.finished) return;
+    if (!state || state.finished || state.paused) return;
     const rawDelta = now - state.lastFrame;
     state.lastFrame = now;
     state.elapsed += rawDelta * (state.selectedId ? 0.45 : 1);
@@ -393,7 +393,7 @@
       durationMs: duration * 1000,
       schedule: buildSchedule({ random, requests: options.requests, count: options.count || 16, duration, lifeMs: options.lifeMs }),
       nextIndex: 0, active: new Map(), selectedId: null, results: [], score: 0, elapsed: 0,
-      lastFrame: 0, frame: null, started: false, finished: false, completionSent: false,
+      lastFrame: 0, frame: null, started: false, paused: false, finished: false, completionSent: false,
       finalResult: null, onComplete: options.onComplete,
     };
     refs.score.textContent = "0";
@@ -406,5 +406,22 @@
     refs.start.focus();
   }
 
-  global.WorkAlertMinigame = Object.freeze({ start, core });
+  function pause() {
+    if (!state?.started || state.finished || state.paused) return;
+    state.paused = true;
+    cancelAnimationFrame(state.frame);
+    state.frame = null;
+  }
+
+  function resume() {
+    if (!state?.paused || state.finished) return;
+    state.paused = false;
+    state.lastFrame = performance.now();
+    state.frame = requestAnimationFrame(tick);
+  }
+
+  document.addEventListener("nan:settings-open", pause);
+  document.addEventListener("nan:settings-close", resume);
+
+  global.WorkAlertMinigame = Object.freeze({ start, pause, resume, core });
 })(typeof window !== "undefined" ? window : globalThis);

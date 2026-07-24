@@ -97,7 +97,7 @@
   }
 
   function setTyping(value) {
-    if (!state || state.done) return;
+    if (!state || state.done || state.paused) return;
     state.typing = value;
     refs.hold.classList.toggle("active", value);
   }
@@ -126,7 +126,7 @@
   }
 
   function tick(now) {
-    if (state.done) return;
+    if (state.done || state.paused) return;
     const delta = Math.min(50, now - state.last);
     state.last = now;
     state.elapsed = (now - state.started) / 1000;
@@ -157,7 +157,7 @@
   }
 
   function begin() {
-    state = { sent: 0, warnings: 0, progress: 0, typing: false, done: false, started: performance.now(), last: performance.now(), frame: 0, onComplete: state?.onComplete };
+    state = { sent: 0, warnings: 0, progress: 0, typing: false, done: false, paused: false, started: performance.now(), last: performance.now(), frame: 0, onComplete: state?.onComplete };
     screen(refs.play);
     renderQuestion();
     refs.hold.focus();
@@ -181,5 +181,26 @@
     refs.start.focus();
   }
 
-  global.SecretChatMinigame = Object.freeze({ start });
+  function pause() {
+    if (!state || state.done || state.paused || refs.play.hidden) return;
+    state.paused = true;
+    state.pausedAt = performance.now();
+    state.typing = false;
+    cancelAnimationFrame(state.frame);
+    state.frame = 0;
+  }
+
+  function resume() {
+    if (!state?.paused || state.done) return;
+    const now = performance.now();
+    state.started += now - state.pausedAt;
+    state.last = now;
+    state.paused = false;
+    state.frame = requestAnimationFrame(tick);
+  }
+
+  document.addEventListener("nan:settings-open", pause);
+  document.addEventListener("nan:settings-close", resume);
+
+  global.SecretChatMinigame = Object.freeze({ start, pause, resume });
 })(typeof globalThis !== "undefined" ? globalThis : this);

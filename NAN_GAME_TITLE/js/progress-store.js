@@ -10,6 +10,8 @@
 
   const STORAGE_KEY = "nan-game-progress-v1";
   const LEGACY_DAY1_KEY = "nan-day1-save";
+  const SAVE_SLOT_PREFIX = "nan-save-slot-";
+  const SAVE_SLOT_COUNT = 5;
   const SCHEMA_VERSION = 2;
   const LEGACY_SCHEMA_VERSION = 1;
 
@@ -253,6 +255,86 @@
     }
   }
 
+  function saveSlotId(value) {
+    const slotId = Number(value);
+    return Number.isInteger(slotId) && slotId >= 1 && slotId <= SAVE_SLOT_COUNT ? slotId : null;
+  }
+
+  function saveSlotKey(slotId) {
+    return `${SAVE_SLOT_PREFIX}${slotId}`;
+  }
+
+  function getSaveSlots(storage) {
+    return Array.from({ length: SAVE_SLOT_COUNT }, (_, index) => {
+      const slotId = index + 1;
+      const value = parseObject(storageGet(storage, saveSlotKey(slotId)));
+      if (!value) return { slotId, empty: true };
+      return {
+        ...value,
+        slotId,
+        empty: false,
+        saveType: value.saveType === "auto" ? "auto" : "manual",
+      };
+    });
+  }
+
+  function comparableSaveValue(value) {
+    if (Array.isArray(value)) return value.map(comparableSaveValue);
+    if (!isObject(value)) return value;
+    return Object.keys(value).sort().reduce((result, key) => {
+      if (["savedAt", "slotId", "saveType", "autosaveCheckpoint", "autosaveSignature", "empty"].includes(key)) return result;
+      result[key] = comparableSaveValue(value[key]);
+      return result;
+    }, {});
+  }
+
+  function saveSignature(value) {
+    try {
+      return JSON.stringify(comparableSaveValue(value));
+    } catch (_error) {
+      return "";
+    }
+  }
+
+  function saveManualSlot(storage, slotIdValue, payload) {
+    const slotId = saveSlotId(slotIdValue);
+    if (!slotId || !isObject(payload)) return { status: "invalid", slotId };
+    const slot = { ...cloneJson(payload, {}), slotId, saveType: "manual" };
+    const saved = storageSet(storage, saveSlotKey(slotId), JSON.stringify(slot));
+    return { status: saved ? "saved" : "failed", slotId, slot: saved ? slot : null };
+  }
+
+  function saveAutoSlot(storage, checkpoint, payload) {
+    if (typeof checkpoint !== "string" || !checkpoint || !isObject(payload)) {
+      return { status: "invalid", slotId: null };
+    }
+    const slots = getSaveSlots(storage);
+    const existing = slots.find((slot) => !slot.empty && slot.saveType === "auto");
+    const target = existing || slots.slice().reverse().find((slot) => slot.empty);
+    if (!target) return { status: "full", slotId: null };
+
+    const signature = saveSignature(payload);
+    if (existing
+      && existing.autosaveCheckpoint === checkpoint
+      && existing.autosaveSignature === signature) {
+      return { status: "unchanged", slotId: existing.slotId, slot: existing };
+    }
+
+    const slot = {
+      ...cloneJson(payload, {}),
+      slotId: target.slotId,
+      saveType: "auto",
+      autosaveCheckpoint: checkpoint,
+      autosaveSignature: signature,
+    };
+    const saved = storageSet(storage, saveSlotKey(target.slotId), JSON.stringify(slot));
+    return {
+      status: saved ? (existing ? "updated" : "saved") : "failed",
+      slotId: target.slotId,
+      slot: saved ? slot : null,
+    };
+  }
+
   function fromLegacyDay1(value) {
     if (!isObject(value) || (value.version !== 3 && value.version !== 4)) return null;
     const decisions = isObject(value.decisions) ? value.decisions : {};
@@ -379,6 +461,8 @@
   return Object.freeze({
     STORAGE_KEY,
     LEGACY_DAY1_KEY,
+    SAVE_SLOT_PREFIX,
+    SAVE_SLOT_COUNT,
     SCHEMA_VERSION,
     defaultProgress,
     sanitize,
@@ -387,6 +471,9 @@
     migrateLegacy,
     load,
     save,
+    getSaveSlots,
+    saveManualSlot,
+    saveAutoSlot,
     startNewGame,
     startDay2,
     resetDay2,

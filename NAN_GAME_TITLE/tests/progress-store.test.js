@@ -4,15 +4,20 @@ const progressStore = require("../js/progress-store.js");
 
 function createStorage(entries = {}) {
   const values = new Map(Object.entries(entries));
+  let writes = 0;
   return {
     getItem(key) {
       return values.has(key) ? values.get(key) : null;
     },
     setItem(key, value) {
+      writes += 1;
       values.set(key, String(value));
     },
     value(key) {
       return values.get(key);
+    },
+    writeCount() {
+      return writes;
     },
   };
 }
@@ -187,4 +192,124 @@ test("DAY 3 시작과 재시작은 DAY 2 완료 상태와 시작 스냅샷을 �
   assert.equal(reset.shared.work, 5);
   assert.equal(reset.days[3].sceneId, "day3IntroCard");
   assert.equal(reset.shared.clues[0].id, "d2_cloud_restore_point");
+});
+
+test("자동저장은 5번부터 역순으로 빈 슬롯을 선택하고 수동 슬롯은 덮어쓰지 않는다", () => {
+  const storage = createStorage({
+    [`${progressStore.SAVE_SLOT_PREFIX}5`]: JSON.stringify({ slotId: 5, day: 1, saveType: "manual" }),
+  });
+
+  const result = progressStore.saveAutoSlot(storage, "day1:eveningLead", {
+    day: 1,
+    sceneTime: "20:18",
+    progress: { currentDay: 1, savedAt: "2026-07-24T01:00:00.000Z" },
+  });
+
+  assert.equal(result.status, "saved");
+  assert.equal(result.slotId, 4);
+  assert.equal(JSON.parse(storage.value(`${progressStore.SAVE_SLOT_PREFIX}5`)).saveType, "manual");
+  const saved = JSON.parse(storage.value(`${progressStore.SAVE_SLOT_PREFIX}4`));
+  assert.equal(saved.saveType, "auto");
+  assert.equal(saved.autosaveCheckpoint, "day1:eveningLead");
+});
+
+test("기존 자동저장은 빈 슬롯보다 우선해 같은 슬롯에서 갱신된다", () => {
+  const storage = createStorage({
+    [`${progressStore.SAVE_SLOT_PREFIX}2`]: JSON.stringify({
+      slotId: 2,
+      day: 1,
+      saveType: "auto",
+      autosaveCheckpoint: "day1:eveningLead",
+      autosaveSignature: "old",
+    }),
+  });
+
+  const result = progressStore.saveAutoSlot(storage, "day1:end", {
+    day: 1,
+    sceneTime: "20:30",
+    progress: { currentDay: 1, days: { 1: { sceneId: "end" } } },
+  });
+
+  assert.equal(result.status, "updated");
+  assert.equal(result.slotId, 2);
+  assert.equal(progressStore.getSaveSlots(storage)[1].autosaveCheckpoint, "day1:end");
+  assert.equal(progressStore.getSaveSlots(storage)[4].empty, true);
+});
+
+test("모든 슬롯이 수동 저장이면 자동저장은 슬롯을 변경하지 않는다", () => {
+  const entries = Object.fromEntries(Array.from({ length: 5 }, (_, index) => [
+    `${progressStore.SAVE_SLOT_PREFIX}${index + 1}`,
+    JSON.stringify({ slotId: index + 1, day: 1, saveType: "manual" }),
+  ]));
+  const storage = createStorage(entries);
+  const writesBefore = storage.writeCount();
+
+  const result = progressStore.saveAutoSlot(storage, "day1:end", { day: 1 });
+
+  assert.equal(result.status, "full");
+  assert.equal(storage.writeCount(), writesBefore);
+  assert.equal(progressStore.getSaveSlots(storage).every((slot) => slot.saveType === "manual"), true);
+});
+
+test("타입이 없는 기존 슬롯은 수동 저장으로 취급한다", () => {
+  const storage = createStorage({
+    [`${progressStore.SAVE_SLOT_PREFIX}5`]: JSON.stringify({ slotId: 5, day: 1 }),
+  });
+
+  const slots = progressStore.getSaveSlots(storage);
+  const result = progressStore.saveAutoSlot(storage, "day2:day2OvertimeLead", { day: 2 });
+
+  assert.equal(slots[4].saveType, "manual");
+  assert.equal(result.slotId, 4);
+});
+
+test("자동저장 슬롯을 수동 저장하면 manual로 전환되고 다음 자동저장은 다른 빈 슬롯을 사용한다", () => {
+  const storage = createStorage();
+  const firstAuto = progressStore.saveAutoSlot(storage, "day1:eveningLead", { day: 1, progress: { value: 1 } });
+  const manual = progressStore.saveManualSlot(storage, firstAuto.slotId, { day: 1, progress: { value: 2 } });
+  const secondAuto = progressStore.saveAutoSlot(storage, "day1:end", { day: 1, progress: { value: 3 } });
+
+  assert.equal(firstAuto.slotId, 5);
+  assert.equal(manual.status, "saved");
+  assert.equal(progressStore.getSaveSlots(storage)[4].saveType, "manual");
+  assert.equal(secondAuto.slotId, 4);
+});
+
+test("같은 체크포인트와 내용의 자동저장은 savedAt이 달라도 다시 쓰지 않는다", () => {
+  const storage = createStorage();
+  const payload = {
+    day: 2,
+    savedAt: "2026-07-24T01:00:00.000Z",
+    progress: {
+      savedAt: "2026-07-24T01:00:00.000Z",
+      days: { 2: { sceneId: "day2OvertimeLead" } },
+    },
+  };
+  const first = progressStore.saveAutoSlot(storage, "day2:day2OvertimeLead", payload);
+  const writesAfterFirst = storage.writeCount();
+  const second = progressStore.saveAutoSlot(storage, "day2:day2OvertimeLead", {
+    ...payload,
+    savedAt: "2026-07-24T02:00:00.000Z",
+    progress: { ...payload.progress, savedAt: "2026-07-24T02:00:00.000Z" },
+  });
+
+  assert.equal(first.status, "saved");
+  assert.equal(second.status, "unchanged");
+  assert.equal(storage.writeCount(), writesAfterFirst);
+});
+
+test("같은 체크포인트라도 진행 내용이 달라지면 자동저장을 갱신한다", () => {
+  const storage = createStorage();
+  progressStore.saveAutoSlot(storage, "day3:day3End", {
+    day: 3,
+    progress: { shared: { work: 3 }, days: { 3: { sceneId: "day3End" } } },
+  });
+
+  const result = progressStore.saveAutoSlot(storage, "day3:day3End", {
+    day: 3,
+    progress: { shared: { work: 4 }, days: { 3: { sceneId: "day3End" } } },
+  });
+
+  assert.equal(result.status, "updated");
+  assert.equal(result.slotId, 5);
 });
