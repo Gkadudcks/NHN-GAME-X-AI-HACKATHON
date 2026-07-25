@@ -41,8 +41,9 @@ test("DAY 3 엔진은 DAY 3 저장과 단서 날짜를 사용한다", () => {
   assert.match(engine, /defaultDay:\s*3/);
 });
 
-test("없는 구내식당 배경은 시각 플레이스홀더로 표시한다", () => {
+test("구내식당 장면은 승인된 전용 배경을 사용한다", () => {
   const storySource = fs.readFileSync(path.join(root, "js", "day3-story.js"), "utf8");
   assert.match(storySource, /구내식당 · 점심/);
-  assert.match(storySource, /placeholder:/);
+  assert.match(storySource, /bg:\s*"cafeteria_day"/);
+  assert.match(engine, /ArtAssets\.resolve\("background\.cafeteria\.day"\)/);
 });

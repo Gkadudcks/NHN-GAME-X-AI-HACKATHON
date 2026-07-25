@@ -303,7 +303,8 @@
       }
       event.preventDefault();
       event.stopImmediatePropagation();
-      open();
+      if (options.onEscape) options.onEscape();
+      else open();
     }, true);
 
     const api = Object.freeze({

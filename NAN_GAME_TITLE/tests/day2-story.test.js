@@ -1,5 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 const story = require("../js/day2-story.js");
 
 test("DAY 2 장면 ID와 필수 필드가 유효하다", () => {
@@ -69,4 +71,16 @@ test("서하린의 DAY 2 대사는 도윤에게 해요체로 일관되게 말한
   assert.equal(byId("day2OvertimeHarin1").text, "오늘 하위 조사 문장만 정리하면 끝나요. 한 시간 안에 끝내고 가요.");
   assert.equal(overtimeChoices.find((choice) => choice.value === "verify-record").reply, "맞아요. 확인은 해야 해요. 이름만 보고 결론 내리지만 않으면 돼요.");
   assert.equal(overtimeChoices.find((choice) => choice.value === "take-responsibility").reply, "책임지는 것과 혼자 남는 건 다르다고 했어요. 오늘은 같이 가요.");
+});
+
+test("외부 식당에서 도윤과 민재는 동기답게 반말로 대화한다", () => {
+  const lunchScenes = story.scenes.filter((scene) =>
+    scene.id.startsWith("day2Lunch") && ["한도윤", "강민재"].includes(scene.speaker)
+  );
+  const fixedDialogue = lunchScenes.map((scene) => scene.text || "").join("\n");
+  assert.doesNotMatch(fixedDialogue, /(습니다|습니까|네요|같은데요|해요)(?:[.?!]|$)/);
+
+  const engine = fs.readFileSync(path.join(__dirname, "..", "js", "day2.js"), "utf8");
+  const branchBlock = engine.match(/lunchBranchDoyun:\s*\{([\s\S]*?)\}\[subtask\]/)?.[1] || "";
+  assert.doesNotMatch(branchBlock, /(습니다|습니까|네요|같은데요|해요)(?:[.?!]|$)/);
 });

@@ -14,6 +14,7 @@ const $ = (selector) => document.querySelector(selector);
 const pageParams = new URLSearchParams(location.search);
 const devSkipMinigames = pageParams.get("dev") === "skip-minigames";
 const BACKGROUND_SOURCES = Object.freeze({
+  cafeteria_day: ArtAssets.resolve("background.cafeteria.day"),
   office: `${ASSET}backgrounds/day1-office.png`,
   office_night: ArtAssets.resolve("background.office.night"),
   qa_test_space_incident: ArtAssets.resolve("background.qa_test_space.incident"),
@@ -763,7 +764,11 @@ function closeDaySummary() {
   render();
 }
 
+let deferNextNotification = false;
+
 function render() {
+  const deferNotification = deferNextNotification;
+  deferNextNotification = false;
   state.index = nextVisibleIndex(state.index);
   const scene = scenes[state.index] || scenes[0];
   const cinematic = Boolean(scene.cinematicDelay);
@@ -779,12 +784,12 @@ function render() {
   refs.dialogue.textContent = cinematic ? "" : (scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text);
   refs.next.disabled = cinematic;
   refs.next.textContent = scene.end ? "타이틀로　›" : "다음　›";
-  $("#scene-label").textContent = scene.location || (Number(scene.time.split(":")[0]) >= 12 ? "게임사업실 · 오후" : "게임사업실 · 오전");
+  $("#scene-label").textContent = inheritedSceneValue(state.index, "location") || (Number(scene.time.split(":")[0]) >= 12 ? "게임사업실 · 오후" : "게임사업실 · 오전");
   renderVisuals(scene);
   renderCharacters(scene);
   if (effectiveBgm) playBgm(effectiveBgm);
   if (scene.clue) addClue(scene.clue);
-  if (scene.notification) notifyMessage(scene.notification);
+  if (scene.notification && !deferNotification) notifyMessage(scene.notification);
   renderMessages();
   refs.stageChoices.innerHTML = "";
   refs.stageChoices.classList.remove("show");
@@ -831,10 +836,17 @@ async function next() {
     return;
   }
   const targetIndex = nextVisibleIndex(state.index + 1);
-  await preloadSceneImages(scenes[targetIndex]);
+  const targetScene = scenes[targetIndex];
+  await preloadSceneImages(targetScene);
+  const locationChanged = await locationTransition.playIfChanged($("#scene-label").textContent, targetScene.location);
   state.index = targetIndex;
   saveProgress();
+  deferNextNotification = locationChanged;
   render();
+  if (locationChanged && targetScene.notification) {
+    await new Promise((resolve) => window.setTimeout(resolve, 500));
+    notifyMessage(targetScene.notification);
+  }
   sceneTransitionLocked = false;
 }
 
@@ -877,14 +889,23 @@ window.addEventListener("resize", () => closeStatHelp());
 document.addEventListener("scroll", () => closeStatHelp(), true);
 document.addEventListener("nan:settings-open", pauseCinematic);
 document.addEventListener("nan:settings-close", resumeCinematic);
-GameSettingsDialog.install({
+let pauseMenu;
+const settingsDialogApi = GameSettingsDialog.install({
   onApply: () => syncBgmUi(!bgmManager.isPaused()),
+  onEscape: () => pauseMenu?.isOpen() ? pauseMenu.close() : pauseMenu?.open(),
   closeOverlay: () => {
     if ($("#game-save-modal").classList.contains("open")) { closeGameSave(); return true; }
     if (activeStatHelp) { closeStatHelp({ restoreFocus: true }); return true; }
     return false;
   },
 });
+pauseMenu = GamePauseMenu.install({
+  openSettings: () => settingsDialogApi.open(),
+  openLoad: () => openGameSave("load"),
+  onOpen: pauseCinematic,
+  onClose: resumeCinematic,
+});
+const locationTransition = GameLocationTransition.install();
 document.addEventListener("pointerdown", unlockAudio, { once: true });
 document.addEventListener("keydown", unlockAudio, { once: true });
 

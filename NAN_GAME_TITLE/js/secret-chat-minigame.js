@@ -201,6 +201,8 @@
 
   document.addEventListener("nan:settings-open", pause);
   document.addEventListener("nan:settings-close", resume);
+  document.addEventListener("nan:pause-open", pause);
+  document.addEventListener("nan:pause-close", resume);
 
   global.SecretChatMinigame = Object.freeze({ start, pause, resume });
 })(typeof globalThis !== "undefined" ? globalThis : this);

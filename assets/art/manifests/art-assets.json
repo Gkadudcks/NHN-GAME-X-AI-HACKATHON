@@ -6,7 +6,8 @@
       "neutral_standing",
       "relaxed_standing",
       "arms_folded",
-      "holding_cup"
+      "holding_cup",
+      "hand_to_chest"
     ],
     "expressions": [
       "neutral",
@@ -64,7 +65,8 @@
         "neutral_standing",
         "relaxed_standing",
         "arms_folded",
-        "holding_cup"
+        "holding_cup",
+        "hand_to_chest"
       ],
       "allowed_expressions": [
         "neutral",
@@ -165,6 +167,26 @@
       ]
     },
     {
+      "id": "character.harin.hand_to_chest.surprised",
+      "kind": "character",
+      "profile": "character_sprite",
+      "character_id": "harin",
+      "pose": "hand_to_chest",
+      "expression": "surprised",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/characters/harin/approved/harin_hand_to_chest_surprised_v001.png",
+          "generation_log_id": "harin-hand-to-chest-surprised-v001-imagegen",
+          "sha256": "365d5f6bdb939172cc7157c68e53a2835f470633b2fbb7ee5e3c2c78c5b38c80",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-26T02:51:24.3097871+09:00"
+        }
+      ]
+    },
+    {
       "id": "character.minjae.neutral_standing.embarrassed",
       "kind": "character",
       "profile": "character_sprite",
@@ -259,6 +281,25 @@
           "sha256": "8f53374ab9fd622c49416f84173440f504fbc60e74bba2551efd3a70c0d0cefb",
           "reviewed_by": "codex",
           "reviewed_at": "2026-07-23T23:52:12.1510616+09:00"
+        }
+      ]
+    },
+    {
+      "id": "background.cafeteria.day",
+      "kind": "background",
+      "profile": "background_16_9",
+      "location": "cafeteria",
+      "variant": "day",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/backgrounds/approved/cafeteria_day_v001.png",
+          "generation_log_id": "cafeteria-day-v001-imagegen",
+          "sha256": "0986acf8be065cc95bdb5d4c4a5dd56eee2f40985bfd751283f73d9b79d850df",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-26T03:04:14.1592746+09:00"
         }
       ]
     },

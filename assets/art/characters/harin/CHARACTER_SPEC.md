@@ -20,7 +20,7 @@ These attributes are locked to the master reference. Do not change facial struct
 
 ## Approved vocabulary
 
-- Poses: `neutral_standing`, `relaxed_standing`, `arms_folded`, `holding_cup`
+- Poses: `neutral_standing`, `relaxed_standing`, `arms_folded`, `holding_cup`, `hand_to_chest`
 - Expressions: `neutral`, `gentle_smile`, `embarrassed`, `surprised`, `concerned`, `tired`
 - Default: `neutral_standing` + `neutral`
 - Master reference: `NAN_GAME_TITLE/assets/characters/harin-source.png`
@@ -31,6 +31,10 @@ These attributes are locked to the master reference. Do not change facial struct
 - `tired`: subtle late-evening fatigue with softened eyelids; still composed and competent
 - `embarrassed`: mild warmth in the cheeks and a small hesitant smile; no exaggerated anime symbols
 - `surprised`: widened eyes and slightly parted lips; believable adult reaction, not comedic shock
+
+## Pose direction
+
+- `hand_to_chest`: one hand rises naturally toward the upper chest while the other reaches slightly forward and down, capturing a brief startled pause rather than a static pose
 
 ## Continuity notes
 

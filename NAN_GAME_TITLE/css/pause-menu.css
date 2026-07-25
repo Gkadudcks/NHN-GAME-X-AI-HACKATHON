@@ -1,0 +1,13 @@
+.pause-menu{position:fixed;z-index:2000;inset:0;display:grid;place-items:center;padding:24px;background:#21171dcc;backdrop-filter:blur(12px);opacity:0;visibility:hidden;transition:.2s}
+.pause-menu.open{opacity:1;visibility:visible}
+.pause-menu-panel{width:min(820px,94vw);padding:34px;border:1px solid #ffffff70;border-radius:24px;background:#fffaf4;box-shadow:0 30px 90px #160b1166;text-align:center;transform:translateY(14px) scale(.985);transition:.2s}
+.pause-menu.open .pause-menu-panel{transform:none}
+.pause-menu-kicker{margin:0;color:#c94f5b;font-size:12px;font-weight:900;letter-spacing:.22em}
+.pause-menu-panel h2{margin:8px 0 26px;color:#342a2e;font-size:36px;line-height:1.2}
+.pause-menu-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.pause-menu-actions button{min-height:92px;padding:13px 14px;color:#46383d;border:1px solid #e5d2cf;border-radius:13px;background:#fff;box-shadow:0 6px 18px #5a35420d;cursor:pointer;font-size:19px;font-weight:900;line-height:1.25;transition:.16s}
+.pause-menu-actions button:hover,.pause-menu-actions button:focus-visible{color:#fff;border-color:#df6871;background:#df6871;outline:none;transform:translateY(-1px)}
+.pause-menu-actions small{display:block;margin-top:6px;color:#806d73;font-size:12px;font-weight:700;line-height:1.35}
+.pause-menu-actions button:hover small,.pause-menu-actions button:focus-visible small{color:#fff}
+.pause-menu-status{min-height:20px;margin:16px 0 0;color:#a94350;font-size:13px;font-weight:800;line-height:1.4}
+@media(max-width:680px){.pause-menu{padding:12px}.pause-menu-panel{padding:26px 20px}.pause-menu-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}

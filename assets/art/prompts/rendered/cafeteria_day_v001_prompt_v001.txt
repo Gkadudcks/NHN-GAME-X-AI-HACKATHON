@@ -1,0 +1,12 @@
+Use case: stylized-concept
+Asset type: 1920x1080 visual novel background for a Korean office romance game
+Asset ID: background.cafeteria.day
+Primary request: Create a bright modern Korean corporate cafeteria at lunchtime, clearly distinct from a small outside restaurant.
+Reference: assets/art/backgrounds/approved/restaurant_lunch_v001.png is a style, palette, finish, camera-height, and line-quality reference only. Do not copy its room layout or intimate restaurant atmosphere.
+Scene: A spacious in-company cafeteria with a clean food service counter, stainless-steel serving equipment, neutral trays and dishware, rows of simple light-wood communal tables and chairs, large daylight windows, subtle indoor plants, and modern Korean office-building architecture.
+Style: Polished commercial anime visual novel background illustration; clean thin consistent line art; soft 2-to-3-step cel shading; minimal painterly texture; realistic architecture and perspective.
+Composition: Single landscape 16:9 scene, natural eye-level approximately 35mm camera, wide establishing view. Preserve generous visually quiet open floor and uncluttered areas across the center and lower middle for full-body character sprites and dialogue UI.
+Lighting: Warm diffused midday sunlight with soft cool ambient shadows; welcoming ordinary workday mood.
+Palette: Warm low-contrast low-to-medium saturation using cream, beige, muted brown, pale blue, and restrained navy accents.
+Constraints: No people, characters, faces, or reflections of people. No readable text, letters, numbers, logos, brands, menu labels, signs, watermark, or UI. No alpha/transparency. One coherent game-ready background only.
+Avoid: Luxury restaurant, cozy small restaurant, fast-food franchise, school or hospital cafeteria, abandoned room, sci-fi interior, extreme wide-angle distortion, fisheye lens, blocked center sprite zone, cluttered foreground, duplicated or malformed furniture, photorealism, 3D CGI, watercolor, neon, and high saturation.

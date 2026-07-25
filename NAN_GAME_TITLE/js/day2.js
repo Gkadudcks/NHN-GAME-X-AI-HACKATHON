@@ -503,9 +503,9 @@ function resolveDynamic(name) {
       journey: "첫 10분이면 로그인 보상 창 닫다가 절반 가겠네.",
     }[subtask],
     lunchBranchDoyun: {
-      competitor: "좋은 예시인지 나쁜 예시인지 모르겠습니다.",
-      reviews: "제가 만든 게임은 아니니까 아직은 괜찮습니다.",
-      journey: "과장 아닙니까?",
+      competitor: "좋은 예시인지 나쁜 예시인지 모르겠는데.",
+      reviews: "내가 만든 게임은 아니니까 아직은 괜찮아.",
+      journey: "과장 아니야?",
     }[subtask],
     nanaLead: manualNana ? "재현 절차의 표현만 간결하게 정리할까요?" : "재현 결과를 한 문장으로 요약했습니다. ‘사용자 안내 경험을 개선할 기회가 발견되었습니다.’",
     nanaDoyun: manualNana ? "원문 단계는 유지하고 문장만 다듬어 줘." : "버그가 재현됐다는 말이 사라졌는데요.",
@@ -806,7 +806,11 @@ function goToDay3() {
   window.setTimeout(() => { location.href = `day3.html${suffix}`; }, 2200);
 }
 
+let deferNextNotification = false;
+
 function render() {
+  const deferNotification = deferNextNotification;
+  deferNextNotification = false;
   state.index = nextVisibleIndex(state.index);
   const scene = scenes[state.index] || scenes[0];
   const cinematic = Boolean(scene.cinematicDelay);
@@ -822,12 +826,12 @@ function render() {
   refs.dialogue.textContent = cinematic ? "" : (scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text);
   refs.next.disabled = cinematic;
   refs.next.textContent = scene.end ? "타이틀로　›" : "다음　›";
-  $("#scene-label").textContent = scene.location || (Number(scene.time.split(":")[0]) >= 12 ? "게임사업실 · 오후" : "게임사업실 · 오전");
+  $("#scene-label").textContent = inheritedSceneValue(state.index, "location") || (Number(scene.time.split(":")[0]) >= 12 ? "게임사업실 · 오후" : "게임사업실 · 오전");
   renderVisuals(scene);
   renderCharacters(scene);
   if (effectiveBgm) playBgm(effectiveBgm);
   if (scene.clue) addClue(scene.clue);
-  if (scene.notification) notifyMessage(scene.notification);
+  if (scene.notification && !deferNotification) notifyMessage(scene.notification);
   renderMessages();
   refs.stageChoices.innerHTML = "";
   refs.stageChoices.classList.remove("show");
@@ -874,10 +878,17 @@ async function next() {
     return;
   }
   const targetIndex = nextVisibleIndex(state.index + 1);
-  await preloadSceneImages(scenes[targetIndex]);
+  const targetScene = scenes[targetIndex];
+  await preloadSceneImages(targetScene);
+  const locationChanged = await locationTransition.playIfChanged($("#scene-label").textContent, targetScene.location);
   state.index = targetIndex;
   saveProgress();
+  deferNextNotification = locationChanged;
   render();
+  if (locationChanged && targetScene.notification) {
+    await new Promise((resolve) => window.setTimeout(resolve, 500));
+    notifyMessage(targetScene.notification);
+  }
   sceneTransitionLocked = false;
 }
 
@@ -921,14 +932,23 @@ window.addEventListener("resize", () => closeStatHelp());
 document.addEventListener("scroll", () => closeStatHelp(), true);
 document.addEventListener("nan:settings-open", pauseCinematic);
 document.addEventListener("nan:settings-close", resumeCinematic);
-GameSettingsDialog.install({
+let pauseMenu;
+const settingsDialogApi = GameSettingsDialog.install({
   onApply: () => syncBgmUi(!bgmManager.isPaused()),
+  onEscape: () => pauseMenu?.isOpen() ? pauseMenu.close() : pauseMenu?.open(),
   closeOverlay: () => {
     if ($("#game-save-modal").classList.contains("open")) { closeGameSave(); return true; }
     if (activeStatHelp) { closeStatHelp({ restoreFocus: true }); return true; }
     return false;
   },
 });
+pauseMenu = GamePauseMenu.install({
+  openSettings: () => settingsDialogApi.open(),
+  openLoad: () => openGameSave("load"),
+  onOpen: pauseCinematic,
+  onClose: resumeCinematic,
+});
+const locationTransition = GameLocationTransition.install();
 document.addEventListener("pointerdown", unlockAudio, { once: true });
 document.addEventListener("keydown", unlockAudio, { once: true });
 

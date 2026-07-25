@@ -24,6 +24,20 @@ test("Harin keeps her DAY 3 dialogue in the haeyo style", () => {
   assert.doesNotMatch(harinScenes, /하면 됩니다|내 이름을 지우지/);
 });
 
+test("하린은 첫 변조를 발견했을 때 당황한 뒤 보존 조치를 지시한다", () => {
+  const scene = story.scenes.find((entry) => entry.id === "day3HarinSeesChange");
+  assert.match(scene.text, /^잠깐만요\./);
+  assert.match(scene.text, /제가 검토한 문장이 아닌데요\?/);
+  assert.match(scene.text, /지금 상태와 변경 기록부터 남겨요\.$/);
+  assert.equal(scene.char, "harin");
+});
+
+test("하린은 수정 기록에서 자기 이름을 발견한 장면에 당황 스프라이트를 사용한다", () => {
+  const scene = story.scenes.find((entry) => entry.id === "day3HarinResponse");
+  assert.match(scene.text, /왜 제 이름이 여기 남아 있죠\?/);
+  assert.equal(scene.characters[0].assetId, "character.harin.hand_to_chest.surprised");
+});
+
 test("DAY 3 장면 ID와 필수 필드가 유효하다", () => {
   assert.deepEqual(story.validateScenes(story.scenes), []);
 });
