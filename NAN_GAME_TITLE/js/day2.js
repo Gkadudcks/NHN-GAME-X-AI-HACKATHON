@@ -922,6 +922,7 @@ document.addEventListener("scroll", () => closeStatHelp(), true);
 document.addEventListener("nan:settings-open", pauseCinematic);
 document.addEventListener("nan:settings-close", resumeCinematic);
 GameSettingsDialog.install({
+  onApply: () => syncBgmUi(!bgmManager.isPaused()),
   closeOverlay: () => {
     if ($("#game-save-modal").classList.contains("open")) { closeGameSave(); return true; }
     if (activeStatHelp) { closeStatHelp({ restoreFocus: true }); return true; }

@@ -22,6 +22,7 @@
       this.sourceNode = null;
       this.currentScene = null;
       this.currentVolume = 0;
+      this.volumeRevision = 0;
       this.transitionId = 0;
       this.fadeFrames = new Set();
       this.buffers = new Map();
@@ -71,9 +72,9 @@
       }
     }
 
-    setVolume() {
-      if (this.fadeFrames.size) return;
-      this.setInternalVolume(this.getVolume());
+    setVolume(value = this.getVolume()) {
+      this.volumeRevision += 1;
+      this.setInternalVolume(value);
     }
 
     async load(track) {
@@ -163,8 +164,10 @@
       }
       return new Promise((resolve) => {
         const startedAt = performance.now();
+        const volumeRevision = this.volumeRevision;
         const step = (now) => {
           if (transitionId !== this.transitionId) return resolve();
+          if (volumeRevision !== this.volumeRevision) return resolve();
           const progress = Math.min(1, (now - startedAt) / duration);
           this.setInternalVolume(from + (to - from) * progress);
           if (progress < 1) {

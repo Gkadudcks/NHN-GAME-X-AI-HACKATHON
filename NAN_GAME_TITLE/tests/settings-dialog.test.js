@@ -35,6 +35,21 @@ test("공용 설정은 즉시 반영 가능한 화면 값을 문서 루트에 �
   assert.equal(documentRef.documentElement.dataset.bgmMuted, "true");
 });
 
+test("전체 음량 0%는 BGM의 실제 유효 음량을 0으로 계산한다", () => {
+  assert.equal(settingsDialog.effectiveBgmVolume({
+    masterVolume: 0,
+    bgmVolume: 70,
+    masterMuted: false,
+    bgmMuted: false,
+  }), 0);
+  assert.equal(settingsDialog.effectiveBgmVolume({
+    masterVolume: 80,
+    bgmVolume: 70,
+    masterMuted: true,
+    bgmMuted: false,
+  }), 0);
+});
+
 test("공용 설정과 세 미니게임은 같은 pause/resume 이벤트 계약을 사용한다", () => {
   assert.equal(settingsDialog.isOpen(), false);
   assert.deepEqual(settingsDialog.EVENTS, {
@@ -51,13 +66,29 @@ test("공용 설정과 세 미니게임은 같은 pause/resume 이벤트 계약�
   });
 });
 
-test("타이틀은 공용 설정 스타일과 모듈을 불러오며, 미구현 대화 설정은 비활성화한다", () => {
+test("타이틀과 게임은 공용 모듈이 생성하는 하나의 설정창을 사용한다", () => {
   const title = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
   const source = fs.readFileSync(path.join(__dirname, "..", "js", "settings-dialog.js"), "utf8");
+  const titleSource = fs.readFileSync(path.join(__dirname, "..", "js", "title-screen.js"), "utf8");
+  const titleCss = fs.readFileSync(path.join(__dirname, "..", "css", "title-screen.css"), "utf8");
+  const settingsCss = fs.readFileSync(path.join(__dirname, "..", "css", "settings-dialog.css"), "utf8");
   assert.match(title, /css\/settings-dialog\.css/);
   assert.match(title, /js\/settings-dialog\.js/);
+  assert.doesNotMatch(title, /<dialog class="settings-dialog"/);
+  assert.match(source, /<form class="settings-panel" id="settings-form"/);
+  assert.match(source, /data-volume="masterVolume"/);
+  assert.match(source, /읽은 대사만 건너뛰기/);
   assert.match(source, /자동 진행과 글자 출력 속도는 다음 업데이트에서 지원됩니다/);
-  assert.match(source, /control\.disabled = true/);
+  assert.doesNotMatch(titleSource, /settingsForm\.addEventListener/);
+  assert.doesNotMatch(titleCss, /\.settings-dialog/);
+  assert.match(settingsCss, /\.volume-setting/);
+});
+
+test("설정값은 저장한 뒤 실제 오디오와 화면에 적용한다", () => {
+  const source = fs.readFileSync(path.join(__dirname, "..", "js", "settings-dialog.js"), "utf8");
+  const persistBody = source.slice(source.indexOf("function persist("), source.indexOf("async function applyScreenMode"));
+  assert.ok(persistBody.indexOf("GameSettings.save") < persistBody.indexOf("apply();"));
+  assert.match(source, /BGMManager\?\.setVolume\?\.\(effectiveBgmVolume\(settings\)\)/);
 });
 
 test("세 DAY 페이지는 공용 설정을 엔진보다 먼저 불러오고 ESC 우선순위를 연결한다", () => {

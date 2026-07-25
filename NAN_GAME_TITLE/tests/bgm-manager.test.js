@@ -167,6 +167,26 @@ test('모든 BGM 진입 페이지는 같은 매니저 캐시 버전을 참조한
   const pages = ['index.html', 'game.html', 'day2.html', 'day3.html', 'bgm-loop-review.html'];
   pages.forEach((page) => {
     const html = fs.readFileSync(path.join(root, page), 'utf8');
-    assert.match(html, /src="js\/bgm-manager\.js\?v=7"/, page);
+    assert.match(html, /src="js\/bgm-manager\.js\?v=8"/, page);
   });
+});
+
+test('설정에서 전달한 0%는 페이드 중에도 모든 BGM 출력에 즉시 적용된다', async () => {
+  const { GameBgmManager } = loadManager();
+  const audio = new MockAudio();
+  const manager = new GameBgmManager(audio, () => 0.5);
+  manager.ensureContext();
+  manager.fallbackLoopAudio = new MockAudio();
+  manager.activeFallbackAudio = new MockAudio();
+  manager.setInternalVolume(0.5);
+
+  const fading = manager.fade(0.5, 1, 100, manager.transitionId);
+  manager.setVolume(0);
+  await fading;
+
+  assert.equal(manager.currentVolume, 0);
+  assert.equal(manager.gain.gain.value, 0);
+  assert.equal(audio.volume, 0);
+  assert.equal(manager.fallbackLoopAudio.volume, 0);
+  assert.equal(manager.activeFallbackAudio.volume, 0);
 });
