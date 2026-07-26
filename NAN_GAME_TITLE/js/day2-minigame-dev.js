@@ -26,7 +26,7 @@
       seed: runSeed,
       count: requests.length,
       requests,
-      lifeMs: 12000,
+      lifeMs: 30000,
       onComplete(result) {
         resultJson.textContent = JSON.stringify(result, null, 2);
         status.textContent = `완료 · ${result.grade.toUpperCase()} · ${result.score}점`;

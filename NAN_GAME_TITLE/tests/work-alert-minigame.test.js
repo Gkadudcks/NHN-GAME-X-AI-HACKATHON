@@ -5,8 +5,10 @@ const {
   REQUESTS,
   SUBTASK_REQUESTS,
   createSeededRandom,
+  formatClock,
   buildSchedule,
   priorityForRequest,
+  boardPlacement,
   evaluateAction,
   missedResult,
   successFeedback,
@@ -16,7 +18,8 @@ const {
 
 test("빠른 행동 여섯 종류와 사람/그룹 발신자만 제공한다", () => {
   assert.deepEqual(ACTIONS.map((action) => action.key), ["reply", "file", "calendar", "delegate", "later", "spam"]);
-  assert.deepEqual(ACTIONS.map((action) => action.shortLabel), ["답장", "파일", "일정", "담당자 전달", "나중에", "스팸 차단"]);
+  assert.deepEqual(ACTIONS.map((action) => action.shortLabel), ["답장하기", "파일 전달", "일정 등록", "담당자 전달", "나중에 답장", "스팸 차단"]);
+  assert.equal(ACTIONS.every((action) => action.keyHint === undefined), true);
   assert.equal(REQUESTS.every((request) => request.sender && !request.sender.includes("단서")), true);
   assert.equal(REQUESTS.some((request) => request.sender === "서하린"), true);
   assert.equal(REQUESTS.some((request) => request.sender.endsWith("방")), true);
@@ -40,6 +43,21 @@ test("선택한 하위 업무의 요청 세 개를 미니게임 풀에 주입할
   assert.equal(Object.values(SUBTASK_REQUESTS).every((items) => items.length === 3), true);
 });
 
+test("개발용 긴 제한 시간도 분과 초로 올바르게 표시한다", () => {
+  assert.equal(formatClock(45), "00:45");
+  assert.equal(formatClock(120), "02:00");
+  assert.equal(formatClock(71), "01:11");
+});
+
+test("같은 우선순위의 카드 세 장은 서로 다른 고정 슬롯에 배치된다", () => {
+  const requests = REQUESTS.filter((request) => priorityForRequest(request) === "normal").slice(0, 3);
+  const placed = [];
+  requests.forEach((request) => placed.push({ ...request, ...boardPlacement(request, placed) }));
+  assert.equal(new Set(placed.map((request) => request.boardX)).size, 3);
+  assert.equal(new Set(placed.map((request) => request.boardY)).size, 1);
+  assert.equal(placed.every((request) => request.lane === "normal"), true);
+});
+
 test("올바른 행동은 보상하고 잘못된 행동과 긴급 누락은 감점한다", () => {
   const urgent = REQUESTS.find((item) => item.id === "boss-meeting");
   const normal = REQUESTS.find((item) => item.id === "planning-copy");
@@ -50,8 +68,11 @@ test("올바른 행동은 보상하고 잘못된 행동과 긴급 누락은 감�
   assert.deepEqual(evaluateAction(urgent, "calendar"), { outcome: "correct", points: 7 });
   assert.deepEqual(evaluateAction(normal, "file"), { outcome: "correct", points: 5 });
   assert.deepEqual(evaluateAction(leisure, "later"), { outcome: "correct", points: 3 });
-  assert.deepEqual(evaluateAction(urgent, "reply"), { outcome: "wrong", points: -8 });
-  assert.deepEqual(missedResult(urgent), { outcome: "missed", points: -10 });
+  assert.deepEqual(evaluateAction(urgent, "reply"), { outcome: "wrong", points: -3 });
+  assert.deepEqual(evaluateAction(normal, "reply"), { outcome: "wrong", points: -2 });
+  assert.deepEqual(missedResult(urgent), { outcome: "missed", points: -5 });
+  assert.deepEqual(missedResult(normal), { outcome: "missed", points: -1 });
+  assert.deepEqual(missedResult(leisure), { outcome: "missed", points: 0 });
 });
 
 test("담당자 전달 성공 피드백은 Figma 노트의 문구를 사용한다", () => {
@@ -61,7 +82,7 @@ test("담당자 전달 성공 피드백은 Figma 노트의 문구를 사용한�
 
 test("정확도와 긴급 요청 누락을 함께 반영해 등급을 정한다", () => {
   const perfect = Array.from({ length: 10 }, (_, index) => ({ outcome: "correct", critical: index < 2 }));
-  const good = [...perfect.slice(0, 6), { outcome: "missed", critical: true }, { outcome: "wrong", critical: false }];
+  const good = [...perfect.slice(0, 5), { outcome: "missed", critical: true }, ...Array.from({ length: 4 }, () => ({ outcome: "wrong", critical: false }))];
   const messy = [...perfect.slice(0, 3), ...Array.from({ length: 7 }, () => ({ outcome: "missed", critical: false }))];
   assert.deepEqual(gradeForPerformance(perfect), { grade: "perfect", workDelta: 2 });
   assert.deepEqual(gradeForPerformance(good), { grade: "good", workDelta: 1 });

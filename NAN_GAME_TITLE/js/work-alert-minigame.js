@@ -2,12 +2,12 @@
   "use strict";
 
   const ACTIONS = Object.freeze([
-    { key: "reply", label: "답장 보내기", shortLabel: "답장", keyHint: "1" },
-    { key: "file", label: "파일 전달", shortLabel: "파일", keyHint: "2" },
-    { key: "calendar", label: "일정 등록", shortLabel: "일정", keyHint: "3" },
-    { key: "delegate", label: "담당자에게 넘기기", shortLabel: "담당자 전달", keyHint: "4" },
-    { key: "later", label: "나중에 확인", shortLabel: "나중에", keyHint: "5" },
-    { key: "spam", label: "스팸 차단", shortLabel: "스팸 차단", keyHint: "6" },
+    { key: "reply", label: "답장하기", shortLabel: "답장하기" },
+    { key: "file", label: "파일 전달", shortLabel: "파일 전달" },
+    { key: "calendar", label: "일정 등록", shortLabel: "일정 등록" },
+    { key: "delegate", label: "담당자 전달", shortLabel: "담당자 전달" },
+    { key: "later", label: "나중에 답장", shortLabel: "나중에 답장" },
+    { key: "spam", label: "스팸 차단", shortLabel: "스팸 차단" },
   ]);
 
   const REQUESTS = Object.freeze([
@@ -66,6 +66,13 @@
     return result;
   }
 
+  function formatClock(totalSeconds) {
+    const safeSeconds = Math.max(0, Math.ceil(Number(totalSeconds) || 0));
+    const minutes = Math.floor(safeSeconds / 60);
+    const seconds = safeSeconds % 60;
+    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  }
+
   function buildSchedule(options = {}) {
     const random = options.random || Math.random;
     const requests = Array.isArray(options.requests) && options.requests.length ? options.requests : REQUESTS;
@@ -100,15 +107,41 @@
     return "normal";
   }
 
+  const BOARD_X_SLOTS = Object.freeze([7, 38, 69]);
+  const BOARD_Y_BY_PRIORITY = Object.freeze({ urgent: 4, normal: 36, leisure: 68 });
+
+  function boardPlacement(request, activeRequests = []) {
+    const lane = priorityForRequest(request);
+    const usedSlots = new Set(
+      activeRequests
+        .filter((active) => priorityForRequest(active) === lane)
+        .map((active) => active.boardSlot)
+        .filter(Number.isInteger),
+    );
+    const preferredSlot = Math.max(0, Math.min(2, Math.round(((Number(request.x) || 38) - 7) / 31)));
+    const availableSlots = [0, 1, 2]
+      .filter((slot) => !usedSlots.has(slot))
+      .sort((left, right) => Math.abs(left - preferredSlot) - Math.abs(right - preferredSlot));
+    const boardSlot = availableSlots[0] ?? preferredSlot;
+    return {
+      lane,
+      boardSlot,
+      boardX: BOARD_X_SLOTS[boardSlot],
+      boardY: BOARD_Y_BY_PRIORITY[lane],
+    };
+  }
+
   function evaluateAction(request, selectedAction) {
     const correct = request.action === selectedAction;
     const reward = { urgent: 7, normal: 5, leisure: 3 }[priorityForRequest(request)];
-    const points = correct ? reward : request.critical ? -8 : -5;
+    const penalty = request.critical ? -3 : -2;
+    const points = correct ? reward : penalty;
     return { outcome: correct ? "correct" : "wrong", points };
   }
 
   function missedResult(request) {
-    return { outcome: "missed", points: request.critical ? -10 : -4 };
+    const penalty = { urgent: -5, normal: -1, leisure: 0 }[priorityForRequest(request)];
+    return { outcome: "missed", points: penalty };
   }
 
   function successFeedback(actionKey, points) {
@@ -119,8 +152,8 @@
     const correct = results.filter((result) => result.outcome === "correct").length;
     const missedCritical = results.filter((result) => result.critical && result.outcome !== "correct").length;
     const accuracy = results.length ? correct / results.length : 0;
-    if (accuracy >= 0.8 && missedCritical === 0) return { grade: "perfect", workDelta: 2 };
-    if (accuracy >= 0.5 && missedCritical <= 2) return { grade: "good", workDelta: 1 };
+    if (accuracy >= 0.7 && missedCritical <= 1) return { grade: "perfect", workDelta: 2 };
+    if (accuracy >= 0.4 && missedCritical <= 3) return { grade: "good", workDelta: 1 };
     return { grade: "messy", workDelta: -1 };
   }
 
@@ -137,7 +170,7 @@
     };
   }
 
-  const core = Object.freeze({ ACTIONS, REQUESTS, SUBTASK_REQUESTS, createSeededRandom, buildSchedule, priorityForRequest, evaluateAction, missedResult, successFeedback, gradeForPerformance, finalizeResults });
+  const core = Object.freeze({ ACTIONS, REQUESTS, SUBTASK_REQUESTS, createSeededRandom, formatClock, buildSchedule, priorityForRequest, boardPlacement, evaluateAction, missedResult, successFeedback, gradeForPerformance, finalizeResults });
   if (typeof module !== "undefined" && module.exports) module.exports = core;
   if (!global.document) return;
 
@@ -180,8 +213,8 @@
               <p>쌓여드는 요청을 읽고, 알맞은 업무 처리 방법을 선택하세요.</p>
               <strong>모르는 일은 담당자에게 넘기는 것도 업무입니다.</strong>
               <ul>
-                <li>마우스 클릭으로 카드 선택 혹은 드래그앤 드롭</li>
-                <li>업무 처리 1~6</li>
+                <li>업무 카드 선택 후 처리 영역 클릭</li>
+                <li>업무 카드를 처리 영역으로 드래그앤드롭</li>
                 <li>제한 시간 45초</li>
               </ul>
               <div class="wa-intro-start">
@@ -190,7 +223,7 @@
               </div>
             </div>
             <div class="wa-intro-visual" aria-hidden="true">
-              <article><b>긴급 회의 일정</b><span>10:45 임원 회의</span><em>URGENT</em></article>
+              <article><b>긴급 회의 일정</b><span>10:45 임원 회의</span><em>긴급</em></article>
             </div>
           </div>
         </div>
@@ -205,7 +238,7 @@
               <p><strong>TIP</strong>모르는 업무는<br>담당자에게 넘겨도 됩니다.</p>
             </aside>
           </div>
-          <p id="wa-feedback" class="wa-feedback" role="status">요청 카드를 선택하세요.</p>
+          <p id="wa-feedback" class="wa-feedback" role="status">카드를 선택하거나 처리 영역으로 드래그하세요.</p>
           <output id="wa-floating-feedback" class="wa-floating-feedback" aria-hidden="true"></output>
           <output id="wa-combo" class="wa-combo" hidden></output>
           <div id="wa-actions" class="wa-actions" aria-label="빠른 행동"></div>
@@ -243,31 +276,14 @@
     };
     refs.start.addEventListener("click", beginGame);
     refs.actions.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-action]");
-      if (button) handleAction(button.dataset.action);
-    });
-    refs.actions.addEventListener("dragover", (event) => {
-      const button = event.target.closest("[data-action]");
-      if (!button || !state?.selectedId) return;
-      event.preventDefault();
-      event.dataTransfer.dropEffect = "move";
-      button.classList.add("drag-target");
-    });
-    refs.actions.addEventListener("dragleave", (event) => {
-      event.target.closest("[data-action]")?.classList.remove("drag-target");
-    });
-    refs.actions.addEventListener("drop", (event) => {
-      const button = event.target.closest("[data-action]");
-      if (!button || !state?.selectedId) return;
-      event.preventDefault();
-      clearActionDragState();
-      handleAction(button.dataset.action);
+      const action = event.target.closest("[data-action]");
+      if (!action || action.getAttribute("aria-disabled") === "true") return;
+      handleAction(action.dataset.action);
     });
     root.addEventListener("pointermove", handlePointerDragMove);
     root.addEventListener("pointerup", finishPointerDrag);
     root.addEventListener("pointercancel", cancelPointerDrag);
     refs.continueButton.addEventListener("click", complete);
-    root.addEventListener("keydown", handleKeyboard);
   }
 
   function showScreen(target) {
@@ -298,20 +314,19 @@
 
   function renderActions() {
     if (!refs.actions.children.length) {
-      refs.actions.innerHTML = ACTIONS.map((action) => `<button type="button" data-action="${action.key}"><kbd>${action.keyHint}</kbd><span>${action.shortLabel}</span></button>`).join("");
+      refs.actions.innerHTML = ACTIONS.map((action) => `<button type="button" class="wa-action" data-action="${action.key}" aria-label="${action.shortLabel}"><span>${action.shortLabel}</span></button>`).join("");
     }
-    refs.actions.querySelectorAll("[data-action]").forEach((button) => {
-      button.setAttribute("aria-disabled", String(!state?.selectedId));
+    refs.actions.querySelectorAll("[data-action]").forEach((action) => {
+      action.setAttribute("aria-disabled", String(!state?.selectedId));
     });
   }
 
   function cardMarkup(request, slotIndex) {
-    const cardKey = ["Q", "W", "E"][slotIndex] || "";
-    const lane = priorityForRequest(request);
-    const laneY = lane === "urgent" ? 8 + slotIndex * 2 : lane === "normal" ? 38 + slotIndex * 2 : 68 + slotIndex * 2;
+    const lane = request.lane || priorityForRequest(request);
+    const laneLabel = { urgent: "긴급", normal: "일반", leisure: "여유" }[lane];
     const tilt = [-2.5, 3.2, -3][slotIndex] || 0;
-    return `<button type="button" class="wa-card${request.critical ? " critical" : ""}${state.selectedId === request.id ? " selected" : ""}" data-request-id="${request.id}" data-lane="${lane}" style="--x:${request.x}%;--y:${laneY}%;--tilt:${tilt}deg;--life:${request.lifeMs}ms" aria-label="${request.sender}의 요청: ${request.request}" aria-pressed="${state.selectedId === request.id}">
-      <span class="wa-card-head"><b>${request.sender}</b><small>${request.critical ? `긴급 · ${cardKey}` : `요청 · ${cardKey}`}</small></span>
+    return `<button type="button" class="wa-card${request.critical ? " critical" : ""}${state.selectedId === request.id ? " selected" : ""}" data-request-id="${request.id}" data-lane="${lane}" style="--x:${request.boardX}%;--y:${request.boardY}%;--tilt:${tilt}deg;--life:${request.lifeMs}ms;--drag-x:0px;--drag-y:0px" aria-label="${request.sender}의 요청: ${request.request}" aria-grabbed="${state.selectedId === request.id}">
+      <span class="wa-card-head"><b>${request.sender}</b><small>${laneLabel}</small></span>
       <span class="wa-card-body">${request.request}</span>
       <i aria-hidden="true"></i>
     </button>`;
@@ -328,9 +343,11 @@
     });
     card.addEventListener("pointerdown", (event) => {
       if (event.button !== 0) return;
+      card.setPointerCapture?.(event.pointerId);
       pointerDrag = {
         card,
         requestId: card.dataset.requestId,
+        pointerId: event.pointerId,
         startX: event.clientX,
         startY: event.clientY,
         active: false,
@@ -353,6 +370,8 @@
       pointerDrag.card.classList.add("dragging");
       refs.actions.classList.add("drag-ready");
     }
+    pointerDrag.card.style.setProperty("--drag-x", `${event.clientX - pointerDrag.startX}px`);
+    pointerDrag.card.style.setProperty("--drag-y", `${event.clientY - pointerDrag.startY}px`);
     refs.actions.querySelectorAll(".drag-target").forEach((button) => button.classList.remove("drag-target"));
     actionAtPoint(event.clientX, event.clientY)?.classList.add("drag-target");
     event.preventDefault();
@@ -362,20 +381,42 @@
     if (!pointerDrag) return;
     const drag = pointerDrag;
     pointerDrag = null;
+    drag.card.releasePointerCapture?.(drag.pointerId);
     if (!drag.active) return;
     const actionButton = actionAtPoint(event.clientX, event.clientY);
     drag.card.dataset.suppressClick = "true";
+    global.setTimeout(() => delete drag.card.dataset.suppressClick, 0);
     drag.card.classList.remove("dragging");
     clearActionDragState();
     event.preventDefault();
-    if (actionButton) handleAction(actionButton.dataset.action);
+    if (actionButton) {
+      handleAction(actionButton.dataset.action);
+      return;
+    }
+    returnDraggedCard(drag.card);
   }
 
   function cancelPointerDrag() {
     if (!pointerDrag) return;
-    pointerDrag.card.classList.remove("dragging");
+    const drag = pointerDrag;
     pointerDrag = null;
+    drag.card.releasePointerCapture?.(drag.pointerId);
+    drag.card.classList.remove("dragging");
     clearActionDragState();
+    if (drag.active) returnDraggedCard(drag.card);
+  }
+
+  function returnDraggedCard(card) {
+    state.selectedId = null;
+    card.classList.remove("selected");
+    card.setAttribute("aria-grabbed", "false");
+    refs.feedback.textContent = "처리 영역에 카드를 놓아주세요.";
+    refs.feedback.dataset.tone = "normal";
+    renderActions();
+    global.setTimeout(() => {
+      card.style.setProperty("--drag-x", "0px");
+      card.style.setProperty("--drag-y", "0px");
+    }, 0);
   }
 
   function clearActionDragState() {
@@ -386,7 +427,7 @@
   function renderBoard() {
     const active = [...state.active.values()];
     if (!refs.board.querySelector(".wa-board-lanes")) {
-      refs.board.insertAdjacentHTML("afterbegin", '<div class="wa-board-lanes" aria-hidden="true"><span>긴급 업무</span><span>일반 업무</span><span>여유 업무</span></div>');
+      refs.board.insertAdjacentHTML("afterbegin", '<div class="wa-board-lanes" aria-hidden="true"><span>긴급</span><span>일반</span><span>여유</span></div>');
     }
     const activeIds = new Set(active.map((request) => request.id));
     refs.board.querySelectorAll(".wa-card").forEach((card) => {
@@ -399,11 +440,10 @@
         card = [...refs.board.querySelectorAll(".wa-card")].find((item) => item.dataset.requestId === request.id);
         wireCard(card);
       }
-      const cardKey = ["Q", "W", "E"][slotIndex] || "";
       const keyLabel = card.querySelector(".wa-card-head small");
-      keyLabel.textContent = request.critical ? `긴급 · ${cardKey}` : `요청 · ${cardKey}`;
+      keyLabel.textContent = { urgent: "긴급", normal: "일반", leisure: "여유" }[request.lane || priorityForRequest(request)];
       card.classList.toggle("selected", state.selectedId === request.id);
-      card.setAttribute("aria-pressed", String(state.selectedId === request.id));
+      card.setAttribute("aria-grabbed", String(state.selectedId === request.id));
     });
     renderActions();
   }
@@ -416,7 +456,7 @@
     refs.board.querySelectorAll(".wa-card").forEach((card) => {
       const selected = card.dataset.requestId === id;
       card.classList.toggle("selected", selected);
-      card.setAttribute("aria-pressed", String(selected));
+      card.setAttribute("aria-grabbed", String(selected));
     });
     renderActions();
   }
@@ -430,9 +470,19 @@
     state.feedbackTimer = global.setTimeout(() => refs.floatingFeedback.classList.remove("show"), 1000);
   }
 
-  function renderCombo() {
+  function renderCombo(animate = false) {
     refs.combo.hidden = state.combo < 2;
     refs.combo.textContent = state.combo < 2 ? "" : `COMBO ×${state.combo}`;
+    if (!animate || state.combo < 2) return;
+    refs.combo.classList.remove("bump");
+    void refs.combo.offsetWidth;
+    refs.combo.classList.add("bump");
+  }
+
+  function showWrongFeedback() {
+    refs.shell.classList.remove("wrong-feedback");
+    void refs.shell.offsetWidth;
+    refs.shell.classList.add("wrong-feedback");
   }
 
   function handleAction(actionKey) {
@@ -446,27 +496,12 @@
     refs.score.textContent = String(state.score);
     const action = ACTIONS.find((item) => item.key === actionKey);
     state.combo = evaluation.outcome === "correct" ? state.combo + 1 : 0;
-    renderCombo();
+    renderCombo(evaluation.outcome === "correct");
     if (evaluation.outcome === "correct") showSuccessFeedback(actionKey, evaluation.points);
-    refs.feedback.textContent = evaluation.outcome === "correct" ? `처리 완료 · ${request.response}` : `${action.label}은 맞지 않았습니다. 요청 내용을 다시 읽어 보세요.`;
+    else showWrongFeedback();
+    refs.feedback.textContent = evaluation.outcome === "correct" ? `처리 완료 · ${request.response}` : `${action.label} 처리는 맞지 않았습니다. 요청 내용을 다시 읽어 보세요.`;
     refs.feedback.dataset.tone = evaluation.outcome;
     renderBoard();
-  }
-
-  function handleKeyboard(event) {
-    if (!state || refs.play.hidden) return;
-    const action = ACTIONS.find((item) => item.keyHint === event.key);
-    if (action && state.selectedId) {
-      event.preventDefault();
-      handleAction(action.key);
-      return;
-    }
-    const active = [...state.active.values()];
-    const cardKeys = { q: 0, w: 1, e: 2 };
-    if (cardKeys[event.key.toLowerCase()] !== undefined && active[cardKeys[event.key.toLowerCase()]]) {
-      event.preventDefault();
-      selectRequest(active[cardKeys[event.key.toLowerCase()]].id);
-    }
   }
 
   function expireRequests() {
@@ -477,6 +512,7 @@
       state.results.push(requestResult(request, evaluation));
       state.active.delete(request.id);
       if (state.selectedId === request.id) state.selectedId = null;
+      if (pointerDrag?.requestId === request.id) cancelPointerDrag();
       state.score = Math.max(0, state.score + evaluation.points);
       refs.feedback.textContent = `${request.sender}의 요청을 놓쳤습니다.`;
       refs.feedback.dataset.tone = "missed";
@@ -490,7 +526,9 @@
   function spawnRequests() {
     let changed = false;
     while (state.nextIndex < state.schedule.length && state.schedule[state.nextIndex].spawnAt <= state.elapsed && state.active.size < 3) {
-      const request = { ...state.schedule[state.nextIndex], expiresAt: state.elapsed + state.schedule[state.nextIndex].lifeMs };
+      const scheduled = state.schedule[state.nextIndex];
+      const placement = boardPlacement(scheduled, [...state.active.values()]);
+      const request = { ...scheduled, ...placement, expiresAt: state.elapsed + scheduled.lifeMs };
       state.active.set(request.id, request);
       state.nextIndex += 1;
       changed = true;
@@ -518,7 +556,7 @@
     const changed = expired || spawned;
     const remaining = Math.max(0, state.durationMs - state.elapsed);
     const remainingSeconds = Math.ceil(remaining / 1000);
-    refs.time.textContent = `00:${String(remainingSeconds).padStart(2, "0")}`;
+    refs.time.textContent = formatClock(remainingSeconds);
     refs.time.dateTime = `PT${remainingSeconds}S`;
     refs.time.classList.toggle("danger", remaining <= 10000);
     refs.score.textContent = String(state.score);
@@ -540,7 +578,9 @@
   function finishGame() {
     if (!state || state.finished) return;
     state.finished = true;
+    cancelPointerDrag();
     cancelAnimationFrame(state.frame);
+    refs.shell.classList.remove("wrong-feedback");
     [...state.active.values()].forEach((request) => state.results.push(requestResult(request, missedResult(request))));
     state.schedule.slice(state.nextIndex).forEach((request) => state.results.push(requestResult(request, missedResult(request))));
     state.active.clear();
@@ -581,6 +621,7 @@
     ensureRoot();
     if (state?.frame) cancelAnimationFrame(state.frame);
     if (state?.feedbackTimer) global.clearTimeout(state.feedbackTimer);
+    cancelPointerDrag();
     const duration = options.duration || 45;
     const random = options.random || (options.seed === undefined ? Math.random : createSeededRandom(options.seed));
     state = {
@@ -591,12 +632,14 @@
       finalResult: null, feedbackTimer: null, onComplete: options.onComplete,
     };
     refs.score.textContent = "0";
-    refs.time.textContent = `00:${String(duration).padStart(2, "0")}`;
+    refs.time.textContent = formatClock(duration);
     refs.time.dateTime = `PT${duration}S`;
     refs.time.classList.remove("danger");
-    refs.feedback.textContent = "요청 카드를 선택하세요.";
+    refs.feedback.textContent = "카드를 선택하거나 처리 영역으로 드래그하세요.";
     refs.feedback.dataset.tone = "normal";
     refs.floatingFeedback.classList.remove("show");
+    refs.shell.classList.remove("wrong-feedback");
+    refs.combo.classList.remove("bump");
     renderCombo();
     root.hidden = false;
     root.setAttribute("aria-hidden", "false");

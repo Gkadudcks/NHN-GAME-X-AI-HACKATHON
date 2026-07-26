@@ -11,6 +11,8 @@
   --wa-yellow: #f2db83;
   position: fixed;
   inset: 0;
+  -webkit-user-select: none;
+  user-select: none;
   z-index: 1200;
   display: grid;
   place-items: center;
@@ -31,6 +33,7 @@
 }
 
 .wa-shell {
+  position: relative;
   width: min(1080px, 100%);
   height: min(720px, calc(100dvh - 40px));
   overflow: hidden;
@@ -38,6 +41,26 @@
   border-radius: 12px;
   background: var(--wa-canvas);
   box-shadow: 0 28px 90px rgba(25, 15, 15, .38);
+}
+
+.wa-shell::after {
+  position: absolute;
+  z-index: 60;
+  inset: 8px;
+  content: "";
+  border: 0 solid rgba(210, 62, 62, 0);
+  border-radius: 16px;
+  background: rgba(210, 62, 62, 0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.wa-shell.wrong-feedback {
+  animation: wa-wrong-shake .36s ease-out;
+}
+
+.wa-shell.wrong-feedback::after {
+  animation: wa-wrong-ring .42s ease-out;
 }
 
 .wa-header {
@@ -377,7 +400,7 @@
   text-align: left;
   cursor: pointer;
   touch-action: none;
-  transform: rotate(var(--tilt));
+  transform: translate(var(--drag-x), var(--drag-y)) rotate(var(--tilt));
   transform-origin: center;
   transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
   animation: wa-pop .18s ease-out;
@@ -401,20 +424,24 @@
   border-color: var(--wa-coral);
   outline: none;
   box-shadow: 0 12px 26px rgba(233, 120, 120, .22);
-  transform: rotate(0) translateY(-2px);
+  transform: translate(var(--drag-x), calc(var(--drag-y) - 2px)) rotate(var(--tilt));
 }
 
 .wa-card.selected {
   z-index: 8;
   border: 3px solid var(--wa-coral);
   box-shadow: 0 0 0 6px rgba(233, 120, 120, .18), 0 18px 34px rgba(61, 52, 52, .2);
-  transform: rotate(var(--tilt)) scale(1.045);
+  transform: translate(var(--drag-x), var(--drag-y)) rotate(var(--tilt)) scale(1.045);
 }
 
 .wa-card.dragging {
   z-index: 9;
-  opacity: .7;
+  opacity: .94;
   cursor: grabbing;
+  pointer-events: none;
+  transform: translate(var(--drag-x), var(--drag-y)) rotate(var(--tilt)) scale(1.03);
+  transition: none;
+  box-shadow: 0 20px 34px rgba(61, 52, 52, .25);
 }
 
 .wa-card.critical {
@@ -599,6 +626,10 @@
   transform: rotate(4deg);
 }
 
+.wa-combo.bump {
+  animation: wa-combo-bump .34s cubic-bezier(.2, .9, .3, 1.25);
+}
+
 .wa-actions {
   position: absolute;
   right: 0;
@@ -607,18 +638,18 @@
   height: 107px;
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 17px;
+  gap: 12px;
   padding: 18px;
   border-top: 1px solid var(--wa-line);
   background: var(--wa-paper);
 }
 
-.wa-actions button {
+.wa-action {
   min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 22px;
+  padding: 8px 6px;
   color: var(--wa-ink);
   border: 1px solid var(--wa-line);
   border-radius: 8px;
@@ -626,32 +657,27 @@
   font: inherit;
   cursor: pointer;
   touch-action: manipulation;
-  transition: background .15s ease, color .15s ease, border-color .15s ease;
+  transition: background .15s ease, color .15s ease, border-color .15s ease, transform .15s ease;
 }
-
-.wa-actions button[aria-disabled="true"] {
-  opacity: .42;
+.wa-action[aria-disabled="true"] {
+  opacity: .55;
   cursor: default;
 }
 
-.wa-actions button:not([aria-disabled="true"]):hover,
-.wa-actions button:focus-visible {
+.wa-action:not([aria-disabled="true"]):hover,
+.wa-action:focus-visible {
   color: var(--wa-paper);
   border-color: var(--wa-coral);
   outline: none;
   background: var(--wa-coral);
 }
 
-.wa-actions button:active {
-  transform: translateY(1px);
-}
-
-.wa-actions.drag-ready button:not([aria-disabled="true"]) {
+.wa-actions.drag-ready .wa-action {
   border-style: dashed;
   border-color: var(--wa-coral);
 }
 
-.wa-actions button.drag-target {
+.wa-action.drag-target {
   color: var(--wa-paper);
   border-style: solid;
   border-color: var(--wa-coral);
@@ -659,24 +685,9 @@
   transform: translateY(-3px);
 }
 
-.wa-actions kbd {
-  color: var(--wa-coral);
-  border: 0;
-  background: none;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.wa-actions button:not([aria-disabled="true"]):hover kbd,
-.wa-actions button:focus-visible kbd,
-.wa-actions button.drag-target kbd {
-  color: var(--wa-paper);
-}
-
 .wa-actions span {
   overflow: hidden;
-  font-size: clamp(15px, 1.9vw, 24px);
+  font-size: clamp(12px, 1.45vw, 18px);
   font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -864,6 +875,56 @@
   }
 }
 
+@keyframes wa-combo-bump {
+  0% {
+    opacity: .4;
+    transform: rotate(4deg) scale(.72);
+  }
+  58% {
+    opacity: 1;
+    transform: rotate(-2deg) scale(1.18);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(4deg) scale(1);
+  }
+}
+
+@keyframes wa-wrong-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  22% {
+    transform: translateX(-3px);
+  }
+  48% {
+    transform: translateX(3px);
+  }
+  72% {
+    transform: translateX(-1px);
+  }
+}
+
+@keyframes wa-wrong-ring {
+  0% {
+    border-width: 0;
+    background: rgba(210, 62, 62, 0);
+    opacity: 0;
+  }
+  24% {
+    border-width: 5px;
+    border-color: rgba(210, 62, 62, .82);
+    background: rgba(210, 62, 62, .1);
+    opacity: 1;
+  }
+  100% {
+    border-width: 3px;
+    border-color: rgba(210, 62, 62, 0);
+    background: rgba(210, 62, 62, 0);
+    opacity: 0;
+  }
+}
+
 @media (max-width: 760px) {
   .work-alert-minigame {
     padding: 0;
@@ -989,9 +1050,8 @@
     padding: 8px;
   }
 
-  .wa-actions button {
+  .wa-action {
     min-height: 45px;
-    gap: 8px;
   }
 
   .wa-actions span {
@@ -1043,7 +1103,10 @@
 @media (prefers-reduced-motion: reduce) {
   .wa-card,
   .wa-stats time.danger,
-  .wa-floating-feedback.show {
+  .wa-floating-feedback.show,
+  .wa-combo.bump,
+  .wa-shell.wrong-feedback,
+  .wa-shell.wrong-feedback::after {
     animation: none;
   }
 
