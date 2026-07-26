@@ -6,7 +6,7 @@
     { key: "file", label: "파일 전달", shortLabel: "파일", keyHint: "2" },
     { key: "calendar", label: "일정 등록", shortLabel: "일정", keyHint: "3" },
     { key: "delegate", label: "담당자에게 넘기기", shortLabel: "담당자 전달", keyHint: "4" },
-    { key: "later", label: "나중에 확인", shortLabel: "나중", keyHint: "5" },
+    { key: "later", label: "나중에 확인", shortLabel: "나중에", keyHint: "5" },
     { key: "spam", label: "스팸 차단", shortLabel: "스팸 차단", keyHint: "6" },
   ]);
 
@@ -94,10 +94,16 @@
     return schedule;
   }
 
-  function evaluateAction(request, selectedAction, responseRatio = 1) {
+  function priorityForRequest(request) {
+    if (request.critical) return "urgent";
+    if (["later", "spam"].includes(request.action)) return "leisure";
+    return "normal";
+  }
+
+  function evaluateAction(request, selectedAction) {
     const correct = request.action === selectedAction;
-    const speedBonus = correct ? Math.max(0, Math.min(4, Math.floor(responseRatio * 5))) : 0;
-    const points = correct ? 10 + speedBonus + (request.critical ? 3 : 0) : request.critical ? -8 : -5;
+    const reward = { urgent: 7, normal: 5, leisure: 3 }[priorityForRequest(request)];
+    const points = correct ? reward : request.critical ? -8 : -5;
     return { outcome: correct ? "correct" : "wrong", points };
   }
 
@@ -106,7 +112,7 @@
   }
 
   function successFeedback(actionKey, points) {
-    return actionKey === "delegate" ? "정확한 전달! +10" : `정확한 처리! +${points}`;
+    return actionKey === "delegate" ? `정확한 전달! +${points}` : `정확한 처리! +${points}`;
   }
 
   function gradeForPerformance(results) {
@@ -131,7 +137,7 @@
     };
   }
 
-  const core = Object.freeze({ ACTIONS, REQUESTS, SUBTASK_REQUESTS, createSeededRandom, buildSchedule, evaluateAction, missedResult, successFeedback, gradeForPerformance, finalizeResults });
+  const core = Object.freeze({ ACTIONS, REQUESTS, SUBTASK_REQUESTS, createSeededRandom, buildSchedule, priorityForRequest, evaluateAction, missedResult, successFeedback, gradeForPerformance, finalizeResults });
   if (typeof module !== "undefined" && module.exports) module.exports = core;
   if (!global.document) return;
 
@@ -139,6 +145,7 @@
   let root = null;
   let refs = null;
   let state = null;
+  let pointerDrag = null;
 
   function ensureStylesheet() {
     if (document.querySelector('link[data-work-alert-style]')) return;
@@ -173,7 +180,7 @@
               <p>쌓여드는 요청을 읽고, 알맞은 업무 처리 방법을 선택하세요.</p>
               <strong>모르는 일은 담당자에게 넘기는 것도 업무입니다.</strong>
               <ul>
-                <li>마우스 클릭 또는 Q / W / E로 카드 선택</li>
+                <li>마우스 클릭으로 카드 선택 혹은 드래그앤 드롭</li>
                 <li>업무 처리 1~6</li>
                 <li>제한 시간 45초</li>
               </ul>
@@ -239,6 +246,26 @@
       const button = event.target.closest("[data-action]");
       if (button) handleAction(button.dataset.action);
     });
+    refs.actions.addEventListener("dragover", (event) => {
+      const button = event.target.closest("[data-action]");
+      if (!button || !state?.selectedId) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+      button.classList.add("drag-target");
+    });
+    refs.actions.addEventListener("dragleave", (event) => {
+      event.target.closest("[data-action]")?.classList.remove("drag-target");
+    });
+    refs.actions.addEventListener("drop", (event) => {
+      const button = event.target.closest("[data-action]");
+      if (!button || !state?.selectedId) return;
+      event.preventDefault();
+      clearActionDragState();
+      handleAction(button.dataset.action);
+    });
+    root.addEventListener("pointermove", handlePointerDragMove);
+    root.addEventListener("pointerup", finishPointerDrag);
+    root.addEventListener("pointercancel", cancelPointerDrag);
     refs.continueButton.addEventListener("click", complete);
     root.addEventListener("keydown", handleKeyboard);
   }
@@ -270,12 +297,17 @@
   }
 
   function renderActions() {
-    refs.actions.innerHTML = ACTIONS.map((action) => `<button type="button" data-action="${action.key}" ${state?.selectedId ? "" : "disabled"}><kbd>${action.keyHint}</kbd><span>${action.shortLabel}</span></button>`).join("");
+    if (!refs.actions.children.length) {
+      refs.actions.innerHTML = ACTIONS.map((action) => `<button type="button" data-action="${action.key}"><kbd>${action.keyHint}</kbd><span>${action.shortLabel}</span></button>`).join("");
+    }
+    refs.actions.querySelectorAll("[data-action]").forEach((button) => {
+      button.setAttribute("aria-disabled", String(!state?.selectedId));
+    });
   }
 
   function cardMarkup(request, slotIndex) {
     const cardKey = ["Q", "W", "E"][slotIndex] || "";
-    const lane = request.critical ? "urgent" : ["later", "spam"].includes(request.action) ? "leisure" : "normal";
+    const lane = priorityForRequest(request);
     const laneY = lane === "urgent" ? 8 + slotIndex * 2 : lane === "normal" ? 38 + slotIndex * 2 : 68 + slotIndex * 2;
     const tilt = [-2.5, 3.2, -3][slotIndex] || 0;
     return `<button type="button" class="wa-card${request.critical ? " critical" : ""}${state.selectedId === request.id ? " selected" : ""}" data-request-id="${request.id}" data-lane="${lane}" style="--x:${request.x}%;--y:${laneY}%;--tilt:${tilt}deg;--life:${request.lifeMs}ms" aria-label="${request.sender}의 요청: ${request.request}" aria-pressed="${state.selectedId === request.id}">
@@ -285,11 +317,93 @@
     </button>`;
   }
 
+  function wireCard(card) {
+    card.addEventListener("click", (event) => {
+      if (card.dataset.suppressClick === "true") {
+        event.preventDefault();
+        delete card.dataset.suppressClick;
+        return;
+      }
+      selectRequest(card.dataset.requestId);
+    });
+    card.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) return;
+      pointerDrag = {
+        card,
+        requestId: card.dataset.requestId,
+        startX: event.clientX,
+        startY: event.clientY,
+        active: false,
+      };
+    });
+  }
+
+  function actionAtPoint(clientX, clientY) {
+    const button = document.elementFromPoint(clientX, clientY)?.closest("[data-action]");
+    return button && refs.actions.contains(button) ? button : null;
+  }
+
+  function handlePointerDragMove(event) {
+    if (!pointerDrag) return;
+    const distance = Math.hypot(event.clientX - pointerDrag.startX, event.clientY - pointerDrag.startY);
+    if (!pointerDrag.active && distance < 6) return;
+    if (!pointerDrag.active) {
+      pointerDrag.active = true;
+      selectRequest(pointerDrag.requestId);
+      pointerDrag.card.classList.add("dragging");
+      refs.actions.classList.add("drag-ready");
+    }
+    refs.actions.querySelectorAll(".drag-target").forEach((button) => button.classList.remove("drag-target"));
+    actionAtPoint(event.clientX, event.clientY)?.classList.add("drag-target");
+    event.preventDefault();
+  }
+
+  function finishPointerDrag(event) {
+    if (!pointerDrag) return;
+    const drag = pointerDrag;
+    pointerDrag = null;
+    if (!drag.active) return;
+    const actionButton = actionAtPoint(event.clientX, event.clientY);
+    drag.card.dataset.suppressClick = "true";
+    drag.card.classList.remove("dragging");
+    clearActionDragState();
+    event.preventDefault();
+    if (actionButton) handleAction(actionButton.dataset.action);
+  }
+
+  function cancelPointerDrag() {
+    if (!pointerDrag) return;
+    pointerDrag.card.classList.remove("dragging");
+    pointerDrag = null;
+    clearActionDragState();
+  }
+
+  function clearActionDragState() {
+    refs.actions.classList.remove("drag-ready");
+    refs.actions.querySelectorAll(".drag-target").forEach((button) => button.classList.remove("drag-target"));
+  }
+
   function renderBoard() {
     const active = [...state.active.values()];
-    refs.board.innerHTML = `<div class="wa-board-lanes" aria-hidden="true"><span>긴급 업무</span><span>일반 업무</span><span>여유 업무</span></div>${active.map(cardMarkup).join("")}`;
+    if (!refs.board.querySelector(".wa-board-lanes")) {
+      refs.board.insertAdjacentHTML("afterbegin", '<div class="wa-board-lanes" aria-hidden="true"><span>긴급 업무</span><span>일반 업무</span><span>여유 업무</span></div>');
+    }
+    const activeIds = new Set(active.map((request) => request.id));
     refs.board.querySelectorAll(".wa-card").forEach((card) => {
-      card.addEventListener("click", () => selectRequest(card.dataset.requestId));
+      if (!activeIds.has(card.dataset.requestId)) card.remove();
+    });
+    active.forEach((request, slotIndex) => {
+      let card = [...refs.board.querySelectorAll(".wa-card")].find((item) => item.dataset.requestId === request.id);
+      if (!card) {
+        refs.board.insertAdjacentHTML("beforeend", cardMarkup(request, slotIndex));
+        card = [...refs.board.querySelectorAll(".wa-card")].find((item) => item.dataset.requestId === request.id);
+        wireCard(card);
+      }
+      const cardKey = ["Q", "W", "E"][slotIndex] || "";
+      const keyLabel = card.querySelector(".wa-card-head small");
+      keyLabel.textContent = request.critical ? `긴급 · ${cardKey}` : `요청 · ${cardKey}`;
+      card.classList.toggle("selected", state.selectedId === request.id);
+      card.setAttribute("aria-pressed", String(state.selectedId === request.id));
     });
     renderActions();
   }
@@ -299,8 +413,12 @@
     state.selectedId = id;
     const request = state.active.get(id);
     refs.feedback.textContent = `${request.sender}: ${request.request}`;
-    renderBoard();
-    refs.actions.querySelector("button")?.focus();
+    refs.board.querySelectorAll(".wa-card").forEach((card) => {
+      const selected = card.dataset.requestId === id;
+      card.classList.toggle("selected", selected);
+      card.setAttribute("aria-pressed", String(selected));
+    });
+    renderActions();
   }
 
   function showSuccessFeedback(actionKey, points) {
@@ -320,8 +438,7 @@
   function handleAction(actionKey) {
     const request = state?.active.get(state.selectedId);
     if (!request) return;
-    const ratio = Math.max(0, (request.expiresAt - state.elapsed) / request.lifeMs);
-    const evaluation = evaluateAction(request, actionKey, ratio);
+    const evaluation = evaluateAction(request, actionKey);
     state.results.push(requestResult(request, evaluation, actionKey));
     state.active.delete(request.id);
     state.selectedId = null;
