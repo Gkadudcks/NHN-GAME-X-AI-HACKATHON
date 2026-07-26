@@ -8,6 +8,7 @@ const {
   buildSchedule,
   evaluateAction,
   missedResult,
+  successFeedback,
   gradeForPerformance,
   finalizeResults,
 } = require("../js/work-alert-minigame.js");
@@ -42,6 +43,11 @@ test("올바른 행동은 보상하고 잘못된 행동과 긴급 누락은 감�
   assert.deepEqual(evaluateAction(request, "calendar", 1), { outcome: "correct", points: 17 });
   assert.deepEqual(evaluateAction(request, "reply", 1), { outcome: "wrong", points: -8 });
   assert.deepEqual(missedResult(request), { outcome: "missed", points: -10 });
+});
+
+test("담당자 전달 성공 피드백은 Figma 노트의 문구를 사용한다", () => {
+  assert.equal(successFeedback("delegate", 17), "정확한 전달! +10");
+  assert.equal(successFeedback("file", 14), "정확한 처리! +14");
 });
 
 test("정확도와 긴급 요청 누락을 함께 반영해 등급을 정한다", () => {

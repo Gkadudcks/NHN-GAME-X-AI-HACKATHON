@@ -5,9 +5,9 @@
     { key: "reply", label: "답장 보내기", shortLabel: "답장", keyHint: "1" },
     { key: "file", label: "파일 전달", shortLabel: "파일", keyHint: "2" },
     { key: "calendar", label: "일정 등록", shortLabel: "일정", keyHint: "3" },
-    { key: "delegate", label: "담당자에게 넘기기", shortLabel: "전달", keyHint: "4" },
+    { key: "delegate", label: "담당자에게 넘기기", shortLabel: "담당자 전달", keyHint: "4" },
     { key: "later", label: "나중에 확인", shortLabel: "나중", keyHint: "5" },
-    { key: "spam", label: "스팸 차단", shortLabel: "차단", keyHint: "6" },
+    { key: "spam", label: "스팸 차단", shortLabel: "스팸 차단", keyHint: "6" },
   ]);
 
   const REQUESTS = Object.freeze([
@@ -105,6 +105,10 @@
     return { outcome: "missed", points: request.critical ? -10 : -4 };
   }
 
+  function successFeedback(actionKey, points) {
+    return actionKey === "delegate" ? "정확한 전달! +10" : `정확한 처리! +${points}`;
+  }
+
   function gradeForPerformance(results) {
     const correct = results.filter((result) => result.outcome === "correct").length;
     const missedCritical = results.filter((result) => result.critical && result.outcome !== "correct").length;
@@ -127,7 +131,7 @@
     };
   }
 
-  const core = Object.freeze({ ACTIONS, REQUESTS, SUBTASK_REQUESTS, createSeededRandom, buildSchedule, evaluateAction, missedResult, gradeForPerformance, finalizeResults });
+  const core = Object.freeze({ ACTIONS, REQUESTS, SUBTASK_REQUESTS, createSeededRandom, buildSchedule, evaluateAction, missedResult, successFeedback, gradeForPerformance, finalizeResults });
   if (typeof module !== "undefined" && module.exports) module.exports = core;
   if (!global.document) return;
 
@@ -155,40 +159,79 @@
     root.innerHTML = `
       <div class="wa-shell" role="dialog" aria-modal="true" aria-labelledby="wa-title">
         <header class="wa-header">
-          <div><small>DAY 2 · MINI GAME</small><h2 id="wa-title">업무 알림 쳐내기</h2></div>
-          <div class="wa-stats"><span>점수 <b id="wa-score">0</b></span><span>남은 시간 <b id="wa-time">45</b></span></div>
+          <div class="wa-heading"><small>DAY 2 · MINI GAME</small><h2 id="wa-title">업무 알림 쳐내기</h2></div>
+          <div class="wa-stats">
+            <span><small>SCORE</small><b id="wa-score">0</b></span>
+            <time id="wa-time" datetime="PT45S">00:45</time>
+          </div>
         </header>
         <div id="wa-intro" class="wa-screen wa-intro">
-          <div class="wa-placeholder" role="img" aria-label="업무 알림이 쏟아지는 사내 메신저 화면 플레이스홀더"><b>업무 테이블</b><span>여러 위치에서 요청 카드가 나타납니다</span></div>
-          <p>카드를 고른 뒤 내용에 맞는 행동을 선택하세요. 모르는 일은 담당자에게 넘기는 것도 업무입니다.</p>
-          <button id="wa-start" class="wa-primary" type="button">업무 시작</button>
+          <div class="wa-intro-card">
+            <div class="wa-intro-copy">
+              <small>DAY 2 · MINI GAME</small>
+              <h2>업무 알림 쳐내기</h2>
+              <p>쌓여드는 요청을 읽고, 알맞은 업무 처리 방법을 선택하세요.</p>
+              <strong>모르는 일은 담당자에게 넘기는 것도 업무입니다.</strong>
+              <ul>
+                <li>마우스 클릭 또는 Q / W / E로 카드 선택</li>
+                <li>업무 처리 1~6</li>
+                <li>제한 시간 45초</li>
+              </ul>
+              <div class="wa-intro-start">
+                <button id="wa-start" class="wa-primary" type="button">업무 시작</button>
+                <kbd>ENTER</kbd>
+              </div>
+            </div>
+            <div class="wa-intro-visual" aria-hidden="true">
+              <article><b>긴급 회의 일정</b><span>10:45 임원 회의</span><em>URGENT</em></article>
+            </div>
+          </div>
         </div>
         <div id="wa-play" class="wa-screen wa-play" hidden>
           <div class="wa-board-wrap">
             <div id="wa-board" class="wa-board" aria-label="새 업무 요청" aria-live="polite"></div>
-            <aside class="wa-messenger" aria-label="메신저 대화방"><b>메신저</b><span>서하린</span><span>박태식 부장</span><span>강민재</span><span>기획팀 공용방</span><span>프로젝트 A 공용방</span></aside>
+            <aside class="wa-messenger" aria-label="메신저 대화방">
+              <b>사내 메신저</b>
+              <span class="urgent"><i></i><span><strong>서하린</strong><small>긴급 요청</small></span><em>1</em></span>
+              <span><i></i><span><strong>박태식 부장</strong><small>회의 관련</small></span></span>
+              <span><i></i><span><strong>강민재</strong><small>파일 확인</small></span></span>
+              <p><strong>TIP</strong>모르는 업무는<br>담당자에게 넘겨도 됩니다.</p>
+            </aside>
           </div>
           <p id="wa-feedback" class="wa-feedback" role="status">요청 카드를 선택하세요.</p>
+          <output id="wa-floating-feedback" class="wa-floating-feedback" aria-hidden="true"></output>
+          <output id="wa-combo" class="wa-combo" hidden></output>
           <div id="wa-actions" class="wa-actions" aria-label="빠른 행동"></div>
         </div>
         <div id="wa-result" class="wa-screen wa-result" hidden>
-          <span id="wa-result-icon" class="wa-result-icon">✓</span>
-          <small id="wa-result-kicker">WORK COMPLETE</small>
-          <h3 id="wa-result-title">업무 요청을 처리했습니다</h3>
-          <p id="wa-result-summary"></p>
-          <div class="wa-result-grid"><span>최종 점수 <b id="wa-result-score">0</b></span><span>업무력 <b id="wa-result-work">+0</b></span></div>
-          <div id="wa-result-list" class="wa-result-list"></div>
-          <button id="wa-continue" class="wa-primary" type="button">계속하기</button>
+          <div class="wa-result-card">
+            <header>
+              <small id="wa-result-kicker">RESULT</small>
+              <h3 id="wa-result-title">업무 정리가 끝났습니다</h3>
+              <p id="wa-result-summary"></p>
+            </header>
+            <div class="wa-result-body">
+              <section class="wa-result-score"><span>FINAL SCORE</span><b id="wa-result-score">0</b></section>
+              <section class="wa-result-stats">
+                <p><span>업무력</span><b id="wa-result-work">+0</b></p>
+                <p><span>신뢰도</span><b id="wa-result-trust">+0</b></p>
+              </section>
+              <section class="wa-result-history"><h4>처리 내역</h4><div id="wa-result-list" class="wa-result-list"></div></section>
+            </div>
+            <button id="wa-continue" class="wa-primary" type="button">계속하기</button>
+          </div>
         </div>
       </div>`;
     document.body.appendChild(root);
     refs = {
+      shell: root.querySelector(".wa-shell"),
       intro: root.querySelector("#wa-intro"), play: root.querySelector("#wa-play"), result: root.querySelector("#wa-result"),
       start: root.querySelector("#wa-start"), board: root.querySelector("#wa-board"), actions: root.querySelector("#wa-actions"),
       score: root.querySelector("#wa-score"), time: root.querySelector("#wa-time"), feedback: root.querySelector("#wa-feedback"),
-      resultIcon: root.querySelector("#wa-result-icon"), resultKicker: root.querySelector("#wa-result-kicker"),
-      resultTitle: root.querySelector("#wa-result-title"), resultSummary: root.querySelector("#wa-result-summary"),
-      resultScore: root.querySelector("#wa-result-score"), resultWork: root.querySelector("#wa-result-work"),
+      floatingFeedback: root.querySelector("#wa-floating-feedback"), combo: root.querySelector("#wa-combo"),
+      resultKicker: root.querySelector("#wa-result-kicker"), resultTitle: root.querySelector("#wa-result-title"),
+      resultSummary: root.querySelector("#wa-result-summary"), resultScore: root.querySelector("#wa-result-score"),
+      resultWork: root.querySelector("#wa-result-work"), resultTrust: root.querySelector("#wa-result-trust"),
       resultList: root.querySelector("#wa-result-list"), continueButton: root.querySelector("#wa-continue"),
     };
     refs.start.addEventListener("click", beginGame);
@@ -201,7 +244,14 @@
   }
 
   function showScreen(target) {
-    [refs.intro, refs.play, refs.result].forEach((screen) => { screen.hidden = screen !== target; });
+    if (target === refs.result) {
+      refs.intro.hidden = true;
+      refs.play.hidden = false;
+      refs.result.hidden = false;
+    } else {
+      [refs.intro, refs.play, refs.result].forEach((screen) => { screen.hidden = screen !== target; });
+    }
+    refs.shell.dataset.screen = target.id.replace("wa-", "");
   }
 
   function requestResult(request, evaluation, selectedAction = null) {
@@ -220,21 +270,24 @@
   }
 
   function renderActions() {
-    refs.actions.innerHTML = ACTIONS.map((action) => `<button type="button" data-action="${action.key}" ${state?.selectedId ? "" : "disabled"}><kbd>${action.keyHint}</kbd><span>${action.label}</span></button>`).join("");
+    refs.actions.innerHTML = ACTIONS.map((action) => `<button type="button" data-action="${action.key}" ${state?.selectedId ? "" : "disabled"}><kbd>${action.keyHint}</kbd><span>${action.shortLabel}</span></button>`).join("");
   }
 
   function cardMarkup(request, slotIndex) {
     const cardKey = ["Q", "W", "E"][slotIndex] || "";
-    return `<button type="button" class="wa-card${request.critical ? " critical" : ""}${state.selectedId === request.id ? " selected" : ""}" data-request-id="${request.id}" style="--x:${request.x}%;--y:${request.y}%;--life:${request.lifeMs}ms" aria-label="${request.sender}의 요청: ${request.request}">
+    const lane = request.critical ? "urgent" : ["later", "spam"].includes(request.action) ? "leisure" : "normal";
+    const laneY = lane === "urgent" ? 8 + slotIndex * 2 : lane === "normal" ? 38 + slotIndex * 2 : 68 + slotIndex * 2;
+    const tilt = [-2.5, 3.2, -3][slotIndex] || 0;
+    return `<button type="button" class="wa-card${request.critical ? " critical" : ""}${state.selectedId === request.id ? " selected" : ""}" data-request-id="${request.id}" data-lane="${lane}" style="--x:${request.x}%;--y:${laneY}%;--tilt:${tilt}deg;--life:${request.lifeMs}ms" aria-label="${request.sender}의 요청: ${request.request}" aria-pressed="${state.selectedId === request.id}">
       <span class="wa-card-head"><b>${request.sender}</b><small>${request.critical ? `긴급 · ${cardKey}` : `요청 · ${cardKey}`}</small></span>
       <span class="wa-card-body">${request.request}</span>
-      <span class="wa-card-hint">선택 후 빠른 행동을 결정하세요</span><i aria-hidden="true"></i>
+      <i aria-hidden="true"></i>
     </button>`;
   }
 
   function renderBoard() {
     const active = [...state.active.values()];
-    refs.board.innerHTML = active.map(cardMarkup).join("");
+    refs.board.innerHTML = `<div class="wa-board-lanes" aria-hidden="true"><span>긴급 업무</span><span>일반 업무</span><span>여유 업무</span></div>${active.map(cardMarkup).join("")}`;
     refs.board.querySelectorAll(".wa-card").forEach((card) => {
       card.addEventListener("click", () => selectRequest(card.dataset.requestId));
     });
@@ -250,6 +303,20 @@
     refs.actions.querySelector("button")?.focus();
   }
 
+  function showSuccessFeedback(actionKey, points) {
+    refs.floatingFeedback.textContent = successFeedback(actionKey, points);
+    refs.floatingFeedback.classList.remove("show");
+    void refs.floatingFeedback.offsetWidth;
+    refs.floatingFeedback.classList.add("show");
+    global.clearTimeout(state.feedbackTimer);
+    state.feedbackTimer = global.setTimeout(() => refs.floatingFeedback.classList.remove("show"), 1000);
+  }
+
+  function renderCombo() {
+    refs.combo.hidden = state.combo < 2;
+    refs.combo.textContent = state.combo < 2 ? "" : `COMBO ×${state.combo}`;
+  }
+
   function handleAction(actionKey) {
     const request = state?.active.get(state.selectedId);
     if (!request) return;
@@ -261,6 +328,9 @@
     state.score = Math.max(0, state.score + evaluation.points);
     refs.score.textContent = String(state.score);
     const action = ACTIONS.find((item) => item.key === actionKey);
+    state.combo = evaluation.outcome === "correct" ? state.combo + 1 : 0;
+    renderCombo();
+    if (evaluation.outcome === "correct") showSuccessFeedback(actionKey, evaluation.points);
     refs.feedback.textContent = evaluation.outcome === "correct" ? `처리 완료 · ${request.response}` : `${action.label}은 맞지 않았습니다. 요청 내용을 다시 읽어 보세요.`;
     refs.feedback.dataset.tone = evaluation.outcome;
     renderBoard();
@@ -293,8 +363,10 @@
       state.score = Math.max(0, state.score + evaluation.points);
       refs.feedback.textContent = `${request.sender}의 요청을 놓쳤습니다.`;
       refs.feedback.dataset.tone = "missed";
+      state.combo = 0;
       changed = true;
     });
+    if (changed) renderCombo();
     return changed;
   }
 
@@ -328,8 +400,10 @@
     const spawned = spawnRequests();
     const changed = expired || spawned;
     const remaining = Math.max(0, state.durationMs - state.elapsed);
-    refs.time.textContent = String(Math.ceil(remaining / 1000));
-    refs.time.parentElement.classList.toggle("danger", remaining <= 10000);
+    const remainingSeconds = Math.ceil(remaining / 1000);
+    refs.time.textContent = `00:${String(remainingSeconds).padStart(2, "0")}`;
+    refs.time.dateTime = `PT${remainingSeconds}S`;
+    refs.time.classList.toggle("danger", remaining <= 10000);
     refs.score.textContent = String(state.score);
     if (changed) renderBoard();
     updateCardTimers();
@@ -340,7 +414,7 @@
   function beginGame() {
     state.started = true;
     showScreen(refs.play);
-    renderActions();
+    renderBoard();
     state.lastFrame = performance.now();
     state.frame = requestAnimationFrame(tick);
     refs.board.focus?.();
@@ -365,19 +439,21 @@
       good: { icon: "✓", kicker: "WORK COMPLETE", title: "급한 업무는 무사히 처리했습니다", summary: "몇 가지 잡담에는 너무 성실했지만 중요한 요청은 대부분 남았습니다." },
       messy: { icon: "!", kicker: "INBOX OVERFLOW", title: "메신저가 잠깐 전쟁터가 됐습니다", summary: "보안 교육을 스팸으로 보내지만 않으면 됩니다. 놓친 핵심 정보는 나중에 다시 확인할 수 있습니다." },
     }[result.grade];
-    refs.resultIcon.textContent = copy.icon;
-    refs.resultKicker.textContent = copy.kicker;
-    refs.resultTitle.textContent = copy.title;
+    refs.resultKicker.textContent = "RESULT";
+    refs.resultTitle.textContent = "업무 정리가 끝났습니다";
     refs.resultSummary.textContent = copy.summary;
     refs.resultScore.textContent = String(result.score);
     refs.resultWork.textContent = `${result.workDelta > 0 ? "+" : ""}${result.workDelta}`;
     refs.resultWork.className = result.workDelta > 0 ? "up" : "down";
-    refs.resultList.innerHTML = result.results.map((item) => `<article data-outcome="${item.outcome}"><b>${item.sender}</b><span>${item.outcome === "correct" ? item.response : item.outcome === "missed" ? "요청을 놓쳤습니다." : "다른 행동을 선택했습니다."}</span></article>`).join("");
+    refs.resultTrust.textContent = result.grade === "perfect" ? "+1" : "+0";
+    refs.resultTrust.className = result.grade === "perfect" ? "up" : "";
+    refs.resultList.innerHTML = result.results.map((item) => `<article data-outcome="${item.outcome}"><b>${item.request || item.sender}</b><span>${item.outcome === "correct" ? "완료" : item.outcome === "missed" ? "누락" : "오류"}</span></article>`).join("");
   }
 
   function complete() {
     if (!state || state.completionSent) return;
     state.completionSent = true;
+    global.clearTimeout(state.feedbackTimer);
     root.hidden = true;
     root.setAttribute("aria-hidden", "true");
     state.onComplete?.(state.finalResult);
@@ -387,19 +463,24 @@
     ensureStylesheet();
     ensureRoot();
     if (state?.frame) cancelAnimationFrame(state.frame);
+    if (state?.feedbackTimer) global.clearTimeout(state.feedbackTimer);
     const duration = options.duration || 45;
     const random = options.random || (options.seed === undefined ? Math.random : createSeededRandom(options.seed));
     state = {
       durationMs: duration * 1000,
       schedule: buildSchedule({ random, requests: options.requests, count: options.count || 16, duration, lifeMs: options.lifeMs }),
-      nextIndex: 0, active: new Map(), selectedId: null, results: [], score: 0, elapsed: 0,
+      nextIndex: 0, active: new Map(), selectedId: null, results: [], score: 0, combo: 0, elapsed: 0,
       lastFrame: 0, frame: null, started: false, paused: false, finished: false, completionSent: false,
-      finalResult: null, onComplete: options.onComplete,
+      finalResult: null, feedbackTimer: null, onComplete: options.onComplete,
     };
     refs.score.textContent = "0";
-    refs.time.textContent = String(duration);
+    refs.time.textContent = `00:${String(duration).padStart(2, "0")}`;
+    refs.time.dateTime = `PT${duration}S`;
+    refs.time.classList.remove("danger");
     refs.feedback.textContent = "요청 카드를 선택하세요.";
     refs.feedback.dataset.tone = "normal";
+    refs.floatingFeedback.classList.remove("show");
+    renderCombo();
     root.hidden = false;
     root.setAttribute("aria-hidden", "false");
     showScreen(refs.intro);

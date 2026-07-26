@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DAY 2 미니게임 · 개발 전용</title>
+  <link rel="stylesheet" href="../css/fonts.css?v=1">
+  <link rel="stylesheet" data-work-alert-style href="../css/work-alert-minigame.css?v=3">
+  <link rel="stylesheet" href="../css/day2-minigame-dev.css?v=1">
+</head>
+<body class="minigame-dev">
+  <header class="minigame-dev-toolbar">
+    <div>
+      <strong>DAY 2 MINIGAME LAB</strong>
+      <span id="dev-run-status" role="status">공용 미니게임 모듈 실행 중</span>
+    </div>
+    <form id="dev-controls">
+      <label>
+        선행 조사
+        <select id="dev-subtask">
+          <option value="competitor">타회사 비교</option>
+          <option value="reviews">리뷰 태깅</option>
+          <option value="journey">첫 10분 흐름</option>
+        </select>
+      </label>
+      <label>
+        제한 시간
+        <input id="dev-duration" type="number" min="12" max="120" value="45">
+      </label>
+      <label>
+        시드
+        <input id="dev-seed" type="number" value="20260720">
+      </label>
+      <button type="submit">새로 실행</button>
+      <a href="https://www.figma.com/proto/zRcfLPAyuOTtQk8qAd7Jaa/NAN-GAME-TITLE-%E2%80%94-DAY-2-Minigame-Concepts?node-id=3-2" target="_blank" rel="noreferrer">Figma 원본</a>
+    </form>
+  </header>
+
+  <main class="minigame-dev-result" id="day2-minigame-dev">
+    <section>
+      <small>LAST RUN</small>
+      <h1>미니게임 완료 결과</h1>
+      <p>상단의 ‘새로 실행’을 누르면 스토리 진행 없이 같은 공용 모듈을 다시 테스트할 수 있습니다.</p>
+      <pre id="dev-result-json">아직 완료된 실행이 없습니다.</pre>
+    </section>
+  </main>
+
+  <script src="../js/work-alert-minigame.js?v=3"></script>
+  <script src="../js/day2-minigame-dev.js?v=1"></script>
+</body>
+</html>
