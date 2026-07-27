@@ -487,15 +487,11 @@ function notifyMessage(id) {
 
 function resolveDynamic(name) {
   const grade = state.minigameResult?.grade || "good";
+  const affectionBeforeChat = state.affection - (state.minigameResult?.affectionDelta || 0);
+  const secretChatReply = SecretChatMinigameCore.reply(grade, affectionBeforeChat);
   const values = {
-    secretChatResult: grade === "perfect"
-      ? "저도 반가웠어요. 점심도 챙길게요. 퇴근할 때는 로비에서 잠깐 기다려 줄래요?"
-      : grade === "good"
-        ? "메시지 봤어요. 어제는 저도 반가웠어요. 퇴근할 때 시간 맞으면 같이 가요."
-        : "부장님 바로 앞이라 길게 답은 못 하겠어요. 그래도 메시지는 잘 봤어요.",
-    secretChatMessage: grade === "caught"
-      ? "부장님 보고 있죠? 답장은 나중에 해도 돼요. 아까 말은 고마웠어요."
-      : "퇴근할 때 로비에서 봐요. 어제 편의점 이야기도 그때 더 해요.",
+    secretChatResult: secretChatReply.dialogue,
+    secretChatMessage: secretChatReply.message,
     decisionResponse: {
       accuse: "의심할 수는 있어요. 하지만 이름 하나만으로 결론부터 내리지는 말아 주세요.",
       verify: "좋아요. 믿는다는 말보다 그게 더 안심되네요. 기록으로 확인해요.",

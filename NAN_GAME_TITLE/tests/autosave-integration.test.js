@@ -82,5 +82,5 @@ test("자동저장 관련 정적 자산 캐시 버전이 모든 진입 페이지
   }
   assert.match(game, /game\.js\?v=27/);
   assert.match(day2, /day2\.js\?v=17/);
-  assert.match(day3, /day3\.js\?v=11/);
+  assert.match(day3, /day3\.js\?v=12/);
 });

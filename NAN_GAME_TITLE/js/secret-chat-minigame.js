@@ -17,7 +17,34 @@
     return { grade: "caught", workDelta: -1, affectionDelta: 0 };
   }
 
-  return Object.freeze({ QUESTIONS, grade });
+  function reply(gradeResult = "good", affection = 0) {
+    const level = affection >= 4 ? "high" : affection >= 2 ? "mid" : "low";
+    const dialogue = {
+      perfect: {
+        low: "메시지 봤어요. 마음은 고맙지만 오늘은 각자 퇴근하는 게 좋겠어요.",
+        mid: "저도 어제는 반가웠어요. 퇴근 시간이 맞으면 로비에서 봐요.",
+        high: "저도 반가웠어요. 점심도 챙길게요. 퇴근할 때는 로비에서 잠깐 기다려 줄래요?",
+      },
+      good: {
+        low: "메시지 봤어요. 퇴근 이야기는 나중에 다시 해요.",
+        mid: "어제는 저도 반가웠어요. 퇴근 시간이 맞으면 같이 가요.",
+        high: "메시지 보자마자 웃었어요. 오늘은 꼭 같이 퇴근해요.",
+      },
+      caught: {
+        low: "부장님 바로 앞이라 길게 답은 못 하겠어요. 업무에 집중해요.",
+        mid: "부장님 바로 앞이라 길게 답은 못 하겠어요. 그래도 메시지는 잘 봤어요.",
+        high: "지금 부장님 보고 있죠? 답장은 나중에 해도 돼요. 퇴근할 때 제가 기다릴게요.",
+      },
+    }[gradeResult] || {};
+    const message = {
+      low: "메시지는 확인했어요. 퇴근 이야기는 나중에 다시 해요.",
+      mid: "퇴근 시간이 맞으면 로비에서 봐요. 어제 편의점 이야기도 그때 해요.",
+      high: "오늘은 꼭 같이 퇴근해요. 로비에서 기다리고 있을게요.",
+    };
+    return Object.freeze({ dialogue: dialogue[level] || dialogue.mid || "", message: message[level] });
+  }
+
+  return Object.freeze({ QUESTIONS, grade, reply });
 });
 
 (function initBrowser(global) {
