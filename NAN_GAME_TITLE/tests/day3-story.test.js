@@ -69,12 +69,16 @@ test("하린에 대한 판단은 직접 접근 기록을 보기 전에 내려진
   assert.ok(decision >= 0 && decision < minigame && minigame < accessLog);
 });
 
-test("몰래 연락 미니게임은 상황과 확인 목표를 설명한 뒤 별도 장면에서 시작한다", () => {
+test("조사 확인을 업무 대화로 끝낸 뒤 사적인 연락 미니게임을 시작한다", () => {
+  const workContact = story.scenes.findIndex((scene) => scene.id === "day3WorkContact");
+  const workCheck = story.scenes.findIndex((scene) => scene.id === "day3HarinWorkCheck");
   const pressure = story.scenes.findIndex((scene) => scene.id === "day3BossPressure");
   const lead = story.scenes.findIndex((scene) => scene.id === "day3PrivateContactLead");
   const objective = story.scenes.findIndex((scene) => scene.id === "day3ContactObjective");
   const start = story.scenes.findIndex((scene) => scene.id === "day3SecretChatStart");
-  assert.ok(pressure < lead && lead < objective && objective < start);
+  assert.ok(workContact < workCheck && workCheck < pressure && pressure < lead && lead < objective && objective < start);
+  assert.match(story.scenes[workCheck].text, /문서를 직접 열지 않았어요|자동화|복원 지점/);
+  assert.match(story.scenes[objective].text, /업무 확인은 끝났다/);
   assert.equal(story.scenes[lead].startSecretChat, undefined);
   assert.equal(story.scenes[start].startSecretChat, true);
 });
@@ -95,11 +99,13 @@ test("구내식당 뒤에는 사무실 복귀와 정리 대사를 거쳐 조사�
   assert.match(story.scenes[officeReturn].text, /추측은 잠시 내려놓고/);
 });
 
-test("몰래 연락에 실패하면 하린의 확인 답변이 점심 뒤로 미뤄진다", () => {
+test("조사 답변은 미니게임 결과와 무관하고 개인 메시지만 결과에 따라 바뀐다", () => {
   const delayed = story.scenes.find((scene) => scene.id === "day3HarinDelayedReply");
-  const firstMessage = story.MESSAGES.find((message) => message.id === "d3-harin-check");
-  assert.equal(delayed.when.equals, "caught");
-  assert.equal(firstMessage.dynamic, "secretChatMessage");
+  const workMessage = story.MESSAGES.find((message) => message.id === "d3-harin-check");
+  const personalMessage = story.MESSAGES.find((message) => message.id === "d3-harin-personal");
+  assert.equal(delayed, undefined);
+  assert.match(workMessage.text, /자동화|복원 지점/);
+  assert.equal(personalMessage.dynamic, "secretChatMessage");
 });
 
 test("DAY 3 BGM은 이야기 구간이 바뀔 때만 전환한다", () => {

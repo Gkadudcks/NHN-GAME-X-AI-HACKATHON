@@ -6,15 +6,15 @@
   "use strict";
 
   const QUESTIONS = Object.freeze([
-    "오늘 아침 PT 문서를 열었는지 확인 부탁드립니다.",
-    "과거 자동화가 소유자 이름만 남길 수 있습니까?",
-    "DAY 2 복원 지점은 그대로 보존할까요?",
+    "선배, 아침부터 정신없었죠. 점심은 꼭 챙겨요.",
+    "어제 편의점에서 마주친 거, 조금 반가웠어요.",
+    "오늘 퇴근할 때 잠깐 같이 걸을래요?",
   ]);
 
   function grade({ sent = 0, warnings = 0, elapsed = 0 } = {}) {
-    if (sent >= 3 && warnings === 0 && elapsed <= 42) return { grade: "perfect", workDelta: 2, trustDelta: 1 };
-    if (sent >= 3) return { grade: "good", workDelta: 1, trustDelta: 0 };
-    return { grade: "caught", workDelta: -1, trustDelta: 0 };
+    if (sent >= 3 && warnings === 0 && elapsed <= 42) return { grade: "perfect", workDelta: 0, affectionDelta: 2 };
+    if (sent >= 3) return { grade: "good", workDelta: 0, affectionDelta: 1 };
+    return { grade: "caught", workDelta: -1, affectionDelta: 0 };
   }
 
   return Object.freeze({ QUESTIONS, grade });
@@ -36,11 +36,11 @@
     root.setAttribute("aria-hidden", "true");
     root.innerHTML = `
       <div class="sc-shell" role="dialog" aria-modal="true" aria-labelledby="sc-title">
-        <header><div><small>DAY 3 · MINI GAME</small><h2 id="sc-title">업무 중 몰래 연락하기</h2></div><span>남은 시간 <b id="sc-time">50</b></span></header>
+        <header><div><small>DAY 3 · MINI GAME</small><h2 id="sc-title">업무 중 사적인 연락하기</h2></div><span>남은 시간 <b id="sc-time">50</b></span></header>
         <section id="sc-intro" class="sc-screen sc-intro">
-          <div class="sc-placeholder"><b>업무 자리 · 오전</b><span>박태식 부장의 시선을 피해 서하린에게 기록을 확인하세요.</span></div>
-          <p>버튼이나 Space를 누르는 동안 답장을 작성합니다. 부장이 고개를 들면 즉시 손을 떼세요.</p>
-          <button id="sc-start" class="sc-primary" type="button">연락 시작</button>
+          <div class="sc-placeholder"><b>업무 자리 · 오전</b><span>박태식 부장의 시선을 피해 서하린과 사적인 메시지를 주고받으세요.</span></div>
+          <p>버튼이나 Space를 누르는 동안 메시지를 작성합니다. 부장이 고개를 들면 즉시 손을 떼세요.</p>
+          <button id="sc-start" class="sc-primary" type="button">대화 시작</button>
         </section>
         <section id="sc-play" class="sc-screen sc-play" hidden>
           <div class="sc-watch" id="sc-watch" data-phase="safe">
@@ -48,7 +48,7 @@
             <div class="sc-meter"><i id="sc-meter"></i></div>
           </div>
           <div class="sc-phone">
-            <small>서하린 사수에게</small><p id="sc-question"></p>
+            <small>서하린 선배에게</small><p id="sc-question"></p>
             <div class="sc-progress"><i id="sc-progress"></i></div>
             <button id="sc-hold" type="button">누르고 답장 작성</button>
           </div>
@@ -57,7 +57,7 @@
         </section>
         <section id="sc-result" class="sc-screen sc-result" hidden>
           <small id="sc-result-kicker">CONTACT COMPLETE</small><h3 id="sc-result-title"></h3><p id="sc-result-text"></p>
-          <div><span>업무력 <b id="sc-work"></b></span><span>신뢰도 <b id="sc-trust"></b></span></div>
+          <div><span>업무력 <b id="sc-work"></b></span><span>호감도 <b id="sc-trust"></b></span></div>
           <button id="sc-continue" class="sc-primary" type="button">스토리 계속하기</button>
         </section>
       </div>`;
@@ -103,7 +103,7 @@
   }
 
   function renderQuestion() {
-    refs.question.textContent = global.SecretChatMinigameCore.QUESTIONS[state.sent] || "필요한 질문을 모두 보냈습니다.";
+    refs.question.textContent = global.SecretChatMinigameCore.QUESTIONS[state.sent] || "하고 싶었던 말을 모두 보냈습니다.";
     refs.progress.style.width = `${state.progress}%`;
     refs.sent.textContent = state.sent;
     refs.warnings.textContent = state.warnings;
@@ -117,10 +117,10 @@
     state.result = result;
     const perfect = result.grade === "perfect";
     const caught = result.grade === "caught";
-    refs.resultTitle.textContent = perfect ? "기록을 조용히 확인했습니다" : caught ? "부장에게 연락을 들켰습니다" : "필요한 질문을 보냈습니다";
-    refs.resultText.textContent = caught ? "하린의 답변은 오후에 다시 확인할 수 있습니다. 핵심 조사는 계속됩니다." : "하린은 오늘 아침 문서를 열지 않았으며 접근 기록부터 확인하자고 답했습니다.";
+    refs.resultTitle.textContent = perfect ? "둘만의 대화를 자연스럽게 이어갔습니다" : caught ? "부장에게 사적인 연락을 들켰습니다" : "마음을 담은 메시지를 보냈습니다";
+    refs.resultText.textContent = caught ? "대화는 짧게 끊겼지만, 하린은 메시지를 확인했습니다." : "바쁜 오전 사이에도 하린과 조금 더 가까워졌습니다.";
     refs.work.textContent = `${result.workDelta >= 0 ? "+" : ""}${result.workDelta}`;
-    refs.trust.textContent = `${result.trustDelta >= 0 ? "+" : ""}${result.trustDelta}`;
+    refs.trust.textContent = `${result.affectionDelta >= 0 ? "+" : ""}${result.affectionDelta}`;
     screen(refs.result);
     refs.continueButton.focus();
   }

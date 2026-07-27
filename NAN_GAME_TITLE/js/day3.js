@@ -489,16 +489,13 @@ function resolveDynamic(name) {
   const grade = state.minigameResult?.grade || "good";
   const values = {
     secretChatResult: grade === "perfect"
-      ? "질문 세 개 다 확인했어요. 오늘 아침에는 그 문서를 열지 않았어요. 복원 지점은 그대로 두세요."
+      ? "저도 반가웠어요. 점심도 챙길게요. 퇴근할 때는 로비에서 잠깐 기다려 줄래요?"
       : grade === "good"
-        ? "메시지 확인했어요. 오늘 아침에는 문서를 열지 않았어요. 오후에 접근 기록을 같이 봐요."
-        : "부장님 바로 앞에서는 답하기 어려웠어요. 점심 뒤에 기록을 확인해서 다시 연락할게요.",
+        ? "메시지 봤어요. 어제는 저도 반가웠어요. 퇴근할 때 시간 맞으면 같이 가요."
+        : "부장님 바로 앞이라 길게 답은 못 하겠어요. 그래도 메시지는 잘 봤어요.",
     secretChatMessage: grade === "caught"
-      ? "지금은 기록을 확인하기 어려워요. 점심 뒤에 다시 연락할게요."
-      : "오늘 아침에는 그 문서를 열지 않았어요. 제 이름이 왜 남았는지 접근 기록부터 같이 확인해요.",
-    harinPlan: grade === "caught"
-      ? "그전까지 제 이름과 현재 변경본을 지우지 말고 그대로 보존해 주세요."
-      : "제 이름을 지우지 말고 그대로 두세요. 이름과 실행자가 같은지도 확인해야 해요.",
+      ? "부장님 보고 있죠? 답장은 나중에 해도 돼요. 아까 말은 고마웠어요."
+      : "퇴근할 때 로비에서 봐요. 어제 편의점 이야기도 그때 더 해요.",
     decisionResponse: {
       accuse: "의심할 수는 있어요. 하지만 이름 하나만으로 결론부터 내리지는 말아 주세요.",
       verify: "좋아요. 믿는다는 말보다 그게 더 안심되네요. 기록으로 확인해요.",
@@ -730,7 +727,7 @@ function finishSecretChat(result) {
   state.minigameResult = result;
   state.decisions.secretChatOutcome = result.grade;
   state.work += result.workDelta;
-  state.trust += result.trustDelta || 0;
+  state.affection += result.affectionDelta || 0;
   state.index = nextVisibleIndex(state.index + 1);
   syncStats();
   saveProgress();
@@ -740,11 +737,11 @@ function finishSecretChat(result) {
 
 function startSecretChat() {
   if (devSkipMinigames) {
-    console.info("[DEV] 몰래 연락 미니게임을 GOOD 결과로 스킵했습니다.");
+    console.info("[DEV] 사적인 연락 미니게임을 GOOD 결과로 스킵했습니다.");
     finishSecretChat({
       grade: "good",
-      workDelta: 1,
-      trustDelta: 0,
+      workDelta: 0,
+      affectionDelta: 1,
       sent: 3,
       warnings: 1,
       skipped: true,
@@ -776,7 +773,7 @@ function showDaySummary() {
   const tasks = [
     "DAY 3 최초 변경본 보존",
     "정상 원본과 변경본 비교",
-    `서하린 비공개 확인 · ${state.minigameResult?.grade?.toUpperCase() || "완료"}`,
+    `서하린 사적인 연락 · ${state.minigameResult?.grade?.toUpperCase() || "완료"}`,
     "접근·자동화·폴더 연결 기록 조사",
     "DAY 2 복원 지점 유지",
   ];
