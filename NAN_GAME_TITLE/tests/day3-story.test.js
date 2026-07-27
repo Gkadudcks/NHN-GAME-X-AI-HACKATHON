@@ -86,6 +86,15 @@ test("플레이어가 세 조사 기록 중 첫 순서를 선택한다", () => {
   assert.equal(story.isVisible(story.scenes.find((entry) => entry.id === "day3AccessLog"), { investigationFirst: "access" }), false);
 });
 
+test("구내식당 뒤에는 사무실 복귀와 정리 대사를 거쳐 조사를 시작한다", () => {
+  const lunchEnd = story.scenes.findIndex((scene) => scene.id === "day3HarinPastBoundary");
+  const officeReturn = story.scenes.findIndex((scene) => scene.id === "day3OfficeReturn");
+  const investigation = story.scenes.findIndex((scene) => scene.id === "day3InvestigationStart");
+  assert.ok(lunchEnd < officeReturn && officeReturn < investigation);
+  assert.equal(story.scenes[officeReturn].location, "게임사업실 · 오후");
+  assert.match(story.scenes[officeReturn].text, /추측은 잠시 내려놓고/);
+});
+
 test("몰래 연락에 실패하면 하린의 확인 답변이 점심 뒤로 미뤄진다", () => {
   const delayed = story.scenes.find((scene) => scene.id === "day3HarinDelayedReply");
   const firstMessage = story.MESSAGES.find((message) => message.id === "d3-harin-check");
@@ -103,7 +112,7 @@ test("DAY 3 BGM은 이야기 구간이 바뀔 때만 전환한다", () => {
     ["day3OpenDocument", "mystery"],
     ["day3SecretChatStart", "minigame"],
     ["day3MinigameResult", "daily"],
-    ["day3InvestigationStart", "mystery"],
+    ["day3OfficeReturn", "mystery"],
     ["day3Summary", "daily"],
     ["day3EveningMessage", "harin"],
   ]);
