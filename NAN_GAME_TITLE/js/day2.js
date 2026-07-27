@@ -674,15 +674,18 @@ function choiceEffectTags(choice) {
   const labels = { work: "◆ 업무력", affection: "♡ 호감도", trust: "◇ 신뢰도" };
   const tags = Object.entries(choice.delta || {})
     .filter(([, value]) => value !== 0)
-    .map(([key]) => labels[key])
+    .map(([key, value]) => labels[key] ? ({
+      text: `${labels[key]} ${value > 0 ? "상승" : "하락"}`,
+      tone: value > 0 ? "gain" : "loss",
+    }) : null)
     .filter(Boolean);
-  return tags.length ? tags : ["스토리 분기"];
+  return tags.length ? tags : [{ text: "스토리 분기", tone: "branch" }];
 }
 
 function addStageChoice(choice, key, scene) {
   const button = document.createElement("button");
   button.type = "button";
-  button.innerHTML = `<span class="stage-choice-label">${escapeHtml(choice.text)}</span><small class="stage-choice-effects">${choiceEffectTags(choice).map((tag) => `<i>${escapeHtml(tag)}</i>`).join("")}</small>`;
+  button.innerHTML = `<span class="stage-choice-label">${escapeHtml(choice.text)}</span><small class="stage-choice-effects">${choiceEffectTags(choice).map((tag) => `<i class="${tag.tone}">${escapeHtml(tag.text)}</i>`).join("")}</small>`;
   button.addEventListener("click", () => choose(choice, key, scene));
   refs.stageChoices.appendChild(button);
 }

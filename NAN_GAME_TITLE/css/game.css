@@ -194,5 +194,5 @@
 .stage-choice-prompt small,.stage-choice-prompt strong{display:block}.stage-choice-prompt small{margin-bottom:8px;color:#ffaaa0;font-size:10px;font-weight:900;letter-spacing:.18em}
 .stage-choice-prompt strong{font-size:calc(18px * var(--dialogue-text-scale,1));line-height:1.55;word-break:keep-all}
 .stage-choice-label{display:block}.stage-choice-effects{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:8px}
-.stage-choice-effects i{padding:4px 8px;color:#a6535d;border:1px solid #e6c2c3;border-radius:999px;background:#fff4f0;font-size:10px;font-style:normal;font-weight:850;letter-spacing:.03em}
+.stage-choice-effects i{padding:4px 8px;border:1px solid;border-radius:999px;font-size:10px;font-style:normal;font-weight:850;letter-spacing:.03em}.stage-choice-effects i.gain{color:#28755c;border-color:#a9d8c5;background:#effaf5}.stage-choice-effects i.loss{color:#b54450;border-color:#efb8bd;background:#fff1f2}.stage-choice-effects i.branch{color:#76616a;border-color:#d9c9ce;background:#f8f3f4}
 .stage-choices button:hover .stage-choice-effects i,.stage-choices button:focus-visible .stage-choice-effects i{color:#fff;border-color:#ffffff73;background:#ffffff1f}

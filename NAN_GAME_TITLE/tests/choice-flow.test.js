@@ -33,7 +33,10 @@ test("모든 선택지는 영향 능력치 또는 스토리 분기 태그를 표
     assert.match(source, /업무력/);
     assert.match(source, /호감도/);
     assert.match(source, /신뢰도/);
+    assert.match(source, /value\s*>\s*0\s*\?\s*["']상승["']\s*:\s*["']하락["']/);
   }
+  assert.match(css, /\.stage-choice-effects i\.gain/);
+  assert.match(css, /\.stage-choice-effects i\.loss/);
 });
 
 test("선택을 완료한 뒤 결과 대화창을 다시 표시한다", () => {
