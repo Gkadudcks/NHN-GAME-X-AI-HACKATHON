@@ -54,7 +54,7 @@
     { id: "day3HarinPlan", time: "10:16", speaker: "서하린", dynamic: "decisionResponse", char: "harin" },
     { id: "day3BossPressure", time: "10:18", speaker: "박태식", text: "원인 확인은 어디까지 됐어? 확인 안 된 이름은 채널에 올리지 말고, 점심 전에는 조사 방향만 보고해.", char: "boss", bg: "office" },
     { id: "day3PrivateContactLead", time: "10:20", speaker: "서하린", text: "아침부터 정신없었죠. 그래도 점심은 꼭 챙겨요.", char: "harin", bg: "office" },
-    { id: "day3ContactObjective", time: "10:21", speaker: "한도윤", text: "업무 확인은 끝났다. 그런데 어제 편의점에서 마주친 일과, 오늘 퇴근길 이야기는 업무 채널에 남길 말이 아니었다.", bg: "office" },
+    { id: "day3ContactObjective", time: "10:21", speaker: "한도윤", text: "업무 확인은 끝났다. 문득 어제 편의점에서 마주쳤던 순간이 떠올랐다. 오늘은 퇴근길을 같이 걸어도 될까.", bg: "office" },
     { id: "day3SecretChatStart", time: "10:22", speaker: "시스템", text: "박태식 부장의 시선을 피해 서하린에게 사적인 답장을 전송합니다.", bg: "office", bgm: "minigame", startSecretChat: true },
     { id: "day3MinigameResult", time: "10:44", speaker: "서하린", dynamic: "secretChatResult", char: "harin", bgm: "daily", notification: "d3-harin-personal" },
     { id: "day3Lunch", time: "12:20", speaker: "강민재", text: "아침부터 분위기가 왜 그래? 설마 자료 또 꼬였어?", bg: "cafeteria_day", char: "minjae", location: "구내식당 · 점심" },
