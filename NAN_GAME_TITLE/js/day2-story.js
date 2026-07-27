@@ -259,6 +259,7 @@
       speaker: "한도윤",
       text: "하린에게 뭐라고 답할까?",
       placeholder: "inherit",
+      replySpeaker: "서하린",
       choiceKey: "day2OvertimeResponse",
       relationshipChoice: true,
       choices: [

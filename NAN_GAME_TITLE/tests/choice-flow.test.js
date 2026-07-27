@@ -45,3 +45,10 @@ test("선택을 완료한 뒤 결과 대화창을 다시 표시한다", () => {
     assert.match(source, /dialogueCard\.hidden\s*=\s*false/);
   }
 });
+
+test("DAY 2 선택 결과는 고정된 서하린 접두어 대신 장면별 화자를 사용한다", () => {
+  const source = fs.readFileSync(path.join(root, "js", "day2.js"), "utf8");
+  assert.match(source, /scene\.replySpeaker \|\| scene\.speaker/);
+  assert.match(source, /choice\.reply \|\| choice\.text/);
+  assert.doesNotMatch(source, /`서하린: “\$\{choice\.reply\}”`/);
+});
