@@ -56,7 +56,7 @@ const scenes=[
    {text:'따뜻한 햄치즈 샌드위치를 고른다.',delta:{},reply:'따뜻한 샌드위치와 커피를 들고 라운지 창가에 자리를 잡았다.'},
    {text:'참치김밥으로 든든하게 채운다.',delta:{},reply:'김밥 한 줄을 펼치자 민재가 한 조각만 달라며 자연스럽게 맞은편에 앉았다.'},
    {text:'컵라면에 삼각김밥을 곁들인다.',delta:{},reply:'뜨거운 물을 붓고 기다리는 짧은 시간만큼은 PT 생각을 내려놓았다.'}]},
- {id:'lunchLead',time:'12:18',speaker:'한도윤',text:'점심을 마친 뒤 민재와 사무실 라운지에 잠시 앉았다.\n한동안 메뉴 이야기만 하던 민재는 주변 사람들이 뜸해지자 조심스럽게 전환 심사 이야기를 꺼냈다.',bg:'lounge',char:'minjae',location:'게임사업실 라운지 · 점심'},
+ {id:'lunchLead',time:'12:18',speaker:'한도윤',text:'음식을 거의 다 먹을 때까지 민재와 별것 아닌 메뉴 이야기만 나눴다.\n주변 사람들이 하나둘 자리를 뜨자, 민재는 빈 포장지를 접으며 조심스럽게 전환 심사 이야기를 꺼냈다.',bg:'lounge',char:'minjae',location:'게임사업실 라운지 · 점심'},
  {id:'lunchMinjaeConcern',time:'12:20',speaker:'강민재',text:'우리 둘 다 전환 심사 대상이잖아. 네가 잘하면 내가 비교될 것 같고, 솔직히 신경 쓰이는 건 맞아.',bg:'lounge',char:'minjae',location:'게임사업실 라운지 · 점심'},
  {id:'lunchMinjae',time:'12:21',speaker:'강민재',text:'그래도 네가 망해서 내가 붙는 건 싫어. 경쟁은 경쟁이고, 일부러 발목 잡는 건 다른 문제니까.',bg:'lounge',char:'minjae',location:'게임사업실 라운지 · 점심'},
  {id:'lunchArchive',time:'12:22',speaker:'강민재',text:'그래서 말인데, 작년 신규 유저 개선 발표가 자료실 구버전 폴더에 있어. 방향 잡을 때 참고는 될 거야. 파일명이 비슷하니까 잘 보고 열어.',bg:'lounge',char:'minjae',location:'게임사업실 라운지 · 점심',clue:CLUES.minjaeArchive},

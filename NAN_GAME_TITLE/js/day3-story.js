@@ -63,7 +63,7 @@
       { id: "salad", text: "가벼운 샐러드로 천천히 숨을 돌린다.", reply: "급하게 먹지 말고 잠깐이라도 여유를 갖자.", delta: {} },
     ] },
     { id: "day3Lunch", time: "12:22", speaker: "강민재", dynamic: "lunchBreak", bg: "cafeteria_day", char: "minjae" },
-    { id: "day3MinjaeHint", time: "12:24", speaker: "강민재", text: "바뀐 문장, 예전 발표 자료에서도 본 것 같아. 하린 선배가 그때 거의 혼자 다 했다고 들었는데… 아니, 이건 내가 말할 얘기는 아닌가.", char: "minjae", placeholder: "inherit", clue: CLUES.legacyMatch },
+    { id: "day3MinjaeHint", time: "12:24", speaker: "강민재", text: "그러고 보니 네가 말한 그 바뀐 문장, 예전 발표 자료에서도 본 것 같아. 하린 선배가 그때 거의 혼자 다 했다고 들었는데… 아니, 이건 내가 말할 얘기는 아닌가.", char: "minjae", placeholder: "inherit", clue: CLUES.legacyMatch },
     { id: "day3HarinPastBoundary", time: "12:26", speaker: "한도윤", text: "민재는 더 말하지 않았다. 구버전 폴더와 바뀐 문장은 이제 우연으로 보기 어려웠다.", char: "minjae", placeholder: "inherit" },
     { id: "day3OfficeReturn", time: "13:25", speaker: "한도윤", text: "구내식당에서 돌아와 오전에 보존한 변경본을 다시 열었다. 추측은 잠시 내려놓고, 지금 확인할 수 있는 기록부터 정리하자.", bg: "office", bgm: "mystery", location: "게임사업실 · 오후" },
     { id: "day3InvestigationStart", time: "13:30", speaker: "한도윤", text: "세 기록이 남아 있다. 무엇부터 확인하느냐에 따라 첫 판단이 달라질 수 있다.", bg: "office", choiceKey: "investigationFirst", choices: [
