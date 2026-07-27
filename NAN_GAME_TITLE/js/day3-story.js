@@ -57,6 +57,8 @@
     { id: "day3ContactObjective", time: "10:21", speaker: "한도윤", text: "업무 확인은 끝났다. 문득 어제 편의점에서 마주쳤던 순간이 떠올랐다. 오늘 같이 퇴근하자고 연락해 볼까.", bg: "office" },
     { id: "day3SecretChatStart", time: "10:22", speaker: "시스템", text: "박태식 부장의 시선을 피해 서하린에게 사적인 답장을 전송합니다.", bg: "office", bgm: "minigame", startSecretChat: true },
     { id: "day3MinigameResult", time: "10:44", speaker: "서하린", dynamic: "secretChatResult", char: "harin", bgm: "daily", notification: "d3-harin-personal" },
+    { id: "day3BossReport", time: "11:35", speaker: "한도윤", dynamic: "bossReport", char: "boss", bg: "office" },
+    { id: "day3BossReportResponse", time: "11:36", speaker: "박태식", text: "좋아. 사람 이름으로 결론 내리지 말고, 오후에는 직접 접근·자동화·연결 경로를 순서대로 확인해. 확인한 기록은 전부 남기고.", char: "boss", bg: "office" },
     { id: "day3LunchChoice", time: "12:20", speaker: "한도윤", text: "오전 내내 변조 기록만 들여다봤더니 머리가 무거웠다. 점심만큼은 다른 생각을 해 보자. 오늘은 뭘 먹을까?", bg: "cafeteria_day", location: "구내식당 · 점심", choiceKey: "lunchMenu", choices: [
       { id: "porkCutlet", text: "바삭한 돈가스로 기분을 바꾼다.", reply: "오늘만큼은 든든하게 먹고 다시 시작하자.", delta: {} },
       { id: "stew", text: "뜨끈한 김치찌개로 속을 푼다.", reply: "따뜻한 걸 먹으면 복잡한 머리도 조금은 풀리겠지.", delta: {} },
@@ -74,13 +76,16 @@
     { id: "day3AccessLogFirst", time: "13:38", speaker: "시스템", text: "첫 조사 대상으로 서하린의 직접 문서 접근 기록을 선택했습니다.", systemPanel: { title: "ACCESS LOG", rows: ["서하린 마지막 직접 접근 · DAY 2 20:06", "DAY 3 09:03 직접 접근 · 없음", "명의 기반 자동화 활동 · 있음"] }, when: { decision: "investigationFirst", equals: "access" } },
     { id: "day3AutomationLogFirst", time: "13:38", speaker: "시스템", text: "첫 조사 대상으로 09:03 자동화 실행 기록을 선택했습니다.", systemPanel: { title: "AUTOMATION LOG", rows: ["09:03 · 구버전 연결 호출", "09:03 · 나나봇 자동 정리", "실행 계정 / 기기 · 관리자 권한 필요"] }, when: { decision: "investigationFirst", equals: "automation" } },
     { id: "day3FolderPathFirst", time: "13:38", speaker: "시스템", text: "첫 조사 대상으로 구버전 폴더 연결 경로를 선택했습니다.", systemPanel: { title: "CONNECTED PATH", rows: ["2024_온보딩개선_최종대응", "→ 공용 슬라이드 동기화", "→ 신규유저_이탈개선_PT 작업본"] }, clue: CLUES.accessUnconfirmed, when: { decision: "investigationFirst", equals: "folder" } },
+    { id: "day3FirstInference", time: "13:40", speaker: "한도윤", dynamic: "firstInvestigationInference", bg: "office" },
     { id: "day3InvestigationReaction", time: "13:42", speaker: "서하린", dynamic: "investigationReaction", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin" },
     { id: "day3AccessLog", time: "13:47", speaker: "시스템", text: "서하린의 직접 문서 접근 기록을 확인했습니다.", systemPanel: { title: "ACCESS LOG", rows: ["서하린 마지막 직접 접근 · DAY 2 20:06", "DAY 3 09:03 직접 접근 · 없음", "명의 기반 자동화 활동 · 있음"] }, when: { decision: "investigationFirst", notEquals: "access" } },
     { id: "day3AutomationLog", time: "13:54", speaker: "시스템", text: "자동화 실행 기록을 확인했습니다.", systemPanel: { title: "AUTOMATION LOG", rows: ["09:03 · 구버전 연결 호출", "09:03 · 나나봇 자동 정리", "실행 계정 / 기기 · 관리자 권한 필요"] }, when: { decision: "investigationFirst", notEquals: "automation" } },
     { id: "day3FolderPath", time: "14:01", speaker: "시스템", text: "현재 작업본과 과거 폴더 사이의 연결 경로가 확인되었습니다.", systemPanel: { title: "CONNECTED PATH", rows: ["2024_온보딩개선_최종대응", "→ 공용 슬라이드 동기화", "→ 신규유저_이탈개선_PT 작업본"] }, clue: CLUES.accessUnconfirmed, when: { decision: "investigationFirst", notEquals: "folder" } },
     { id: "day3Wrap", time: "17:10", speaker: "한도윤", text: "변경본과 로그를 따로 보존하고 DAY 2 복원 지점은 건드리지 않았다. 실제 실행 계정과 기기는 내일 시스템 담당자에게 확인하기로 했다.", bg: "office" },
     { id: "day3Summary", time: "18:00", speaker: "시스템", text: "오늘의 업무를 정산합니다.", bg: "office", bgm: "daily", daySummary: 3 },
-    { id: "day3EveningMessage", time: "20:10", speaker: "서하린", dynamic: "eveningMessage", bg: "office_night", bgm: "harin", location: "게임사업실 · 야간", notification: "d3-harin-evening" },
+    { id: "day3DepartureLead", time: "18:14", speaker: "한도윤", dynamic: "departureLead", bg: "office_night", bgm: "harin", location: "게임사업실 · 퇴근" },
+    { id: "day3DepartureHarin", time: "18:15", speaker: "서하린", dynamic: "departureHarin", char: "harin", bg: "office_night" },
+    { id: "day3EveningMessage", time: "20:10", speaker: "서하린", dynamic: "eveningMessage", bg: "office_night", notification: "d3-harin-evening" },
     { id: "day3End", time: "20:12", speaker: "시스템", text: "DAY 3 완료\n첫 번째 변조는 확인되었지만 실제 실행자는 아직 밝혀지지 않았습니다.", bg: "office_night", end: true },
   ];
 

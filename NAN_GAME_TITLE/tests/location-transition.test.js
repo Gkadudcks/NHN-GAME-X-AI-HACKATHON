@@ -74,5 +74,16 @@ test("점심 장소에서 사무실로 돌아오는 첫 장면은 목적지를 �
     assert.equal(day2.scenes.find((scene) => scene.id === id).location, "게임사업실 · 오후");
   }
   assert.equal(day3.scenes.find((scene) => scene.id === "day3OfficeReturn").location, "게임사업실 · 오후");
-  assert.equal(day3.scenes.find((scene) => scene.id === "day3EveningMessage").location, "게임사업실 · 야간");
+  assert.equal(day3.scenes.find((scene) => scene.id === "day3DepartureLead").location, "게임사업실 · 퇴근");
+});
+
+test("일일 정산을 닫은 뒤에도 장소 전환을 기다린 다음 장면을 렌더링한다", () => {
+  for (const file of ["game.js", "day2.js", "day3.js"]) {
+    const source = fs.readFileSync(path.join(root, "js", file), "utf8");
+    const start = source.indexOf("async function closeDaySummary()");
+    const end = source.indexOf(file === "game.js" ? "let deferNextNotification" : file === "day2.js" ? "function goToDay3" : "let deferNextNotification", start);
+    const block = source.slice(start, end);
+    assert.match(block, /await locationTransition\.playIfChanged/, file);
+    assert.ok(block.indexOf("await locationTransition.playIfChanged") < block.indexOf("render()"), file);
+  }
 });

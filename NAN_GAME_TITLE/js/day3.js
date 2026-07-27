@@ -502,14 +502,36 @@ function resolveDynamic(name) {
       verify: "이름만으로 실행자를 단정할 수 없다. 기록이 남은 이유부터 확인해야 한다.",
       blindTrust: "선배가 아니라고 믿고 복원하면 빠르다. 그래도 확인 없이 움직여도 되는 걸까.",
     }[state.decisions.harinSuspicion] || "먼저 선배에게 사실을 확인해야 한다.",
+    bossReport: {
+      accuse: "수정 기록에는 서하린 선배의 이름이 있습니다. 다만 자동화가 그 이름을 소유자로 표시했을 가능성도 있어, 실행 기록을 더 확인하겠습니다.",
+      verify: "표시된 이름과 실제 실행자가 같은지는 아직 확인되지 않았습니다. 오후에는 직접 접근 기록과 자동화 경로를 비교하겠습니다.",
+      blindTrust: "서하린 선배는 직접 열지 않았다고 했습니다. 그 말을 전제로 복원하기보다, 실행 기록을 확인한 뒤 판단하겠습니다.",
+    }[state.decisions.harinSuspicion] || "표시된 이름만으로는 실행자를 단정할 수 없습니다. 오후에 관련 기록을 교차 확인하겠습니다.",
     lunchBreak: {
       porkCutlet: "돈가스 골랐네. 그래, 아침부터 분위기가 무거웠으니까 이럴 때는 든든하게 먹어야지. 무슨 일 있었는지는 먹으면서 천천히 말해봐.",
       stew: "김치찌개 잘 골랐다. 뜨거울 때 먹어. 아침부터 무슨 일 있었는지 얼굴에 다 보여. 급하게 말하지 말고 천천히.",
       salad: "오늘은 가볍게 먹네. 천천히 먹어. 아침부터 또 자료 때문에 정신없었지? 무슨 일인지 들어는 볼게.",
     }[state.decisions.lunchMenu] || "아침부터 분위기가 왜 그래? 설마 자료 또 꼬였어?",
-    eveningMessage: state.decisions.harinSuspicion === "verify"
-      ? "오늘 제 이름을 보고도 바로 단정하지 않은 건 고마워요. 그렇다고 그냥 믿지만은 마세요. 내일은 기록을 끝까지 확인해요."
-      : "제 이름이 남은 건 사실이에요. 하지만 사실인 것과 전부인 건 달라요. 내일 기록을 다시 확인해요.",
+    firstInvestigationInference: {
+      access: "09:03에 선배가 문서를 직접 연 기록은 없다. 적어도 이름이 남았다는 사실만으로 선배가 직접 수정했다고 볼 수는 없다.",
+      automation: "문장이 바뀐 시각에 구버전 연결과 나나봇 정리가 연달아 실행됐다. 이제 중요한 건 소유자 이름이 아니라 실제 호출 경로다.",
+      folder: "현재 작업본이 과거 폴더와 연결돼 있다. 이번 변조를 오늘만의 실수로 보기보다, 과거 작업이 다시 불려온 이유부터 확인해야 한다.",
+    }[state.decisions.investigationFirst] || "첫 기록만으로 결론을 내릴 수는 없다. 나머지 기록과 교차해서 봐야 한다.",
+    departureLead: affectionBeforeChat < 2
+      ? "퇴근 준비를 마치고 고개를 들었을 때 선배의 자리는 이미 비어 있었다. 오늘 같이 가자는 말은 조금 성급했던 걸까."
+      : affectionBeforeChat < 4
+        ? "로비로 내려가자 선배가 출입문 옆에서 휴대폰을 내려다보고 있었다. 정말 퇴근 시간을 맞춰 준 모양이었다."
+        : "엘리베이터 문이 열리자 선배가 먼저 나를 발견하고 손을 들었다. 어제 편의점에서 마주쳤을 때보다 훨씬 자연스러운 미소였다.",
+    departureHarin: affectionBeforeChat < 2
+      ? "오늘은 먼저 갈게요. 아까 메시지는 고마웠어요. 내일 봐요."
+      : affectionBeforeChat < 4
+        ? (grade === "caught" ? "아까는 제대로 답을 못 했죠. 역까지는 같이 가요." : "시간 맞았네요. 역까지 같이 걸어요.")
+        : (grade === "caught" ? "아까 놀랐죠? 그래도 약속은 약속이니까, 오늘은 제가 기다렸어요." : "기다렸어요. 오늘은 편의점보다 조금 더 오래 이야기할 수 있겠네요."),
+    eveningMessage: affectionBeforeChat < 2
+      ? "오늘은 먼저 가서 미안해요. 퇴근 이야기는 우리 조금 더 천천히 해요. 내일 기록 확인부터 마무리하고요."
+      : affectionBeforeChat < 4
+        ? "오늘 역까지 같이 걸어서 좋았어요. 내일은 실제 실행 계정부터 확인해요."
+        : "오늘 같이 퇴근하길 잘했어요. 어제 편의점 이야기는 다음에 더 해요. 내일은 기록도 끝까지 같이 확인하고요.",
     investigationReaction: {
       access: "제 이름이 보였으니 직접 접근부터 보는 게 맞아요. 기록이 없다는 사실도 따로 보존해요.",
       automation: "실행 시각부터 좁히는군요. 소유자 이름보다 실제 호출 기록을 먼저 봐요.",
@@ -797,11 +819,14 @@ function showDaySummary() {
   window.setTimeout(() => refs.daySummaryExit.focus(), 50);
 }
 
-function closeDaySummary() {
+async function closeDaySummary() {
   state.summariesSeen[3] = true;
   refs.daySummary.classList.remove("show");
   refs.daySummary.setAttribute("aria-hidden", "true");
-  state.index = nextVisibleIndex(state.index + 1);
+  const targetIndex = nextVisibleIndex(state.index + 1);
+  const targetScene = scenes[targetIndex];
+  await locationTransition.playIfChanged($("#scene-label").textContent, targetScene.location);
+  state.index = targetIndex;
   saveProgress();
   render();
 }

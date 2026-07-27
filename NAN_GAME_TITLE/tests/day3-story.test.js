@@ -118,6 +118,34 @@ test("조사 답변은 미니게임 결과와 무관하고 개인 메시지만 �
   assert.equal(personalMessage.dynamic, "secretChatMessage");
 });
 
+test("부장의 점심 전 보고 지시는 실제 조사 방향 보고로 회수된다", () => {
+  const pressure = story.scenes.findIndex((scene) => scene.id === "day3BossPressure");
+  const report = story.scenes.findIndex((scene) => scene.id === "day3BossReport");
+  const response = story.scenes.findIndex((scene) => scene.id === "day3BossReportResponse");
+  const lunch = story.scenes.findIndex((scene) => scene.id === "day3LunchChoice");
+  assert.ok(pressure < report && report < response && response < lunch);
+  assert.equal(story.scenes[report].dynamic, "bossReport");
+});
+
+test("첫 조사 기록 뒤에는 선택한 근거에 따른 임시 판단이 나온다", () => {
+  const firstLogs = ["day3AccessLogFirst", "day3AutomationLogFirst", "day3FolderPathFirst"]
+    .map((id) => story.scenes.findIndex((scene) => scene.id === id));
+  const inference = story.scenes.findIndex((scene) => scene.id === "day3FirstInference");
+  const reaction = story.scenes.findIndex((scene) => scene.id === "day3InvestigationReaction");
+  assert.ok(firstLogs.every((index) => index < inference));
+  assert.ok(inference < reaction);
+  assert.equal(story.scenes[inference].dynamic, "firstInvestigationInference");
+});
+
+test("일일 정산 뒤에는 하린과의 실제 퇴근 장면이 이어진다", () => {
+  const summary = story.scenes.findIndex((scene) => scene.id === "day3Summary");
+  const departure = story.scenes.findIndex((scene) => scene.id === "day3DepartureLead");
+  const harin = story.scenes.findIndex((scene) => scene.id === "day3DepartureHarin");
+  const message = story.scenes.findIndex((scene) => scene.id === "day3EveningMessage");
+  assert.ok(summary < departure && departure < harin && harin < message);
+  assert.equal(story.scenes[departure].location, "게임사업실 · 퇴근");
+});
+
 test("DAY 3 BGM은 이야기 구간이 바뀔 때만 전환한다", () => {
   const cues = story.scenes
     .filter((scene) => scene.bgm)
@@ -130,6 +158,6 @@ test("DAY 3 BGM은 이야기 구간이 바뀔 때만 전환한다", () => {
     ["day3MinigameResult", "daily"],
     ["day3OfficeReturn", "mystery"],
     ["day3Summary", "daily"],
-    ["day3EveningMessage", "harin"],
+    ["day3DepartureLead", "harin"],
   ]);
 });

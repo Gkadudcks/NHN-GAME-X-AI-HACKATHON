@@ -808,11 +808,14 @@ function showDaySummary() {
   window.setTimeout(() => refs.daySummaryExit.focus(), 50);
 }
 
-function closeDaySummary() {
+async function closeDaySummary() {
   state.summariesSeen[2] = true;
   refs.daySummary.classList.remove("show");
   refs.daySummary.setAttribute("aria-hidden", "true");
-  state.index = nextVisibleIndex(state.index + 1);
+  const targetIndex = nextVisibleIndex(state.index + 1);
+  const targetScene = scenes[targetIndex];
+  await locationTransition.playIfChanged($("#scene-label").textContent, targetScene.location);
+  state.index = targetIndex;
   saveProgress();
   render();
 }
