@@ -504,6 +504,11 @@ function resolveDynamic(name) {
       verify: "좋아요. 믿는다는 말보다 그게 더 안심되네요. 기록으로 확인해요.",
       blindTrust: "그렇게 복원하면 같은 일이 반복돼요. 저를 믿는 것과 기록을 확인하지 않는 건 다른 문제예요.",
     }[state.decisions.harinSuspicion] || "이름과 실행자가 같은지 끝까지 확인해요.",
+    decisionIntent: {
+      accuse: "선배의 이름이 남아 있다. 직접 물어서 설명을 들어야 한다.",
+      verify: "이름만으로 실행자를 단정할 수 없다. 기록이 남은 이유부터 확인해야 한다.",
+      blindTrust: "선배가 아니라고 믿고 복원하면 빠르다. 그래도 확인 없이 움직여도 되는 걸까.",
+    }[state.decisions.harinSuspicion] || "먼저 선배에게 사실을 확인해야 한다.",
     eveningMessage: state.decisions.harinSuspicion === "verify"
       ? "오늘 제 이름을 보고도 바로 단정하지 않은 건 고마워요. 그렇다고 그냥 믿지만은 마세요. 내일은 기록을 끝까지 확인해요."
       : "제 이름이 남은 건 사실이에요. 하지만 사실인 것과 전부인 건 달라요. 내일 기록을 다시 확인해요.",

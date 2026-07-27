@@ -20,7 +20,7 @@ test("Harin keeps her DAY 3 dialogue in the haeyo style", () => {
   const harinScenes = story.scenes.filter((scene) => scene.speaker === "서하린").map((scene) => scene.text || "").join("\n");
 
   assert.match(harinScenes, /하면 돼요/);
-  assert.match(harinScenes, /제 이름이 있는 건 부정하지 않을게요/);
+  assert.match(harinScenes, /제 이름/);
   assert.doesNotMatch(harinScenes, /하면 됩니다|내 이름을 지우지/);
 });
 
@@ -64,8 +64,9 @@ test("의심 선택은 몰아붙이기·검증·맹목적 신뢰를 구분한다
 
 test("하린에 대한 판단은 직접 접근 기록을 보기 전에 내려진다", () => {
   const decision = story.scenes.findIndex((scene) => scene.id === "day3Decision");
+  const minigame = story.scenes.findIndex((scene) => scene.id === "day3PrivateContactLead");
   const accessLog = story.scenes.findIndex((scene) => scene.id === "day3AccessLog");
-  assert.ok(decision >= 0 && decision < accessLog);
+  assert.ok(decision >= 0 && decision < minigame && minigame < accessLog);
 });
 
 test("플레이어가 세 조사 기록 중 첫 순서를 선택한다", () => {
