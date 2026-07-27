@@ -38,6 +38,7 @@ const refs = {
   clock: $("#clock"),
   speaker: $("#speaker"),
   dialogue: $("#dialogue"),
+  dialogueCard: $("#dialogue-card"),
   stageChoices: $("#stage-choices"),
   next: $("#next"),
   toast: $("#toast"),
@@ -655,6 +656,7 @@ function choose(choice, key, scene) {
   const before = { work: state.work, affection: state.affection, trust: state.trust };
   Object.entries(choice.delta || {}).forEach(([stat, delta]) => { state[stat] += delta; });
   state.decisions[key] = choice.id || choice.value || choice.text;
+  refs.dialogueCard.hidden = false;
   refs.dialogue.textContent = choice.reply || choice.text;
   refs.stageChoices.innerHTML = "";
   refs.stageChoices.classList.remove("show");
@@ -771,6 +773,8 @@ function render() {
   deferNextNotification = false;
   state.index = nextVisibleIndex(state.index);
   const scene = scenes[state.index] || scenes[0];
+  const choiceKey = scene.choiceKey || scene.id;
+  const pendingChoice = Boolean(scene.choices && !state.decisions[choiceKey]);
   const cinematic = Boolean(scene.cinematicDelay);
   const effectiveBgm = inheritedSceneValue(state.index, "bgm");
   resetCinematic();
@@ -780,6 +784,7 @@ function render() {
     return;
   }
   refs.clock.textContent = scene.time;
+  refs.dialogueCard.hidden = pendingChoice;
   refs.speaker.textContent = cinematic ? "" : scene.speaker;
   refs.dialogue.textContent = cinematic ? "" : (scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text);
   refs.next.disabled = cinematic;
@@ -794,8 +799,7 @@ function render() {
   refs.stageChoices.innerHTML = "";
   refs.stageChoices.classList.remove("show");
   refs.stage.classList.remove("choice-mode");
-  const choiceKey = scene.choiceKey || scene.id;
-  if (scene.choices && !state.decisions[choiceKey]) {
+  if (pendingChoice) {
     scene.choices.forEach((choice) => addStageChoice(choice, choiceKey, scene));
     refs.stageChoices.classList.add("show");
     refs.stage.classList.add("choice-mode");
