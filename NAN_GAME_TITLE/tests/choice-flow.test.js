@@ -10,6 +10,16 @@ test("선택 장면은 결과 대사를 숨긴 채 선택지를 먼저 표시한
     const source = fs.readFileSync(path.join(root, "js", file), "utf8");
     assert.match(source, /pendingChoice/);
     assert.match(source, /dialogueCard\.hidden\s*=\s*pendingChoice/);
+    assert.match(source, /addStageChoicePrompt/);
+  }
+});
+
+test("선택지 위에는 무엇을 고르는지 설명하는 장면 질문이 표시된다", () => {
+  const css = fs.readFileSync(path.join(root, "css", "game.css"), "utf8");
+  assert.match(css, /\.stage-choice-prompt/);
+  for (const file of ["game.js", "day2.js", "day3.js"]) {
+    const source = fs.readFileSync(path.join(root, "js", file), "utf8");
+    assert.match(source, /stage-choice-prompt/);
   }
 });
 

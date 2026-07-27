@@ -663,6 +663,13 @@ function nextVisibleIndex(fromIndex) {
   return index;
 }
 
+function addStageChoicePrompt(text) {
+  const prompt = document.createElement("header");
+  prompt.className = "stage-choice-prompt";
+  prompt.innerHTML = `<small>CHOICE</small><strong>${escapeHtml(text)}</strong>`;
+  refs.stageChoices.appendChild(prompt);
+}
+
 function addStageChoice(choice, key, scene) {
   const button = document.createElement("button");
   button.type = "button";
@@ -842,6 +849,7 @@ function render() {
   refs.stageChoices.classList.remove("show");
   refs.stage.classList.remove("choice-mode");
   if (pendingChoice) {
+    addStageChoicePrompt(scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text);
     scene.choices.forEach((choice) => addStageChoice(choice, choiceKey, scene));
     refs.stageChoices.classList.add("show");
     refs.stage.classList.add("choice-mode");
