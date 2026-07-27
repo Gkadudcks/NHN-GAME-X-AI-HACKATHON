@@ -12,8 +12,8 @@ test("location transition only plays for an explicit different destination", () 
   assert.equal(transition.shouldPlay("회사 밖 식당 · 점심", undefined), false);
 });
 
-test("location transition enforces two seconds and blocks click skipping", () => {
-  assert.equal(transition.DEFAULT_DURATION, 2000);
+test("location transition enforces 1.3 seconds and blocks click skipping", () => {
+  assert.equal(transition.DEFAULT_DURATION, 1300);
   const script = fs.readFileSync(path.join(root, "js", "location-transition.js"), "utf8");
   assert.match(script, /Math\.max\(DEFAULT_DURATION/);
   assert.doesNotMatch(script, /overlay\.addEventListener\("click", finish\)/);

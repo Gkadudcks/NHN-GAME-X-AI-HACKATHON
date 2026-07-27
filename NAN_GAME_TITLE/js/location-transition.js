@@ -3,7 +3,7 @@
   if (typeof module === "object" && module.exports) module.exports = api;
   if (root) root.GameLocationTransition = api;
 })(typeof globalThis !== "undefined" ? globalThis : this, function createLocationTransition(global) {
-  const DEFAULT_DURATION = 2000;
+  const DEFAULT_DURATION = 1300;
 
   function shouldPlay(currentLocation, nextLocation) {
     return Boolean(nextLocation && currentLocation && nextLocation !== currentLocation);
