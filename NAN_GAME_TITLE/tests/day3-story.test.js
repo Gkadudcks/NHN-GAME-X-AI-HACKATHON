@@ -64,9 +64,19 @@ test("의심 선택은 몰아붙이기·검증·맹목적 신뢰를 구분한다
 
 test("하린에 대한 판단은 직접 접근 기록을 보기 전에 내려진다", () => {
   const decision = story.scenes.findIndex((scene) => scene.id === "day3Decision");
-  const minigame = story.scenes.findIndex((scene) => scene.id === "day3PrivateContactLead");
+  const minigame = story.scenes.findIndex((scene) => scene.id === "day3SecretChatStart");
   const accessLog = story.scenes.findIndex((scene) => scene.id === "day3AccessLog");
   assert.ok(decision >= 0 && decision < minigame && minigame < accessLog);
+});
+
+test("몰래 연락 미니게임은 상황과 확인 목표를 설명한 뒤 별도 장면에서 시작한다", () => {
+  const pressure = story.scenes.findIndex((scene) => scene.id === "day3BossPressure");
+  const lead = story.scenes.findIndex((scene) => scene.id === "day3PrivateContactLead");
+  const objective = story.scenes.findIndex((scene) => scene.id === "day3ContactObjective");
+  const start = story.scenes.findIndex((scene) => scene.id === "day3SecretChatStart");
+  assert.ok(pressure < lead && lead < objective && objective < start);
+  assert.equal(story.scenes[lead].startSecretChat, undefined);
+  assert.equal(story.scenes[start].startSecretChat, true);
 });
 
 test("플레이어가 세 조사 기록 중 첫 순서를 선택한다", () => {
@@ -91,7 +101,7 @@ test("DAY 3 BGM은 이야기 구간이 바뀔 때만 전환한다", () => {
   assert.deepEqual(cues, [
     ["day3IntroCard", "daily"],
     ["day3OpenDocument", "mystery"],
-    ["day3PrivateContactLead", "minigame"],
+    ["day3SecretChatStart", "minigame"],
     ["day3MinigameResult", "daily"],
     ["day3InvestigationStart", "mystery"],
     ["day3Summary", "daily"],
