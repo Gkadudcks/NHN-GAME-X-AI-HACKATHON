@@ -181,6 +181,11 @@
     { id: "day2RequestResult", time: "11:20", speaker: "서하린", dynamic: "workAlertResult", characters: [{ id: "minjae", position: "left" }, { id: "harin", position: "right" }], activeCharacter: "harin", bgm: "daily" },
     { id: "day2RequestResultReply", time: "11:21", speaker: "한도윤", dynamic: "workAlertReply", characters: [{ id: "minjae", position: "left" }, { id: "harin", position: "right" }], activeCharacter: "minjae" },
 
+    { id: "day2LunchChoice", time: "12:18", speaker: "한도윤", text: "긴 줄 끝에 메뉴판이 보였다. 오전 내내 밀려든 요청은 잠시 잊고, 지금 먹고 싶은 걸 고르자.", bg: "restaurant_lunch", char: "minjae", location: "회사 밖 식당 · 점심", choiceKey: "day2LunchMenu", choices: [
+      { value: "spicyPork", text: "매콤한 제육볶음을 주문한다.", delta: {}, reply: "매운 걸 먹으면 오전 스트레스도 좀 풀리겠지. 민재가 같은 메뉴 두 개를 주문했다." },
+      { value: "porkCutlet", text: "두툼한 왕돈가스를 주문한다.", delta: {}, reply: "접시 크기를 본 민재가 이 정도면 기다린 보람은 있겠다며 웃었다." },
+      { value: "noodles", text: "시원한 냉면을 주문한다.", delta: {}, reply: "차가운 물을 한 모금 마시자 오전 내내 달아올랐던 머리가 조금 식었다." },
+    ] },
     { id: "day2Lunch1", time: "12:20", speaker: "강민재", text: "밖에서 먹자고 한 건 좋은데, 왜 하필 제일 줄 긴 집이야?", bg: "restaurant_lunch", char: "minjae", location: "회사 밖 식당 · 점심" },
     { id: "day2Lunch2", time: "12:21", speaker: "한도윤", text: "네가 추천했잖아.", char: "minjae", placeholder: "inherit" },
     { id: "day2Lunch3", time: "12:22", speaker: "강민재", text: "추천할 때는 줄이 없었지. 회사 사람들 생각이 이렇게 잘 맞는지 몰랐다.", char: "minjae", placeholder: "inherit" },

@@ -52,6 +52,10 @@ const scenes=[
  {id:'coffeeResult',time:'10:45',speaker:'박태식',text:'커피 고마워. 요구사항도 지금처럼 놓치지 말고. 예상 수치는 검증된 것만 써.',characters:[{id:'minjae',position:'left'},{id:'boss',position:'center'},{id:'harin',position:'right'}],activeCharacter:'boss'},
  {id:'bossVerbal',time:'11:00',speaker:'박태식',text:'아, 발표는 너무 딱딱하지 않게 해. 눈에 들어오게. 아까 말한 느낌 알지?',characters:[{id:'boss',position:'left'},{id:'harin',position:'right'}],activeCharacter:'boss'},
  {id:'harinInterpret',time:'11:02',speaker:'서하린',text:'방금 말씀은 표현 방식에 대한 이야기겠죠? 방향을 바꾸라는 건 아닐 거예요.',characters:[{id:'boss',position:'left'},{id:'harin',position:'right'}],activeCharacter:'harin'},
+ {id:'lunchMenuChoice',time:'12:12',speaker:'한도윤',text:'민재와 라운지로 가기 전 간단히 먹을 점심을 골랐다. 오전 내내 긴장했으니, 잠깐은 메뉴 생각만 해도 괜찮겠지. 뭘 먹을까?',bg:'lounge',char:'minjae',location:'게임사업실 라운지 · 점심',choiceKey:'lunchMenu',choices:[
+   {text:'따뜻한 햄치즈 샌드위치를 고른다.',delta:{},reply:'따뜻한 샌드위치와 커피를 들고 라운지 창가에 자리를 잡았다.'},
+   {text:'참치김밥으로 든든하게 채운다.',delta:{},reply:'김밥 한 줄을 펼치자 민재가 한 조각만 달라며 자연스럽게 맞은편에 앉았다.'},
+   {text:'컵라면에 삼각김밥을 곁들인다.',delta:{},reply:'뜨거운 물을 붓고 기다리는 짧은 시간만큼은 PT 생각을 내려놓았다.'}]},
  {id:'lunchLead',time:'12:18',speaker:'한도윤',text:'점심을 마친 뒤 민재와 사무실 라운지에 잠시 앉았다.\n한동안 메뉴 이야기만 하던 민재는 주변 사람들이 뜸해지자 조심스럽게 전환 심사 이야기를 꺼냈다.',bg:'lounge',char:'minjae',location:'게임사업실 라운지 · 점심'},
  {id:'lunchMinjaeConcern',time:'12:20',speaker:'강민재',text:'우리 둘 다 전환 심사 대상이잖아. 네가 잘하면 내가 비교될 것 같고, 솔직히 신경 쓰이는 건 맞아.',bg:'lounge',char:'minjae',location:'게임사업실 라운지 · 점심'},
  {id:'lunchMinjae',time:'12:21',speaker:'강민재',text:'그래도 네가 망해서 내가 붙는 건 싫어. 경쟁은 경쟁이고, 일부러 발목 잡는 건 다른 문제니까.',bg:'lounge',char:'minjae',location:'게임사업실 라운지 · 점심'},
