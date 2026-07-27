@@ -12,10 +12,22 @@ test("location transition only plays for an explicit different destination", () 
   assert.equal(transition.shouldPlay("회사 밖 식당 · 점심", undefined), false);
 });
 
-test("location transition uses a two-second default and supports skipping", () => {
+test("location transition enforces two seconds and blocks click skipping", () => {
   assert.equal(transition.DEFAULT_DURATION, 2000);
   const script = fs.readFileSync(path.join(root, "js", "location-transition.js"), "utf8");
-  assert.match(script, /overlay\.addEventListener\("click", finish\)/);
+  assert.match(script, /Math\.max\(DEFAULT_DURATION/);
+  assert.doesNotMatch(script, /overlay\.addEventListener\("click", finish\)/);
+  assert.match(script, /event\.preventDefault\(\)/);
+  assert.match(script, /event\.stopPropagation\(\)/);
+});
+
+test("location transition displays numeric and bar progress from zero to one hundred", () => {
+  const script = fs.readFileSync(path.join(root, "js", "location-transition.js"), "utf8");
+  const css = fs.readFileSync(path.join(root, "css", "location-transition.css"), "utf8");
+  assert.match(script, /role="progressbar"/);
+  assert.match(script, /progressText\.textContent = "0%"/);
+  assert.match(script, /progressText\.textContent = "100%"/);
+  assert.match(css, /\.location-transition-progress/);
 });
 
 test("location transition follows the shared cream and coral visual theme", () => {

@@ -18,8 +18,11 @@
       <div class="location-transition-content">
         <small>NOW MOVING</small>
         <strong></strong>
-        <span>이동 중…</span>
-        <em>클릭하여 건너뛰기</em>
+        <span>이동 중</span>
+        <div class="location-transition-progress" role="progressbar" aria-label="장소 이동 진행률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <i></i>
+        </div>
+        <em>0%</em>
       </div>`;
     documentRef.body.appendChild(overlay);
     return overlay;
@@ -30,6 +33,9 @@
     if (!documentRef) return null;
     const overlay = documentRef.querySelector("#location-transition") || createOverlay(documentRef);
     const locationText = overlay.querySelector("strong");
+    const progress = overlay.querySelector(".location-transition-progress");
+    const progressBar = progress.querySelector("i");
+    const progressText = overlay.querySelector("em");
     let finishCurrent = null;
 
     function isActive() {
@@ -43,17 +49,33 @@
     function play(nextLocation, duration = DEFAULT_DURATION) {
       if (!nextLocation) return Promise.resolve(false);
       finish();
+      const enforcedDuration = Math.max(DEFAULT_DURATION, Number(duration) || DEFAULT_DURATION);
       locationText.textContent = nextLocation;
+      progress.setAttribute("aria-valuenow", "0");
+      progressBar.style.width = "0%";
+      progressText.textContent = "0%";
       overlay.classList.add("show");
       overlay.setAttribute("aria-hidden", "false");
       return new Promise((resolve) => {
         let completed = false;
         const fadeDuration = 260;
-        const timer = global.setTimeout(complete, Math.max(0, duration - fadeDuration));
+        const startedAt = Date.now();
+        const progressTimer = global.setInterval(updateProgress, 50);
+        const timer = global.setTimeout(complete, enforcedDuration);
+        function updateProgress() {
+          const percent = Math.min(100, Math.floor(((Date.now() - startedAt) / enforcedDuration) * 100));
+          progress.setAttribute("aria-valuenow", String(percent));
+          progressBar.style.width = `${percent}%`;
+          progressText.textContent = `${percent}%`;
+        }
         function complete() {
           if (completed) return;
           completed = true;
           global.clearTimeout(timer);
+          global.clearInterval(progressTimer);
+          progress.setAttribute("aria-valuenow", "100");
+          progressBar.style.width = "100%";
+          progressText.textContent = "100%";
           overlay.classList.remove("show");
           overlay.setAttribute("aria-hidden", "true");
           finishCurrent = null;
@@ -67,7 +89,10 @@
       return shouldPlay(currentLocation, nextLocation) ? play(nextLocation, duration) : Promise.resolve(false);
     }
 
-    overlay.addEventListener("click", finish);
+    overlay.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+    });
     return Object.freeze({ play, playIfChanged, finish, isActive });
   }
 
