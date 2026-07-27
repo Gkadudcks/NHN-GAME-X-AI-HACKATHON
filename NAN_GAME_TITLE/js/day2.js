@@ -670,10 +670,19 @@ function addStageChoicePrompt(text) {
   refs.stageChoices.appendChild(prompt);
 }
 
+function choiceEffectTags(choice) {
+  const labels = { work: "◆ 업무력", affection: "♡ 호감도", trust: "◇ 신뢰도" };
+  const tags = Object.entries(choice.delta || {})
+    .filter(([, value]) => value !== 0)
+    .map(([key]) => labels[key])
+    .filter(Boolean);
+  return tags.length ? tags : ["스토리 분기"];
+}
+
 function addStageChoice(choice, key, scene) {
   const button = document.createElement("button");
   button.type = "button";
-  button.textContent = choice.text;
+  button.innerHTML = `<span class="stage-choice-label">${escapeHtml(choice.text)}</span><small class="stage-choice-effects">${choiceEffectTags(choice).map((tag) => `<i>${escapeHtml(tag)}</i>`).join("")}</small>`;
   button.addEventListener("click", () => choose(choice, key, scene));
   refs.stageChoices.appendChild(button);
 }

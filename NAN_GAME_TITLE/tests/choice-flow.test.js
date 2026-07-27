@@ -23,6 +23,19 @@ test("선택지 위에는 무엇을 고르는지 설명하는 장면 질문이 �
   }
 });
 
+test("모든 선택지는 영향 능력치 또는 스토리 분기 태그를 표시한다", () => {
+  const css = fs.readFileSync(path.join(root, "css", "game.css"), "utf8");
+  assert.match(css, /\.stage-choice-effects/);
+  for (const file of ["game.js", "day2.js", "day3.js"]) {
+    const source = fs.readFileSync(path.join(root, "js", file), "utf8");
+    assert.match(source, /choiceEffectTags/);
+    assert.match(source, /스토리 분기/);
+    assert.match(source, /업무력/);
+    assert.match(source, /호감도/);
+    assert.match(source, /신뢰도/);
+  }
+});
+
 test("선택을 완료한 뒤 결과 대화창을 다시 표시한다", () => {
   for (const file of ["game.js", "day2.js", "day3.js"]) {
     const source = fs.readFileSync(path.join(root, "js", file), "utf8");
