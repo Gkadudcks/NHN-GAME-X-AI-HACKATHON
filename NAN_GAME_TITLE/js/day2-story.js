@@ -271,7 +271,7 @@
     },
 
     { id: "day2Summary", time: "20:35", speaker: "시스템", text: "오늘의 업무를 정산합니다.", placeholder: "inherit", daySummary: 2 },
-    { id: "day2ExitLead", time: "20:44", speaker: "한도윤", text: "하린이 ‘DAY 2 검증 완료’ 표시를 확인하고 노트북을 닫았다.", placeholder: "inherit" },
+    { id: "day2ExitLead", time: "20:44", speaker: "한도윤", text: "‘DAY 2 검증 완료’ 표시까지 확인했다. 선배가 노트북을 닫는 모습을 보고서야 오늘 일이 끝났다는 실감이 났다.", placeholder: "inherit" },
     { id: "day2ExitHarin", time: "20:45", speaker: "서하린", text: "내일은 오늘 정리한 문장을 발표용으로 다듬어요.", char: "harin", placeholder: "inherit" },
     { id: "day2ExitDoyun", time: "20:46", speaker: "한도윤", text: "나나봇을 쓰더라도 원문과 비교하면서요.", char: "harin", placeholder: "inherit" },
     { id: "day2ExitHarin2", time: "20:47", speaker: "서하린", text: "이제 제가 할 말을 먼저 하네요.", char: "harin", placeholder: "inherit" },

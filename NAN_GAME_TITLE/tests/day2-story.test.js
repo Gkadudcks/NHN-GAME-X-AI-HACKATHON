@@ -68,6 +68,7 @@ test("서하린의 DAY 2 대사는 도윤에게 해요체로 일관되게 말한
   assert.equal(byId("day2SubtaskLead").text, "숫자만 보고 있으면 발표가 또 보고서가 돼요. 오전에는 작은 조사 하나를 끝내봐요.");
   assert.equal(byId("day2SubtaskC1").text, "설치 끝났어요. 시작할게요.");
   assert.equal(byId("day2ArchiveExit").text, "빌드부터 보고 와요. 이건 나중에 확인해도 돼요.");
+  assert.match(byId("day2ExitLead").text, /오늘 일이 끝났다는 실감이 났다/);
   assert.equal(byId("day2OvertimeHarin1").text, "오늘 하위 조사 문장만 정리하면 끝나요. 한 시간 안에 끝내고 가요.");
   assert.equal(overtimeChoices.find((choice) => choice.value === "verify-record").reply, "맞아요. 확인은 해야 해요. 이름만 보고 결론 내리지만 않으면 돼요.");
   assert.equal(overtimeChoices.find((choice) => choice.value === "take-responsibility").reply, "책임지는 것과 혼자 남는 건 다르다고 했어요. 오늘은 같이 가요.");
