@@ -74,6 +74,9 @@ const state = {
   day1: { ...progress.shared.day1 },
   unreadClues: false,
 };
+if (state.minigameResult && !state.decisions.secretChatOutcome) {
+  state.decisions.secretChatOutcome = state.minigameResult.grade || "good";
+}
 
 let currentRoom = "";
 let choiceResultTimer;
@@ -489,7 +492,13 @@ function resolveDynamic(name) {
       ? "질문 세 개 다 확인했어요. 오늘 아침에는 그 문서를 열지 않았어요. 복원 지점은 그대로 두세요."
       : grade === "good"
         ? "메시지 확인했어요. 오늘 아침에는 문서를 열지 않았어요. 오후에 접근 기록을 같이 봐요."
-        : "아까는 부장님 바로 앞이었잖아요. 지금 답할게요. 오늘 아침에는 그 문서를 열지 않았어요.",
+        : "부장님 바로 앞에서는 답하기 어려웠어요. 점심 뒤에 기록을 확인해서 다시 연락할게요.",
+    secretChatMessage: grade === "caught"
+      ? "지금은 기록을 확인하기 어려워요. 점심 뒤에 다시 연락할게요."
+      : "오늘 아침에는 그 문서를 열지 않았어요. 제 이름이 왜 남았는지 접근 기록부터 같이 확인해요.",
+    harinPlan: grade === "caught"
+      ? "그전까지 제 이름과 현재 변경본을 지우지 말고 그대로 보존해 주세요."
+      : "제 이름을 지우지 말고 그대로 두세요. 이름과 실행자가 같은지도 확인해야 해요.",
     decisionResponse: {
       accuse: "의심할 수는 있어요. 하지만 이름 하나만으로 결론부터 내리지는 말아 주세요.",
       verify: "좋아요. 믿는다는 말보다 그게 더 안심되네요. 기록으로 확인해요.",
@@ -498,6 +507,11 @@ function resolveDynamic(name) {
     eveningMessage: state.decisions.harinSuspicion === "verify"
       ? "오늘 제 이름을 보고도 바로 단정하지 않은 건 고마워요. 그렇다고 그냥 믿지만은 마세요. 내일은 기록을 끝까지 확인해요."
       : "제 이름이 남은 건 사실이에요. 하지만 사실인 것과 전부인 건 달라요. 내일 기록을 다시 확인해요.",
+    investigationReaction: {
+      access: "제 이름이 보였으니 직접 접근부터 보는 게 맞아요. 기록이 없다는 사실도 따로 보존해요.",
+      automation: "실행 시각부터 좁히는군요. 소유자 이름보다 실제 호출 기록을 먼저 봐요.",
+      folder: "그 폴더부터 보는군요. 예전 일과 지금 일을 섞지 않도록 연결 경로만 정확히 기록해요.",
+    }[state.decisions.investigationFirst] || "확인한 순서까지 기록해 둬요. 나중에 판단이 바뀐 이유도 증거가 되니까요.",
   };
   return values[name] || "";
 }
@@ -641,7 +655,9 @@ function preloadSceneImages(scene) {
 }
 
 function nextVisibleIndex(fromIndex) {
-  return Math.min(fromIndex, scenes.length - 1);
+  let index = Math.min(fromIndex, scenes.length - 1);
+  while (index < scenes.length - 1 && !Day3Story.isVisible(scenes[index], state.decisions)) index += 1;
+  return index;
 }
 
 function addStageChoice(choice, key, scene) {
@@ -688,6 +704,7 @@ function showChoiceResult(choice, before, relationshipChoice) {
 function finishSecretChat(result) {
   if (state.minigameResult) return;
   state.minigameResult = result;
+  state.decisions.secretChatOutcome = result.grade;
   state.work += result.workDelta;
   state.trust += result.trustDelta || 0;
   state.index = nextVisibleIndex(state.index + 1);
