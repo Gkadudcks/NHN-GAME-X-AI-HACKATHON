@@ -80,7 +80,7 @@
     { id: "day3FolderPath", time: "14:01", speaker: "시스템", text: "현재 작업본과 과거 폴더 사이의 연결 경로가 확인되었습니다.", systemPanel: { title: "CONNECTED PATH", rows: ["2024_온보딩개선_최종대응", "→ 공용 슬라이드 동기화", "→ 신규유저_이탈개선_PT 작업본"] }, clue: CLUES.accessUnconfirmed, when: { decision: "investigationFirst", notEquals: "folder" } },
     { id: "day3Wrap", time: "17:10", speaker: "한도윤", text: "변경본과 로그를 따로 보존하고 DAY 2 복원 지점은 건드리지 않았다. 실제 실행 계정과 기기는 내일 시스템 담당자에게 확인하기로 했다.", bg: "office" },
     { id: "day3Summary", time: "18:00", speaker: "시스템", text: "오늘의 업무를 정산합니다.", bg: "office", bgm: "daily", daySummary: 3 },
-    { id: "day3EveningMessage", time: "20:10", speaker: "서하린", dynamic: "eveningMessage", bg: "office_night", bgm: "harin", notification: "d3-harin-evening" },
+    { id: "day3EveningMessage", time: "20:10", speaker: "서하린", dynamic: "eveningMessage", bg: "office_night", bgm: "harin", location: "게임사업실 · 야간", notification: "d3-harin-evening" },
     { id: "day3End", time: "20:12", speaker: "시스템", text: "DAY 3 완료\n첫 번째 변조는 확인되었지만 실제 실행자는 아직 밝혀지지 않았습니다.", bg: "office_night", end: true },
   ];
 

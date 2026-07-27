@@ -60,7 +60,7 @@ const scenes=[
  {id:'lunchMinjaeConcern',time:'12:20',speaker:'강민재',text:'우리 둘 다 전환 심사 대상이잖아. 네가 잘하면 내가 비교될 것 같고, 솔직히 신경 쓰이는 건 맞아.',bg:'lounge',char:'minjae',location:'게임사업실 라운지 · 점심'},
  {id:'lunchMinjae',time:'12:21',speaker:'강민재',text:'그래도 네가 망해서 내가 붙는 건 싫어. 경쟁은 경쟁이고, 일부러 발목 잡는 건 다른 문제니까.',bg:'lounge',char:'minjae',location:'게임사업실 라운지 · 점심'},
  {id:'lunchArchive',time:'12:22',speaker:'강민재',text:'그래서 말인데, 작년 신규 유저 개선 발표가 자료실 구버전 폴더에 있어. 방향 잡을 때 참고는 될 거야. 파일명이 비슷하니까 잘 보고 열어.',bg:'lounge',char:'minjae',location:'게임사업실 라운지 · 점심',clue:CLUES.minjaeArchive},
- {id:'direction',time:'13:30',speaker:'한도윤',text:'라운지에서 자리로 돌아왔다. 이제 오전에 모은 조사 자료를 하나의 개선 방향으로 좁혀야 한다.',bg:'office',choiceKey:'direction',choices:[
+ {id:'direction',time:'13:30',speaker:'한도윤',text:'라운지에서 자리로 돌아왔다. 이제 오전에 모은 조사 자료를 하나의 개선 방향으로 좁혀야 한다.',bg:'office',location:'게임사업실 · 오후',choiceKey:'direction',choices:[
    {text:'긴 튜토리얼을 줄이고 핵심 행동부터 경험하게 한다.',delta:{work:2},reply:'조사 결과와 가장 직접적으로 연결되는 방향이다. 문제와 개선안의 흐름이 선명해졌다.'},
    {text:'첫 전투까지 상황별 가이드를 제공한다.',delta:{work:1,trust:1},reply:'필요한 순간에만 도움을 제공하면 안내 피로를 줄일 수 있다. 서하린도 고개를 끄덕였다.'},
    {text:'AI가 플레이 상황에 맞는 도움말을 추천한다.',delta:{work:1},reply:'눈에 띄는 아이디어지만 AI 자체가 목적처럼 보이지 않도록 사용자 근거를 더 보강해야 한다.'}]},

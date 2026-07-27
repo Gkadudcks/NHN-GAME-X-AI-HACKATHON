@@ -63,3 +63,16 @@ test("game engines deliver destination messages after the location transition", 
     assert.match(script, /setTimeout\(resolve,\s*500\)/);
   }
 });
+
+test("점심 장소에서 사무실로 돌아오는 첫 장면은 목적지를 명시한다", () => {
+  const day1 = fs.readFileSync(path.join(root, "js", "game.js"), "utf8");
+  const day2 = require(path.join(root, "js", "day2-story.js"));
+  const day3 = require(path.join(root, "js", "day3-story.js"));
+
+  assert.match(day1, /id:'direction'[^]*?location:'게임사업실 · 오후'/);
+  for (const id of ["day2SubtaskA1", "day2SubtaskB1", "day2SubtaskC1"]) {
+    assert.equal(day2.scenes.find((scene) => scene.id === id).location, "게임사업실 · 오후");
+  }
+  assert.equal(day3.scenes.find((scene) => scene.id === "day3OfficeReturn").location, "게임사업실 · 오후");
+  assert.equal(day3.scenes.find((scene) => scene.id === "day3EveningMessage").location, "게임사업실 · 야간");
+});
