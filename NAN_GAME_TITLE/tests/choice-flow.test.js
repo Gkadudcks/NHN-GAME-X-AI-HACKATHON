@@ -52,3 +52,13 @@ test("DAY 2 선택 결과는 고정된 서하린 접두어 대신 장면별 화�
   assert.match(source, /choice\.reply \|\| choice\.text/);
   assert.doesNotMatch(source, /`서하린: “\$\{choice\.reply\}”`/);
 });
+
+test("모든 DAY는 선택 결과에 장면별 화자를 적용한다", () => {
+  for (const file of ["game.js", "day2.js", "day3.js"]) {
+    const source = fs.readFileSync(path.join(root, "js", file), "utf8");
+    assert.match(source, /replySpeaker\s*\|\|\s*scene\.speaker/, file);
+  }
+  const day1 = fs.readFileSync(path.join(root, "js", "game.js"), "utf8");
+  assert.match(day1, /id:'nanaChoice'.*replySpeaker:'한도윤'/);
+  assert.doesNotMatch(day1, /reply:'서하린은|reply:'.*서하린의 표정/);
+});

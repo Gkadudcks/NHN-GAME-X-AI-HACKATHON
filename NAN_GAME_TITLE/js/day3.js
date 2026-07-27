@@ -695,6 +695,7 @@ function choose(choice, key, scene) {
   Object.entries(choice.delta || {}).forEach(([stat, delta]) => { state[stat] += delta; });
   state.decisions[key] = choice.id || choice.value || choice.text;
   refs.dialogueCard.hidden = false;
+  refs.speaker.textContent = scene.replySpeaker || scene.speaker;
   refs.dialogue.textContent = choice.reply || choice.text;
   refs.stageChoices.innerHTML = "";
   refs.stageChoices.classList.remove("show");

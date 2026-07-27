@@ -26,16 +26,16 @@ const scenes=[
  {id:'bossAfter',time:'09:10',speaker:'강민재',text:'결국 예쁘고 그럴듯하게 만들라는 뜻 아닌가?',characters:[{id:'minjae',position:'left'},{id:'harin',position:'right'}],activeCharacter:'minjae'},
  {id:'harinCorrection',time:'09:11',speaker:'서하린',text:'검증된 근거가 먼저라는 뜻이에요. 보기 좋은 건 그다음이고요.',characters:[{id:'minjae',position:'left'},{id:'harin',position:'right'}],activeCharacter:'harin'},
  {id:'harin1',time:'09:12',speaker:'서하린',text:'이번 PT는 제가 중간 검토할게요. 혼자 준비하는 과제 아니에요.',char:'harin',choiceKey:'firstSupport',choices:[
-   {text:'감사합니다. 정리되면 바로 공유드릴게요.',delta:{trust:2},reply:'“좋아요. 판단 근거까지 같이 남겨두면 더 빨리 볼 수 있어요.”'},
-   {text:'초안 정도는 혼자 만들어보겠습니다.',delta:{work:1,trust:-1},reply:'“초안까지는 좋아요. 다만 혼자 만든다는 말과 혼자 버틴다는 말은 다르니까요.”'},
-   {text:'혹시 부장님이 저를 못 미더워하신 건가요?',delta:{affection:1,trust:1},reply:'“부장님 때문 아니에요. 혼자 하다가 망가지는 사람을 많이 봐서 그래요.”'}]},
+   {text:'감사합니다. 정리되면 바로 공유드릴게요.',delta:{trust:2},reply:'좋아요. 판단 근거까지 같이 남겨두면 더 빨리 볼 수 있어요.'},
+   {text:'초안 정도는 혼자 만들어보겠습니다.',delta:{work:1,trust:-1},reply:'초안까지는 좋아요. 다만 혼자 만든다는 말과 혼자 버틴다는 말은 다르니까요.'},
+   {text:'혹시 부장님이 저를 못 미더워하신 건가요?',delta:{affection:1,trust:1},reply:'부장님 때문 아니에요. 혼자 하다가 망가지는 사람을 많이 봐서 그래요.'}]},
  {id:'harinThought',time:'09:13',speaker:'한도윤',text:'고마운 말인데도 마음 한구석이 불편했다. 도움을 받으면 또 내 결과가 아니라고 평가받을 것 같았다.'},
  {id:'messageNotice',time:'09:15',speaker:'시스템',text:'PT 전환과제 TF에 새 메시지가 도착했습니다.\n우측 패널의 메신저 탭에서 확인하세요.',char:'harin',requireMessage:true,notification:'pt-first'},
  {id:'afterMessage',time:'09:22',speaker:'서하린',text:'좋아요. 요구사항은 기록해 두죠. 나중에 말이 달라지면 원문이 제일 정확하니까요.',char:'harin',clue:CLUES.firstDirective},
  {id:'workPlan',time:'09:30',speaker:'서하린',text:'금요일까지 시간이 많지 않아요. 오늘 어떤 자료부터 확인할 생각이에요?',char:'harin',choiceKey:'workPlan',choices:[
-   {text:'신규 유저가 이탈하는 구간부터 조사한다.',delta:{work:1},reply:'“좋아요. 먼저 어디에서 빠져나가는지 알아야 개선안도 설득력이 생기죠.”'},
-   {text:'경쟁 게임의 신규 유저 경험부터 조사한다.',delta:{work:1},reply:'“비교 기준을 잡는 것도 좋겠네요. 그대로 따라 하지는 말고 이유를 찾아봐요.”'},
-   {text:'눈에 띄는 AI 기능 아이디어부터 정리한다.',delta:{work:0,trust:1},reply:'“아이디어는 괜찮지만, 부장님이 말한 건 AI 자체보다 유저 경험에 가까웠어요.”'}]},
+   {text:'신규 유저가 이탈하는 구간부터 조사한다.',delta:{work:1},reply:'좋아요. 먼저 어디에서 빠져나가는지 알아야 개선안도 설득력이 생기죠.'},
+   {text:'경쟁 게임의 신규 유저 경험부터 조사한다.',delta:{work:1},reply:'비교 기준을 잡는 것도 좋겠네요. 그대로 따라 하지는 말고 이유를 찾아봐요.'},
+   {text:'눈에 띄는 AI 기능 아이디어부터 정리한다.',delta:{work:0,trust:1},reply:'아이디어는 괜찮지만, 부장님이 말한 건 AI 자체보다 유저 경험에 가까웠어요.'}]},
  {id:'researchStart',time:'10:00',speaker:'한도윤',text:'하린이 공유한 사내 자료실에서 이탈 데이터, 고객 리뷰, 기존 안내 문서를 차례로 열었다.'},
  {id:'researchData',time:'10:06',speaker:'시스템',text:'자료 조사 결과\n· 초반 안내가 길다는 의견이 많다.\n· 첫 전투에 진입하기 전에 이탈하는 유저가 많다.'},
  {id:'fileVersions',time:'10:14',speaker:'한도윤',text:'신규유저_개선안, 신규유저_개선안_수정, 신규유저_개선안_최종, 신규유저_개선안_최종진짜…\n비슷한 이름의 문서가 너무 많았다.'},
@@ -70,7 +70,7 @@ const scenes=[
  {id:'nanaIntro',time:'15:00',speaker:'나나봇',text:'조사 내용을 발표용 문장으로 정리할 수 있습니다! 더 읽기 쉬운 표현이 발견되면 문장을 추천해 드릴게요.',char:'nanabot'},
  {id:'nanaExample',time:'15:01',speaker:'나나봇',text:'원문: “첫 전투 이전 구간에서 신규 유저 이탈률이 높다.”\n추천: “신규 유저의 첫 경험을 혁신해 이탈 가능성을 최소화합니다.”',characters:[{id:'nanabot',position:'left'},{id:'harin',position:'right'}],activeCharacter:'nanabot'},
  {id:'nanaWarning',time:'15:02',speaker:'서하린',text:'보기는 좋은데, 수치와 근거가 사라졌네요. 편한 기능일수록 원문과 비교해야 해요.',characters:[{id:'nanabot',position:'left'},{id:'harin',position:'right'}],activeCharacter:'harin'},
- {id:'nanaChoice',time:'15:04',speaker:'시스템',text:'PT 초안을 어떤 방식으로 정리할까?',choiceKey:'nanaUse',choices:[
+ {id:'nanaChoice',time:'15:04',speaker:'시스템',replySpeaker:'한도윤',text:'PT 초안을 어떤 방식으로 정리할까?',choiceKey:'nanaUse',choices:[
    {text:'핵심 문장은 직접 작성하고 나나봇은 문장만 다듬게 한다.',delta:{work:1,trust:1},clue:CLUES.nanaManual,reply:'핵심 의미는 직접 유지하고, 표현을 다듬는 작업만 나나봇에 맡겼다.'},
    {text:'조사 자료 전체를 나나봇으로 자동 요약한다.',delta:{work:2},clue:CLUES.nanaAuto,reply:'나나봇이 조사 자료를 빠르게 발표용 문장으로 정리했다. 지금은 꽤 편리해 보인다.'}]},
  {id:'draftWork',time:'15:40',speaker:'한도윤',text:'추천 문장과 원문을 번갈아 보며 슬라이드를 채웠다.\n표현을 고칠 때마다 출처가 남아 있는지 확인했고, 선택한 조사 근거는 별도 메모에 복사해 두었다.'},
@@ -93,10 +93,10 @@ const scenes=[
  {id:'neighborConfirm',time:'20:20',speaker:'한도윤',text:'저 앞 오피스텔이요. 선배도 이 동네인 줄은 몰랐습니다.',bg:'store',char:'harinEvening',location:'동네 편의점 · 저녁'},
  {id:'dinnerCheck',time:'20:21',speaker:'서하린',text:'그런데 저녁이 삼각김밥 하나예요? 퇴근하고도 혼자 고생하는 건 여전하네요.',bg:'store',char:'harinEvening',location:'동네 편의점 · 저녁'},
  {id:'harinStore',time:'20:23',speaker:'서하린',text:'그런데 오늘 회사에서도 그랬죠. 왜 자꾸 모든 걸 혼자 끝내려고 해요?',bg:'store',char:'harinEvening',location:'동네 편의점 · 저녁',choiceKey:'eveningTrust',choices:[
-   {text:'선배가 같이 봐주시면 든든할 것 같아요.',delta:{affection:1,trust:2},reply:'서하린은 작게 웃었다. “그 말, 내일도 기억하세요.”'},
-   {text:'이번에는 제 실력으로 인정받고 싶었습니다.',delta:{affection:1,trust:1},reply:'“도와달라는 말이 실력이 없다는 뜻은 아니에요. 적어도 저는 그렇게 평가하지 않아요.”'},
-   {text:'회사에서도 이웃인 걸 모른 척해야 합니까?',delta:{affection:2},reply:'“그건… 도윤 씨가 아침마다 지각만 안 하면 생각해볼게요.” 하린이 장난스럽게 웃었다.'},
-   {text:'제가 맡은 일이니 혼자 해보겠습니다.',delta:{work:1,trust:-1},reply:'“책임감이랑 혼자 버티는 건 달라요.” 서하린의 표정이 조금 굳었다.'}]},
+   {text:'선배가 같이 봐주시면 든든할 것 같아요.',delta:{affection:1,trust:2},reply:'그 말, 내일도 기억하세요.'},
+   {text:'이번에는 제 실력으로 인정받고 싶었습니다.',delta:{affection:1,trust:1},reply:'도와달라는 말이 실력이 없다는 뜻은 아니에요. 적어도 저는 그렇게 평가하지 않아요.'},
+   {text:'회사에서도 이웃인 걸 모른 척해야 합니까?',delta:{affection:2},reply:'그건… 도윤 씨가 아침마다 지각만 안 하면 생각해볼게요.'},
+   {text:'제가 맡은 일이니 혼자 해보겠습니다.',delta:{work:1,trust:-1},reply:'책임감이랑 혼자 버티는 건 달라요.'}]},
  {id:'eveningAdvice',time:'20:24',speaker:'서하린',text:'도움을 받았다고 도윤 씨가 한 일이 사라지는 건 아니에요. 오늘 만든 v0.1은 그대로 두고, 내일은 숫자부터 같이 검증해요.',bg:'store',char:'harinEvening',location:'동네 편의점 · 저녁'},
  {id:'eveningMessage',time:'20:25',speaker:'시스템',text:'서하린에게 새 개인 메시지가 도착했습니다.\n“내일 오전에 숫자부터 같이 검증해요. 그리고 오늘 만든 v0.1, 절대 덮어쓰지 말고요.”',bg:'store',location:'동네 편의점 · 저녁',notification:'harin-evening'},
  {id:'end',time:'20:27',speaker:'시스템',text:'DAY 1 완료\n정상 원본 신규유저_이탈개선_PT_v0.1이 저장되었습니다.\n아직 파일에 이상 현상은 없습니다.',bg:'store',location:'동네 편의점 · 저녁',end:true}
@@ -171,12 +171,12 @@ let deferNextNotification=false;function render(){const deferNotification=deferN
  if(s.cg){refs.cgImage.src=ASSET+`CG/${s.cg}`;refs.cgImage.alt=s.cgTitle||'스토리 이벤트 CG';refs.cg.classList.add('show');refs.cg.setAttribute('aria-hidden','false');refs.stage.classList.add('cg-active');unlockCg(s)}else{refs.cg.classList.remove('show');refs.cg.setAttribute('aria-hidden','true');refs.stage.classList.remove('cg-active')}
  renderCharacters(s);
  if(effectiveBgm)playBgm(effectiveBgm);if(s.clue)addClue(s.clue);refs.stageChoices.innerHTML='';refs.stageChoices.classList.remove('show');refs.stage.classList.remove('choice-mode');
- if(pendingChoice){addStageChoicePrompt(s.text);s.choices.forEach(c=>addStageChoice(c,()=>choose(c,choiceKey)));refs.next.disabled=true}
+ if(pendingChoice){addStageChoicePrompt(s.text);s.choices.forEach(c=>addStageChoice(c,()=>choose(c,choiceKey,s)));refs.next.disabled=true}
  if(cinematic)startCinematic(s,s.cinematicDelay);if(s.notification&&!deferNotification)notifyMessage(s.notification);if(s.startCoffee&&!state.coffeeDone){startCoffee();return}syncStats();saveSilently();autoSaveAtCheckpoint(s);if(s.daySummary){showDaySummary(s.daySummary);return}}
 function choiceEffectTags(choice){const labels={work:'◆ 업무력',affection:'♡ 호감도',trust:'◇ 신뢰도'},delta=typeof choice==='object'&&choice?.delta?choice.delta:{},tags=Object.entries(delta).filter(([key,value])=>value!==0&&labels[key]).map(([key,value])=>({text:`${labels[key]} ${value>0?'상승':'하락'}`,tone:value>0?'gain':'loss'}));return tags.length?tags:[{text:'스토리 분기',tone:'branch'}]}
 function addStageChoice(choice,handler){const b=document.createElement('button'),text=typeof choice==='string'?choice:choice.text;b.type='button';b.innerHTML=`<span class="stage-choice-label">${escapeHtml(text)}</span><small class="stage-choice-effects">${choiceEffectTags(choice).map(tag=>`<i class="${tag.tone}">${escapeHtml(tag.text)}</i>`).join('')}</small>`;b.onclick=handler;refs.stageChoices.appendChild(b);refs.stageChoices.classList.add('show');refs.stage.classList.add('choice-mode')}
 function addStageChoicePrompt(text){const prompt=document.createElement('header');prompt.className='stage-choice-prompt';prompt.innerHTML=`<small>CHOICE</small><strong>${escapeHtml(text)}</strong>`;refs.stageChoices.appendChild(prompt)}
-function choose(c,key){const before={work:state.work,affection:state.affection,trust:state.trust};Object.entries(c.delta).forEach(([k,v])=>state[k]+=v);state.decisions[key]=c.text;if(c.clue)addClue(c.clue);refs.dialogueCard.hidden=false;refs.dialogue.textContent=c.reply;refs.stageChoices.innerHTML='';refs.stageChoices.classList.remove('show');refs.stage.classList.remove('choice-mode');refs.next.disabled=false;syncStats();showChoiceResult(c,before,key);saveSilently()}
+function choose(c,key,scene){const before={work:state.work,affection:state.affection,trust:state.trust};Object.entries(c.delta).forEach(([k,v])=>state[k]+=v);state.decisions[key]=c.text;if(c.clue)addClue(c.clue);refs.dialogueCard.hidden=false;refs.speaker.textContent=scene.replySpeaker||scene.speaker;refs.dialogue.textContent=c.reply||c.text;refs.stageChoices.innerHTML='';refs.stageChoices.classList.remove('show');refs.stage.classList.remove('choice-mode');refs.next.disabled=false;syncStats();showChoiceResult(c,before,key);saveSilently()}
 let choiceResultTimer;
 function showChoiceResult(c,before,key){const entries=Object.entries(c.delta).filter(([,v])=>v!==0);if(!entries.length)return;const names={work:'업무력',affection:'호감도',trust:'신뢰도'},icons={work:'◆',affection:'♡',trust:'◇'};$('#choice-result-title').textContent=key==='eveningTrust'?'서하린과의 관계가 변했습니다':'선택이 능력치에 반영되었습니다';$('#choice-result-list').innerHTML=entries.map(([k,v])=>`<article class="${v>0?'gain':'loss'}"><i>${icons[k]}</i><div><span>${names[k]}</span><small>${before[k]} → ${state[k]}</small></div><strong>${v>0?'+':''}${v}</strong></article>`).join('');const panel=$('#choice-result');panel.classList.remove('show');panel.setAttribute('aria-hidden','false');requestAnimationFrame(()=>panel.classList.add('show'));entries.forEach(([k])=>pulseStat(k));clearTimeout(choiceResultTimer);choiceResultTimer=setTimeout(()=>{panel.classList.remove('show');panel.setAttribute('aria-hidden','true')},3000)}
 function pulseStat(key){const target=key==='affection'||key==='trust'?$('#'+key):$('#'+key);if(!target)return;target.classList.remove('stat-pulse');void target.offsetWidth;target.classList.add('stat-pulse')}
