@@ -340,6 +340,45 @@
           "reviewed_at": "2026-07-23T23:44:26.6548966+09:00"
         }
       ]
+    },
+    {
+      "id": "background.elevator_lobby.night",
+      "kind": "background",
+      "profile": "background_16_9",
+      "location": "elevator_lobby",
+      "variant": "night",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/backgrounds/approved/elevator_lobby_night_v001.png",
+          "generation_log_id": "elevator-lobby-night-v001-imagegen",
+          "sha256": "e8630fa65b2eef55949358e6af41bb01e6ddd83600a7d00e056efcd8cc14f6fc",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-07-27T19:23:35.1261218+09:00"
+        }
+      ]
+    },
+    {
+      "id": "event_cg.day3.elevator_waiting",
+      "kind": "event_cg",
+      "profile": "event_cg_16_9",
+      "scene": "day3",
+      "beat": "elevator_waiting",
+      "framing": "waist_up",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/event_cg/approved/cg_day3_elevator_waiting_v001.png",
+          "generation_log_id": "cg-day3-elevator-waiting-v001-imagegen",
+          "sha256": "d2f09deb50cb36089569a95aaeb64444b6d5ba244b1be30e02c75e2daef8fb4b",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-07-27T19:23:35.1261218+09:00"
+        }
+      ]
     }
   ]
 }

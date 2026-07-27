@@ -15,6 +15,7 @@ const pageParams = new URLSearchParams(location.search);
 const devSkipMinigames = pageParams.get("dev") === "skip-minigames";
 const BACKGROUND_SOURCES = Object.freeze({
   cafeteria_day: ArtAssets.resolve("background.cafeteria.day"),
+  elevator_lobby_night: ArtAssets.resolve("background.elevator_lobby.night"),
   office: `${ASSET}backgrounds/day1-office.png`,
   office_night: ArtAssets.resolve("background.office.night"),
   qa_test_space_incident: ArtAssets.resolve("background.qa_test_space.incident"),
@@ -24,6 +25,8 @@ const BACKGROUND_SOURCES = Object.freeze({
 const refs = {
   stage: $("#stage"),
   characterLayer: $("#character-layer"),
+  cg: $("#event-cg"),
+  cgImage: $("#event-cg-image"),
   scenePlaceholder: $("#scene-placeholder"),
   placeholderTitle: $("#placeholder-title"),
   placeholderDetail: $("#placeholder-detail"),
@@ -576,9 +579,32 @@ function inheritedPlaceholder(index) {
 function inheritedSceneValue(index, key) {
   for (let cursor = index; cursor >= 0; cursor -= 1) {
     const candidate = scenes[cursor];
+    if (!Day3Story.isVisible(candidate, state.decisions, visibilityContext())) continue;
     if (candidate[key]) return candidate[key];
   }
   return null;
+}
+
+function visibilityContext() {
+  return {
+    affectionBeforeChat: state.affection - (state.minigameResult?.affectionDelta || 0),
+  };
+}
+
+function unlockCg(scene) {
+  if (!scene.cgAssetId) return;
+  try {
+    const image = ArtAssets.resolve(scene.cgAssetId);
+    const saved = JSON.parse(localStorage.getItem("nan-unlocked-cgs-v1")) || [];
+    const archive = saved.filter((entry) => typeof entry === "object" && entry?.id !== scene.cgAssetId);
+    archive.push({
+      id: scene.cgAssetId,
+      image,
+      day: `DAY 3 · ${scene.time}`,
+      title: scene.cgTitle || scene.location || "기록된 장면",
+    });
+    localStorage.setItem("nan-unlocked-cgs-v1", JSON.stringify(archive));
+  } catch (_error) {}
 }
 
 function renderVisuals(scene) {
@@ -593,6 +619,19 @@ function renderVisuals(scene) {
     refs.stage.style.backgroundImage = "none";
   } else if (effectiveBg && BACKGROUND_SOURCES[effectiveBg]) {
     refs.stage.style.backgroundImage = `url('${BACKGROUND_SOURCES[effectiveBg]}')`;
+  }
+
+  if (scene.cgAssetId) {
+    refs.cgImage.src = ArtAssets.resolve(scene.cgAssetId);
+    refs.cgImage.alt = scene.cgTitle || "스토리 이벤트 CG";
+    refs.cg.classList.add("show");
+    refs.cg.setAttribute("aria-hidden", "false");
+    refs.stage.classList.add("cg-active");
+    unlockCg(scene);
+  } else {
+    refs.cg.classList.remove("show");
+    refs.cg.setAttribute("aria-hidden", "true");
+    refs.stage.classList.remove("cg-active");
   }
 
   const characterPlaceholder = scene.placeholderCharacter;
@@ -664,6 +703,7 @@ function resumeCinematic() {
 function preloadSceneImages(scene) {
   if (!scene?.cinematicDelay) return Promise.resolve();
   const sources = [];
+  if (scene.cgAssetId) sources.push(ArtAssets.resolve(scene.cgAssetId));
   if (scene.bg && BACKGROUND_SOURCES[scene.bg]) sources.push(BACKGROUND_SOURCES[scene.bg]);
   (scene.characters || []).forEach((entry) => {
     if (entry.assetId) sources.push(ArtAssets.resolve(entry.assetId));
@@ -681,7 +721,7 @@ function preloadSceneImages(scene) {
 
 function nextVisibleIndex(fromIndex) {
   let index = Math.min(fromIndex, scenes.length - 1);
-  while (index < scenes.length - 1 && !Day3Story.isVisible(scenes[index], state.decisions)) index += 1;
+  while (index < scenes.length - 1 && !Day3Story.isVisible(scenes[index], state.decisions, visibilityContext())) index += 1;
   return index;
 }
 

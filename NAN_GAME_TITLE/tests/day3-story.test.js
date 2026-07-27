@@ -42,6 +42,18 @@ test("DAY 3 장면 ID와 필수 필드가 유효하다", () => {
   assert.deepEqual(story.validateScenes(story.scenes), []);
 });
 
+test("엘리베이터 CG는 충분한 호감도에서만 일반 대사 앞에 노출된다", () => {
+  const cg = story.scenes.find((scene) => scene.id === "day3ElevatorCg");
+  const after = story.scenes.find((scene) => scene.id === "day3ElevatorAfterCg");
+  const fallback = story.scenes.find((scene) => scene.id === "day3DepartureHarin");
+  assert.equal(story.isVisible(cg, {}, { affectionBeforeChat: 4 }), true);
+  assert.equal(story.isVisible(after, {}, { affectionBeforeChat: 4 }), true);
+  assert.equal(story.isVisible(fallback, {}, { affectionBeforeChat: 4 }), false);
+  assert.equal(story.isVisible(cg, {}, { affectionBeforeChat: 3 }), false);
+  assert.equal(story.isVisible(fallback, {}, { affectionBeforeChat: 3 }), true);
+  assert.equal(cg.cgAssetId, "event_cg.day3.elevator_waiting");
+});
+
 test("DAY 3은 첫 변조를 확인하지만 실행자를 단정하지 않는다", () => {
   const text = JSON.stringify(story.scenes);
   assert.match(text, /DAY 3 최초 변경본|직접 접근 여부 미확정/);

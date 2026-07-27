@@ -9,6 +9,7 @@
   // active version in assets/art/manifests/art-assets.json.
   const ACTIVE = Object.freeze({
     "background.cafeteria.day": "../assets/art/backgrounds/approved/cafeteria_day_v001.png",
+    "background.elevator_lobby.night": "../assets/art/backgrounds/approved/elevator_lobby_night_v001.png",
     "background.office.night": "../assets/art/backgrounds/approved/office_night_v001.png",
     "background.qa_test_space.incident": "../assets/art/backgrounds/approved/qa_test_space_incident_v001.png",
     "background.restaurant.lunch": "../assets/art/backgrounds/approved/restaurant_lunch_v001.png",
@@ -16,6 +17,7 @@
     "character.harin.hand_to_chest.surprised": "../assets/art/characters/harin/approved/harin_hand_to_chest_surprised_v001.png",
     "character.harin.holding_cup.tired": "../assets/art/characters/harin/approved/harin_holding_cup_tired_v001.png",
     "character.sea.neutral_standing.gentle_smile": "../assets/art/characters/sea/approved/sea_neutral_standing_gentle_smile_v001.png",
+    "event_cg.day3.elevator_waiting": "../assets/art/event_cg/approved/cg_day3_elevator_waiting_v001.png",
   });
 
   function resolve(id) {

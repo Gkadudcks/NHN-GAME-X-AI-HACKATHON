@@ -84,13 +84,21 @@
     { id: "day3Wrap", time: "17:10", speaker: "한도윤", text: "변경본과 로그를 따로 보존하고 DAY 2 복원 지점은 건드리지 않았다. 실제 실행 계정과 기기는 내일 시스템 담당자에게 확인하기로 했다.", bg: "office" },
     { id: "day3Summary", time: "18:00", speaker: "시스템", text: "오늘의 업무를 정산합니다.", bg: "office", bgm: "daily", daySummary: 3 },
     { id: "day3DepartureLead", time: "18:14", speaker: "한도윤", dynamic: "departureLead", bg: "office_night", bgm: "harin", location: "게임사업실 · 퇴근" },
-    { id: "day3DepartureHarin", time: "18:15", speaker: "서하린", dynamic: "departureHarin", char: "harin", bg: "office_night" },
+    { id: "day3ElevatorCg", time: "18:15", speaker: "서하린", dynamic: "departureHarin", bg: "elevator_lobby_night", cgAssetId: "event_cg.day3.elevator_waiting", cgTitle: "기다렸어요, 오늘은", cinematicDelay: 1300, location: "엘리베이터 로비 · 퇴근", when: { affectionBeforeChatGte: 4 } },
+    { id: "day3ElevatorAfterCg", time: "18:16", speaker: "한도윤", text: "선배와 눈이 마주쳤다. 열린 엘리베이터 안쪽의 따뜻한 불빛보다, 나를 기다렸다는 그 미소가 먼저 눈에 들어왔다.", bg: "elevator_lobby_night", char: "harin", location: "엘리베이터 로비 · 퇴근", when: { affectionBeforeChatGte: 4 } },
+    { id: "day3DepartureHarin", time: "18:15", speaker: "서하린", dynamic: "departureHarin", char: "harin", bg: "office_night", when: { affectionBeforeChatLt: 4 } },
     { id: "day3EveningMessage", time: "20:10", speaker: "서하린", dynamic: "eveningMessage", bg: "office_night", notification: "d3-harin-evening" },
     { id: "day3End", time: "20:12", speaker: "시스템", text: "DAY 3 완료\n첫 번째 변조는 확인되었지만 실제 실행자는 아직 밝혀지지 않았습니다.", bg: "office_night", end: true },
   ];
 
-  function isVisible(scene, decisions = {}) {
+  function isVisible(scene, decisions = {}, context = {}) {
     if (!scene.when) return true;
+    if (Object.prototype.hasOwnProperty.call(scene.when, "affectionBeforeChatGte")) {
+      return Number(context.affectionBeforeChat) >= scene.when.affectionBeforeChatGte;
+    }
+    if (Object.prototype.hasOwnProperty.call(scene.when, "affectionBeforeChatLt")) {
+      return Number(context.affectionBeforeChat) < scene.when.affectionBeforeChatLt;
+    }
     const value = decisions[scene.when.decision];
     if (Object.prototype.hasOwnProperty.call(scene.when, "notEquals")) return value !== scene.when.notEquals;
     return value === scene.when.equals;

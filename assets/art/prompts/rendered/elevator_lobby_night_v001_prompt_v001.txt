@@ -1,0 +1,5 @@
+Create a 1920x1080 character-free visual-novel background matching the Day 3 elevator event CG.
+
+Show a modern Korean corporate elevator lobby at night from natural standing eye level. Place an open brushed-metal elevator at center-right with warm cream-gold light spilling onto a polished dark stone floor. Use floor-to-ceiling windows at left with a restrained cool-blue city skyline. Keep clean pale-gray walls, charcoal trim, straight architectural perspective, sprite placement space, and a calm lower third for dialogue UI.
+
+Avoid people, silhouettes, reflections of people, readable signs, branding, text, logos, watermarks, fisheye, dramatic tilt, clutter, photorealism, 3D, watercolor, neon, and excessive bloom.
