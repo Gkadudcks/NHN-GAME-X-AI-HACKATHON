@@ -502,6 +502,11 @@ function resolveDynamic(name) {
       verify: "이름만으로 실행자를 단정할 수 없다. 기록이 남은 이유부터 확인해야 한다.",
       blindTrust: "선배가 아니라고 믿고 복원하면 빠르다. 그래도 확인 없이 움직여도 되는 걸까.",
     }[state.decisions.harinSuspicion] || "먼저 선배에게 사실을 확인해야 한다.",
+    lunchBreak: {
+      porkCutlet: "돈가스 골랐네. 그래, 아침부터 분위기가 무거웠으니까 이럴 때는 든든하게 먹어야지.",
+      stew: "김치찌개 잘 골랐다. 뜨거울 때 먹어. 아침부터 무슨 일 있었는지 얼굴에 다 보여.",
+      salad: "오늘은 가볍게 먹네. 천천히 먹어. 아침부터 또 자료 때문에 정신없었지?",
+    }[state.decisions.lunchMenu] || "아침부터 분위기가 왜 그래? 설마 자료 또 꼬였어?",
     eveningMessage: state.decisions.harinSuspicion === "verify"
       ? "오늘 제 이름을 보고도 바로 단정하지 않은 건 고마워요. 그렇다고 그냥 믿지만은 마세요. 내일은 기록을 끝까지 확인해요."
       : "제 이름이 남은 건 사실이에요. 하지만 사실인 것과 전부인 건 달라요. 내일 기록을 다시 확인해요.",

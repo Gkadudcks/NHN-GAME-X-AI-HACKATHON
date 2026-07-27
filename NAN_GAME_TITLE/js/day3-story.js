@@ -57,7 +57,12 @@
     { id: "day3ContactObjective", time: "10:21", speaker: "한도윤", text: "업무 확인은 끝났다. 문득 어제 편의점에서 마주쳤던 순간이 떠올랐다. 오늘 같이 퇴근하자고 연락해 볼까.", bg: "office" },
     { id: "day3SecretChatStart", time: "10:22", speaker: "시스템", text: "박태식 부장의 시선을 피해 서하린에게 사적인 답장을 전송합니다.", bg: "office", bgm: "minigame", startSecretChat: true },
     { id: "day3MinigameResult", time: "10:44", speaker: "서하린", dynamic: "secretChatResult", char: "harin", bgm: "daily", notification: "d3-harin-personal" },
-    { id: "day3Lunch", time: "12:20", speaker: "강민재", text: "아침부터 분위기가 왜 그래? 설마 자료 또 꼬였어?", bg: "cafeteria_day", char: "minjae", location: "구내식당 · 점심" },
+    { id: "day3LunchChoice", time: "12:20", speaker: "한도윤", text: "오전 내내 변조 기록만 들여다봤더니 머리가 무거웠다. 점심만큼은 다른 생각을 해 보자. 오늘은 뭘 먹을까?", bg: "cafeteria_day", location: "구내식당 · 점심", choiceKey: "lunchMenu", choices: [
+      { id: "porkCutlet", text: "바삭한 돈가스로 기분을 바꾼다.", reply: "오늘만큼은 든든하게 먹고 다시 시작하자.", delta: {} },
+      { id: "stew", text: "뜨끈한 김치찌개로 속을 푼다.", reply: "따뜻한 걸 먹으면 복잡한 머리도 조금은 풀리겠지.", delta: {} },
+      { id: "salad", text: "가벼운 샐러드로 천천히 숨을 돌린다.", reply: "급하게 먹지 말고 잠깐이라도 여유를 갖자.", delta: {} },
+    ] },
+    { id: "day3Lunch", time: "12:22", speaker: "강민재", dynamic: "lunchBreak", bg: "cafeteria_day", char: "minjae" },
     { id: "day3MinjaeHint", time: "12:24", speaker: "강민재", text: "바뀐 문장, 예전 발표 자료에서도 본 것 같아. 하린 선배가 그때 거의 혼자 다 했다고 들었는데… 아니, 이건 내가 말할 얘기는 아닌가.", char: "minjae", placeholder: "inherit", clue: CLUES.legacyMatch },
     { id: "day3HarinPastBoundary", time: "12:26", speaker: "한도윤", text: "민재는 더 말하지 않았다. 구버전 폴더와 바뀐 문장은 이제 우연으로 보기 어려웠다.", char: "minjae", placeholder: "inherit" },
     { id: "day3OfficeReturn", time: "13:25", speaker: "한도윤", text: "구내식당에서 돌아와 오전에 보존한 변경본을 다시 열었다. 추측은 잠시 내려놓고, 지금 확인할 수 있는 기록부터 정리하자.", bg: "office", bgm: "mystery", location: "게임사업실 · 오후" },

@@ -99,6 +99,16 @@ test("구내식당 뒤에는 사무실 복귀와 정리 대사를 거쳐 조사�
   assert.match(story.scenes[officeReturn].text, /추측은 잠시 내려놓고/);
 });
 
+test("구내식당에서는 능력치 부담 없이 점심 메뉴를 골라 환기한다", () => {
+  const lunchChoice = story.scenes.find((scene) => scene.id === "day3LunchChoice");
+  const lunch = story.scenes.findIndex((scene) => scene.id === "day3Lunch");
+  const choice = story.scenes.findIndex((scene) => scene.id === "day3LunchChoice");
+  assert.deepEqual(lunchChoice.choices.map((item) => item.id), ["porkCutlet", "stew", "salad"]);
+  assert.ok(lunchChoice.choices.every((item) => Object.keys(item.delta).length === 0));
+  assert.ok(choice < lunch);
+  assert.equal(lunchChoice.location, "구내식당 · 점심");
+});
+
 test("조사 답변은 미니게임 결과와 무관하고 개인 메시지만 결과에 따라 바뀐다", () => {
   const delayed = story.scenes.find((scene) => scene.id === "day3HarinDelayedReply");
   const workMessage = story.MESSAGES.find((message) => message.id === "d3-harin-check");
