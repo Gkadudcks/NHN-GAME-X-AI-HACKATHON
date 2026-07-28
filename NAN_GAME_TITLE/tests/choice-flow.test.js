@@ -11,6 +11,7 @@ test("선택 장면은 결과 대사를 숨긴 채 선택지를 먼저 표시한
     assert.match(source, /pendingChoice/);
     assert.match(source, /dialogueCard\.hidden\s*=\s*pendingChoice/);
     assert.match(source, /addStageChoicePrompt/);
+    assert.match(source, /function escapeHtml\s*\(/);
   }
 });
 
