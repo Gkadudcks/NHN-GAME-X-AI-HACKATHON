@@ -17,6 +17,20 @@ const devWorkAlert = pageParams.get("dev") === "work-alert";
 const devWorkAlertSubtask = Object.hasOwn(Day2Story.SUBTASKS, pageParams.get("subtask"))
   ? pageParams.get("subtask")
   : "competitor";
+const WORK_ALERT_REWARDS = Object.freeze({
+  perfect: Object.freeze({ workDelta: 2, trustDelta: 1 }),
+  good: Object.freeze({ workDelta: 1, trustDelta: 1 }),
+  normal: Object.freeze({ workDelta: 1, trustDelta: 0 }),
+  bad: Object.freeze({ workDelta: 0, trustDelta: -1 }),
+});
+
+function normalizeWorkAlertResult(result) {
+  if (!result) return null;
+  const legacyGrade = result.grade === "messy" ? "bad" : result.grade;
+  const grade = Object.hasOwn(WORK_ALERT_REWARDS, legacyGrade) ? legacyGrade : "good";
+  return { ...result, grade, ...WORK_ALERT_REWARDS[grade] };
+}
+
 const BACKGROUND_SOURCES = Object.freeze({
   office: `${ASSET}backgrounds/day1-office.png`,
   office_night: ArtAssets.resolve("background.office.night"),
@@ -77,7 +91,7 @@ const state = {
   decisions: { ...savedDay2.decisions, ...(devWorkAlert ? { day2Subtask: devWorkAlertSubtask } : {}) },
   seenNotifications: { ...savedDay2.seenNotifications },
   summariesSeen: { ...savedDay2.summariesSeen },
-  minigameResult: savedDay2.minigameResult,
+  minigameResult: normalizeWorkAlertResult(savedDay2.minigameResult),
   day1: { ...progress.shared.day1 },
   unreadClues: false,
 };
@@ -494,7 +508,7 @@ function notifyMessage(id) {
 function resolveDynamic(name) {
   const evening = state.day1.eveningTrust;
   const subtask = state.decisions.day2Subtask || "competitor";
-  const grade = state.minigameResult?.grade || "good";
+  const grade = normalizeWorkAlertResult(state.minigameResult)?.grade || "good";
   const manualNana = state.day1.nanaUse !== "auto-summary";
   const coffeeHigh = state.day1.coffeeResult?.grade === "perfect" || state.day1.coffeeResult?.correctDrinks === 3;
   const values = {
@@ -511,8 +525,18 @@ function resolveDynamic(name) {
       "work-alone": "그건 사실상 선택권이 없는 것 아닙니까?",
     }[evening] || "알겠습니다. 오늘은 같이 확인하겠습니다.",
     subtaskSelected: `${Day2Story.SUBTASKS[subtask].title}부터 해보자. 숫자와는 다른 방식으로 신규 유저의 첫 경험을 볼 수 있을 것 같다.`,
-    workAlertResult: grade === "perfect" ? "생각보다 잘하네요. 제 요청도 안 놓쳤고." : grade === "good" ? "급한 건 다 처리했어요. 잡담에 너무 성실하게 답한 것만 빼면요." : "도윤 씨, 보안 교육을 스팸으로 보내면 인사팀에서 직접 찾아와요.",
-    workAlertReply: grade === "perfect" ? "선배 메시지만 따로 표시가 눈에 띄었습니다." : grade === "good" ? "점심 메시지도 중요한 의사결정이라고 민재가 주장했습니다." : "제목이 너무 광고 같았습니다.",
+    workAlertResult: {
+      perfect: "생각보다 잘하네요. 제 요청도 안 놓쳤고.",
+      good: "급한 건 다 처리했어요. 잡담에 너무 성실하게 답한 것만 빼면요.",
+      normal: "처리 속도는 괜찮았어요. 다음엔 급한 요청부터 구분해 봐요.",
+      bad: "도윤 씨, 보안 교육을 스팸으로 보내면 인사팀에서 직접 찾아와요.",
+    }[grade],
+    workAlertReply: {
+      perfect: "선배 메시지만 따로 표시가 눈에 띄었습니다.",
+      good: "점심 메시지도 중요한 의사결정이라고 민재가 주장했습니다.",
+      normal: "다음에는 보낸 사람과 마감부터 확인하겠습니다.",
+      bad: "제목이 너무 광고 같았습니다.",
+    }[grade],
     lunchBranchMinjae: {
       competitor: "신규 유저 경험이면 내가 하던 게임도 봐봐. 튜토리얼은 짧은데 첫 보스가 너무 세서 절반이 거기서 접었어.",
       reviews: "리뷰 읽다 보면 상처 안 받아?",
@@ -759,10 +783,11 @@ function finishWorkAlert(result) {
     return;
   }
   if (state.minigameResult) return;
-  state.minigameResult = result;
-  state.work += result.workDelta;
-  if (result.grade === "perfect") state.trust += 1;
-  if (result.grade === "perfect" && result.harinHandled) state.affection += 1;
+  const normalizedResult = normalizeWorkAlertResult(result);
+  state.minigameResult = normalizedResult;
+  state.work += normalizedResult.workDelta;
+  state.trust += normalizedResult.trustDelta;
+  if (normalizedResult.grade === "perfect" && normalizedResult.harinHandled) state.affection += 1;
   state.index = nextVisibleIndex(state.index + 1);
   syncStats();
   saveProgress();
@@ -774,9 +799,13 @@ function startWorkAlert() {
   if (devSkipMinigames) {
     console.info("[DEV] 업무 알림 미니게임을 GOOD 결과로 스킵했습니다.");
     finishWorkAlert({
-      score: 0,
+      score: 620,
+      maxScore: 880,
+      scorePercentage: 70.5,
       grade: "good",
       workDelta: 1,
+      trustDelta: 1,
+      outcomeCounts: { correct: 0, wrong: 0, missed: 0, criticalHandled: 0, criticalTotal: 0 },
       harinHandled: false,
       missedCritical: [],
       results: [],

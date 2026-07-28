@@ -16,9 +16,9 @@ test("DAY 2 work alert delegates to the official runner without assembling diffi
   assert.doesNotMatch(script, /lifeMs:\s*\d+/);
   assert.doesNotMatch(script, /seed:\s*20260720/);
   assert.doesNotMatch(script, /duration:\s*45/);
-  assert.match(html, /work-alert-minigame\.css\?v=4/);
-  assert.match(html, /work-alert-minigame\.js\?v=4/);
-  assert.match(html, /day2\.js\?v=21/);
+  assert.match(html, /work-alert-minigame\.css\?v=7/);
+  assert.match(html, /work-alert-minigame\.js\?v=7/);
+  assert.match(html, /day2\.js\?v=23/);
 });
 
 test("DAY 2 work alert direct mode uses memory progress, blocks saves, and repeats", () => {
@@ -47,6 +47,25 @@ test("DAY 2 retains the existing skip-minigames GOOD completion path", () => {
 
   assert.match(script, /const devSkipMinigames = pageParams\.get\("dev"\) === "skip-minigames"/);
   assert.match(script.slice(start, end), /if \(devSkipMinigames\)[\s\S]*grade: "good"/);
+  assert.match(script.slice(start, end), /score:\s*620[\s\S]*maxScore:\s*880[\s\S]*trustDelta:\s*1/);
+});
+
+test("DAY 2 업무 알림의 네 등급은 스탯과 직후 대사에 동일하게 반영된다", () => {
+  const script = read("js/day2.js");
+  const finishStart = script.indexOf("function finishWorkAlert");
+  const finishEnd = script.indexOf("function startWorkAlert", finishStart);
+  const finish = script.slice(finishStart, finishEnd);
+
+  assert.match(script, /perfect:\s*Object\.freeze\(\{ workDelta: 2, trustDelta: 1 \}\)/);
+  assert.match(script, /good:\s*Object\.freeze\(\{ workDelta: 1, trustDelta: 1 \}\)/);
+  assert.match(script, /normal:\s*Object\.freeze\(\{ workDelta: 1, trustDelta: 0 \}\)/);
+  assert.match(script, /bad:\s*Object\.freeze\(\{ workDelta: 0, trustDelta: -1 \}\)/);
+  assert.match(script, /result\.grade === "messy" \? "bad" : result\.grade/);
+  assert.match(finish, /state\.work \+= normalizedResult\.workDelta/);
+  assert.match(finish, /state\.trust \+= normalizedResult\.trustDelta/);
+  assert.match(finish, /normalizedResult\.grade === "perfect" && normalizedResult\.harinHandled/);
+  assert.match(script, /normal:\s*"처리 속도는 괜찮았어요\. 다음엔 급한 요청부터 구분해 봐요\."/);
+  assert.match(script, /normal:\s*"다음에는 보낸 사람과 마감부터 확인하겠습니다\."/);
 });
 
 test("DAY 2 페이지는 필요한 스크립트를 올바른 순서로 불러온다", () => {
