@@ -49,6 +49,40 @@
     ]),
   });
 
+  const DAY2_PRESET = Object.freeze({
+    seed: 20260720,
+    duration: 45,
+    lifeMs: 6500,
+    commonRequests: Object.freeze(REQUESTS.slice(0, 13)),
+  });
+
+  function day2SubtaskOrDefault(subtask) {
+    return Object.prototype.hasOwnProperty.call(SUBTASK_REQUESTS, subtask) ? subtask : "competitor";
+  }
+
+  function buildDay2Requests(subtask) {
+    const selectedSubtask = day2SubtaskOrDefault(subtask);
+    return [...DAY2_PRESET.commonRequests, ...SUBTASK_REQUESTS[selectedSubtask]];
+  }
+
+  function buildDay2Options(options = {}) {
+    const source = options && typeof options === "object" ? options : {};
+    const overrides = source.testOverrides && typeof source.testOverrides === "object" ? source.testOverrides : {};
+    const overrideSeed = Number(overrides.seed);
+    const overrideDuration = Number(overrides.duration);
+    const seed = Number.isFinite(overrideSeed) ? overrideSeed : DAY2_PRESET.seed;
+    const duration = Number.isFinite(overrideDuration) && overrideDuration > 0 ? overrideDuration : DAY2_PRESET.duration;
+    const requests = buildDay2Requests(source.subtask);
+    return {
+      seed,
+      duration,
+      lifeMs: DAY2_PRESET.lifeMs,
+      count: requests.length,
+      requests,
+      onComplete: source.onComplete,
+    };
+  }
+
   function createSeededRandom(seed) {
     let state = (Number(seed) || 1) >>> 0;
     return function random() {
@@ -133,44 +167,97 @@
 
   function evaluateAction(request, selectedAction) {
     const correct = request.action === selectedAction;
-    const reward = { urgent: 7, normal: 5, leisure: 3 }[priorityForRequest(request)];
-    const penalty = request.critical ? -3 : -2;
+    const reward = { urgent: 70, normal: 50, leisure: 30 }[priorityForRequest(request)];
+    const penalty = request.critical ? -30 : -20;
     const points = correct ? reward : penalty;
     return { outcome: correct ? "correct" : "wrong", points };
   }
 
   function missedResult(request) {
-    const penalty = { urgent: -5, normal: -1, leisure: 0 }[priorityForRequest(request)];
+    const penalty = { urgent: -50, normal: -10, leisure: 0 }[priorityForRequest(request)];
     return { outcome: "missed", points: penalty };
+  }
+
+  function scoreAfterPoints(score, points) {
+    return Math.max(0, (Number(score) || 0) + (Number(points) || 0));
+  }
+
+  function calculateScore(results = []) {
+    return results.reduce((score, result) => scoreAfterPoints(score, result.points), 0);
+  }
+
+  function maximumScore(requests = []) {
+    return requests.reduce((score, request) => {
+      const action = request.action || request.correctAction;
+      const priority = priorityForRequest({ critical: request.critical, action });
+      return score + { urgent: 70, normal: 50, leisure: 30 }[priority];
+    }, 0);
+  }
+
+  function scorePercentageFor(score, maxScore) {
+    const safeMaximum = Math.max(0, Number(maxScore) || 0);
+    if (!safeMaximum) return 0;
+    return Math.round((Math.max(0, Number(score) || 0) / safeMaximum) * 1000) / 10;
+  }
+
+  function formatScorePercentage(percentage) {
+    const value = Math.max(0, Number(percentage) || 0);
+    return `${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)}%`;
+  }
+
+  function gradeForScore(score, maxScore) {
+    const safeMaximum = Math.max(0, Number(maxScore) || 0);
+    const exactPercentage = safeMaximum ? (Math.max(0, Number(score) || 0) / safeMaximum) * 100 : 0;
+    if (exactPercentage >= 90) return { grade: "perfect", workDelta: 2, trustDelta: 1 };
+    if (exactPercentage >= 70) return { grade: "good", workDelta: 1, trustDelta: 1 };
+    if (exactPercentage > 30) return { grade: "normal", workDelta: 1, trustDelta: 0 };
+    return { grade: "bad", workDelta: 0, trustDelta: -1 };
+  }
+
+  function summarizeResults(results = []) {
+    const summary = { correct: 0, wrong: 0, missed: 0, criticalHandled: 0, criticalTotal: 0 };
+    results.forEach((result) => {
+      if (Object.hasOwn(summary, result.outcome)) summary[result.outcome] += 1;
+      if (!result.critical) return;
+      summary.criticalTotal += 1;
+      if (result.outcome === "correct") summary.criticalHandled += 1;
+    });
+    return summary;
   }
 
   function successFeedback(actionKey, points) {
     return actionKey === "delegate" ? `정확한 전달! +${points}` : `정확한 처리! +${points}`;
   }
 
-  function gradeForPerformance(results) {
-    const correct = results.filter((result) => result.outcome === "correct").length;
-    const missedCritical = results.filter((result) => result.critical && result.outcome !== "correct").length;
-    const accuracy = results.length ? correct / results.length : 0;
-    if (accuracy >= 0.7 && missedCritical <= 1) return { grade: "perfect", workDelta: 2 };
-    if (accuracy >= 0.4 && missedCritical <= 3) return { grade: "good", workDelta: 1 };
-    return { grade: "messy", workDelta: -1 };
+  function gradeForPerformance(results, maxScore = maximumScore(results)) {
+    return gradeForScore(calculateScore(results), maxScore);
   }
 
-  function finalizeResults(results) {
-    const gradeData = gradeForPerformance(results);
-    const score = Math.max(0, results.reduce((sum, result) => sum + result.points, 0));
+  function finalizeResults(results, maxScore = maximumScore(results)) {
+    const score = calculateScore(results);
+    const safeMaximum = Math.max(0, Number(maxScore) || 0);
+    const gradeData = gradeForScore(score, safeMaximum);
     return {
       score,
+      maxScore: safeMaximum,
+      scorePercentage: scorePercentageFor(score, safeMaximum),
       grade: gradeData.grade,
       workDelta: gradeData.workDelta,
+      trustDelta: gradeData.trustDelta,
+      outcomeCounts: summarizeResults(results),
       harinHandled: results.some((result) => result.harin && result.outcome === "correct"),
       missedCritical: results.filter((result) => result.critical && result.outcome !== "correct").map((result) => result.id),
       results: results.map((result) => ({ ...result })),
     };
   }
 
-  const core = Object.freeze({ ACTIONS, REQUESTS, SUBTASK_REQUESTS, createSeededRandom, formatClock, buildSchedule, priorityForRequest, boardPlacement, evaluateAction, missedResult, successFeedback, gradeForPerformance, finalizeResults });
+  const core = Object.freeze({
+    ACTIONS, REQUESTS, SUBTASK_REQUESTS, DAY2_PRESET,
+    buildDay2Requests, buildDay2Options, createSeededRandom, formatClock, buildSchedule,
+    priorityForRequest, boardPlacement, evaluateAction, missedResult,
+    scoreAfterPoints, calculateScore, maximumScore, scorePercentageFor, formatScorePercentage,
+    gradeForScore, gradeForPerformance, summarizeResults, successFeedback, finalizeResults,
+  });
   if (typeof module !== "undefined" && module.exports) module.exports = core;
   if (!global.document) return;
 
@@ -179,6 +266,8 @@
   let refs = null;
   let state = null;
   let pointerDrag = null;
+  const COMBO_CALLOUTS = Object.freeze({ 3: "NICE!", 5: "GREAT!", 8: "AMAZING!" });
+  const RESULT_SCROLL_DURATION_MS = 1500;
 
   function ensureStylesheet() {
     if (document.querySelector('link[data-work-alert-style]')) return;
@@ -251,12 +340,18 @@
               <p id="wa-result-summary"></p>
             </header>
             <div class="wa-result-body">
-              <section class="wa-result-score"><span>FINAL SCORE</span><b id="wa-result-score">0</b></section>
+              <section class="wa-result-score">
+                <strong id="wa-result-grade" class="wa-result-grade" data-grade="good">GOOD</strong>
+                <div class="wa-result-score-raw"><span>FINAL SCORE</span><b id="wa-result-score">0</b></div>
+              </section>
               <section class="wa-result-stats">
                 <p><span>업무력</span><b id="wa-result-work">+0</b></p>
                 <p><span>신뢰도</span><b id="wa-result-trust">+0</b></p>
               </section>
-              <section class="wa-result-history"><h4>처리 내역</h4><div id="wa-result-list" class="wa-result-list"></div></section>
+              <section class="wa-result-history">
+                <h4>처리 내역</h4>
+                <div id="wa-result-list" class="wa-result-list" tabindex="0" aria-label="요청별 처리 내역"></div>
+              </section>
             </div>
             <button id="wa-continue" class="wa-primary" type="button">계속하기</button>
           </div>
@@ -271,8 +366,9 @@
       floatingFeedback: root.querySelector("#wa-floating-feedback"), combo: root.querySelector("#wa-combo"),
       resultKicker: root.querySelector("#wa-result-kicker"), resultTitle: root.querySelector("#wa-result-title"),
       resultSummary: root.querySelector("#wa-result-summary"), resultScore: root.querySelector("#wa-result-score"),
+      resultGrade: root.querySelector("#wa-result-grade"), resultList: root.querySelector("#wa-result-list"),
       resultWork: root.querySelector("#wa-result-work"), resultTrust: root.querySelector("#wa-result-trust"),
-      resultList: root.querySelector("#wa-result-list"), continueButton: root.querySelector("#wa-continue"),
+      continueButton: root.querySelector("#wa-continue"),
     };
     refs.start.addEventListener("click", beginGame);
     refs.actions.addEventListener("click", (event) => {
@@ -467,22 +563,91 @@
     void refs.floatingFeedback.offsetWidth;
     refs.floatingFeedback.classList.add("show");
     global.clearTimeout(state.feedbackTimer);
-    state.feedbackTimer = global.setTimeout(() => refs.floatingFeedback.classList.remove("show"), 1000);
+    state.feedbackTimer = global.setTimeout(() => {
+      refs.floatingFeedback.classList.remove("show");
+      state.feedbackTimer = null;
+    }, 1000);
   }
 
   function renderCombo(animate = false) {
+    global.clearTimeout(state.comboEffectTimer);
+    state.comboEffectTimer = null;
+    refs.combo.classList.remove("bump", "milestone");
+    delete refs.combo.dataset.callout;
     refs.combo.hidden = state.combo < 2;
     refs.combo.textContent = state.combo < 2 ? "" : `COMBO ×${state.combo}`;
+    if (state.combo < 2) {
+      delete refs.combo.dataset.tier;
+      return;
+    }
+    refs.combo.dataset.tier = state.combo >= 8 ? "mint" : state.combo >= 5 ? "gold" : "coral";
     if (!animate || state.combo < 2) return;
-    refs.combo.classList.remove("bump");
     void refs.combo.offsetWidth;
     refs.combo.classList.add("bump");
+    const callout = COMBO_CALLOUTS[state.combo];
+    if (callout) {
+      refs.combo.dataset.callout = callout;
+      refs.combo.classList.add("milestone");
+    }
+    state.comboEffectTimer = global.setTimeout(() => {
+      refs.combo.classList.remove("bump", "milestone");
+      delete refs.combo.dataset.callout;
+      state.comboEffectTimer = null;
+    }, 720);
   }
 
   function showWrongFeedback() {
+    global.clearTimeout(state.wrongFeedbackTimer);
     refs.shell.classList.remove("wrong-feedback");
     void refs.shell.offsetWidth;
     refs.shell.classList.add("wrong-feedback");
+    state.wrongFeedbackTimer = global.setTimeout(() => {
+      refs.shell.classList.remove("wrong-feedback");
+      state.wrongFeedbackTimer = null;
+    }, 450);
+  }
+
+  function clearFeedbackTimers() {
+    if (!state) return;
+    global.clearTimeout(state.feedbackTimer);
+    global.clearTimeout(state.wrongFeedbackTimer);
+    global.clearTimeout(state.comboEffectTimer);
+    global.cancelAnimationFrame(state.historyScrollFrame);
+    state.feedbackTimer = null;
+    state.wrongFeedbackTimer = null;
+    state.comboEffectTimer = null;
+    state.historyScrollFrame = null;
+    refs?.floatingFeedback?.classList.remove("show");
+    refs?.shell?.classList.remove("wrong-feedback");
+    refs?.combo?.classList.remove("bump", "milestone");
+    if (refs?.combo) delete refs.combo.dataset.callout;
+  }
+
+  function prefersReducedResultMotion() {
+    return document.documentElement.classList.contains("reduce-effects")
+      || Boolean(global.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
+  }
+
+  function startResultHistoryScroll() {
+    const list = refs?.resultList;
+    if (!state || !list) return;
+    global.cancelAnimationFrame(state.historyScrollFrame);
+    state.historyScrollFrame = null;
+    list.scrollTop = 0;
+    const maxScroll = Math.max(0, list.scrollHeight - list.clientHeight);
+    if (!maxScroll) return;
+    if (prefersReducedResultMotion()) {
+      list.scrollTop = maxScroll;
+      return;
+    }
+    const startedAt = global.performance.now();
+    const scroll = (now) => {
+      const progress = Math.min(1, Math.max(0, (now - startedAt) / RESULT_SCROLL_DURATION_MS));
+      list.scrollTop = maxScroll * (progress ** 3);
+      if (progress < 1) state.historyScrollFrame = global.requestAnimationFrame(scroll);
+      else state.historyScrollFrame = null;
+    };
+    state.historyScrollFrame = global.requestAnimationFrame(scroll);
   }
 
   function handleAction(actionKey) {
@@ -492,7 +657,7 @@
     state.results.push(requestResult(request, evaluation, actionKey));
     state.active.delete(request.id);
     state.selectedId = null;
-    state.score = Math.max(0, state.score + evaluation.points);
+    state.score = scoreAfterPoints(state.score, evaluation.points);
     refs.score.textContent = String(state.score);
     const action = ACTIONS.find((item) => item.key === actionKey);
     state.combo = evaluation.outcome === "correct" ? state.combo + 1 : 0;
@@ -513,7 +678,7 @@
       state.active.delete(request.id);
       if (state.selectedId === request.id) state.selectedId = null;
       if (pointerDrag?.requestId === request.id) cancelPointerDrag();
-      state.score = Math.max(0, state.score + evaluation.points);
+      state.score = scoreAfterPoints(state.score, evaluation.points);
       refs.feedback.textContent = `${request.sender}의 요청을 놓쳤습니다.`;
       refs.feedback.dataset.tone = "missed";
       state.combo = 0;
@@ -580,13 +745,14 @@
     state.finished = true;
     cancelPointerDrag();
     cancelAnimationFrame(state.frame);
-    refs.shell.classList.remove("wrong-feedback");
+    clearFeedbackTimers();
     [...state.active.values()].forEach((request) => state.results.push(requestResult(request, missedResult(request))));
     state.schedule.slice(state.nextIndex).forEach((request) => state.results.push(requestResult(request, missedResult(request))));
     state.active.clear();
-    state.finalResult = finalizeResults(state.results);
+    state.finalResult = finalizeResults(state.results, state.maxScore);
     renderResult(state.finalResult);
     showScreen(refs.result);
+    startResultHistoryScroll();
     refs.continueButton.focus();
   }
 
@@ -594,23 +760,27 @@
     const copy = {
       perfect: { icon: "★", kicker: "CLEAR DESK", title: "쏟아진 요청을 정확하게 정리했습니다", summary: "서하린의 요청까지 놓치지 않았습니다. 전부 직접 하지 않고 필요한 곳에 잘 넘겼습니다." },
       good: { icon: "✓", kicker: "WORK COMPLETE", title: "급한 업무는 무사히 처리했습니다", summary: "몇 가지 잡담에는 너무 성실했지만 중요한 요청은 대부분 남았습니다." },
-      messy: { icon: "!", kicker: "INBOX OVERFLOW", title: "메신저가 잠깐 전쟁터가 됐습니다", summary: "보안 교육을 스팸으로 보내지만 않으면 됩니다. 놓친 핵심 정보는 나중에 다시 확인할 수 있습니다." },
+      normal: { icon: "·", kicker: "DESK CHECK", title: "업무를 차근차근 정리했습니다", summary: "처리는 마쳤지만 다음에는 요청의 우선순위를 먼저 확인해 보세요." },
+      bad: { icon: "!", kicker: "INBOX OVERFLOW", title: "메신저가 잠깐 전쟁터가 됐습니다", summary: "보안 교육을 스팸으로 보내지만 않으면 됩니다. 놓친 핵심 정보는 나중에 다시 확인할 수 있습니다." },
     }[result.grade];
     refs.resultKicker.textContent = "RESULT";
     refs.resultTitle.textContent = "업무 정리가 끝났습니다";
     refs.resultSummary.textContent = copy.summary;
     refs.resultScore.textContent = String(result.score);
+    refs.resultGrade.textContent = result.grade.toUpperCase();
+    refs.resultGrade.dataset.grade = result.grade;
+    refs.resultGrade.setAttribute("aria-label", `현재 등급 ${result.grade.toUpperCase()}`);
     refs.resultWork.textContent = `${result.workDelta > 0 ? "+" : ""}${result.workDelta}`;
-    refs.resultWork.className = result.workDelta > 0 ? "up" : "down";
-    refs.resultTrust.textContent = result.grade === "perfect" ? "+1" : "+0";
-    refs.resultTrust.className = result.grade === "perfect" ? "up" : "";
-    refs.resultList.innerHTML = result.results.map((item) => `<article data-outcome="${item.outcome}"><b>${item.request || item.sender}</b><span>${item.outcome === "correct" ? "완료" : item.outcome === "missed" ? "누락" : "오류"}</span></article>`).join("");
+    refs.resultWork.className = result.workDelta > 0 ? "up" : result.workDelta < 0 ? "down" : "";
+    refs.resultTrust.textContent = `${result.trustDelta > 0 ? "+" : ""}${result.trustDelta}`;
+    refs.resultTrust.className = result.trustDelta > 0 ? "up" : result.trustDelta < 0 ? "down" : "";
+    refs.resultList.innerHTML = result.results.map((item) => `<article data-outcome="${item.outcome}"><b>${item.request || item.sender}</b><span>${item.outcome === "correct" ? "완료" : item.outcome === "missed" ? "지연" : "오류"}</span></article>`).join("");
   }
 
   function complete() {
     if (!state || state.completionSent) return;
     state.completionSent = true;
-    global.clearTimeout(state.feedbackTimer);
+    clearFeedbackTimers();
     root.hidden = true;
     root.setAttribute("aria-hidden", "true");
     state.onComplete?.(state.finalResult);
@@ -620,16 +790,19 @@
     ensureStylesheet();
     ensureRoot();
     if (state?.frame) cancelAnimationFrame(state.frame);
-    if (state?.feedbackTimer) global.clearTimeout(state.feedbackTimer);
+    clearFeedbackTimers();
     cancelPointerDrag();
     const duration = options.duration || 45;
     const random = options.random || (options.seed === undefined ? Math.random : createSeededRandom(options.seed));
+    const schedule = buildSchedule({ random, requests: options.requests, count: options.count || 16, duration, lifeMs: options.lifeMs });
     state = {
       durationMs: duration * 1000,
-      schedule: buildSchedule({ random, requests: options.requests, count: options.count || 16, duration, lifeMs: options.lifeMs }),
+      schedule,
+      maxScore: maximumScore(schedule),
       nextIndex: 0, active: new Map(), selectedId: null, results: [], score: 0, combo: 0, elapsed: 0,
       lastFrame: 0, frame: null, started: false, paused: false, finished: false, completionSent: false,
-      finalResult: null, feedbackTimer: null, onComplete: options.onComplete,
+      finalResult: null, feedbackTimer: null, wrongFeedbackTimer: null, comboEffectTimer: null,
+      historyScrollFrame: null, onComplete: options.onComplete,
     };
     refs.score.textContent = "0";
     refs.time.textContent = formatClock(duration);
@@ -645,6 +818,10 @@
     root.setAttribute("aria-hidden", "false");
     showScreen(refs.intro);
     refs.start.focus();
+  }
+
+  function startDay2(options = {}) {
+    start(buildDay2Options(options));
   }
 
   function pause() {
@@ -666,5 +843,5 @@
   document.addEventListener("nan:pause-open", pause);
   document.addEventListener("nan:pause-close", resume);
 
-  global.WorkAlertMinigame = Object.freeze({ start, pause, resume, core });
+  global.WorkAlertMinigame = Object.freeze({ start, startDay2, pause, resume, core });
 })(typeof window !== "undefined" ? window : globalThis);
