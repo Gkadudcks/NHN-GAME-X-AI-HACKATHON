@@ -29,6 +29,7 @@
   });
 
   const ROOMS = Object.freeze({
+    boss: { type: "DIRECT MESSAGE", title: "박태식 부장", members: ["박"] },
     pt: { type: "PROJECT CHANNEL", title: "# PT 전환과제 TF", members: ["박", "서", "한"] },
     harin: { type: "DIRECT MESSAGE", title: "서하린 사수", members: ["서"] },
     minjae: { type: "DIRECT MESSAGE", title: "강민재 동기", members: ["강"] },
@@ -38,7 +39,7 @@
   const MESSAGES = Object.freeze([
     {
       id: "day1-boss-brief",
-      room: "pt",
+      room: "boss",
       at: "day2IntroCard",
       sender: "박태식 부장",
       text: "AI 기능보다 첫 7일의 유저 경험을 중심으로. 예상 수치는 검증된 것만 사용하세요.",
@@ -46,7 +47,7 @@
     },
     {
       id: "day1-doyun-reply",
-      room: "pt",
+      room: "boss",
       at: "day2IntroCard",
       sender: "한도윤",
       text: "확인했습니다. 요구사항을 기준으로 구성하겠습니다.",
@@ -102,7 +103,7 @@
     },
     {
       id: "boss-schedule",
-      room: "pt",
+      room: "boss",
       at: "day2RequestGame",
       sender: "박태식 부장",
       text: "11시 회의 일정 등록해 줘. 급한 요청은 바로 처리하고 모르는 건 담당자에게 넘겨.",

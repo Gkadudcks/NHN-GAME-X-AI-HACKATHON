@@ -27,6 +27,7 @@ test("핵심 추리 단서는 자동화의 소유자만 기록하고 실행자�
 });
 
 test("메신저 방은 실제 사람 또는 프로젝트 대화방 이름을 사용한다", () => {
+  assert.equal(story.ROOMS.boss.title, "박태식 부장");
   assert.equal(story.ROOMS.harin.title, "서하린 사수");
   assert.equal(story.ROOMS.minjae.title, "강민재 동기");
   assert.equal(story.ROOMS.sea.title, "윤세아");
@@ -38,10 +39,15 @@ test("DAY 2 시작부터 DAY 1 메신저 대화 기록을 이어서 보여준다
   assert.equal(history.length, 7);
   assert.ok(history.every((message) => message.at === "day2IntroCard"));
   assert.deepEqual(
-    history.filter((message) => message.room === "pt").map((message) => message.id),
+    history.filter((message) => message.room === "boss").map((message) => message.id),
     [
       "day1-boss-brief",
       "day1-doyun-reply",
+    ],
+  );
+  assert.deepEqual(
+    history.filter((message) => message.room === "pt").map((message) => message.id),
+    [
       "day1-harin-research",
       "day1-nanabot-notice",
       "day1-doyun-draft",
