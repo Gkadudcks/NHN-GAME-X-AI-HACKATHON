@@ -196,3 +196,7 @@
 .stage-choice-label{display:block}.stage-choice-effects{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:8px}
 .stage-choice-effects i{padding:4px 8px;border:1px solid;border-radius:999px;font-size:10px;font-style:normal;font-weight:850;letter-spacing:.03em}.stage-choice-effects i.gain{color:#28755c;border-color:#a9d8c5;background:#effaf5}.stage-choice-effects i.loss{color:#b54450;border-color:#efb8bd;background:#fff1f2}.stage-choice-effects i.branch{color:#76616a;border-color:#d9c9ce;background:#f8f3f4}
 .stage-choices button:hover .stage-choice-effects i,.stage-choices button:focus-visible .stage-choice-effects i{color:#fff;border-color:#ffffff73;background:#ffffff1f}
+.stage-choices button.choice-locked{cursor:not-allowed;color:#8f8286;border-color:#d8cecb;background:#eee9e6e8;box-shadow:0 9px 24px #10080d35;filter:saturate(.55);opacity:.82}
+.stage-choices button.choice-locked:hover,.stage-choices button.choice-locked:focus-visible{color:#8f8286;border-color:#d8cecb;background:#eee9e6e8;transform:none}
+.stage-choices button.choice-locked .stage-choice-effects i.locked{color:#8c777d;border-color:#cdbfc2;background:#e3dadd}
+.stage-choices button.choice-locked .stage-choice-effects i.locked:before{content:"🔒";margin-right:4px}

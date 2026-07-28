@@ -263,8 +263,8 @@
       choiceKey: "day2OvertimeResponse",
       relationshipChoice: true,
       choices: [
-        { value: "finish-together", text: "오늘 남은 일은 같이 끝내죠.", delta: { affection: 1, trust: 2 }, reply: "그 말이면 충분해요. 이번에는 진짜로 같이 끝내요." },
-        { value: "wait-until-ready", text: "말하고 싶을 때 이야기해 주세요.", delta: { affection: 2, trust: 1 }, reply: "재촉하지 않는 사람한테는 오히려 먼저 말하게 되더라고요." },
+        { value: "finish-together", text: "오늘 남은 일은 같이 끝내죠.", minAffection: 2, delta: { affection: 1, trust: 2 }, reply: "그 말이면 충분해요. 이번에는 진짜로 같이 끝내요." },
+        { value: "wait-until-ready", text: "말하고 싶을 때 이야기해 주세요.", minAffection: 4, delta: { affection: 2, trust: 1 }, reply: "재촉하지 않는 사람한테는 오히려 먼저 말하게 되더라고요." },
         { value: "verify-record", text: "이름이 남은 기록은 언젠가 확인해야 합니다.", delta: { work: 1 }, reply: "맞아요. 확인은 해야 해요. 이름만 보고 결론 내리지만 않으면 돼요." },
         { value: "take-responsibility", text: "이번 일만큼은 제가 책임지고 싶습니다.", delta: { work: 1, trust: -1 }, reply: "책임지는 것과 혼자 남는 건 다르다고 했어요. 오늘은 같이 가요." },
       ],

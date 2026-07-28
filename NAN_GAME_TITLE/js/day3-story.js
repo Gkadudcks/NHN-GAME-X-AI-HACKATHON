@@ -46,7 +46,7 @@
     { id: "day3Decision", time: "10:12", speaker: "한도윤", text: "수정 기록에는 선배의 이름이 있고, 바뀐 문장은 나나봇의 방식과 닮았다. 아직 선배의 설명은 듣지 못했다. 나는 지금 무엇을 기준으로 판단해야 할까?", bg: "office", choiceKey: "harinSuspicion", choices: [
       { id: "accuse", text: "수정자 이름 그대로 선배를 의심한다.", delta: { work: 0, affection: -1, trust: -2 } },
       { id: "verify", text: "이름이 남은 이유부터 검증한다.", delta: { work: 1, affection: 0, trust: 2 } },
-      { id: "blindTrust", text: "선배를 믿고 바로 복원한다.", delta: { work: -1, affection: 1, trust: 0 } },
+      { id: "blindTrust", text: "선배를 믿고 바로 복원한다.", minAffection: 3, delta: { work: -1, affection: 1, trust: 0 } },
     ] },
     { id: "day3DecisionResult", time: "10:13", speaker: "한도윤", dynamic: "decisionIntent", bg: "office" },
     { id: "day3WorkContact", time: "10:14", speaker: "한도윤", text: "업무 메신저로 확인할 내용을 정리했다. 오늘 아침 문서를 열었는지, 자동화에 소유자 이름만 남을 수 있는지, DAY 2 복원 지점을 그대로 보존할지.", bg: "office" },

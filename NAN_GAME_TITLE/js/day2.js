@@ -682,11 +682,25 @@ function choiceEffectTags(choice) {
   return tags.length ? tags : [{ text: "스토리 분기", tone: "branch" }];
 }
 
+function choiceLock(choice) {
+  const required = Number(choice?.minAffection);
+  return Number.isFinite(required) && state.affection < required
+    ? { required, current: state.affection }
+    : null;
+}
+
 function addStageChoice(choice, key, scene) {
   const button = document.createElement("button");
+  const lock = choiceLock(choice);
+  const tags = lock
+    ? [{ text: `호감도 ${lock.required} 필요 · 현재 ${lock.current}`, tone: "locked" }]
+    : choiceEffectTags(choice);
   button.type = "button";
-  button.innerHTML = `<span class="stage-choice-label">${escapeHtml(choice.text)}</span><small class="stage-choice-effects">${choiceEffectTags(choice).map((tag) => `<i class="${tag.tone}">${escapeHtml(tag.text)}</i>`).join("")}</small>`;
-  button.addEventListener("click", () => choose(choice, key, scene));
+  button.disabled = Boolean(lock);
+  button.classList.toggle("choice-locked", Boolean(lock));
+  if (lock) button.setAttribute("aria-label", `${choice.text} · 잠김 · 호감도 ${lock.required} 필요, 현재 ${lock.current}`);
+  button.innerHTML = `<span class="stage-choice-label">${escapeHtml(choice.text)}</span><small class="stage-choice-effects">${tags.map((tag) => `<i class="${tag.tone}">${escapeHtml(tag.text)}</i>`).join("")}</small>`;
+  if (!lock) button.addEventListener("click", () => choose(choice, key, scene));
   refs.stageChoices.appendChild(button);
 }
 
