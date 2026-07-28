@@ -8,6 +8,7 @@ const day2Story = require("../js/day2-story.js");
 test("DAY 3 keeps the DAY 2 chat rooms and chat history", () => {
   assert.equal(story.ROOMS, day2Story.ROOMS);
   assert.equal(story.MESSAGES.length, day2Story.MESSAGES.length + 5);
+  assert.ok(story.ROOMS.boss);
   assert.ok(story.ROOMS.sea);
   assert.deepEqual(
     story.MESSAGES.slice(0, day2Story.MESSAGES.length).map((message) => message.day),
