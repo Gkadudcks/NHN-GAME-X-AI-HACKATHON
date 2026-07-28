@@ -391,7 +391,10 @@ function messageDayDivider(day) {
 }
 
 function visibleMessages(room) {
-  return Day2Story.MESSAGES.filter((message) => message.room === room && isAtOrAfter(message.at));
+  return Day2Story.MESSAGES.filter((message) => (
+    message.room === room
+    && (messageDay(message) < 2 || isAtOrAfter(message.at))
+  ));
 }
 
 function renderMessages() {

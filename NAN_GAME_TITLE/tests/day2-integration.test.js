@@ -82,6 +82,17 @@ test("DAY 2 페이지는 필요한 스크립트를 올바른 순서로 불러온
   assert.equal(records < progress && progress < art && art < story && story < clues && clues < bgm && bgm < minigame && minigame < engine, true);
 });
 
+test("DAY 2 직접 시작은 DAY 1 메시지를 즉시 보여주고 DAY 2 메시지는 장면 진행으로 제한한다", () => {
+  const day2Html = read("day2.html");
+  const day3Html = read("day3.html");
+  const engine = read("js/day2.js");
+
+  assert.match(day2Html, /id="chat-boss"[^>]+data-room="boss"/);
+  assert.match(day3Html, /id="chat-boss"[^>]+data-room="boss"/);
+  assert.match(engine, /messageDay\(message\) < 2 \|\| isAtOrAfter\(message\.at\)/);
+  assert.match(engine, /messageDayDivider/);
+});
+
 test("두 날짜 모두 단서 탭에서 메신저 숫자 배지를 표시할 수 있다", () => {
   const day1Html = read("game.html");
   const day2Html = read("day2.html");
