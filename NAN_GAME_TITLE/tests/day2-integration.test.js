@@ -6,6 +6,49 @@ const path = require("node:path");
 const root = path.join(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
+test("DAY 2 work alert delegates to the official runner without assembling difficulty", () => {
+  const script = read("js/day2.js");
+  const html = read("day2.html");
+
+  assert.match(script, /WorkAlertMinigame\.startDay2\(\{\s*subtask: state\.decisions\.day2Subtask,\s*onComplete: finishWorkAlert,/s);
+  assert.doesNotMatch(script, /WorkAlertMinigame\.start\(/);
+  assert.doesNotMatch(script, /WorkAlertMinigame\.core\.REQUESTS/);
+  assert.doesNotMatch(script, /lifeMs:\s*\d+/);
+  assert.doesNotMatch(script, /seed:\s*20260720/);
+  assert.doesNotMatch(script, /duration:\s*45/);
+  assert.match(html, /work-alert-minigame\.css\?v=4/);
+  assert.match(html, /work-alert-minigame\.js\?v=4/);
+  assert.match(html, /day2\.js\?v=21/);
+});
+
+test("DAY 2 work alert direct mode uses memory progress, blocks saves, and repeats", () => {
+  const script = read("js/day2.js");
+  const finishStart = script.indexOf("function finishWorkAlert");
+  const finishEnd = script.indexOf("function startWorkAlert", finishStart);
+
+  assert.match(script, /const devWorkAlert = pageParams\.get\("dev"\) === "work-alert"/);
+  assert.match(script, /Object\.hasOwn\(Day2Story\.SUBTASKS, pageParams\.get\("subtask"\)\)[\s\S]*: "competitor"/);
+  assert.match(script, /const progress = devWorkAlert\s*\? GameProgress\.defaultProgress\(\)/);
+  assert.match(script, /devWorkAlert\s*\? scenes\.findIndex\(\(scene\) => scene\.id === "day2RequestGame"\)/);
+  assert.match(script, /devWorkAlert \? \{ day2Subtask: devWorkAlertSubtask \} : \{\}/);
+  assert.match(script, /function saveProgress\([^)]*\) \{\s*if \(devWorkAlert\) return;/);
+  assert.match(script, /function autoSaveAtCheckpoint\(scene\) \{\s*if \(devWorkAlert\) return;/);
+  assert.match(script, /function saveToGameSlot\([^)]*\) \{\s*if \(devWorkAlert\)/);
+  assert.match(script, /function loadFromGameSlot\(slot\) \{\s*if \(devWorkAlert\) return;/);
+  assert.notEqual(finishStart, -1);
+  assert.notEqual(finishEnd, -1);
+  assert.match(script.slice(finishStart, finishEnd), /if \(devWorkAlert\) \{\s*startWorkAlert\(\);\s*return;/);
+});
+
+test("DAY 2 retains the existing skip-minigames GOOD completion path", () => {
+  const script = read("js/day2.js");
+  const start = script.indexOf("function startWorkAlert");
+  const end = script.indexOf("function summaryRow", start);
+
+  assert.match(script, /const devSkipMinigames = pageParams\.get\("dev"\) === "skip-minigames"/);
+  assert.match(script.slice(start, end), /if \(devSkipMinigames\)[\s\S]*grade: "good"/);
+});
+
 test("DAY 2 페이지는 필요한 스크립트를 올바른 순서로 불러온다", () => {
   const html = read("day2.html");
   const records = html.indexOf('src="js/clue-records.js');

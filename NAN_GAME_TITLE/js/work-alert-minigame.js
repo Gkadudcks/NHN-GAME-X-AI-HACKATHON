@@ -49,6 +49,40 @@
     ]),
   });
 
+  const DAY2_PRESET = Object.freeze({
+    seed: 20260720,
+    duration: 45,
+    lifeMs: 6500,
+    commonRequests: Object.freeze(REQUESTS.slice(0, 13)),
+  });
+
+  function day2SubtaskOrDefault(subtask) {
+    return Object.prototype.hasOwnProperty.call(SUBTASK_REQUESTS, subtask) ? subtask : "competitor";
+  }
+
+  function buildDay2Requests(subtask) {
+    const selectedSubtask = day2SubtaskOrDefault(subtask);
+    return [...DAY2_PRESET.commonRequests, ...SUBTASK_REQUESTS[selectedSubtask]];
+  }
+
+  function buildDay2Options(options = {}) {
+    const source = options && typeof options === "object" ? options : {};
+    const overrides = source.testOverrides && typeof source.testOverrides === "object" ? source.testOverrides : {};
+    const overrideSeed = Number(overrides.seed);
+    const overrideDuration = Number(overrides.duration);
+    const seed = Number.isFinite(overrideSeed) ? overrideSeed : DAY2_PRESET.seed;
+    const duration = Number.isFinite(overrideDuration) && overrideDuration > 0 ? overrideDuration : DAY2_PRESET.duration;
+    const requests = buildDay2Requests(source.subtask);
+    return {
+      seed,
+      duration,
+      lifeMs: DAY2_PRESET.lifeMs,
+      count: requests.length,
+      requests,
+      onComplete: source.onComplete,
+    };
+  }
+
   function createSeededRandom(seed) {
     let state = (Number(seed) || 1) >>> 0;
     return function random() {
@@ -170,7 +204,7 @@
     };
   }
 
-  const core = Object.freeze({ ACTIONS, REQUESTS, SUBTASK_REQUESTS, createSeededRandom, formatClock, buildSchedule, priorityForRequest, boardPlacement, evaluateAction, missedResult, successFeedback, gradeForPerformance, finalizeResults });
+  const core = Object.freeze({ ACTIONS, REQUESTS, SUBTASK_REQUESTS, DAY2_PRESET, buildDay2Requests, buildDay2Options, createSeededRandom, formatClock, buildSchedule, priorityForRequest, boardPlacement, evaluateAction, missedResult, successFeedback, gradeForPerformance, finalizeResults });
   if (typeof module !== "undefined" && module.exports) module.exports = core;
   if (!global.document) return;
 
@@ -467,7 +501,10 @@
     void refs.floatingFeedback.offsetWidth;
     refs.floatingFeedback.classList.add("show");
     global.clearTimeout(state.feedbackTimer);
-    state.feedbackTimer = global.setTimeout(() => refs.floatingFeedback.classList.remove("show"), 1000);
+    state.feedbackTimer = global.setTimeout(() => {
+      refs.floatingFeedback.classList.remove("show");
+      state.feedbackTimer = null;
+    }, 1000);
   }
 
   function renderCombo(animate = false) {
@@ -480,9 +517,24 @@
   }
 
   function showWrongFeedback() {
+    global.clearTimeout(state.wrongFeedbackTimer);
     refs.shell.classList.remove("wrong-feedback");
     void refs.shell.offsetWidth;
     refs.shell.classList.add("wrong-feedback");
+    state.wrongFeedbackTimer = global.setTimeout(() => {
+      refs.shell.classList.remove("wrong-feedback");
+      state.wrongFeedbackTimer = null;
+    }, 450);
+  }
+
+  function clearFeedbackTimers() {
+    if (!state) return;
+    global.clearTimeout(state.feedbackTimer);
+    global.clearTimeout(state.wrongFeedbackTimer);
+    state.feedbackTimer = null;
+    state.wrongFeedbackTimer = null;
+    refs?.floatingFeedback?.classList.remove("show");
+    refs?.shell?.classList.remove("wrong-feedback");
   }
 
   function handleAction(actionKey) {
@@ -580,7 +632,7 @@
     state.finished = true;
     cancelPointerDrag();
     cancelAnimationFrame(state.frame);
-    refs.shell.classList.remove("wrong-feedback");
+    clearFeedbackTimers();
     [...state.active.values()].forEach((request) => state.results.push(requestResult(request, missedResult(request))));
     state.schedule.slice(state.nextIndex).forEach((request) => state.results.push(requestResult(request, missedResult(request))));
     state.active.clear();
@@ -610,7 +662,7 @@
   function complete() {
     if (!state || state.completionSent) return;
     state.completionSent = true;
-    global.clearTimeout(state.feedbackTimer);
+    clearFeedbackTimers();
     root.hidden = true;
     root.setAttribute("aria-hidden", "true");
     state.onComplete?.(state.finalResult);
@@ -620,7 +672,7 @@
     ensureStylesheet();
     ensureRoot();
     if (state?.frame) cancelAnimationFrame(state.frame);
-    if (state?.feedbackTimer) global.clearTimeout(state.feedbackTimer);
+    clearFeedbackTimers();
     cancelPointerDrag();
     const duration = options.duration || 45;
     const random = options.random || (options.seed === undefined ? Math.random : createSeededRandom(options.seed));
@@ -629,7 +681,7 @@
       schedule: buildSchedule({ random, requests: options.requests, count: options.count || 16, duration, lifeMs: options.lifeMs }),
       nextIndex: 0, active: new Map(), selectedId: null, results: [], score: 0, combo: 0, elapsed: 0,
       lastFrame: 0, frame: null, started: false, paused: false, finished: false, completionSent: false,
-      finalResult: null, feedbackTimer: null, onComplete: options.onComplete,
+      finalResult: null, feedbackTimer: null, wrongFeedbackTimer: null, onComplete: options.onComplete,
     };
     refs.score.textContent = "0";
     refs.time.textContent = formatClock(duration);
@@ -645,6 +697,10 @@
     root.setAttribute("aria-hidden", "false");
     showScreen(refs.intro);
     refs.start.focus();
+  }
+
+  function startDay2(options = {}) {
+    start(buildDay2Options(options));
   }
 
   function pause() {
@@ -666,5 +722,5 @@
   document.addEventListener("nan:pause-open", pause);
   document.addEventListener("nan:pause-close", resume);
 
-  global.WorkAlertMinigame = Object.freeze({ start, pause, resume, core });
+  global.WorkAlertMinigame = Object.freeze({ start, startDay2, pause, resume, core });
 })(typeof window !== "undefined" ? window : globalThis);

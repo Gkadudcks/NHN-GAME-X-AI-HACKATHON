@@ -13,6 +13,10 @@ const scenes = Day2Story.scenes;
 const $ = (selector) => document.querySelector(selector);
 const pageParams = new URLSearchParams(location.search);
 const devSkipMinigames = pageParams.get("dev") === "skip-minigames";
+const devWorkAlert = pageParams.get("dev") === "work-alert";
+const devWorkAlertSubtask = Object.hasOwn(Day2Story.SUBTASKS, pageParams.get("subtask"))
+  ? pageParams.get("subtask")
+  : "competitor";
 const BACKGROUND_SOURCES = Object.freeze({
   office: `${ASSET}backgrounds/day1-office.png`,
   office_night: ArtAssets.resolve("background.office.night"),
@@ -55,18 +59,22 @@ const refs = {
   dayTransition: $("#day-transition"),
 };
 
-const progress = pageParams.has("new")
-  ? GameProgress.resetDay2(localStorage)
-  : GameProgress.startDay2(localStorage);
+const progress = devWorkAlert
+  ? GameProgress.defaultProgress()
+  : pageParams.has("new")
+    ? GameProgress.resetDay2(localStorage)
+    : GameProgress.startDay2(localStorage);
 const savedDay2 = progress.days[2];
-const savedIndex = scenes.findIndex((scene) => scene.id === savedDay2.sceneId);
+const savedIndex = devWorkAlert
+  ? scenes.findIndex((scene) => scene.id === "day2RequestGame")
+  : scenes.findIndex((scene) => scene.id === savedDay2.sceneId);
 const state = {
   index: savedIndex >= 0 ? savedIndex : 0,
   work: progress.shared.work,
   affection: progress.shared.affection,
   trust: progress.shared.trust,
   clues: ClueRecords.normalizeList(progress.shared.clues),
-  decisions: { ...savedDay2.decisions },
+  decisions: { ...savedDay2.decisions, ...(devWorkAlert ? { day2Subtask: devWorkAlertSubtask } : {}) },
   seenNotifications: { ...savedDay2.seenNotifications },
   summariesSeen: { ...savedDay2.summariesSeen },
   minigameResult: savedDay2.minigameResult,
@@ -219,6 +227,10 @@ function buildGameSavePayload(scene) {
 }
 
 function saveToGameSlot(slotId, occupied) {
+  if (devWorkAlert) {
+    toast("직행 테스트에서는 진행을 저장하지 않습니다.");
+    return;
+  }
   if (occupied && !confirm(`SLOT ${String(slotId).padStart(2, "0")}의 기존 저장을 덮어쓸까요?`)) return;
   saveProgress();
   const scene = scenes[state.index] || scenes[0];
@@ -234,6 +246,7 @@ function saveToGameSlot(slotId, occupied) {
 const AUTOSAVE_CHECKPOINTS = new Set(["day2OvertimeLead", "day2End"]);
 
 function autoSaveAtCheckpoint(scene) {
+  if (devWorkAlert) return;
   if (!AUTOSAVE_CHECKPOINTS.has(scene.id)) return;
   const result = GameProgress.saveAutoSlot(localStorage, `day2:${scene.id}`, buildGameSavePayload(scene));
   if (result.status === "saved" || result.status === "updated") {
@@ -242,6 +255,7 @@ function autoSaveAtCheckpoint(scene) {
 }
 
 function loadFromGameSlot(slot) {
+  if (devWorkAlert) return;
   if (slot.empty || !slot.progress) return;
   if (!confirm(`SLOT ${String(slot.slotId).padStart(2, "0")}의 진행을 불러올까요?\n현재 저장하지 않은 진행은 사라집니다.`)) return;
   localStorage.setItem(GameProgress.STORAGE_KEY, JSON.stringify(slot.progress));
@@ -251,6 +265,7 @@ function loadFromGameSlot(slot) {
 }
 
 function saveProgress({ announce = false } = {}) {
+  if (devWorkAlert) return;
   progress.shared.work = state.work;
   progress.shared.affection = state.affection;
   progress.shared.trust = state.trust;
@@ -739,6 +754,10 @@ function showChoiceResult(choice, before, relationshipChoice) {
 }
 
 function finishWorkAlert(result) {
+  if (devWorkAlert) {
+    startWorkAlert();
+    return;
+  }
   if (state.minigameResult) return;
   state.minigameResult = result;
   state.work += result.workDelta;
@@ -765,14 +784,8 @@ function startWorkAlert() {
     });
     return;
   }
-  const commonRequests = WorkAlertMinigame.core.REQUESTS.slice(0, 13);
-  const subtaskRequests = WorkAlertMinigame.core.SUBTASK_REQUESTS[state.decisions.day2Subtask || "competitor"];
-  const requests = [...commonRequests, ...subtaskRequests];
-  WorkAlertMinigame.start({
-    seed: 20260720,
-    duration: 45,
-    count: requests.length,
-    requests,
+  WorkAlertMinigame.startDay2({
+    subtask: state.decisions.day2Subtask,
     onComplete: finishWorkAlert,
   });
 }

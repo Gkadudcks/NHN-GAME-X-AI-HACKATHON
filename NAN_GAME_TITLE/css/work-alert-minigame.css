@@ -1100,18 +1100,59 @@
   }
 }
 
+/* The settings dialog uses a blanket near-zero animation duration. These
+   selectors intentionally specify the final feedback state instead, so a
+   reduced-effects run still communicates correct and incorrect actions. */
+.reduce-effects .work-alert-minigame .wa-card,
+.reduce-effects .work-alert-minigame .wa-primary,
+.reduce-effects .work-alert-minigame .wa-action,
+.reduce-effects .work-alert-minigame .wa-stats time.danger,
+.reduce-effects .work-alert-minigame .wa-floating-feedback.show,
+.reduce-effects .work-alert-minigame .wa-combo.bump,
+.reduce-effects .work-alert-minigame .wa-shell.wrong-feedback,
+.reduce-effects .work-alert-minigame .wa-shell.wrong-feedback::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+.reduce-effects .work-alert-minigame .wa-floating-feedback.show {
+  animation: none !important;
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.reduce-effects .work-alert-minigame .wa-shell.wrong-feedback::after {
+  animation: none !important;
+  border-width: 3px;
+  border-color: rgba(210, 62, 62, .82);
+  background: rgba(210, 62, 62, .1);
+  opacity: 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .wa-card,
-  .wa-stats time.danger,
-  .wa-floating-feedback.show,
-  .wa-combo.bump,
-  .wa-shell.wrong-feedback,
-  .wa-shell.wrong-feedback::after {
-    animation: none;
+  .work-alert-minigame .wa-card,
+  .work-alert-minigame .wa-primary,
+  .work-alert-minigame .wa-action,
+  .work-alert-minigame .wa-stats time.danger,
+  .work-alert-minigame .wa-floating-feedback.show,
+  .work-alert-minigame .wa-combo.bump,
+  .work-alert-minigame .wa-shell.wrong-feedback,
+  .work-alert-minigame .wa-shell.wrong-feedback::after {
+    animation: none !important;
+    transition: none !important;
   }
 
-  .wa-floating-feedback.show {
+  .work-alert-minigame .wa-floating-feedback.show {
+    animation: none !important;
     opacity: 1;
     transform: translate(-50%, 0);
+  }
+
+  .work-alert-minigame .wa-shell.wrong-feedback::after {
+    animation: none !important;
+    border-width: 3px;
+    border-color: rgba(210, 62, 62, .82);
+    background: rgba(210, 62, 62, .1);
+    opacity: 1;
   }
 }
