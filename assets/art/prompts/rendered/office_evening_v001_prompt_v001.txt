@@ -1,0 +1,11 @@
+Use case: lighting-weather
+Asset type: 16:9 visual-novel office background, DAY 4 evening variant
+Input images: Image 1 is the primary edit target and exact spatial/layout reference; Image 2 is a supporting reference for the same office at night and its warm practical lights.
+
+Change only the time of day and lighting of Image 1 from bright daytime to early sunset / end-of-workday evening. Preserve the exact office architecture, camera position, perspective, crop, and placement of every major object: windows and blinds, ceiling beams and air conditioner, desk rows, monitors and chairs, bookshelf, plants, large wall display, low cabinet, glass corridor, coffee station, pendant lights, and open wood floor. Do not redesign or rearrange the room.
+
+Outside the windows, show a believable Korean city at golden hour: the sun has just lowered toward the horizon, with a soft gradient from warm peach and muted orange near the skyline to pale lavender-blue above. It must still be clearly evening, not full night. No visible sun disk. Let low-angle amber light enter through the windows and cast long, soft directional shadows across the wooden floor and desk edges. Turn on a restrained portion of the warm office practical lights and coffee-corner lights, creating a gentle balance of warm interior illumination and cool violet ambient shadows. Most monitors remain dark; only subtle non-readable glow is acceptable. The result should feel like employees are about to leave work, distinctly different from both bright daytime and late-night overtime.
+
+Style: preserve the clean polished commercial anime visual-novel background style of Image 1, thin clean edges, soft 2–3 step shading, medium detail, natural eye-level 35mm perspective, low-to-medium saturation. Maintain generous empty central/right floor space for characters and dialogue UI.
+
+Constraints: background only, 16:9 landscape, no people, no character silhouettes, no readable text, no logo, no watermark, no added furniture, no missing furniture, no neon colors, no dramatic bloom, no lens flare, no heavy depth of field, no rain, no full darkness. This must look like a consistent lighting edit of the same approved office, not a newly designed office.

@@ -1,0 +1,6 @@
+[PROJECT VISUAL STYLE | v001]
+Modern Korean office romance visual novel with light mystery elements. Polished commercial anime visual novel illustration, thin clean line art, controlled 2-to-3-step cel shading, realistic adult proportions, low-to-medium saturation, and game-ready edges.
+
+Recreate Seo Harin in the approved hand_to_chest pose with a restrained adult surprised expression. Use the v001 image only for the pose concept: one hand naturally rises to the upper chest while the other reaches slightly forward and down. Match the face, adult eye proportions, body proportions, line weight, soft shading, outfit, lanyard, accessories, and finish of the newly approved relaxed-standing sprites and the master reference.
+
+Her warm-brown almond eyes open only slightly wider than neutral, brows lift gently, and lips part only a little. Preserve her oval face, dark-brown bob, realistic anatomy, black blazer, white blouse, pencil skirt, pumps, silver earrings, navy lanyard, and white ID card. Full-body 1024x1536 composition on a flat #00ff00 chroma-key background. Avoid large moe eyes, a childish face, comedic shock, harsh shading, thick outlines, malformed hands, text, logos, watermark, props, shadows, or sexualization.

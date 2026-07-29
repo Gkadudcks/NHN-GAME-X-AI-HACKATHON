@@ -1,0 +1,21 @@
+[PROJECT VISUAL STYLE | prompt_v001]
+Modern Korean office romance visual novel with light mystery elements.
+Polished commercial anime visual novel illustration.
+Clean, thin, consistent line art.
+Soft 2-to-3-step cel shading with minimal painterly texture.
+Warm, low-contrast, low-to-medium-saturation palette using navy, beige, cream, muted brown, and pale blue.
+Soft indoor diffused key light with subtle cool ambient shadows.
+Clean game-ready edges and a consistent finish across all assets.
+
+[BACKGROUND REQUEST]
+Create a compact professional vocal recording booth for one or two people.
+Show only the enclosed booth interior with no observation window or control room.
+Bring the left, right, and rear acoustic walls close to the camera so the room feels intimate rather than like a rehearsal studio.
+Use warm beige and muted navy acoustic panels with narrow vertical wooden slats, a closed soundproof door at the far left, one condenser microphone with shock mount and pop filter left of center, a black music stand, a small stool, ceiling ventilation, and soft recessed lights.
+
+Use a natural eye-level 35mm perspective in a wide 16:9 composition.
+Keep enough center-right space for two visual-novel character sprites standing close together, without creating a large empty floor.
+One black XLR cable should fall naturally from the microphone and rest as a tidy loose coil beside the microphone stand base. Do not show a wall or floor socket.
+
+Background only. No people, silhouettes, readable text, logos, UI, watermark, observation window, control room, or view outside the booth.
+Intended output: 1920 x 1080 RGB PNG.

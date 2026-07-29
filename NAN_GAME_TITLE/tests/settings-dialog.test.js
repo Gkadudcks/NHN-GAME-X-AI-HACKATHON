@@ -96,6 +96,7 @@ test("세 DAY 페이지는 공용 설정을 엔진보다 먼저 불러오고 ESC
     ["game.html", "js/game.js"],
     ["day2.html", "js/day2.js"],
     ["day3.html", "js/day3.js"],
+    ["day4.html", "js/day4.js"],
   ];
   pages.forEach(([page, engine]) => {
     const html = fs.readFileSync(path.join(__dirname, "..", page), "utf8");
@@ -114,7 +115,7 @@ test("세 DAY 페이지는 공용 설정을 엔진보다 먼저 불러오고 ESC
 });
 
 test("세 DAY 시네마틱은 설정 화면 동안 남은 지연 시간을 보존한다", () => {
-  ["game.js", "day2.js", "day3.js"].forEach((file) => {
+  ["game.js", "day2.js", "day3.js", "day4.js"].forEach((file) => {
     const source = fs.readFileSync(path.join(__dirname, "..", "js", file), "utf8");
     assert.match(source, /cinematicDeadline/);
     assert.match(source, /cinematicRemaining/);

@@ -1,0 +1,6 @@
+[PROJECT VISUAL STYLE | v001]
+Modern Korean office romance visual novel with light mystery elements. Polished commercial anime visual novel background, clean thin structural line art, soft controlled cel-painted shading, natural 35mm perspective, low-to-medium saturation, and game-ready composition.
+
+Create an empty modern Korean game-company meeting room for a late-afternoon presentation rehearsal. Face a centered wall-mounted widescreen display with a plain dark screen, a low media console, glass partitions and blinds on the left, warm wood acoustic panels on the right, and soft sunset light balanced by warm ceiling lights.
+
+Keep the conference table low in the bottom 20–25% of the frame, reduce chairs to the side edges, and preserve broad open floor space across the center and right for full-body character sprites. Include only a closed laptop, compact speakerphone, and small plant. 1920x1080 RGB background. No people, readable text, company logo, watermark, embedded presentation content, photorealistic microtexture, fisheye distortion, or dramatic bloom.

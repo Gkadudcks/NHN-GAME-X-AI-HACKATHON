@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>DAY 4 | NAN</title>
   <link rel="stylesheet" href="css/game.css?v=28">
+  <link rel="stylesheet" href="css/day4.css?v=3">
   <link rel="stylesheet" href="css/settings-dialog.css?v=2">
   <link rel="stylesheet" href="css/pause-menu.css?v=1">
   <link rel="stylesheet" href="css/location-transition.css?v=2">
@@ -64,15 +65,31 @@
         <section class="chat-list" id="chat-list">
           <header class="chat-list-head"><div><small>MESSAGES</small><h1>채팅</h1></div><button type="button" aria-label="새 채팅">＋</button></header>
           <div class="chat-list-body">
-            <button class="chat-item" id="chat-pt" type="button" data-room="pt">
-              <span class="chat-avatar group"><i>박</i><i>서</i></span>
-              <span class="chat-copy"><b>PT 전환과제 TF</b><small>수치와 출처 링크를 다시 확인해요.</small></span>
-              <span class="chat-meta"><time>17:08</time></span>
+            <div class="chat-list-empty" id="chat-list-empty"><span>✦</span><b>아직 도착한 메시지가 없습니다</b><p>새 메시지가 도착하면 채팅방이 여기에 표시됩니다.</p></div>
+            <button class="chat-item" id="chat-boss" type="button" data-room="boss" hidden>
+              <span class="chat-avatar boss">박</span>
+              <span class="chat-copy"><b>박태식 부장</b><small></small></span>
+              <span class="chat-meta"><time></time><em hidden>1</em></span>
             </button>
-            <button class="chat-item" id="chat-harin" type="button" data-room="harin">
+            <button class="chat-item" id="chat-pt" type="button" data-room="pt" hidden>
+              <span class="chat-avatar group"><i>박</i><i>서</i></span>
+              <span class="chat-copy"><b>PT 전환과제 TF</b><small></small></span>
+              <span class="chat-meta"><time></time><em hidden>1</em></span>
+            </button>
+            <button class="chat-item" id="chat-harin" type="button" data-room="harin" hidden>
               <span class="chat-avatar harin">서</span>
-              <span class="chat-copy"><b>서하린 사수</b><small>발표 자료까지 확인해 둘게요.</small></span>
-              <span class="chat-meta"><time>17:12</time></span>
+              <span class="chat-copy"><b>서하린 사수</b><small></small></span>
+              <span class="chat-meta"><time></time><em hidden>1</em></span>
+            </button>
+            <button class="chat-item" id="chat-minjae" type="button" data-room="minjae" hidden>
+              <span class="chat-avatar minjae">강</span>
+              <span class="chat-copy"><b>강민재 동기</b><small></small></span>
+              <span class="chat-meta"><time></time><em hidden>1</em></span>
+            </button>
+            <button class="chat-item" id="chat-sea" type="button" data-room="sea" hidden>
+              <span class="chat-avatar sea">윤</span>
+              <span class="chat-copy"><b>윤세아</b><small></small></span>
+              <span class="chat-meta"><time></time><em hidden>1</em></span>
             </button>
           </div>
         </section>
@@ -158,13 +175,15 @@
 <script src="js/pause-menu.js?v=1"></script>
 <script src="js/location-transition.js?v=2"></script>
 <script src="js/clue-records.js?v=2"></script>
-<script src="js/progress-store.js?v=4"></script>
-<script src="js/art-assets.js?v=4"></script>
+<script src="js/progress-store.js?v=5"></script>
+<script src="js/art-assets.js?v=11"></script>
+<script src="js/day2-story.js?v=10"></script>
+<script src="js/day3-story.js?v=17"></script>
 <script src="js/clue-mindmap.js?v=11"></script>
 <script src="js/bgm-manager.js?v=8"></script>
-<script src="js/day4-story.js?v=4"></script>
+<script src="js/day4-story.js?v=16"></script>
 <script src="js/office-escape-minigame.js?v=2"></script>
 <script src="js/presentation-screen.js?v=1"></script>
-<script src="js/day4.js?v=8"></script>
+<script src="js/day4.js?v=17"></script>
 </body>
 </html>

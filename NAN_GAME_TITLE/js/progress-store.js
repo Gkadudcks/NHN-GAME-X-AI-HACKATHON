@@ -120,6 +120,8 @@
     return {
       sceneId: "day4Intro",
       decisions: {},
+      seenNotifications: {},
+      summariesSeen: {},
       evidence: {},
       minigameResult: null,
       complete: false,
@@ -195,6 +197,8 @@
     return {
       sceneId: stringOr(input.sceneId, "day4Intro"),
       decisions: objectCopy(input.decisions),
+      seenNotifications: objectCopy(input.seenNotifications),
+      summariesSeen: objectCopy(input.summariesSeen),
       evidence: objectCopy(input.evidence),
       minigameResult: isObject(input.minigameResult) ? cloneJson(input.minigameResult) : null,
       complete: input.complete === true,

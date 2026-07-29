@@ -3,51 +3,82 @@
 
   const records = global.ClueRecords || (typeof module === "object" && module.exports ? require("./clue-records.js") : null);
   if (!records) throw new Error("ClueRecords must load before Day4Story");
+  const day3Story = global.Day3Story || (typeof module === "object" && module.exports ? require("./day3-story.js") : null);
+  if (!day3Story) throw new Error("Day3Story must load before Day4Story");
 
   const CLUES = Object.freeze({
     auditRequest: records.get("d4_audit_request"),
     verifiedRetention: records.get("d4_verified_retention"),
     evidenceSubmission: records.get("d4_evidence_submission"),
   });
+  const ROOMS = day3Story.ROOMS;
+  const previousMessages = Object.freeze(day3Story.MESSAGES.map((message) => Object.freeze({ ...message })));
+  const MESSAGES = Object.freeze([
+    ...previousMessages,
+    { id: "d4-boss-recording", room: "boss", at: "day4BossCall", sender: "박태식 부장", text: "녹음 지원 인원 두 명 바로 이동해. 시작 시각은 9시 30분이야.", day: 4, time: "08:48" },
+    { id: "d4-harin-studio", room: "harin", at: "day4HarinReady", sender: "서하린 사수", text: "공유 폴더 최종본과 기록 양식부터 받아 둬요. 이동하면서 확인할게요.", day: 4, time: "08:50" },
+    { id: "d4-harin-audit", room: "harin", at: "day4AuditExplain", sender: "서하린 사수", text: "보안 감사 로그에서는 자동화 실행을 실제로 요청한 계정을 확인해야 해요.", day: 4, time: "11:43" },
+    { id: "d4-pt-evidence", room: "pt", at: "day4EvidenceBrief", sender: "박태식", text: "평가용 증빙 패키지도 PT와 함께 제출해.", day: 4, time: "13:35" },
+    { id: "d4-pt-submit", room: "pt", at: "day4Submit", sender: "한도윤", text: "PT와 증빙 패키지 모두 18.4%로 제출 완료했습니다.", day: 4, time: "17:08" },
+  ]);
 
   const scenes = Object.freeze([
-    { id: "day4Intro", time: "08:47", speaker: "시스템", text: "DAY 4\n발표 전날", location: "게임사업실 · 오전", visual: "출근 직후의 게임사업실. 도윤과 하린의 자리 위에 발표 자료가 열려 있다.", bgm: "daily" },
-    { id: "day4BossCall", time: "08:48", speaker: "박태식", text: "옆 프로젝트 녹음이 오늘 오전으로 당겨졌어. 오디오 검수 담당이 비어서 두 명만 지원해.", visual: "박태식이 급히 다가와 녹음 지원 일정을 전달한다." },
-    { id: "day4HarinReady", time: "08:49", speaker: "서하린", text: "원고 버전부터 확인하겠습니다. 도윤 씨, 이동하면서 파일명 규칙 알려드릴게요.", visual: "하린이 원고와 헤드폰을 챙겨 먼저 출입구로 향한다." },
-    { id: "day4MoveStudio", time: "09:20", speaker: "서하린", text: "문서로 설명하는 것보다 직접 듣는 게 빨라요. 오른쪽만 써요. 저는 왼쪽 들을게요.", location: "사내 녹음실 · 이동", visual: "한 쌍의 모니터링 헤드폰을 한쪽씩 나눠 쓴 도윤과 하린. 짧은 선 때문에 걸음을 맞춰야 한다.", bgm: "harin" },
-    { id: "day4HeadphoneChoice", time: "09:21", speaker: "한도윤", text: "헤드폰 선이 당겨진다. 어떻게 할까?", visual: "헤드폰을 공유한 채 가까이 걷는 두 사람.", choiceKey: "headphoneResponse", choices: [
-      { id: "matchPace", text: "선이 당긴다고 알리고 서로 보폭을 맞춘다.", delta: { trust: 1 }, reply: "하린은 알겠다고 답하며 도윤과 같은 속도로 걸었다." },
-      { id: "yieldHeadphone", text: "헤드폰을 잠시 넘기고 원고 체크리스트를 정리한다.", delta: { work: 1 }, reply: "도윤은 이동하는 동안 확인할 항목을 빠짐없이 정리했다." },
-      { id: "untangleTogether", text: "잠깐 멈춰 하린과 엉킨 헤드폰 선을 함께 정리한다.", delta: { affection: 1 }, reply: "가까이 엉킨 선을 풀고 나자 하린이 작게 웃으며 먼저 걸음을 옮겼다." },
+    { id: "day4Intro", time: "08:47", speaker: "시스템", text: "DAY 4\n발표 전날", location: "게임사업실 · 오전", visual: "출근 직후의 게임사업실. 도윤과 하린의 자리 위에 발표 자료가 열려 있다.", bgAssetId: "background.office.day", bgm: "daily" },
+    { id: "day4BossCall", time: "08:48", speaker: "박태식", text: "옆 프로젝트 녹음이 오늘 오전으로 당겨졌어. 오디오 검수 담당이 갑자기 빠졌고, 외부 성우는 오전밖에 시간이 없어.", visual: "박태식이 시계를 확인하며 급히 녹음 지원 일정을 전달한다.", bgAssetId: "background.office.day", characters: [{ id: "boss", assetId: "character.boss.holding_cup.concerned", position: "right" }], activeCharacter: "boss", urgent: "strong", notification: "d4-boss-recording" },
+    { id: "day4RoleAssign", time: "08:48", speaker: "박태식", text: "하린은 원고와 게임 용어 확인, 도윤은 테이크 번호와 수정 요청 기록. 녹음 시작은 9시 30분이야. 9시 20분까지 부스에 들어가.", visual: "박태식이 두 사람에게 역할과 마감 시각을 빠르게 나눠 준다.", bgAssetId: "background.office.day", characters: [{ assetId: "character.boss.holding_cup.concerned", position: "right" }] },
+    { id: "day4PtConcern", time: "08:49", speaker: "한도윤", text: "저희 발표 자료 검증은 어떻게 합니까? 오늘 안에 증빙 패키지까지 제출해야 합니다.", visual: "도윤이 열어 둔 PT 화면과 시계를 번갈아 확인한다.", bgAssetId: "background.office.day", characters: [{ assetId: "character.boss.holding_cup.concerned", position: "right" }] },
+    { id: "day4BossDeadline", time: "08:49", speaker: "박태식", text: "오전 반나절 빠진다고 무너질 자료면 내일 발표도 못 해. 녹음이 한 테이크라도 밀리면 다음 예약까지 기다려야 하니까 지금 움직여.", visual: "박태식이 부스 예약표를 가리키며 즉시 출발하라고 재촉한다.", bgAssetId: "background.office.day", characters: [{ assetId: "character.boss.holding_cup.concerned", position: "right" }] },
+    { id: "day4HarinReady", time: "08:50", speaker: "서하린", text: "제가 원고 버전을 확인할게요. 도윤 씨는 공유 폴더의 최종본과 기록 양식부터 내려받아요. 이동하면서 파일명 규칙 알려드릴게요.", visual: "하린이 원고와 헤드폰을 챙기고 도윤에게 바로 이동하자는 손짓을 한다.", bgAssetId: "background.office.day", characters: [{ id: "boss", assetId: "character.boss.holding_cup.concerned", position: "left" }, { id: "harin", assetId: "character.harin.arms_folded.concerned", position: "right" }], activeCharacter: "harin", notification: "d4-harin-studio" },
+    { id: "day4StudioArrival", time: "09:17", speaker: "한도윤", text: "녹음실은 처음이네… 생각보다 안이 좁군.", location: "사내 녹음실 · 부스", visual: "방음문을 열고 처음 녹음 부스 안으로 들어선 도윤과 하린.", bgAssetId: "background.recording_booth.day", characters: [{ id: "harin", assetId: "character.harin.relaxed_standing.gentle_smile", position: "right" }], bgm: "harin" },
+    { id: "day4StudioQuestion", time: "09:18", speaker: "한도윤", text: "선배는 녹음실에 오신 적 있으세요?", visual: "낯선 장비를 둘러보던 도윤이 하린에게 묻는다.", bgAssetId: "background.recording_booth.day", characters: [{ id: "harin", assetId: "character.harin.relaxed_standing.gentle_smile", position: "right" }] },
+    { id: "day4StudioAnswer", time: "09:19", speaker: "서하린", text: "몇 번 있어요. 이벤트 대사 검수할 때 들어왔었어요. 장비 이름을 전부 외울 필요는 없고, 지금 들리는 소리와 테이크 번호만 맞추면 돼요.", visual: "하린이 익숙하게 모니터링 장비를 확인하고 도윤에게 기록 방법을 설명한다.", bgAssetId: "background.recording_booth.day", characters: [{ id: "harin", assetId: "character.harin.relaxed_standing.gentle_smile", position: "right" }], activeCharacter: "harin" },
+    { id: "day4MoveStudio", time: "09:20", speaker: "서하린", text: "문서로 설명하는 것보다 직접 듣는 게 빨라요. 오른쪽만 써요. 저는 왼쪽 들을게요.", location: "사내 녹음실 · 부스", visual: "녹음 부스 안에서 하린이 도윤에게 모니터링 헤드폰을 건넨다.", bgAssetId: "background.recording_booth.day", cgAssetId: "event_cg.day4.harin_headphone_handoff", cgTitle: "서하린이 건넨 헤드폰", cinematicDelay: 1800, bgm: "harin" },
+    { id: "day4HeadphoneChoice", time: "09:21", speaker: "한도윤", text: "헤드폰 선이 짧아 하린과 어깨가 가까워졌다. 뭐라고 할까?", visual: "좁은 녹음 부스 안에서 헤드폰을 한쪽씩 나눠 쓴 두 사람.", bgAssetId: "background.recording_booth.day", characters: [{ id: "harin", assetId: "character.harin.relaxed_standing.embarrassed", position: "right" }], choiceKey: "headphoneResponse", choices: [
+      { id: "matchPace", text: "“선이 짧네요. 이쪽으로 조금만 붙겠습니다.”", delta: { trust: 1 }, replySpeaker: "서하린", reply: "네. 그 정도면 괜찮아요. 이 위치에서 그대로 들어 봐요." },
+      { id: "yieldHeadphone", text: "말없이 모니터 화면 쪽으로 자리를 옮겨 음량 표시를 확인한다.", delta: { work: 1 }, replySpeaker: "서하린", reply: "좋아요. 파형이랑 테이크 번호부터 맞춰 봐요." },
+      { id: "untangleTogether", text: "“생각보다 팀워크가 필요한 일이네요.” 가볍게 웃는다.", delta: { affection: 1 }, replySpeaker: "서하린", reply: "그러게요. 생각보다 호흡이 중요하네요. 잘 맞춰 봐요." },
     ] },
-    { id: "day4GuideRecording", time: "09:43", speaker: "한도윤", text: "왜 제가 가이드 대사를 읽는 겁니까?", location: "사내 녹음실 · 부스", visual: "스탠드 마이크 앞에 선 도윤과 유리창 너머에서 원고를 든 하린." },
-    { id: "day4MicShare", time: "09:47", speaker: "서하린", text: "너무 가까워요. 숨소리까지 업무 기록에 남기고 싶지는 않아요.", visual: "마이크 하나를 사이에 두고 문장의 호흡을 맞추느라 가까워진 두 사람." },
-    { id: "day4MicChoice", time: "09:48", speaker: "한도윤", text: "마이크가 이미 켜져 있다는 표시가 들어왔다.", visual: "녹음 표시등이 켜진 마이크와 동시에 굳은 두 사람.", choiceKey: "micResponse", choices: [
+    { id: "day4GuideRecording", time: "09:43", speaker: "한도윤", text: "왜 제가 가이드 대사를 읽는 겁니까?", location: "사내 녹음실 · 부스", visual: "스탠드 마이크 앞에 선 도윤과 옆에서 원고를 든 하린.", bgAssetId: "background.recording_booth.day", characters: [{ assetId: "character.harin.relaxed_standing.neutral", position: "right" }] },
+    { id: "day4MicShare", time: "09:47", speaker: "서하린", text: "너무 가까워요. 숨소리까지 업무 기록에 남기고 싶지는 않아요.", visual: "마이크 하나를 사이에 두고 문장의 호흡을 맞추느라 가까워진 두 사람.", bgAssetId: "background.recording_booth.day", characters: [{ assetId: "character.harin.relaxed_standing.embarrassed", position: "right" }] },
+    { id: "day4MicChoice", time: "09:48", speaker: "한도윤", text: "마이크가 이미 켜져 있다는 표시가 들어왔다.", visual: "녹음 표시등이 켜진 마이크와 동시에 굳은 두 사람.", bgAssetId: "background.recording_booth.day", characters: [{ assetId: "character.harin.relaxed_standing.embarrassed", position: "right" }], choiceKey: "micResponse", choices: [
       { id: "keepTake", text: "방금 대화도 자연스러운 테이크였다고 말한다.", delta: { affection: 1 }, reply: "하린은 그 의견까지 지워 달라고 하면서도 웃음을 참지 못했다." },
       { id: "checkLevels", text: "민망함을 넘기고 음량 점검부터 다시 한다.", delta: { work: 1 }, reply: "도윤은 녹음 레벨을 다시 맞추고 다음 테이크를 준비했다." },
       { id: "apologize", text: "먼저 말을 끊어 미안하다고 사과한다.", delta: { trust: 1 }, reply: "하린은 괜찮다며 이번에는 같이 읽어 보자고 답했다." },
     ] },
-    { id: "day4HarinPast", time: "10:30", speaker: "서하린", text: "예전에는 이벤트 대사 정리하는 걸 좋아했어요. 짧은 문장 하나로 캐릭터가 달라지는 게 재미있었거든요.", visual: "원고의 감정 표시를 고치는 하린. 평소보다 편안한 표정이다." },
-    { id: "day4LastTake", time: "11:18", speaker: "서하린", text: "테이크 시각 바로 찾은 건 좋았어요. 처음인데도 기록을 제대로 남겼네요.", visual: "케이블 잡음이 난 시각을 찾아 마지막 재녹음을 끝낸 두 사람." },
-    { id: "day4Return", time: "11:42", speaker: "한도윤", text: "문서가 바뀐 시각과 내용은 확인했습니다. 이제 누가 자동화를 요청했는지 보면 되는 겁니까?", location: "게임사업실 · 오전", visual: "회사로 돌아와 보안 감사 화면을 연 도윤과 하린. 낮 사무실 배경은 추가 제작이 필요하다.", characters: [{ assetId: "character.harin.arms_folded.concerned", position: "right" }], bgm: "mystery" },
-    { id: "day4AuditExplain", time: "11:43", speaker: "서하린", text: "네. 실제로 자동화를 실행해 달라고 요청한 계정은 보안 감사 로그에서 확인해야 해요.", characters: [{ assetId: "character.harin.arms_folded.concerned", position: "right" }], system: { title: "SECURITY AUDIT", rows: ["문서 변경 이력 · 변경 시각과 내용", "보안 감사 로그 · 실제 요청 계정", "현재 상태 · 열람 권한 없음"] } },
-    { id: "day4AuditRequest", time: "13:20", speaker: "시스템", text: "보안 감사 로그 조회 요청이 접수되었습니다.", location: "게임사업실 · 오후", visual: "점심 이후 도착한 감사 로그 조회 접수 알림.", system: { title: "AUDIT REQUEST", rows: ["상태 · 담당자 확인 대기", "목적 · 자동화 실행 요청 계정 확인"] }, clue: CLUES.auditRequest, bgm: "daily" },
-    { id: "day4EvidenceBrief", time: "13:35", speaker: "박태식", text: "평가위원이 수치 근거를 바로 열어 볼 수 있게 증빙 패키지도 같이 제출해.", visual: "박태식이 평가 시스템의 제출 항목을 가리킨다. 박태식 지시 포즈는 추가 제작이 필요하다." },
-    { id: "day4VerifyMetric", time: "14:00", speaker: "서하린", text: "수치만 적지 말고 대상과 기간도 같이 남겨요. 같은 이름의 지표라도 기준이 다르면 다른 숫자가 될 수 있으니까요.", visual: "DAY 1 원본과 DAY 2 검증 기록을 나란히 비교하는 화면.", characters: [{ assetId: "character.harin.arms_folded.concerned", position: "right" }], system: { title: "METRIC VERIFIED", rows: ["7일 차 잔존율 · 18.4%", "대상 · 신규 가입 사용자", "기간 · 발표 기준 주차", "상태 · 원본 대조 완료"] }, clue: CLUES.verifiedRetention, bgm: "mystery" },
-    { id: "day4EvidenceChoice", time: "14:20", speaker: "한도윤", text: "평가위원에게 가장 먼저 보여 줄 근거를 정하자.", visual: "원본 데이터, 계산식, 유저 조사 요약이 증빙 후보로 표시된다.", choiceKey: "evidencePriority", choices: [
+    { id: "day4HarinPast", time: "10:30", speaker: "서하린", text: "예전에는 이벤트 대사 정리하는 걸 좋아했어요. 짧은 문장 하나로 캐릭터가 달라지는 게 재미있었거든요.", visual: "원고의 감정 표시를 고치는 하린. 평소보다 편안한 표정이다.", bgAssetId: "background.recording_booth.day", characters: [{ assetId: "character.harin.relaxed_standing.gentle_smile", position: "right" }] },
+    { id: "day4LastTake", time: "11:18", speaker: "서하린", text: "테이크 시각 바로 찾은 건 좋았어요. 처음인데도 기록을 제대로 남겼네요.", visual: "케이블 잡음이 난 시각을 찾아 마지막 재녹음을 끝낸 두 사람.", bgAssetId: "background.recording_booth.day", characters: [{ assetId: "character.harin.relaxed_standing.gentle_smile", position: "right" }] },
+    { id: "day4Return", time: "11:42", speaker: "한도윤", text: "문서가 바뀐 시각과 내용은 확인했습니다. 이제 누가 자동화를 요청했는지 보면 되는 겁니까?", location: "게임사업실 · 오전", visual: "회사로 돌아와 보안 감사 화면을 연 도윤과 하린.", bgAssetId: "background.office.day", characters: [{ assetId: "character.harin.arms_folded.concerned", position: "right" }], bgm: "mystery" },
+    { id: "day4AuditExplain", time: "11:43", speaker: "서하린", text: "네. 실제로 자동화를 실행해 달라고 요청한 계정은 보안 감사 로그에서 확인해야 해요.", bgAssetId: "background.office.day", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned", position: "right" }], activeCharacter: "harin", system: { title: "SECURITY AUDIT", rows: ["문서 변경 이력 · 변경 시각과 내용", "보안 감사 로그 · 실제 요청 계정", "현재 상태 · 열람 권한 없음"] }, notification: "d4-harin-audit" },
+    { id: "day4AuditRequest", time: "13:20", speaker: "시스템", text: "보안 감사 로그 조회 요청이 접수되었습니다.", location: "게임사업실 · 오후", visual: "점심 이후 도착한 감사 로그 조회 접수 알림.", bgAssetId: "background.office.day", system: { title: "AUDIT REQUEST", rows: ["상태 · 담당자 확인 대기", "목적 · 자동화 실행 요청 계정 확인"] }, clue: CLUES.auditRequest, bgm: "daily" },
+    { id: "day4EvidenceBrief", time: "13:35", speaker: "박태식", text: "평가위원이 수치 근거를 바로 열어 볼 수 있게 증빙 패키지도 같이 제출해.", visual: "박태식이 평가 시스템의 제출 항목을 가리킨다.", bgAssetId: "background.office.day", characters: [{ id: "boss", assetId: "character.boss.holding_cup.concerned", position: "right" }], activeCharacter: "boss", notification: "d4-pt-evidence" },
+    { id: "day4VerifyMetric", time: "14:00", speaker: "서하린", text: "수치만 적지 말고 대상과 기간도 같이 남겨요. 같은 이름의 지표라도 기준이 다르면 다른 숫자가 될 수 있으니까요.", visual: "DAY 1 원본과 DAY 2 검증 기록을 나란히 비교하는 화면.", bgAssetId: "background.office.day", characters: [{ assetId: "character.harin.arms_folded.concerned", position: "right" }], system: { title: "METRIC VERIFIED", rows: ["7일 차 잔존율 · 18.4%", "대상 · 신규 가입 사용자", "기간 · 발표 기준 주차", "상태 · 원본 대조 완료"] }, clue: CLUES.verifiedRetention, bgm: "mystery" },
+    { id: "day4EvidenceChoice", time: "14:20", speaker: "한도윤", text: "평가위원에게 가장 먼저 보여 줄 근거를 정하자.", visual: "원본 데이터, 계산식, 유저 조사 요약이 증빙 후보로 표시된다.", bgAssetId: "background.office.day", characters: [{ assetId: "character.harin.arms_folded.concerned", position: "right" }], choiceKey: "evidencePriority", choices: [
       { id: "sourceFirst", text: "정상 원본과 계산식을 첫 화면에 둔다.", delta: { work: 1, trust: 1 }, reply: "정상 원본과 계산식이 증빙 패키지의 첫 항목으로 배치됐다." },
       { id: "summaryFirst", text: "유저 조사 요약을 먼저 보여 준다.", delta: { affection: 0, work: 1 }, reply: "읽기는 쉬워졌지만 도윤은 원본 링크도 바로 다음에 배치했다." },
       { id: "criteriaFirst", text: "대상과 산정 기간을 먼저 설명한다.", delta: { trust: 1 }, reply: "같은 지표의 기준이 섞이지 않도록 산정 조건을 선명하게 표시했다." },
     ] },
-    { id: "day4EvidencePreview", time: "14:45", speaker: "한도윤", text: "미리보기에도 18.4%로 표시됩니다. 출처 링크도 정상적으로 열립니다.", visual: "평가용 증빙 패키지 미리보기. 모든 값이 정상으로 표시된다.", system: { title: "EVIDENCE PACKAGE", rows: ["발표 지표 · 18.4%", "출처 · retention_7d_verified", "산정 기준 · 원본 대조 완료", "링크 상태 · 정상"] } },
-    { id: "day4QuestionRehearsal", time: "15:20", speaker: "서하린", text: "제출 자료와 발표 자료의 값이 다르면요?", visual: "평가위원 역할을 맡아 질문하는 하린과 답변 기록을 든 도윤." },
-    { id: "day4QuestionAnswer", time: "15:21", speaker: "한도윤", text: "우선 산정 기준이 같은지 확인하고, 보존한 정상 원본과 제출 생성 기록을 비교하겠습니다.", visual: "도윤이 원본과 제출 기록을 순서대로 짚는다." },
-    { id: "day4Rehearsal", time: "16:10", speaker: "박태식", text: "수치 설명은 좋아. 발표는 짧게, 근거는 바로 꺼낼 수 있게.", visual: "회의실 화면에 정상 PT와 증빙 패키지가 함께 열린 리허설." },
-    { id: "day4Submit", time: "17:05", speaker: "시스템", text: "PT와 평가용 증빙 패키지 제출이 완료되었습니다.", visual: "제출 완료 화면. PT와 증빙 모두 18.4%로 표시된다.", system: { title: "SUBMISSION COMPLETE", rows: ["PT 핵심 수치 · 18.4%", "증빙 표시 수치 · 18.4%", "출처 링크 · 정상", "확인 시각 · DAY 4 17:08"] }, clue: CLUES.evidenceSubmission },
-    { id: "day4Preserve", time: "17:09", speaker: "서하린", text: "생성 번호와 확인 화면을 작업 기록에 남겨요. 내일 문제가 생겨도 우리가 무엇을 확인했는지는 증명할 수 있게요.", visual: "도윤이 제출 번호와 확인 시각을 별도 업무 기록에 보존한다." },
-    { id: "day4LeaveLead", time: "17:30", speaker: "서하린", text: "오늘 확인한 상태만 보존하고 퇴근해요. 부장님이 다른 일을 붙이기 전에요.", location: "게임사업실 · 퇴근", visual: "퇴근 준비를 마친 두 사람과 멀리서 다가오는 박태식.", bgAssetId: "background.office.night", bgm: "minigame" },
-    { id: "day4Escape", time: "17:31", speaker: "시스템", text: "박태식 부장에게 붙잡히기 전에 엘리베이터까지 이동하세요.", visual: "도윤의 SD풍 상상 속 사무실 탈출 경로. 추격 캐릭터 아트는 미니게임 도형으로 표시한다.", bgAssetId: "background.office.night", startEscape: true },
-    { id: "day4EscapeResult", time: "17:40", speaker: "한도윤", dynamic: "escapeResult", location: "엘리베이터 로비 · 퇴근", visual: "엘리베이터 앞에 도착한 도윤과 하린.", bgAssetId: "background.elevator_lobby.night", bgm: "harin" },
+    { id: "day4EvidencePreview", time: "14:45", speaker: "한도윤", text: "미리보기에도 18.4%로 표시됩니다. 출처 링크도 정상적으로 열립니다.", visual: "평가용 증빙 패키지 미리보기. 모든 값이 정상으로 표시된다.", bgAssetId: "background.office.day", system: { title: "EVIDENCE PACKAGE", rows: ["발표 지표 · 18.4%", "출처 · retention_7d_verified", "산정 기준 · 원본 대조 완료", "링크 상태 · 정상"] } },
+    { id: "day4QuestionRehearsal", time: "15:20", speaker: "서하린", text: "제출 자료와 발표 자료의 값이 다르면요?", visual: "평가위원 역할을 맡아 질문하는 하린과 답변 기록을 든 도윤.", bgAssetId: "background.office.day", characters: [{ assetId: "character.harin.arms_folded.concerned", position: "right" }] },
+    { id: "day4QuestionAnswer", time: "15:21", speaker: "한도윤", text: "우선 산정 기준이 같은지 확인하고, 보존한 정상 원본과 제출 생성 기록을 비교하겠습니다.", visual: "도윤이 원본과 제출 기록을 순서대로 짚는다.", bgAssetId: "background.office.day", characters: [{ assetId: "character.harin.arms_folded.concerned", position: "right" }] },
+    { id: "day4RehearsalSetup", time: "16:10", speaker: "박태식", text: "제출 자료는 정리됐지? 그럼 내일 들어가기 전에 한 번 맞춰 보자. 도윤이 처음부터 발표하고, 하린은 평가위원 역할 맡아.", location: "사내 회의실 · 오후", visual: "박태식이 회의실 화면 앞에서 발표 리허설의 역할을 나눈다.", bgAssetId: "background.meeting_room.afternoon", characters: [{ assetId: "character.boss.holding_cup.concerned", position: "right" }] },
+    { id: "day4RehearsalRole", time: "16:10", speaker: "서하린", text: "제가 중간에 질문해도 되죠? 실제 평가라고 생각하고 끊어 볼게요.", visual: "서하린이 발표 자료를 훑으며 평가위원 역할을 준비한다.", bgAssetId: "background.meeting_room.afternoon", characters: [{ assetId: "character.harin.relaxed_standing.neutral", position: "right" }] },
+    { id: "day4RehearsalEvidence", time: "16:11", speaker: "박태식", text: "그래. 준비한 답만 하지 말고, 근거 자료를 바로 찾을 수 있는지도 보자.", visual: "박태식이 발표 자료 옆의 증빙 패키지를 가리킨다.", bgAssetId: "background.meeting_room.afternoon", characters: [{ assetId: "character.boss.holding_cup.concerned", position: "right" }] },
+    { id: "day4RehearsalReady", time: "16:11", speaker: "한도윤", text: "알겠습니다. 발표 화면과 증빙 패키지까지 열어 두겠습니다.", visual: "도윤이 발표 화면과 증빙 패키지를 나란히 준비한다.", bgAssetId: "background.meeting_room.afternoon", characters: [{ assetId: "character.boss.holding_cup.concerned", position: "left" }, { assetId: "character.harin.relaxed_standing.neutral", position: "right" }] },
+    { id: "day4RehearsalScreen", time: "16:12", speaker: "시스템", text: "최종 발표 자료와 검증된 증빙 패키지가 회의실 화면에 나란히 표시되었다.", visual: "최종 발표 자료와 증빙 패키지가 함께 열린 회의실 화면.", bgAssetId: "background.meeting_room.afternoon", system: { title: "FINAL PRESENTATION", rows: ["핵심 지표 · 7일 차 잔존율 18.4%", "대상 · 신규 가입 사용자", "증빙 패키지 · 연결 완료", "발표 상태 · 리허설 준비"] } },
+    { id: "day4RehearsalStart", time: "16:12", speaker: "박태식", text: "좋아. 시간 잴 테니까 처음부터 시작해.", visual: "박태식이 시간을 확인하고 도윤에게 시작 신호를 보낸다.", bgAssetId: "background.meeting_room.afternoon", characters: [{ assetId: "character.boss.holding_cup.concerned", position: "right" }] },
+    { id: "day4RehearsalOpening", time: "16:13", speaker: "한도윤", text: "발표 시작하겠습니다. 이번 개선안의 핵심은 신규 사용자의 초반 이탈 구간을 줄이는 것입니다.", visual: "도윤이 첫 장을 띄우고 발표의 핵심 목표부터 설명한다.", bgAssetId: "background.meeting_room.afternoon", characters: [{ assetId: "character.boss.holding_cup.concerned", position: "left" }, { assetId: "character.harin.relaxed_standing.neutral", position: "right" }] },
+    { id: "day4RehearsalMetric", time: "16:14", speaker: "한도윤", text: "신규 가입 사용자를 기준으로 확인한 7일 차 잔존율은 18.4%입니다. 수치는 검증된 원본과 동일하며, 산정 기간과 대상도 증빙 자료에 함께 표기했습니다.", visual: "핵심 수치와 산정 기준이 한 화면에 정리된 발표 슬라이드.", bgAssetId: "background.meeting_room.afternoon", system: { title: "ONBOARDING IMPROVEMENT", rows: ["핵심 지표 · 7일 차 잔존율 18.4%", "분석 대상 · 신규 가입 사용자", "검증 상태 · 정상 원본 대조 완료", "개선 방향 · 초반 이탈 구간 축소"] } },
+    { id: "day4RehearsalQuestion", time: "16:15", speaker: "서하린", text: "질문하겠습니다. 발표 자료와 제출된 증빙의 수치가 다르게 보인다면, 어떤 자료를 기준으로 설명하시겠어요?", visual: "서하린이 평가위원처럼 발표의 수치 차이를 질문한다.", bgAssetId: "background.meeting_room.afternoon", characters: [{ assetId: "character.harin.relaxed_standing.neutral", position: "right" }] },
+    { id: "day4RehearsalAnswer", time: "16:16", speaker: "한도윤", text: "먼저 두 자료의 산정 대상과 기간이 같은지 확인하겠습니다. 이후 보존한 정상 원본과 제출 생성 기록을 비교해 어느 단계에서 차이가 생겼는지 설명하겠습니다.", visual: "도윤이 화면의 산정 기준과 제출 생성 기록을 차례로 가리킨다.", bgAssetId: "background.meeting_room.afternoon", characters: [{ assetId: "character.boss.holding_cup.concerned", position: "left" }, { assetId: "character.harin.relaxed_standing.neutral", position: "right" }] },
+    { id: "day4RehearsalFollowUp", time: "16:17", speaker: "서하린", text: "좋아요. 그러면 평가위원이 원본을 바로 보여 달라고 하면요?", visual: "서하린이 답변을 기록한 뒤 곧바로 추가 질문을 건넨다.", bgAssetId: "background.meeting_room.afternoon", characters: [{ assetId: "character.harin.relaxed_standing.neutral", position: "right" }] },
+    { id: "day4RehearsalEvidenceAnswer", time: "16:18", speaker: "한도윤", text: "증빙 패키지 첫 화면에서 정상 원본과 계산식을 열겠습니다. 말로 해명하기 전에 검증된 근거부터 제시하겠습니다.", visual: "도윤이 증빙 패키지의 정상 원본과 계산식 위치를 바로 열어 보인다.", bgAssetId: "background.meeting_room.afternoon", characters: [{ assetId: "character.boss.holding_cup.concerned", position: "left" }, { assetId: "character.harin.relaxed_standing.neutral", position: "right" }] },
+    { id: "day4Rehearsal", time: "16:19", speaker: "박태식", text: "수치 설명은 좋아. 그런데 앞부분이 길어. 결론부터 말하고, 질문이 들어오면 근거를 꺼내.", visual: "박태식이 발표 흐름을 짚으며 결론을 먼저 전달하라고 조언한다.", bgAssetId: "background.meeting_room.afternoon", characters: [{ assetId: "character.boss.holding_cup.concerned", position: "right" }] },
+    { id: "day4RehearsalCommit", time: "16:20", speaker: "한도윤", text: "네. 핵심 수치와 개선 방향을 먼저 전달하고, 산정 기준은 질의응답에서 설명하겠습니다.", visual: "도윤이 피드백을 반영해 발표 순서를 다시 정리한다.", bgAssetId: "background.meeting_room.afternoon", characters: [{ assetId: "character.boss.holding_cup.concerned", position: "left" }, { assetId: "character.harin.relaxed_standing.neutral", position: "right" }] },
+    { id: "day4Submit", time: "17:05", speaker: "시스템", text: "PT와 평가용 증빙 패키지 제출이 완료되었습니다.", location: "게임사업실 · 오후", visual: "제출 완료 화면. PT와 증빙 모두 18.4%로 표시된다.", bgAssetId: "background.office.day", system: { title: "SUBMISSION COMPLETE", rows: ["PT 핵심 수치 · 18.4%", "증빙 표시 수치 · 18.4%", "출처 링크 · 정상", "확인 시각 · DAY 4 17:08"] }, clue: CLUES.evidenceSubmission, notification: "d4-pt-submit" },
+    { id: "day4Preserve", time: "17:09", speaker: "서하린", text: "생성 번호와 확인 화면을 작업 기록에 남겨요. 내일 문제가 생겨도 우리가 무엇을 확인했는지는 증명할 수 있게요.", visual: "도윤이 제출 번호와 확인 시각을 별도 업무 기록에 보존한다.", bgAssetId: "background.office.day", characters: [{ assetId: "character.harin.arms_folded.concerned", position: "right" }] },
+    { id: "day4LeaveLead", time: "17:30", speaker: "서하린", text: "오늘 확인한 상태만 보존하고 퇴근해요. 부장님이 다른 일을 붙이기 전에요.", location: "게임사업실 · 퇴근", visual: "노을이 비치는 사무실에서 퇴근 준비를 마친 두 사람과 멀리서 다가오는 박태식.", bgAssetId: "background.office.evening", characters: [{ assetId: "character.harin.arms_folded.concerned", position: "right" }], bgm: "minigame" },
+    { id: "day4Escape", time: "17:31", speaker: "시스템", text: "박태식 부장에게 붙잡히기 전에 엘리베이터까지 이동하세요.", visual: "도윤의 SD풍 상상 속 사무실 탈출 경로. 추격 캐릭터 아트는 미니게임 도형으로 표시한다.", bgAssetId: "background.office.evening", startEscape: true },
+    { id: "day4EscapeResult", time: "17:40", speaker: "한도윤", dynamic: "escapeResult", location: "엘리베이터 로비 · 퇴근", visual: "엘리베이터 앞에 도착한 도윤과 하린.", bgAssetId: "background.elevator_lobby.night", characters: [{ assetId: "character.harin.arms_folded.concerned", position: "right" }], bgm: "harin" },
     { id: "day4End", time: "18:00", speaker: "시스템", text: "DAY 4 완료\n발표 준비와 증빙 제출을 마쳤습니다.", location: "엘리베이터 로비 · 퇴근", visual: "닫히는 엘리베이터 문과 오늘의 확인 기록.", bgAssetId: "background.elevator_lobby.night", end: true, bgm: "daily" },
   ]);
 
@@ -62,7 +93,7 @@
     return errors;
   }
 
-  const api = Object.freeze({ scenes, CLUES, validateScenes });
+  const api = Object.freeze({ scenes, CLUES, ROOMS, MESSAGES, validateScenes });
   if (typeof module === "object" && module.exports) module.exports = api;
   global.Day4Story = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);

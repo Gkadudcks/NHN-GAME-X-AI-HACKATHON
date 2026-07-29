@@ -1027,7 +1027,12 @@ refs.daySummaryExit.onclick = closeDaySummary;
 refs.dayCompleteMenu.onclick = () => { location.href = "index.html"; };
 refs.dayCompleteNext.onclick = () => {
   GameProgress.startDay4(localStorage);
-  location.href = "day4.html?new=1";
+  refs.dayComplete.classList.remove("show");
+  refs.dayComplete.setAttribute("aria-hidden", "true");
+  refs.dayTransition.classList.add("show");
+  refs.dayTransition.setAttribute("aria-hidden", "false");
+  bgmManager.stop({ fadeOut: 220 });
+  window.setTimeout(() => { location.href = "day4.html?new=1"; }, 2200);
 };
 $("#save").onclick = () => openGameSave("save");
 $("#load").onclick = () => openGameSave("load");

@@ -1,5 +1,23 @@
 "use strict";
 
+const DAY4_CHARACTER_PROFILES = Object.freeze({
+  harin: Object.freeze({ name: "서하린", heightCm: 165 }),
+  boss: Object.freeze({ name: "박태식", heightCm: 176 }),
+});
+const DAY4_CHARACTER_BASE_HEIGHT = 182;
+const DAY4_CHARACTER_STAGE_HEIGHT = 84;
+const DAY4_CHARACTER_POSITIONS = Object.freeze({ farLeft: 18, left: 31, center: 50, right: 69, farRight: 82 });
+function characterIdFromAsset(entry = {}) {
+  if (entry.id) return entry.id;
+  if (entry.assetId?.includes("harin")) return "harin";
+  if (entry.assetId?.includes("boss")) return "boss";
+  return "";
+}
+function characterIdFromSpeaker(speaker = "") {
+  if (speaker === "서하린") return "harin";
+  if (speaker === "박태식") return "boss";
+  return "";
+}
 const scenes = Day4Story.scenes;
 const $ = (selector) => document.querySelector(selector);
 const progress = new URLSearchParams(location.search).has("new") ? GameProgress.resetDay4(localStorage) : GameProgress.startDay4(localStorage);
@@ -11,39 +29,35 @@ const state = {
   trust: progress.shared.trust,
   clues: ClueRecords.normalizeList(progress.shared.clues),
   decisions: { ...saved.decisions },
+  seenNotifications: { ...(progress.days[3]?.seenNotifications || {}), ...saved.seenNotifications },
+  summariesSeen: { ...saved.summariesSeen },
   evidence: { ...saved.evidence },
   minigameResult: saved.minigameResult,
+  unreadClues: saved.seenNotifications?.["unread:clues"] === true,
 };
-const bgmManager = new GameBgmManager($("#bgm"), () => {
+function getBgmVolume() {
   const settings = GameSettings.load(localStorage);
   return settings.masterMuted || settings.bgmMuted ? 0 : (settings.masterVolume / 100) * (settings.bgmVolume / 100);
-});
+}
+const bgmManager = new GameBgmManager($("#bgm"), getBgmVolume);
+window.BGMManager = bgmManager;
+bgmManager.preload(["daily", "harin", "mystery", "minigame"]);
 let pauseMenu;
 let locked = false;
 let choiceResultTimer;
+let currentRoom = "";
+let activeStatHelp = null;
+let escapeActive = false;
+let cinematicLocked = false;
+let cinematicTimer;
+let cinematicScene = null;
+let cinematicDeadline = 0;
+let cinematicRemaining = 0;
+let cinematicPaused = false;
+let deferNextNotification = false;
 const locationTransition = GameLocationTransition.install();
 const day4Start = progress.day4StartSnapshot || { work: 0, affection: 0, trust: 0, clues: [] };
 const AUTOSAVE_CHECKPOINTS = new Set(["day4AuditRequest", "day4Submit", "day4End"]);
-const CHAT_ROOMS = Object.freeze({
-  pt: {
-    title: "PT 전환과제 TF",
-    type: "GROUP MESSAGE",
-    messages: [
-      ["박태식", "평가용 증빙 패키지도 같이 제출해.", "13:35"],
-      ["서하린", "수치와 출처 링크를 마지막에 다시 확인해요.", "14:00"],
-      ["한도윤", "PT와 증빙 모두 18.4%로 확인했습니다.", "17:08"],
-    ],
-  },
-  harin: {
-    title: "서하린 사수",
-    type: "DIRECT MESSAGE",
-    messages: [
-      ["서하린", "보안 감사 로그는 요청 계정을 확인하기 위한 기록이에요.", "11:43"],
-      ["서하린", "발표 자료까지 마지막으로 확인해 둘게요.", "17:12"],
-    ],
-  },
-});
-
 function escapeHtml(value) {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 }
@@ -68,6 +82,11 @@ function choiceEffectMarkup(delta = {}) {
   }).join("");
 }
 
+function choiceLock(choice) {
+  const required = Number(choice?.minAffection);
+  return Number.isFinite(required) && state.affection < required ? { required, current: state.affection } : null;
+}
+
 function saveProgress() {
   progress.currentDay = 4;
   progress.shared.work = state.work;
@@ -77,6 +96,8 @@ function saveProgress() {
   progress.days[4] = {
     sceneId: scenes[state.index]?.id || "day4Intro",
     decisions: { ...state.decisions },
+    seenNotifications: { ...state.seenNotifications, "unread:clues": state.unreadClues },
+    summariesSeen: { ...state.summariesSeen },
     evidence: { ...state.evidence },
     minigameResult: state.minigameResult,
     complete: progress.days[4].complete,
@@ -104,17 +125,22 @@ function saveDay4Slot(checkpoint) {
 }
 
 async function unlockAudio() {
-  await bgmManager.resume();
-  $("#mute").classList.remove("muted");
-  $("#sound-prompt").classList.add("hidden");
+  const played = await bgmManager.resume();
+  syncBgmUi(played);
+  return played;
+}
+
+function syncBgmUi(played = !bgmManager.isPaused()) {
+  const audible = played && getBgmVolume() > 0;
+  $("#mute").classList.toggle("muted", !audible);
+  $("#sound-prompt").classList.toggle("hidden", audible);
 }
 
 async function toggleBgm() {
   if (bgmManager.isPaused()) await unlockAudio();
   else {
     await bgmManager.pause();
-    $("#mute").classList.add("muted");
-    $("#sound-prompt").classList.remove("hidden");
+    syncBgmUi(false);
   }
 }
 
@@ -196,7 +222,8 @@ function closeGameSave() {
 
 function saveToGameSlot(slotId, occupied) {
   if (occupied && !confirm(`SLOT ${String(slotId).padStart(2, "0")}의 기존 저장을 덮어쓸까요?`)) return;
-  const result = GameProgress.saveManualSlot(localStorage, slotId, buildGameSavePayload(scenes[state.index] || scenes[0]));
+  const scene = scenes[state.index] || scenes[0];
+  const result = GameProgress.saveManualSlot(localStorage, slotId, buildGameSavePayload(scene));
   if (result.status !== "saved") return toast("이 브라우저에서는 슬롯을 저장할 수 없습니다.");
   closeGameSave();
   toast(`SLOT ${String(slotId).padStart(2, "0")}에 저장했습니다.`);
@@ -214,6 +241,7 @@ function loadFromGameSlot(slot) {
 function addClue(clue) {
   if (!clue || state.clues.some((item) => item.id === clue.id)) return;
   state.clues.push({ ...clue });
+  state.unreadClues = !$("#clues-view").classList.contains("active");
   if (clue.id === "d4_audit_request") state.evidence.auditRequested = true;
   if (clue.id === "d4_verified_retention") state.evidence.verifiedRetention = 18.4;
   if (clue.id === "d4_evidence_submission") {
@@ -226,9 +254,8 @@ function addClue(clue) {
 }
 
 function renderRecords() {
-  const records = state.clues.filter((clue) => clue.day === 4);
   $("#clue-count").textContent = state.clues.length;
-  $("#clue-new").hidden = !records.length;
+  $("#clue-new").hidden = !state.unreadClues;
   if (!state.clues.length) {
     $("#clue-list").innerHTML = '<div class="clue-empty"><span>◇</span><strong>아직 기록된 단서가 없습니다</strong><p>대화와 자료를 조사하면 중요한 정보가 여기에 정리됩니다.</p></div>';
     return;
@@ -236,20 +263,147 @@ function renderRecords() {
   ClueMindmap.render($("#clue-list"), { clues: state.clues, currentDay: 4 });
 }
 
-function openChat(roomId) {
-  const room = CHAT_ROOMS[roomId];
+const MESSAGE_DAY_NAMES = Object.freeze(["", "월요일", "화요일", "수요일", "목요일", "금요일"]);
+
+function sceneIndex(id) {
+  return scenes.findIndex((scene) => scene.id === id);
+}
+
+function isAtOrAfter(id) {
+  const target = sceneIndex(id);
+  return target >= 0 && state.index >= target;
+}
+
+function messageDay(message) {
+  const explicit = Number(message.day);
+  if (explicit >= 1 && explicit <= 5) return explicit;
+  const embedded = String(message.time || "").match(/DAY\s*([1-5])/i);
+  return embedded ? Number(embedded[1]) : 4;
+}
+
+function messageClock(message) {
+  return String(message.time || "").replace(/^DAY\s*[1-5]\s*·\s*/i, "");
+}
+
+function visibleMessages(room) {
+  return Day4Story.MESSAGES.filter((message) => message.room === room && (messageDay(message) < 4 || isAtOrAfter(message.at)));
+}
+
+function messageText(message) {
+  if (message.text) return message.text;
+  if (message.dynamic === "workAlertMessage") return "조사 요청 처리 결과를 확인했어요. 보존한 기록을 이어서 검토해요.";
+  if (message.dynamic === "eveningMessage") return "오늘 확인한 조사 기록은 그대로 보존해요. 내일 이어서 확인하겠습니다.";
+  return "";
+}
+
+function unreadCount(room) {
+  const count = Number(state.seenNotifications[`unread:count:${room}`]);
+  if (Number.isFinite(count) && count > 0) return Math.floor(count);
+  return state.seenNotifications[`unread:${room}`] === true ? 1 : 0;
+}
+
+function markUnread(room) {
   if (!room) return;
+  state.seenNotifications[`unread:${room}`] = true;
+  state.seenNotifications[`unread:count:${room}`] = unreadCount(room) + 1;
+}
+
+function clearUnread(room) {
+  state.seenNotifications[`unread:${room}`] = false;
+  state.seenNotifications[`unread:count:${room}`] = 0;
+}
+
+function renderMessageTabAlert({ pulse = false } = {}) {
+  const tab = document.querySelector('[data-tab="messages-view"]');
+  const badge = $("#message-new");
+  const count = Object.keys(Day4Story.ROOMS).reduce((sum, room) => sum + unreadCount(room), 0);
+  badge.textContent = String(count);
+  badge.hidden = count === 0;
+  tab.classList.toggle("has-unread", count > 0);
+  if (pulse && count > 0 && $("#clues-view").classList.contains("active")) {
+    tab.classList.remove("message-tab-alert");
+    void tab.offsetWidth;
+    tab.classList.add("message-tab-alert");
+    window.setTimeout(() => tab.classList.remove("message-tab-alert"), 1900);
+  }
+}
+
+function renderMessages() {
+  const rooms = Object.keys(Day4Story.ROOMS);
+  const visibleRooms = rooms.filter((room) => visibleMessages(room).length);
+  $("#chat-list-empty").hidden = visibleRooms.length > 0;
+  rooms.forEach((room) => {
+    const button = $(`#chat-${room}`);
+    const messages = visibleMessages(room);
+    if (!button) return;
+    button.hidden = messages.length === 0;
+    if (!messages.length) return;
+    const latest = messages.at(-1);
+    button.querySelector(".chat-copy small").textContent = `${latest.sender}: ${messageText(latest)}`;
+    button.querySelector("time").textContent = messageClock(latest);
+    const count = unreadCount(room);
+    const unread = count > 0 && currentRoom !== room;
+    button.querySelector("em").textContent = String(count);
+    button.querySelector("em").hidden = !unread;
+    button.classList.toggle("unread-pulse", unread);
+  });
+  renderMessageTabAlert();
+  if (!currentRoom) return;
+  const box = $("#messages");
+  let renderedDay = 0;
+  box.innerHTML = visibleMessages(currentRoom).map((message) => {
+    const day = messageDay(message);
+    const divider = day === renderedDay ? "" : `<div class="message-day-divider"><span>DAY ${day} · ${MESSAGE_DAY_NAMES[day]}</span></div>`;
+    renderedDay = day;
+    return `${divider}<article class="message"><b>${escapeHtml(message.sender)}</b><p>${escapeHtml(messageText(message))}</p><small>${escapeHtml(messageClock(message))}</small></article>`;
+  }).join("");
+  box.scrollTop = box.scrollHeight;
+}
+
+function playMessageSfx() {
+  const settings = GameSettings.load(localStorage);
+  const volume = settings.masterMuted || settings.sfxMuted ? 0 : (settings.masterVolume / 100) * (settings.sfxVolume / 100);
+  const audio = $("#message-sfx");
+  audio.volume = Math.min(1, Math.max(0, volume));
+  audio.currentTime = 0;
+  audio.play().catch(() => {});
+}
+
+function notifyMessage(id) {
+  if (!id || state.seenNotifications[`notified:${id}`]) return;
+  const message = Day4Story.MESSAGES.find((entry) => entry.id === id);
+  if (!message) return;
+  state.seenNotifications[`notified:${id}`] = true;
+  if (currentRoom !== message.room) markUnread(message.room);
+  $("#messenger").classList.remove("message-arrived");
+  void $("#messenger").offsetWidth;
+  $("#messenger").classList.add("message-arrived");
+  renderMessages();
+  renderMessageTabAlert({ pulse: true });
+  playMessageSfx();
+  toast(`${Day4Story.ROOMS[message.room].title.replace(/^# /, "")}에 새 메시지가 도착했습니다.`);
+  window.setTimeout(() => $("#messenger").classList.remove("message-arrived"), 1900);
+}
+
+function openChat(roomId) {
+  const room = Day4Story.ROOMS[roomId];
+  if (!room) return;
+  currentRoom = roomId;
   $("#room-type").textContent = room.type;
   $("#room-title").textContent = room.title;
-  $("#room-members").textContent = room.type === "GROUP MESSAGE" ? "박 · 서 · 한" : "서";
-  $("#messages").innerHTML = `<div class="message-day-divider"><span>목요일</span></div>` + room.messages.map(([speaker, text, time]) => `<article class="message${speaker === "한도윤" ? " me" : ""}"><b>${escapeHtml(speaker)}</b><p>${escapeHtml(text)}</p><time>${time}</time></article>`).join("");
+  $("#room-members").innerHTML = room.members.map((member) => `<span>${escapeHtml(member)}</span>`).join("");
   $("#chat-list").hidden = true;
   $("#chat-room").hidden = false;
+  clearUnread(roomId);
+  renderMessages();
+  saveProgress();
 }
 
 function closeChat() {
+  currentRoom = "";
   $("#chat-room").hidden = true;
   $("#chat-list").hidden = false;
+  renderMessages();
 }
 
 const STAT_HELP = Object.freeze({
@@ -258,9 +412,12 @@ const STAT_HELP = Object.freeze({
   trust: ["신뢰도", "협업 태도와 근거 중심 판단에 대한 신뢰입니다."],
 });
 
-function closeStatHelp() {
+function closeStatHelp({ restoreFocus = false } = {}) {
+  const previous = activeStatHelp;
+  activeStatHelp = null;
   document.querySelectorAll(".stat-help").forEach((button) => button.setAttribute("aria-expanded", "false"));
   $("#stat-help-popover").hidden = true;
+  if (restoreFocus) previous?.focus();
 }
 
 function openStatHelp(button) {
@@ -273,6 +430,7 @@ function openStatHelp(button) {
   popover.style.top = `${Math.max(12, rect.top - 92)}px`;
   popover.hidden = false;
   button.setAttribute("aria-expanded", "true");
+  activeStatHelp = button;
 }
 
 function dynamicText(scene) {
@@ -295,11 +453,15 @@ function selectChoice(scene, choice) {
   $("#stage-choices").innerHTML = "";
   $("#stage-choices").classList.remove("show");
   $("#stage").classList.remove("choice-mode");
-  $("#speaker").textContent = scene.speaker;
-  const changes = Object.keys(choice.delta || {}).filter((key) => STAT_LABELS[key] && before[key] !== state[key]);
-  $("#dialogue").textContent = changes.length
-    ? `${choice.reply} (${changes.map((key) => `${STAT_LABELS[key].slice(2)} ${before[key]}→${state[key]}`).join(", ")})`
-    : choice.reply;
+  const replySpeaker = choice.replySpeaker || scene.replySpeaker || scene.speaker;
+  $("#speaker").textContent = replySpeaker;
+  $("#dialogue").textContent = choice.reply;
+  const activeCharacter = characterIdFromSpeaker(replySpeaker);
+  $("#character-layer").querySelectorAll(".character").forEach((image) => {
+    const speaking = Boolean(activeCharacter) && image.classList.contains(`character-${activeCharacter}`);
+    image.classList.toggle("speaking", speaking);
+    image.classList.toggle("listening", !speaking);
+  });
   syncStats();
   showChoiceResult(choice, before);
 }
@@ -327,9 +489,96 @@ function syncStats() {
   $("#trust").textContent = state.trust;
 }
 
+function unlockCg(scene) {
+  if (!scene.cgAssetId) return;
+  try {
+    const image = ArtAssets.resolve(scene.cgAssetId);
+    const savedCgs = JSON.parse(localStorage.getItem("nan-unlocked-cgs-v1")) || [];
+    const archive = savedCgs.filter((entry) => typeof entry === "object" && entry?.id !== scene.cgAssetId);
+    archive.push({ id: scene.cgAssetId, image, day: `DAY 4 · ${scene.time}`, title: scene.cgTitle || scene.location || "기록된 장면" });
+    localStorage.setItem("nan-unlocked-cgs-v1", JSON.stringify(archive));
+  } catch (_error) {}
+}
+
+function resetCinematic() {
+  window.clearTimeout(cinematicTimer);
+  cinematicLocked = false;
+  cinematicTimer = null;
+  cinematicScene = null;
+  cinematicDeadline = 0;
+  cinematicRemaining = 0;
+  cinematicPaused = false;
+  $("#stage").classList.remove("cinematic-only", "cinematic-ready", "sprite-cinematic");
+}
+
+function completeCinematic(scene) {
+  cinematicTimer = window.setTimeout(() => {
+    $("#speaker").textContent = scene.speaker;
+    $("#dialogue").textContent = dynamicText(scene);
+    cinematicLocked = false;
+    cinematicTimer = null;
+    cinematicScene = null;
+    cinematicRemaining = 0;
+    $("#stage").classList.add("cinematic-ready");
+    $("#next").disabled = false;
+  }, cinematicRemaining);
+}
+
+function startCinematic(scene) {
+  cinematicLocked = true;
+  cinematicScene = scene;
+  cinematicRemaining = scene.cinematicDelay;
+  cinematicDeadline = performance.now() + cinematicRemaining;
+  cinematicPaused = false;
+  $("#stage").classList.add("cinematic-only");
+  if (scene.cinematicTarget === "sprite") $("#stage").classList.add("sprite-cinematic");
+  $("#speaker").textContent = "";
+  $("#dialogue").textContent = "";
+  $("#next").disabled = true;
+  completeCinematic(scene);
+}
+
+function pauseCinematic() {
+  if (!cinematicLocked || cinematicPaused || !cinematicTimer) return;
+  cinematicRemaining = Math.max(0, cinematicDeadline - performance.now());
+  window.clearTimeout(cinematicTimer);
+  cinematicTimer = null;
+  cinematicPaused = true;
+}
+
+function resumeCinematic() {
+  if (!cinematicLocked || !cinematicPaused || !cinematicScene) return;
+  cinematicPaused = false;
+  cinematicDeadline = performance.now() + cinematicRemaining;
+  completeCinematic(cinematicScene);
+}
+
+function preloadSceneImages(scene) {
+  const sources = [];
+  if (scene?.cgAssetId) sources.push(ArtAssets.resolve(scene.cgAssetId));
+  if (scene?.bgAssetId) sources.push(ArtAssets.resolve(scene.bgAssetId));
+  (scene?.characters || []).forEach((entry) => { if (entry.assetId) sources.push(ArtAssets.resolve(entry.assetId)); });
+  return Promise.all(sources.map((source) => new Promise((resolve) => {
+    const image = new Image();
+    const done = () => resolve();
+    image.onload = done;
+    image.onerror = done;
+    image.src = source;
+    if (image.complete) resolve();
+    window.setTimeout(resolve, 2500);
+  })));
+}
+
 function renderArt(scene) {
   const stage = $("#stage");
   const placeholder = $("#scene-placeholder");
+  stage.classList.remove("urgent-scene");
+  stage.classList.remove("urgent-impact");
+  if (scene.urgent) {
+    void stage.offsetWidth;
+    stage.classList.add("urgent-scene");
+    stage.classList.toggle("urgent-impact", scene.urgent === "strong");
+  }
   const hasBackground = Boolean(scene.bgAssetId);
   stage.style.backgroundImage = hasBackground ? `url('${ArtAssets.resolve(scene.bgAssetId)}')` : "none";
   const showPlaceholder = !hasBackground && !scene.system;
@@ -338,18 +587,49 @@ function renderArt(scene) {
   placeholder.setAttribute("aria-hidden", String(!showPlaceholder));
   $("#placeholder-title").textContent = scene.visual?.split(".")[0] || scene.id;
   $("#placeholder-detail").textContent = scene.visual || "";
-  const positions = { left: 30, center: 50, right: 70 };
-  $("#character-layer").replaceChildren(...(scene.characters || []).map((entry) => {
+  const cg = $("#event-cg");
+  const cgImage = $("#event-cg-image");
+  if (scene.cgAssetId) {
+    cgImage.src = ArtAssets.resolve(scene.cgAssetId);
+    cgImage.alt = scene.cgTitle || "스토리 이벤트 CG";
+    cg.classList.add("show");
+    cg.setAttribute("aria-hidden", "false");
+    stage.classList.add("cg-active");
+    unlockCg(scene);
+  } else {
+    cg.classList.remove("show");
+    cg.setAttribute("aria-hidden", "true");
+    stage.classList.remove("cg-active");
+    cgImage.removeAttribute("src");
+    cgImage.alt = "";
+  }
+  const characters = scene.characters || [];
+  const visibleCharacterIds = characters.map(characterIdFromAsset);
+  const speakerCharacter = characterIdFromSpeaker(scene.speaker);
+  const active = scene.activeCharacter || (visibleCharacterIds.includes(speakerCharacter) ? speakerCharacter : "");
+  $("#character-layer").dataset.count = String(characters.length);
+  $("#character-layer").replaceChildren(...characters.map((entry, index) => {
+    const characterId = characterIdFromAsset(entry);
+    const profile = DAY4_CHARACTER_PROFILES[characterId];
     const image = document.createElement("img");
-    image.className = "character visible speaking";
+    const position = entry.position || (characters.length === 1 ? "right" : characters.length === 2 ? (index === 0 ? "left" : "right") : index === 0 ? "left" : index === 1 ? "center" : "right");
+    const framingClass = entry.framing ? ` framing-${entry.framing.replace(/_/g, "-")}` : "";
+    image.className = `character character-${characterId || "unknown"} visible ${characterId === active ? "speaking" : "listening"}${framingClass}`;
     image.src = ArtAssets.resolve(entry.assetId);
-    image.alt = entry.assetId.includes("harin") ? "서하린" : "등장인물";
-    image.style.setProperty("--position-x", positions[entry.position] || positions.center);
+    image.alt = profile?.name || "등장인물";
+    image.classList.toggle("boss-urgent", characterId === "boss");
+    image.style.setProperty("--position-x", DAY4_CHARACTER_POSITIONS[position] ?? DAY4_CHARACTER_POSITIONS.right);
+    if (profile) {
+      const spriteHeight = DAY4_CHARACTER_STAGE_HEIGHT * (profile.heightCm / DAY4_CHARACTER_BASE_HEIGHT) * (entry.scale || 1);
+      image.style.setProperty("--sprite-height", `${spriteHeight}cqh`);
+    }
+    image.onerror = () => image.remove();
     return image;
   }));
 }
 
 function finishEscape(result) {
+  escapeActive = false;
   state.minigameResult = result;
   if (result.grade === "perfect") state.affection += 1;
   if (result.grade === "caught") state.work += 1;
@@ -411,12 +691,18 @@ function closeDaySummary() {
 }
 
 function render() {
+  const deferNotification = deferNextNotification;
+  deferNextNotification = false;
   const scene = scenes[state.index] || scenes[0];
+  const pendingChoice = Boolean(scene.choices && !state.decisions[scene.choiceKey]);
+  const cinematic = Boolean(scene.cinematicDelay);
+  resetCinematic();
   $("#clock").textContent = scene.time;
   $("#scene-label").textContent = scene.location || $("#scene-label").textContent;
   renderArt(scene);
-  $("#speaker").textContent = scene.speaker;
-  $("#dialogue").textContent = dynamicText(scene);
+  $("#speaker").textContent = cinematic ? "" : scene.speaker;
+  $("#dialogue").textContent = cinematic ? "" : dynamicText(scene);
+  $("#next").disabled = cinematic;
   $("#next").textContent = scene.end ? "DAY 4 완료　›" : "다음　›";
   $("#system-panel").classList.toggle("show", Boolean(scene.system));
   $("#system-panel").setAttribute("aria-hidden", String(!scene.system));
@@ -436,22 +722,34 @@ function render() {
   $("#stage-choices").classList.remove("show");
   $("#stage").classList.remove("choice-mode");
   $("#dialogue-card").hidden = false;
-  if (scene.choices && !state.decisions[scene.choiceKey]) {
+  if (pendingChoice) {
     $("#dialogue-card").hidden = true;
     $("#stage-choices").innerHTML = `<header class="stage-choice-prompt"><small>CHOICE</small><strong>${escapeHtml(scene.text)}</strong></header>` +
-      scene.choices.map((choice, index) => `<button type="button" data-choice="${index}"><span class="stage-choice-label">${escapeHtml(choice.text)}</span><small class="stage-choice-effects">${choiceEffectMarkup(choice.delta)}</small></button>`).join("");
+      scene.choices.map((choice, index) => {
+        const lock = choiceLock(choice);
+        const effects = lock
+          ? `<i class="locked">🔒 호감도 ${lock.required} 필요 · 현재 ${lock.current}</i>`
+          : choiceEffectMarkup(choice.delta);
+        return `<button type="button" data-choice="${index}"${lock ? ` disabled class="choice-locked" aria-label="${escapeHtml(choice.text)} · 잠김 · 호감도 ${lock.required} 필요, 현재 ${lock.current}"` : ""}><span class="stage-choice-label">${escapeHtml(choice.text)}</span><small class="stage-choice-effects">${effects}</small></button>`;
+      }).join("");
     $("#stage-choices").classList.add("show");
     $("#stage").classList.add("choice-mode");
-    $("#stage-choices").querySelectorAll("button").forEach((button) => { button.onclick = () => selectChoice(scene, scene.choices[Number(button.dataset.choice)]); });
+    $("#stage-choices").querySelectorAll("button:not(:disabled)").forEach((button) => { button.onclick = () => selectChoice(scene, scene.choices[Number(button.dataset.choice)]); });
   }
   if (scene.bgm) bgmManager.play(scene.bgm);
+  if (scene.notification && !deferNotification) notifyMessage(scene.notification);
+  renderMessages();
+  if (cinematic) startCinematic(scene);
   saveProgress();
   autoSaveAtCheckpoint(scene);
-  if (scene.startEscape && !state.minigameResult) OfficeEscapeMinigame.start({ onComplete: finishEscape });
+  if (scene.startEscape && !state.minigameResult) {
+    escapeActive = true;
+    OfficeEscapeMinigame.start({ onComplete: finishEscape });
+  }
 }
 
 function hasBlockingUi() {
-  return locked || GameSettingsDialog.isOpen() || pauseMenu?.isOpen() || $("#game-save-modal").classList.contains("open") || $("#day-summary").classList.contains("show") || $("#day-complete").classList.contains("show") || locationTransition?.isActive();
+  return locked || cinematicLocked || escapeActive || GameSettingsDialog.isOpen() || pauseMenu?.isOpen() || $("#game-save-modal").classList.contains("open") || $("#day-summary").classList.contains("show") || $("#day-complete").classList.contains("show") || locationTransition?.isActive();
 }
 
 async function nextScene() {
@@ -465,10 +763,21 @@ async function nextScene() {
     return;
   }
   const nextIndex = Math.min(scenes.length - 1, state.index + 1);
-  const next = scenes[nextIndex];
-  await locationTransition.playIfChanged($("#scene-label").textContent, next.location);
+  const targetScene = scenes[nextIndex];
+  locked = true;
+  $("#next").disabled = true;
+  await preloadSceneImages(targetScene);
+  const locationChanged = await locationTransition.playIfChanged($("#scene-label").textContent, targetScene.location);
   state.index = nextIndex;
+  deferNextNotification = locationChanged;
   render();
+  if (locationChanged && targetScene.notification) {
+    await new Promise((resolve) => window.setTimeout(resolve, 500));
+    notifyMessage(targetScene.notification);
+    saveProgress();
+  }
+  locked = false;
+  if (!cinematicLocked) $("#next").disabled = false;
 }
 
 $("#next").onclick = nextScene;
@@ -479,7 +788,10 @@ $("#game-save-modal").onclick = (event) => { if (event.target.id === "game-save-
 $("#day-summary-exit").onclick = closeDaySummary;
 $("#day-complete-menu").onclick = () => { location.href = "index.html"; };
 const settingsApi = GameSettingsDialog.install({
-  onApply: () => {},
+  onApply: (settings) => {
+    bgmManager.setVolume(GameSettingsDialog.effectiveBgmVolume(settings));
+    syncBgmUi(!bgmManager.isPaused());
+  },
   onEscape: () => pauseMenu?.isOpen() ? pauseMenu.close() : pauseMenu?.open(),
   closeOverlay: () => {
     if ($("#game-save-modal").classList.contains("open")) { closeGameSave(); return true; }
@@ -487,26 +799,41 @@ const settingsApi = GameSettingsDialog.install({
     return false;
   },
 });
-pauseMenu = GamePauseMenu.install({ openSettings: () => settingsApi.open(), openLoad: () => openGameSave("load") });
+pauseMenu = GamePauseMenu.install({ openSettings: () => settingsApi.open(), openLoad: () => openGameSave("load"), onOpen: pauseCinematic, onClose: resumeCinematic });
 $("#mute").onclick = toggleBgm;
 $("#sound-prompt").onclick = unlockAudio;
 document.querySelectorAll("[data-tab]").forEach((button) => {
   button.onclick = () => {
     document.querySelectorAll("[data-tab]").forEach((item) => item.classList.toggle("active", item === button));
     document.querySelectorAll(".side-view").forEach((view) => view.classList.toggle("active", view.id === button.dataset.tab));
-    if (button.dataset.tab === "clues-view") $("#clue-new").hidden = true;
+    if (button.dataset.tab === "clues-view") {
+      state.unreadClues = false;
+      renderRecords();
+      saveProgress();
+    }
   };
 });
 document.querySelectorAll(".chat-item").forEach((button) => { button.onclick = () => openChat(button.dataset.room); });
 $("#chat-back").onclick = closeChat;
 document.querySelectorAll(".stat-help").forEach((button) => {
-  button.onmouseenter = () => openStatHelp(button);
-  button.onmouseleave = closeStatHelp;
-  button.onfocus = () => openStatHelp(button);
-  button.onblur = closeStatHelp;
-  button.onclick = (event) => { event.stopPropagation(); openStatHelp(button); };
+  button.addEventListener("mouseenter", () => openStatHelp(button));
+  button.addEventListener("mouseleave", () => { if (activeStatHelp === button) closeStatHelp(); });
+  button.addEventListener("focus", () => openStatHelp(button));
+  button.addEventListener("blur", () => { if (activeStatHelp === button) closeStatHelp(); });
+  button.addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (matchMedia("(hover: hover)").matches) return;
+    if (activeStatHelp === button) closeStatHelp();
+    else openStatHelp(button);
+  });
 });
-document.addEventListener("click", closeStatHelp);
+$("#stat-help-popover").addEventListener("click", (event) => event.stopPropagation());
+document.addEventListener("click", () => closeStatHelp());
+document.addEventListener("keydown", (event) => { if (event.key === "Escape" && activeStatHelp) closeStatHelp({ restoreFocus: true }); });
+window.addEventListener("resize", () => closeStatHelp());
+document.addEventListener("scroll", () => closeStatHelp(), true);
+document.addEventListener("nan:settings-open", pauseCinematic);
+document.addEventListener("nan:settings-close", resumeCinematic);
 document.addEventListener("pointerdown", () => bgmManager.resume(), { once: true });
 document.addEventListener("keydown", unlockAudio, { once: true });
 document.addEventListener("keydown", (event) => {

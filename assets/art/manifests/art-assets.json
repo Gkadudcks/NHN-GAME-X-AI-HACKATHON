@@ -77,6 +77,16 @@
         "tired"
       ]
     },
+    "boss": {
+      "spec": "assets/art/characters/boss/CHARACTER_SPEC.md",
+      "master_reference": "NAN_GAME_TITLE/assets/characters/boss-standing.png",
+      "allowed_poses": [
+        "holding_cup"
+      ],
+      "allowed_expressions": [
+        "concerned"
+      ]
+    },
     "minjae": {
       "spec": "assets/art/characters/minjae/CHARACTER_SPEC.md",
       "master_reference": "NAN_GAME_TITLE/assets/characters/minjae-source.png",
@@ -127,6 +137,93 @@
       ]
     },
     {
+      "id": "character.harin.relaxed_standing.gentle_smile",
+      "kind": "character",
+      "profile": "character_sprite",
+      "character_id": "harin",
+      "pose": "relaxed_standing",
+      "expression": "gentle_smile",
+      "active_version": "v002",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/characters/harin/approved/harin_relaxed_standing_gentle_smile_v001.png",
+          "generation_log_id": "harin-relaxed-standing-gentle-smile-v001-imagegen",
+          "sha256": "91a804d449c1c4de7e6be39be5921aeeb2213139ff8c9ce5b0937cb51328debc",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-30T00:48:22.1343420+09:00"
+        },
+        {
+          "version": "v002",
+          "status": "approved",
+          "path": "assets/art/characters/harin/approved/harin_relaxed_standing_gentle_smile_v002.png",
+          "generation_log_id": "harin-relaxed-standing-gentle-smile-v002-alpha-cleanup",
+          "sha256": "ed7216811421bcc960084b2e9433cdf698f4f22d6c7121a6d9896c42e53200d5",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-30T01:42:18.0955630+09:00"
+        }
+      ]
+    },
+    {
+      "id": "character.harin.relaxed_standing.embarrassed",
+      "kind": "character",
+      "profile": "character_sprite",
+      "character_id": "harin",
+      "pose": "relaxed_standing",
+      "expression": "embarrassed",
+      "active_version": "v002",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/characters/harin/approved/harin_relaxed_standing_embarrassed_v001.png",
+          "generation_log_id": "harin-relaxed-standing-embarrassed-v001-imagegen",
+          "sha256": "13890d848fd8d09f3e9a095846571014a10dae760ce020882eabb06abdbb84cc",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-30T00:48:22.1343420+09:00"
+        },
+        {
+          "version": "v002",
+          "status": "approved",
+          "path": "assets/art/characters/harin/approved/harin_relaxed_standing_embarrassed_v002.png",
+          "generation_log_id": "harin-relaxed-standing-embarrassed-v002-alpha-cleanup",
+          "sha256": "cac11e51508c459a346c2d225fb51d7a78970b45962a1b1a9e7509f0792c28b8",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-30T01:42:18.0955630+09:00"
+        }
+      ]
+    },
+    {
+      "id": "character.harin.relaxed_standing.neutral",
+      "kind": "character",
+      "profile": "character_sprite",
+      "character_id": "harin",
+      "pose": "relaxed_standing",
+      "expression": "neutral",
+      "active_version": "v002",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/characters/harin/approved/harin_relaxed_standing_neutral_v001.png",
+          "generation_log_id": "harin-relaxed-standing-neutral-v001-imagegen",
+          "sha256": "a29c8506992c0f1455656e463e92140bcb02af978db8a72b09c8c6e711c0d5cb",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-30T00:48:22.1343420+09:00"
+        },
+        {
+          "version": "v002",
+          "status": "approved",
+          "path": "assets/art/characters/harin/approved/harin_relaxed_standing_neutral_v002.png",
+          "generation_log_id": "harin-relaxed-standing-neutral-v002-alpha-cleanup",
+          "sha256": "db70de3ed2e5adca93ed6530e4987eea98c77c1f299dea9843db721a7acb6d04",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-30T01:42:18.0955630+09:00"
+        }
+      ]
+    },
+    {
       "id": "character.harin.holding_cup.tired",
       "kind": "character",
       "profile": "character_sprite",
@@ -173,16 +270,34 @@
       "character_id": "harin",
       "pose": "hand_to_chest",
       "expression": "surprised",
-      "active_version": "v001",
+      "active_version": "v003",
       "versions": [
         {
           "version": "v001",
+          "status": "planned",
+          "path": null,
+          "generation_log_id": null,
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "version": "v002",
           "status": "approved",
-          "path": "assets/art/characters/harin/approved/harin_hand_to_chest_surprised_v001.png",
-          "generation_log_id": "harin-hand-to-chest-surprised-v001-imagegen",
-          "sha256": "365d5f6bdb939172cc7157c68e53a2835f470633b2fbb7ee5e3c2c78c5b38c80",
+          "path": "assets/art/characters/harin/approved/harin_hand_to_chest_surprised_v002.png",
+          "generation_log_id": "harin-hand-to-chest-surprised-v002-imagegen",
+          "sha256": "803ab67f6e0e2cde7f5f91c839f6a4e2993c802066d507b0df6e69b03d5069af",
           "reviewed_by": "codex",
-          "reviewed_at": "2026-07-26T02:51:24.3097871+09:00"
+          "reviewed_at": "2026-07-30T01:10:21.6930080+09:00"
+        },
+        {
+          "version": "v003",
+          "status": "approved",
+          "path": "assets/art/characters/harin/approved/harin_hand_to_chest_surprised_v003.png",
+          "generation_log_id": "harin-hand-to-chest-surprised-v003-alpha-cleanup",
+          "sha256": "e9b3dd6f239166b91d0ffc9c813340d6a084d562b28e60e218648ae461d1bfa5",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-30T01:42:18.0955630+09:00"
         }
       ]
     },
@@ -232,16 +347,35 @@
       "profile": "background_16_9",
       "location": "office",
       "variant": "day",
-      "active_version": null,
+      "active_version": "v001",
       "versions": [
         {
           "version": "v001",
-          "status": "planned",
-          "path": null,
-          "generation_log_id": null,
-          "sha256": null,
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "approved",
+          "path": "assets/art/backgrounds/approved/office_day_v001.png",
+          "generation_log_id": "office-day-v001-existing-game-export",
+          "sha256": "4e8eac4f26fd7f1872de4b9931271a2b9b1c31d8f65bd46533074bca82842be3",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-29T21:52:03.5008645+09:00"
+        }
+      ]
+    },
+    {
+      "id": "background.meeting_room.afternoon",
+      "kind": "background",
+      "profile": "background_16_9",
+      "location": "meeting_room",
+      "variant": "afternoon",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/backgrounds/approved/meeting_room_afternoon_v001.png",
+          "generation_log_id": "meeting-room-afternoon-v001-imagegen",
+          "sha256": "5d754448880feb5a9345f1853c7a469d36ffe57f6feb44b1c2e28fa5859e13ee",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-30T01:27:21.9326878+09:00"
         }
       ]
     },
@@ -252,7 +386,7 @@
       "character_id": "sea",
       "pose": "neutral_standing",
       "expression": "gentle_smile",
-      "active_version": "v001",
+      "active_version": "v002",
       "versions": [
         {
           "version": "v001",
@@ -262,6 +396,15 @@
           "sha256": "b621f5c1e5c6d259e7cdac31f1061b4e323ea44d4d02eb29c0da82c85f4175f0",
           "reviewed_by": "codex",
           "reviewed_at": "2026-07-23T00:53:31.2290107+09:00"
+        },
+        {
+          "version": "v002",
+          "status": "approved",
+          "path": "assets/art/characters/sea/approved/sea_neutral_standing_gentle_smile_v002.png",
+          "generation_log_id": "sea-neutral-standing-gentle-smile-v002-alpha-cleanup",
+          "sha256": "17bca8620356ab241e44f379603a2a038e1a0b779363192d72fee1e2e34d1bcb",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-30T01:42:18.0955630+09:00"
         }
       ]
     },
@@ -323,6 +466,25 @@
       ]
     },
     {
+      "id": "background.recording_booth.day",
+      "kind": "background",
+      "profile": "background_16_9",
+      "location": "recording_booth",
+      "variant": "day",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/backgrounds/approved/recording_booth_day_v001.png",
+          "generation_log_id": "recording-booth-day-v001-built-in-imagegen",
+          "sha256": "77f2658433e1545a4fb6518d207bbbd975a2ce0cdde095f59d86153bfd6b9254",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-07-29T21:30:43.8185782+09:00"
+        }
+      ]
+    },
+    {
       "id": "background.office.night",
       "kind": "background",
       "profile": "background_16_9",
@@ -361,6 +523,25 @@
       ]
     },
     {
+      "id": "background.office.evening",
+      "kind": "background",
+      "profile": "background_16_9",
+      "location": "office",
+      "variant": "evening",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/backgrounds/approved/office_evening_v001.png",
+          "generation_log_id": "office-evening-v001-built-in-imagegen",
+          "sha256": "6d15fffb2b2f3ac5d515613ab7e2e0d6017575adbed69a22fcce815d540d63f0",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-07-29T21:48:35.1666478+09:00"
+        }
+      ]
+    },
+    {
       "id": "event_cg.day3.elevator_waiting",
       "kind": "event_cg",
       "profile": "event_cg_16_9",
@@ -377,6 +558,55 @@
           "sha256": "d2f09deb50cb36089569a95aaeb64444b6d5ba244b1be30e02c75e2daef8fb4b",
           "reviewed_by": "user",
           "reviewed_at": "2026-07-27T19:23:35.1261218+09:00"
+        }
+      ]
+    },
+    {
+      "id": "event_cg.day4.harin_headphone_handoff",
+      "kind": "event_cg",
+      "profile": "event_cg_16_9",
+      "scene": "day4",
+      "beat": "harin_headphone_handoff",
+      "framing": "waist_up",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/event_cg/approved/cg_day4_harin_headphone_handoff_v001.png",
+          "generation_log_id": "cg-day4-harin-headphone-handoff-v001-imagegen",
+          "sha256": "1e8d8f7ea4164c59e8aae30c7f727a80fb3a534ff9a40c911c6ca109a20da1bd",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-07-29T21:44:40.8102924+09:00"
+        }
+      ]
+    },
+    {
+      "id": "character.boss.holding_cup.concerned",
+      "kind": "character",
+      "profile": "character_sprite",
+      "character_id": "boss",
+      "pose": "holding_cup",
+      "expression": "concerned",
+      "active_version": "v002",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/characters/boss/approved/boss_holding_cup_concerned_v001.png",
+          "generation_log_id": "boss-holding-cup-concerned-v001-existing-game-export",
+          "sha256": "9c03509bb1ef14d2708be13845bd5d4ff5653d6ab3fe80b30e871a19bb88d8fe",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-29T22:29:51.4569648+09:00"
+        },
+        {
+          "version": "v002",
+          "status": "approved",
+          "path": "assets/art/characters/boss/approved/boss_holding_cup_concerned_v002.png",
+          "generation_log_id": "boss-holding-cup-concerned-v002-alpha-cleanup",
+          "sha256": "562a71675bc6e5e3912b7def4d9a20574de5781553e21b12855c715effd816ea",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-30T01:42:18.0955630+09:00"
         }
       ]
     }
