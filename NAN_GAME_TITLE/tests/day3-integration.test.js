@@ -22,10 +22,10 @@ test("DAY 3 shows prior-day messages immediately and gates DAY 3 messages", () =
   assert.match(engine, /messageDayDivider/);
 });
 
-test("DAY 3 페이지는 스토리와 몰래 연락 미니게임을 순서대로 불러온다", () => {
+test("DAY 3 페이지는 스토리와 업무 알림 미니게임을 순서대로 불러온다", () => {
   const records = html.indexOf('src="js/clue-records.js');
   const story = html.indexOf('src="js/day3-story.js');
-  const minigame = html.indexOf('src="js/secret-chat-minigame.js');
+  const minigame = html.indexOf('src="js/work-alert-minigame.js');
   const game = html.indexOf('src="js/day3.js');
   assert.ok(records >= 0 && records < story && story < minigame && minigame < game);
 });
@@ -39,6 +39,15 @@ test("DAY 3 엔진은 DAY 3 저장과 단서 날짜를 사용한다", () => {
   assert.match(engine, /progress\.days\[3\]/);
   assert.match(engine, /currentDay:\s*3/);
   assert.match(engine, /defaultDay:\s*3/);
+});
+
+test("DAY 3 업무 알림은 사건 조사 전용 프리셋과 네 등급 보상을 사용한다", () => {
+  assert.match(engine, /WorkAlertMinigame\.startDay3\(\{ onComplete: finishWorkAlert \}\)/);
+  assert.match(engine, /perfect:\s*Object\.freeze\(\{ workDelta: 2, trustDelta: 1 \}\)/);
+  assert.match(engine, /bad:\s*Object\.freeze\(\{ workDelta: 0, trustDelta: -1 \}\)/);
+  assert.match(engine, /state\.work \+= normalizedResult\.workDelta/);
+  assert.match(engine, /state\.trust \+= normalizedResult\.trustDelta/);
+  assert.match(engine, /변경본부터 건드리지 말고 보존해요/);
 });
 
 test("구내식당 장면은 승인된 전용 배경을 사용한다", () => {

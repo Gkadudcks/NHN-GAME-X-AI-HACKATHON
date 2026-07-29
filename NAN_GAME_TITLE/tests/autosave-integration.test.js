@@ -26,18 +26,18 @@ test("세 DAY 엔진은 확정된 낮·밤 체크포인트에서 자동저장을
 
   const day2Render = sliceBetween(day2, "function render() {", "function hasBlockingUi()");
   const day3Render = sliceBetween(day3, "function render() {", "function hasBlockingUi()");
-  assert.match(day2Render, /saveProgress\(\);\s*autoSaveAtCheckpoint\(scene\);\s*if \(scene\.startWorkAlert/);
-  assert.match(day3Render, /saveProgress\(\);\s*autoSaveAtCheckpoint\(scene\);\s*if \(scene\.startSecretChat/);
+  assert.match(day2Render, /saveProgress\(\);\s*autoSaveAtCheckpoint\(scene\);\s*if \(scene\.startSecretChat/);
+  assert.match(day3Render, /saveProgress\(\);\s*autoSaveAtCheckpoint\(scene\);\s*if \(scene\.startWorkAlert/);
 });
 
 test("미니게임 완료 함수에는 정의되지 않은 scene 자동저장 호출이 없다", () => {
   const day2 = read("js/day2.js");
   const day3 = read("js/day3.js");
-  const finishWorkAlert = sliceBetween(day2, "function finishWorkAlert", "function startWorkAlert");
-  const finishSecretChat = sliceBetween(day3, "function finishSecretChat", "function startSecretChat");
+  const finishSecretChat = sliceBetween(day2, "function finishSecretChat", "function startSecretChat");
+  const finishWorkAlert = sliceBetween(day3, "function finishWorkAlert", "function startWorkAlert");
 
-  assert.doesNotMatch(finishWorkAlert, /autoSaveAtCheckpoint\(scene\)/);
   assert.doesNotMatch(finishSecretChat, /autoSaveAtCheckpoint\(scene\)/);
+  assert.doesNotMatch(finishWorkAlert, /autoSaveAtCheckpoint\(scene\)/);
 });
 
 test("수동 저장과 자동저장은 세 엔진에서 같은 payload 생성기를 공유한다", () => {
@@ -71,16 +71,16 @@ test("자동저장 관련 정적 자산 캐시 버전이 모든 진입 페이지
   const day3 = read("day3.html");
 
   assert.match(index, /title-screen\.css\?v=11/);
-  assert.match(index, /progress-store\.js\?v=3/);
-  assert.match(index, /title-screen\.js\?v=14/);
+  assert.match(index, /progress-store\.js\?v=4/);
+  assert.match(index, /title-screen\.js\?v=15/);
   for (const html of [game, day2, day3]) {
-    assert.match(html, /game\.css\?v=21/);
-    assert.match(html, /progress-store\.js\?v=3/);
+    assert.match(html, /game\.css\?v=23/);
+    assert.match(html, /progress-store\.js\?v=4/);
     assert.match(html, /settings-dialog\.css\?v=2/);
     assert.match(html, /settings-store\.js\?v=3/);
     assert.match(html, /settings-dialog\.js\?v=2/);
   }
   assert.match(game, /game\.js\?v=34/);
-  assert.match(day2, /day2\.js\?v=23/);
-  assert.match(day3, /day3\.js\?v=18/);
+  assert.match(day2, /day2\.js\?v=24/);
+  assert.match(day3, /day3\.js\?v=21/);
 });

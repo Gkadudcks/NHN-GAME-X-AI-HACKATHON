@@ -6,9 +6,9 @@
   "use strict";
 
   const QUESTIONS = Object.freeze([
-    "선배, 아침부터 정신없었죠. 점심은 꼭 챙겨요.",
-    "어제 편의점에서 마주친 거, 조금 반가웠어요.",
-    "오늘 퇴근할 때 잠깐 같이 걸을래요?",
+    "선배, 오전 조사 끝나면 점심 메뉴 뭐 드실 거예요?",
+    "어제 편의점에서 추천한 음료, 생각보다 괜찮았습니다.",
+    "오늘도 늦어질 것 같으면 커피라도 미리 사둘까요?",
   ]);
 
   function grade({ sent = 0, warnings = 0, elapsed = 0 } = {}) {
@@ -21,25 +21,25 @@
     const level = affection >= 4 ? "high" : affection >= 2 ? "mid" : "low";
     const dialogue = {
       perfect: {
-        low: "메시지 봤어요. 마음은 고맙지만 오늘은 각자 퇴근하는 게 좋겠어요.",
-        mid: "저도 어제는 반가웠어요. 퇴근 시간이 맞으면 로비에서 봐요.",
-        high: "저도 반가웠어요. 점심도 챙길게요. 퇴근할 때는 로비에서 잠깐 기다려 줄래요?",
+        low: "메시지 봤어요. 점심 메뉴는 조금 있다가 정하고, 지금은 조사부터 마무리해요.",
+        mid: "추천한 음료 괜찮았다니 다행이네요. 점심 메뉴는 조사 끝나고 같이 정해요.",
+        high: "그 음료 마음에 들었어요? 다음에는 다른 것도 추천해 줄게요. 커피는 제가 살게요.",
       },
       good: {
-        low: "메시지 봤어요. 퇴근 이야기는 나중에 다시 해요.",
-        mid: "어제는 저도 반가웠어요. 퇴근 시간이 맞으면 같이 가요.",
-        high: "메시지 보자마자 웃었어요. 오늘은 꼭 같이 퇴근해요.",
+        low: "메시지 봤어요. 점심 이야기는 조사 끝나고 다시 해요.",
+        mid: "음료는 입맛에 맞았다니 다행이에요. 시간 되면 점심 메뉴 같이 봐요.",
+        high: "메시지 보자마자 웃었어요. 커피는 됐고, 일 끝나면 같이 고르러 가요.",
       },
       caught: {
         low: "부장님 바로 앞이라 길게 답은 못 하겠어요. 업무에 집중해요.",
-        mid: "부장님 바로 앞이라 길게 답은 못 하겠어요. 그래도 메시지는 잘 봤어요.",
-        high: "지금 부장님 보고 있죠? 답장은 나중에 해도 돼요. 퇴근할 때 제가 기다릴게요.",
+        mid: "부장님 바로 앞이라 길게 답은 못 하겠어요. 음료 이야기는 나중에 해요.",
+        high: "지금 부장님 보고 있죠? 답장은 나중에 해도 돼요. 커피 얘기는 일 끝나고 해요.",
       },
     }[gradeResult] || {};
     const message = {
-      low: "메시지는 확인했어요. 퇴근 이야기는 나중에 다시 해요.",
-      mid: "퇴근 시간이 맞으면 로비에서 봐요. 어제 편의점 이야기도 그때 해요.",
-      high: "오늘은 꼭 같이 퇴근해요. 로비에서 기다리고 있을게요.",
+      low: "메시지는 확인했어요. 점심 이야기는 조사 끝나고 다시 해요.",
+      mid: "추천한 음료는 괜찮았다니 다행이에요. 점심 메뉴는 조금 있다가 같이 봐요.",
+      high: "커피는 제가 살게요. 일 끝나면 어떤 걸 마실지 같이 골라요.",
     };
     return Object.freeze({ dialogue: dialogue[level] || dialogue.mid || "", message: message[level] });
   }
@@ -63,9 +63,9 @@
     root.setAttribute("aria-hidden", "true");
     root.innerHTML = `
       <div class="sc-shell" role="dialog" aria-modal="true" aria-labelledby="sc-title">
-        <header><div><small>DAY 3 · MINI GAME</small><h2 id="sc-title">업무 중 사적인 연락하기</h2></div><span>남은 시간 <b id="sc-time">50</b></span></header>
+        <header><div><small>DAY 2 · MINI GAME</small><h2 id="sc-title">업무 중 개인 메시지 답장하기</h2></div><span>남은 시간 <b id="sc-time">50</b></span></header>
         <section id="sc-intro" class="sc-screen sc-intro">
-          <div class="sc-placeholder"><b>업무 자리 · 오전</b><span>박태식 부장의 시선을 피해 서하린과 사적인 메시지를 주고받으세요.</span></div>
+          <div class="sc-placeholder"><b>업무 자리 · 오전</b><span>박태식 부장의 시선을 피해 서하린의 개인 메시지에 짧게 답장하세요.</span></div>
           <p>버튼이나 Space를 누르는 동안 메시지를 작성합니다. 부장이 고개를 들면 즉시 손을 떼세요.</p>
           <button id="sc-start" class="sc-primary" type="button">대화 시작</button>
         </section>
@@ -144,8 +144,8 @@
     state.result = result;
     const perfect = result.grade === "perfect";
     const caught = result.grade === "caught";
-    refs.resultTitle.textContent = perfect ? "둘만의 대화를 자연스럽게 이어갔습니다" : caught ? "부장에게 사적인 연락을 들켰습니다" : "마음을 담은 메시지를 보냈습니다";
-    refs.resultText.textContent = caught ? "대화는 짧게 끊겼지만, 하린은 메시지를 확인했습니다." : "바쁜 오전 사이에도 하린과 조금 더 가까워졌습니다.";
+    refs.resultTitle.textContent = perfect ? "짧은 잡담을 자연스럽게 이어갔습니다" : caught ? "부장에게 개인 메시지를 들켰습니다" : "무리 없이 답장을 보냈습니다";
+    refs.resultText.textContent = caught ? "답장은 짧게 끊겼지만, 하린은 메시지를 확인했습니다." : "업무 이야기 사이에 가벼운 잡담을 나눴습니다.";
     refs.work.textContent = `${result.workDelta >= 0 ? "+" : ""}${result.workDelta}`;
     refs.trust.textContent = `${result.affectionDelta >= 0 ? "+" : ""}${result.affectionDelta}`;
     screen(refs.result);

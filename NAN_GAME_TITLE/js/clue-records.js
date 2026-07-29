@@ -136,6 +136,27 @@
       title: "직접 접근 여부 미확정",
       detail: "서하린 명의는 남아 있지만 문서 직접 접근 시각과 변경 시각이 맞지 않아 실행자를 단정할 수 없다.",
     },
+    {
+      id: "d4_audit_request",
+      day: 4,
+      theme: "보안 감사",
+      title: "보안 감사 로그 조회 접수",
+      detail: "자동화 실행 요청 계정을 확인하기 위한 보안 감사 로그 조회가 접수되었으며 시스템 담당자의 확인을 기다리고 있다.",
+    },
+    {
+      id: "d4_verified_retention",
+      day: 4,
+      theme: "검증 기록",
+      title: "7일 차 잔존율 18.4%",
+      detail: "신규 가입 사용자와 발표 기준 주차를 기준으로 원본 데이터와 계산식을 대조한 결과 7일 차 잔존율은 18.4%로 확인되었다.",
+    },
+    {
+      id: "d4_evidence_submission",
+      day: 4,
+      theme: "제출 기록",
+      title: "DAY 4 증빙 제출 확인",
+      detail: "DAY 4 17:08에 PT와 평가용 증빙 패키지 모두 18.4%로 표시되었고 출처 링크가 정상임을 확인했다.",
+    },
   ]);
 
   const catalog = new Map(RECORDS.map((record) => [record.id, record]));

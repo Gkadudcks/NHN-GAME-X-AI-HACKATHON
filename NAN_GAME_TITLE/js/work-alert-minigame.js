@@ -56,6 +56,32 @@
     commonRequests: Object.freeze(REQUESTS.slice(0, 13)),
   });
 
+  const DAY3_REQUESTS = Object.freeze([
+    { id: "d3-boss-report", sender: "박태식 부장", request: "점심 전 조사 방향 보고를 캘린더에 등록해.", action: "calendar", critical: true, response: "조사 방향 보고 일정이 등록됐다." },
+    { id: "d3-harin-restore", sender: "서하린", request: "DAY 2 복원 지점 링크를 보내 주세요.", action: "file", critical: true, harin: true, response: "보존된 복원 지점 링크가 서하린에게 전달됐다." },
+    { id: "d3-security-run", sender: "보안 감사 알림", request: "09:03 자동화 실행 기록의 담당 부서를 확인해 주세요.", action: "delegate", critical: true, response: "자동화 기록 확인 요청이 시스템 담당자에게 전달됐다." },
+    { id: "d3-harin-access", sender: "서하린", request: "오늘 아침 직접 접근 여부는 제가 바로 답할게요.", action: "reply", critical: true, harin: true, response: "직접 접근 여부를 확인하겠다고 답했다." },
+    { id: "d3-archive-copy", sender: "문서 관리방", request: "최초 변경본 보존 사본을 공유해 주세요.", action: "file", critical: true, response: "최초 변경본 사본이 문서 관리방에 공유됐다." },
+    { id: "d3-automation-owner", sender: "자동화 운영방", request: "규칙 소유자와 실행 요청자를 구분해 확인해 주세요.", action: "delegate", critical: true, response: "자동화 실행 주체 확인이 담당자에게 전달됐다." },
+    { id: "d3-boss-name", sender: "박태식 부장", request: "확인 안 된 사람 이름은 채널에 올리지 마.", action: "later", critical: true, response: "확인 전에는 인물 이름을 보고하지 않기로 했다." },
+    { id: "d3-minjae-legacy", sender: "강민재", request: "바뀐 문장, 예전 자료에서 본 것 같은데 확인해 볼까?", action: "reply", response: "구버전 자료를 함께 확인하자고 답했다." },
+    { id: "d3-folder-path", sender: "문서 관리방", request: "현재 작업본과 구버전 폴더 연결 경로를 전달합니다.", action: "file", critical: true, response: "구버전 폴더 연결 경로를 보존했다." },
+    { id: "d3-qa-compare", sender: "QA 협업방", request: "정상 원본과 변경본 비교 검수를 담당자에게 넘겨 주세요.", action: "delegate", response: "문서 비교 검수가 담당 QA에게 전달됐다." },
+    { id: "d3-nanabot-log", sender: "나나봇 운영방", request: "문장 정리 실행 로그를 확인할 수 있습니다.", action: "reply", critical: true, response: "나나봇 실행 로그를 확인하겠다고 답했다." },
+    { id: "d3-lunch", sender: "강민재", request: "오늘 점심 메뉴부터 정할까?", action: "later", response: "점심 이야기는 조사 방향을 정한 뒤 보기로 했다." },
+    { id: "d3-promo-spam", sender: "외부 홍보 계정", request: "AI 문서 자동화 무료 진단! 계정 정보를 입력하세요.", action: "spam", critical: true, response: "수상한 외부 메시지가 차단됐다." },
+    { id: "d3-room", sender: "프로젝트 A 공용방", request: "오후 기록 검토 회의실을 2시로 잡아 주세요.", action: "calendar", response: "오후 기록 검토 회의실이 등록됐다." },
+    { id: "d3-harin-preserve", sender: "서하린", request: "변경본은 덮어쓰지 말고 그대로 보존해 주세요.", action: "reply", critical: true, harin: true, response: "변경본을 수정하지 않고 보존하겠다고 답했다." },
+    { id: "d3-coupon-spam", sender: "외부 이벤트 계정", request: "임직원 전용 쿠폰 당첨! 지금 사번을 입력하세요.", action: "spam", response: "업무와 무관한 피싱 메시지가 차단됐다." },
+  ]);
+
+  const DAY3_PRESET = Object.freeze({
+    seed: 20260729,
+    duration: 45,
+    lifeMs: 6500,
+    requests: DAY3_REQUESTS,
+  });
+
   function day2SubtaskOrDefault(subtask) {
     return Object.prototype.hasOwnProperty.call(SUBTASK_REQUESTS, subtask) ? subtask : "competitor";
   }
@@ -79,6 +105,21 @@
       lifeMs: DAY2_PRESET.lifeMs,
       count: requests.length,
       requests,
+      onComplete: source.onComplete,
+    };
+  }
+
+  function buildDay3Options(options = {}) {
+    const source = options && typeof options === "object" ? options : {};
+    const overrides = source.testOverrides && typeof source.testOverrides === "object" ? source.testOverrides : {};
+    const overrideSeed = Number(overrides.seed);
+    const overrideDuration = Number(overrides.duration);
+    return {
+      seed: Number.isFinite(overrideSeed) ? overrideSeed : DAY3_PRESET.seed,
+      duration: Number.isFinite(overrideDuration) && overrideDuration > 0 ? overrideDuration : DAY3_PRESET.duration,
+      lifeMs: DAY3_PRESET.lifeMs,
+      count: DAY3_REQUESTS.length,
+      requests: [...DAY3_REQUESTS],
       onComplete: source.onComplete,
     };
   }
@@ -252,8 +293,8 @@
   }
 
   const core = Object.freeze({
-    ACTIONS, REQUESTS, SUBTASK_REQUESTS, DAY2_PRESET,
-    buildDay2Requests, buildDay2Options, createSeededRandom, formatClock, buildSchedule,
+    ACTIONS, REQUESTS, SUBTASK_REQUESTS, DAY2_PRESET, DAY3_REQUESTS, DAY3_PRESET,
+    buildDay2Requests, buildDay2Options, buildDay3Options, createSeededRandom, formatClock, buildSchedule,
     priorityForRequest, boardPlacement, evaluateAction, missedResult,
     scoreAfterPoints, calculateScore, maximumScore, scorePercentageFor, formatScorePercentage,
     gradeForScore, gradeForPerformance, summarizeResults, successFeedback, finalizeResults,
@@ -288,7 +329,7 @@
     root.innerHTML = `
       <div class="wa-shell" role="dialog" aria-modal="true" aria-labelledby="wa-title">
         <header class="wa-header">
-          <div class="wa-heading"><small>DAY 2 · MINI GAME</small><h2 id="wa-title">업무 알림 쳐내기</h2></div>
+          <div class="wa-heading"><small>DAY 3 · MINI GAME</small><h2 id="wa-title">조사 요청 쳐내기</h2></div>
           <div class="wa-stats">
             <span><small>SCORE</small><b id="wa-score">0</b></span>
             <time id="wa-time" datetime="PT45S">00:45</time>
@@ -297,10 +338,10 @@
         <div id="wa-intro" class="wa-screen wa-intro">
           <div class="wa-intro-card">
             <div class="wa-intro-copy">
-              <small>DAY 2 · MINI GAME</small>
-              <h2>업무 알림 쳐내기</h2>
-              <p>쌓여드는 요청을 읽고, 알맞은 업무 처리 방법을 선택하세요.</p>
-              <strong>모르는 일은 담당자에게 넘기는 것도 업무입니다.</strong>
+              <small>DAY 3 · MINI GAME</small>
+              <h2>조사 요청 쳐내기</h2>
+              <p>변조 조사와 일반 업무 요청을 읽고, 알맞은 처리 방법을 선택하세요.</p>
+              <strong>변경본을 보존하고 모르는 기록은 담당자에게 넘기세요.</strong>
               <ul>
                 <li>업무 카드 선택 후 처리 영역 클릭</li>
                 <li>업무 카드를 처리 영역으로 드래그앤드롭</li>
@@ -312,7 +353,7 @@
               </div>
             </div>
             <div class="wa-intro-visual" aria-hidden="true">
-              <article><b>긴급 회의 일정</b><span>10:45 임원 회의</span><em>긴급</em></article>
+              <article><b>변경본 보존 요청</b><span>09:03 자동화 기록</span><em>긴급</em></article>
             </div>
           </div>
         </div>
@@ -824,6 +865,10 @@
     start(buildDay2Options(options));
   }
 
+  function startDay3(options = {}) {
+    start(buildDay3Options(options));
+  }
+
   function pause() {
     if (!state?.started || state.finished || state.paused) return;
     state.paused = true;
@@ -843,5 +888,5 @@
   document.addEventListener("nan:pause-open", pause);
   document.addEventListener("nan:pause-close", resume);
 
-  global.WorkAlertMinigame = Object.freeze({ start, startDay2, pause, resume, core });
+  global.WorkAlertMinigame = Object.freeze({ start, startDay2, startDay3, pause, resume, core });
 })(typeof window !== "undefined" ? window : globalThis);

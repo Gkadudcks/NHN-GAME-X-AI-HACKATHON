@@ -2,8 +2,11 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 const story = require("../js/day3-story.js");
 const day2Story = require("../js/day2-story.js");
+const engine = fs.readFileSync(path.join(__dirname, "..", "js", "day3.js"), "utf8");
 
 test("DAY 3 keeps the DAY 2 chat rooms and chat history", () => {
   assert.equal(story.ROOMS, day2Story.ROOMS);
@@ -82,7 +85,7 @@ test("하린에 대한 판단은 직접 접근 기록을 보기 전에 내려진
   assert.ok(decision >= 0 && decision < minigame && minigame < accessLog);
 });
 
-test("조사 확인을 업무 대화로 끝낸 뒤 사적인 연락 미니게임을 시작한다", () => {
+test("조사 확인 뒤 변조 관련 요청 대응 미니게임을 시작한다", () => {
   const workContact = story.scenes.findIndex((scene) => scene.id === "day3WorkContact");
   const workCheck = story.scenes.findIndex((scene) => scene.id === "day3HarinWorkCheck");
   const pressure = story.scenes.findIndex((scene) => scene.id === "day3BossPressure");
@@ -91,9 +94,9 @@ test("조사 확인을 업무 대화로 끝낸 뒤 사적인 연락 미니게임
   const start = story.scenes.findIndex((scene) => scene.id === "day3SecretChatStart");
   assert.ok(workContact < workCheck && workCheck < pressure && pressure < lead && lead < objective && objective < start);
   assert.match(story.scenes[workCheck].text, /문서를 직접 열지 않았어요|자동화|복원 지점/);
-  assert.match(story.scenes[objective].text, /업무 확인은 끝났다/);
-  assert.equal(story.scenes[lead].startSecretChat, undefined);
-  assert.equal(story.scenes[start].startSecretChat, true);
+  assert.match(story.scenes[objective].text, /변조 조사와 일반 업무 요청/);
+  assert.equal(story.scenes[lead].startWorkAlert, undefined);
+  assert.equal(story.scenes[start].startWorkAlert, true);
 });
 
 test("플레이어가 세 조사 기록 중 첫 순서를 선택한다", () => {
@@ -122,13 +125,19 @@ test("구내식당에서는 능력치 부담 없이 점심 메뉴를 골라 환�
   assert.equal(lunchChoice.location, "구내식당 · 점심");
 });
 
-test("조사 답변은 미니게임 결과와 무관하고 개인 메시지만 결과에 따라 바뀐다", () => {
+test("조사 답변은 미니게임 결과와 무관하고 조사 후속 메시지만 결과에 따라 바뀐다", () => {
   const delayed = story.scenes.find((scene) => scene.id === "day3HarinDelayedReply");
   const workMessage = story.MESSAGES.find((message) => message.id === "d3-harin-check");
-  const personalMessage = story.MESSAGES.find((message) => message.id === "d3-harin-personal");
+  const resultMessage = story.MESSAGES.find((message) => message.id === "d3-harin-investigation");
   assert.equal(delayed, undefined);
   assert.match(workMessage.text, /자동화|복원 지점/);
-  assert.equal(personalMessage.dynamic, "secretChatMessage");
+  assert.equal(resultMessage.dynamic, "workAlertMessage");
+});
+
+test("DAY 3 선택 완료 후 장면 전환 잠금과 다음 버튼을 해제한다", () => {
+  assert.match(engine, /sceneTransitionLocked\s*=\s*false;\s*refs\.next\.disabled\s*=\s*false;/);
+  assert.match(engine, /requestAnimationFrame\(\(\)\s*=>\s*\{[\s\S]*activeScene\s*===\s*scene[\s\S]*refs\.next\.disabled\s*=\s*false/);
+  assert.match(engine, /function resolveDynamic\(name\)\s*\{[\s\S]*const affectionBeforeChat\s*=\s*state\.affection;/);
 });
 
 test("부장의 점심 전 보고 지시는 실제 조사 방향 보고로 회수된다", () => {

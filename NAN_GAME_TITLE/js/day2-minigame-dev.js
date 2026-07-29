@@ -2,7 +2,6 @@
   "use strict";
 
   const form = document.querySelector("#dev-controls");
-  const subtask = document.querySelector("#dev-subtask");
   const duration = document.querySelector("#dev-duration");
   const seed = document.querySelector("#dev-seed");
   const status = document.querySelector("#dev-run-status");
@@ -10,11 +9,10 @@
 
   function run() {
     const runDuration = Math.max(12, Number(duration.value) || 45);
-    const runSeed = Number(seed.value) || 20260720;
-    status.textContent = `${subtask.options[subtask.selectedIndex].text} · ${runDuration}초 · 시드 ${runSeed}`;
+    const runSeed = Number(seed.value) || 20260729;
+    status.textContent = `변조 조사 요청 · ${runDuration}초 · 시드 ${runSeed}`;
 
-    WorkAlertMinigame.startDay2({
-      subtask: subtask.value,
+    WorkAlertMinigame.startDay3({
       testOverrides: {
         duration: runDuration,
         seed: runSeed,

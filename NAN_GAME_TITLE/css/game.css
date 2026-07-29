@@ -200,3 +200,22 @@
 .stage-choices button.choice-locked:hover,.stage-choices button.choice-locked:focus-visible{color:#8f8286;border-color:#d8cecb;background:#eee9e6e8;transform:none}
 .stage-choices button.choice-locked .stage-choice-effects i.locked{color:#8c777d;border-color:#cdbfc2;background:#e3dadd}
 .stage-choices button.choice-locked .stage-choice-effects i.locked:before{content:"🔒";margin-right:4px}
+
+/* Illustrated stat chips used by DAY 4 choices */
+.stage-choice-effects i[class*="stat-"]{min-width:94px;display:inline-grid;grid-template-columns:24px auto auto;align-items:center;gap:6px;padding:5px 9px 5px 5px;border-width:1px;border-radius:10px;box-shadow:inset 0 1px #fff9,0 3px 8px #38202a14;letter-spacing:0}
+.stage-choice-effects i[class*="stat-"] b{width:24px;height:24px;display:grid;place-items:center;color:#fff;border-radius:7px;font-size:13px;font-style:normal;box-shadow:0 3px 7px #38202a2b}
+.stage-choice-effects i[class*="stat-"] span{font-size:10px;font-weight:900}.stage-choice-effects i[class*="stat-"] em{font-size:9px;font-style:normal;font-weight:950}
+.stage-choice-effects .stat-work{color:#37618b;border-color:#b8d2ea;background:linear-gradient(135deg,#f4faff,#e7f2fc)}.stage-choice-effects .stat-work b{background:linear-gradient(145deg,#6da4d0,#3975a7)}.stage-choice-effects .stat-work em{color:#3277af}
+.stage-choice-effects .stat-affection{color:#a9465c;border-color:#efbdc8;background:linear-gradient(135deg,#fff8fa,#ffe9ef)}.stage-choice-effects .stat-affection b{background:linear-gradient(145deg,#f1849b,#d94f6c)}.stage-choice-effects .stat-affection em{color:#d44866}
+.stage-choice-effects .stat-trust{color:#7b5b32;border-color:#e1c998;background:linear-gradient(135deg,#fffdf5,#f8efd9)}.stage-choice-effects .stat-trust b{background:linear-gradient(145deg,#d7b56c,#a57b37)}.stage-choice-effects .stat-trust em{color:#9a702d}
+.stage-choice-effects .stat-branch{color:#705f68;border-color:#d8cbd0;background:linear-gradient(135deg,#fff,#f5f0f2)}.stage-choice-effects .stat-branch b{background:linear-gradient(145deg,#9d8992,#74616a)}
+.stage-choices button:hover .stage-choice-effects i[class*="stat-"],.stage-choices button:focus-visible .stage-choice-effects i[class*="stat-"]{color:#fff;border-color:#ffffff7d;background:#ffffff20}.stage-choices button:hover .stage-choice-effects i[class*="stat-"] em,.stage-choices button:focus-visible .stage-choice-effects i[class*="stat-"] em{color:#fff}
+
+/* Distinct illustrated cards for the persistent player stats */
+.system-grid p{overflow:hidden;border-color:var(--stat-border);background:var(--stat-bg);box-shadow:inset 3px 0 var(--stat-accent),0 5px 13px #5137410d}
+.system-grid p:after{content:none}
+.system-grid p:nth-child(1){--stat-accent:#4d8fc2;--stat-border:#c7ddec;--stat-bg:#eef7fc;--stat-watermark:#c9e2f1}.system-grid p:nth-child(2){--stat-accent:#df617d;--stat-border:#efc8d1;--stat-bg:#fff0f4;--stat-watermark:#f4ced8}.system-grid p:nth-child(3){--stat-accent:#b58a42;--stat-border:#e5d2a9;--stat-bg:#fff9e9;--stat-watermark:#ecdaaf}
+.system-grid p i{position:relative;isolation:isolate;color:transparent;border:1px solid #ffffffad;border-radius:50%;background:linear-gradient(145deg,color-mix(in srgb,var(--stat-accent),#fff 20%),var(--stat-accent));box-shadow:0 4px 10px color-mix(in srgb,var(--stat-accent),transparent 65%),inset 0 1px #fff8;font-size:0}
+.system-grid p i:before{position:relative;z-index:2;color:#fff;font-size:13px;font-style:normal;text-shadow:0 1px 2px #0002}.system-grid p i:after{position:absolute;z-index:1;inset:5px;content:"";border:1px solid #ffffff70;border-radius:50%}
+.system-grid p:nth-child(1) i:before{content:"▤"}.system-grid p:nth-child(2) i:before{content:"♥"}.system-grid p:nth-child(3) i:before{content:"◈"}
+.system-grid p span{position:relative;z-index:2;color:#5c5155;font-weight:850}.system-grid p>b{position:relative;z-index:2;color:var(--stat-accent);font-weight:950;text-shadow:0 1px #fff}

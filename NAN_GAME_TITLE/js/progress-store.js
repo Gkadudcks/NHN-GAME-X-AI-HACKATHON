@@ -116,6 +116,16 @@
     };
   }
 
+  function defaultDay4() {
+    return {
+      sceneId: "day4Intro",
+      decisions: {},
+      evidence: {},
+      minigameResult: null,
+      complete: false,
+    };
+  }
+
   function defaultProgress() {
     return {
       schemaVersion: SCHEMA_VERSION,
@@ -135,9 +145,11 @@
         1: defaultDay1(),
         2: defaultDay2(),
         3: defaultDay3(),
+        4: defaultDay4(),
       },
       day2StartSnapshot: null,
       day3StartSnapshot: null,
+      day4StartSnapshot: null,
       savedAt: null,
     };
   }
@@ -178,6 +190,17 @@
     };
   }
 
+  function sanitizeDay4(value) {
+    const input = isObject(value) ? value : {};
+    return {
+      sceneId: stringOr(input.sceneId, "day4Intro"),
+      decisions: objectCopy(input.decisions),
+      evidence: objectCopy(input.evidence),
+      minigameResult: isObject(input.minigameResult) ? cloneJson(input.minigameResult) : null,
+      complete: input.complete === true,
+    };
+  }
+
   function sanitizeSnapshot(value) {
     if (!isObject(value)) return null;
     return {
@@ -195,7 +218,7 @@
     const days = isObject(input.days) ? input.days : {};
     return {
       schemaVersion: SCHEMA_VERSION,
-      currentDay: [1, 2, 3].includes(Number(input.currentDay)) ? Number(input.currentDay) : 1,
+      currentDay: [1, 2, 3, 4].includes(Number(input.currentDay)) ? Number(input.currentDay) : 1,
       shared: {
         work: finiteNumber(shared.work),
         affection: finiteNumber(shared.affection),
@@ -211,9 +234,11 @@
         1: sanitizeDay1(days[1]),
         2: sanitizeDay2(days[2]),
         3: sanitizeDay3(days[3]),
+        4: sanitizeDay4(days[4]),
       },
       day2StartSnapshot: sanitizeSnapshot(input.day2StartSnapshot),
       day3StartSnapshot: sanitizeSnapshot(input.day3StartSnapshot),
+      day4StartSnapshot: sanitizeSnapshot(input.day4StartSnapshot),
       savedAt: typeof input.savedAt === "string" ? input.savedAt : null,
     };
   }
@@ -445,15 +470,46 @@
     return load(storage);
   }
 
+  function startDay4(storage) {
+    const progress = load(storage);
+    progress.currentDay = 4;
+    progress.days[1].complete = true;
+    progress.days[2].complete = true;
+    progress.days[3].complete = true;
+    if (!progress.day4StartSnapshot) progress.day4StartSnapshot = snapshotShared(progress.shared);
+    save(storage, progress);
+    return load(storage);
+  }
+
+  function resetDay4(storage) {
+    const progress = load(storage);
+    const snapshot = progress.day4StartSnapshot || snapshotShared(progress.shared);
+    progress.shared.work = snapshot.work;
+    progress.shared.affection = snapshot.affection;
+    progress.shared.trust = snapshot.trust;
+    progress.shared.clues = clueList(snapshot.clues);
+    progress.currentDay = 4;
+    progress.days[1].complete = true;
+    progress.days[2].complete = true;
+    progress.days[3].complete = true;
+    progress.days[4] = defaultDay4();
+    progress.day4StartSnapshot = snapshotShared(snapshot);
+    save(storage, progress);
+    return load(storage);
+  }
+
   function updateDayState(storage, day, patch) {
     const dayNumber = Number(day);
-    if (![1, 2, 3].includes(dayNumber)) return load(storage);
+    if (![1, 2, 3, 4].includes(dayNumber)) return load(storage);
     const progress = load(storage);
     const current = progress.days[dayNumber];
     const nextPatch = typeof patch === "function" ? patch(cloneJson(current, {})) : patch;
     if (!isObject(nextPatch)) return progress;
     const merged = { ...current, ...cloneJson(nextPatch, {}) };
-    progress.days[dayNumber] = dayNumber === 1 ? sanitizeDay1(merged) : dayNumber === 2 ? sanitizeDay2(merged) : sanitizeDay3(merged);
+    progress.days[dayNumber] = dayNumber === 1 ? sanitizeDay1(merged)
+      : dayNumber === 2 ? sanitizeDay2(merged)
+        : dayNumber === 3 ? sanitizeDay3(merged)
+          : sanitizeDay4(merged);
     save(storage, progress);
     return load(storage);
   }
@@ -479,6 +535,8 @@
     resetDay2,
     startDay3,
     resetDay3,
+    startDay4,
+    resetDay4,
     updateDayState,
   });
 });

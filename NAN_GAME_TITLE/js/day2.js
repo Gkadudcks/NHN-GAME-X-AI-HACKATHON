@@ -13,22 +13,15 @@ const scenes = Day2Story.scenes;
 const $ = (selector) => document.querySelector(selector);
 const pageParams = new URLSearchParams(location.search);
 const devSkipMinigames = pageParams.get("dev") === "skip-minigames";
-const devWorkAlert = pageParams.get("dev") === "work-alert";
-const devWorkAlertSubtask = Object.hasOwn(Day2Story.SUBTASKS, pageParams.get("subtask"))
-  ? pageParams.get("subtask")
-  : "competitor";
-const WORK_ALERT_REWARDS = Object.freeze({
-  perfect: Object.freeze({ workDelta: 2, trustDelta: 1 }),
-  good: Object.freeze({ workDelta: 1, trustDelta: 1 }),
-  normal: Object.freeze({ workDelta: 1, trustDelta: 0 }),
-  bad: Object.freeze({ workDelta: 0, trustDelta: -1 }),
-});
+const devSecretChat = pageParams.get("dev") === "secret-chat";
 
-function normalizeWorkAlertResult(result) {
+function normalizeSecretChatResult(result) {
   if (!result) return null;
-  const legacyGrade = result.grade === "messy" ? "bad" : result.grade;
-  const grade = Object.hasOwn(WORK_ALERT_REWARDS, legacyGrade) ? legacyGrade : "good";
-  return { ...result, grade, ...WORK_ALERT_REWARDS[grade] };
+  if (Number.isFinite(result.sent) || Number.isFinite(result.warnings)) return result;
+  const grade = result.grade === "perfect" ? "perfect"
+    : result.grade === "bad" || result.grade === "messy" ? "caught"
+      : "good";
+  return { grade, workDelta: 0, affectionDelta: 0, sent: 3, warnings: grade === "caught" ? 3 : 1, migrated: true };
 }
 
 const BACKGROUND_SOURCES = Object.freeze({
@@ -73,13 +66,13 @@ const refs = {
   dayTransition: $("#day-transition"),
 };
 
-const progress = devWorkAlert
+const progress = devSecretChat
   ? GameProgress.defaultProgress()
   : pageParams.has("new")
     ? GameProgress.resetDay2(localStorage)
     : GameProgress.startDay2(localStorage);
 const savedDay2 = progress.days[2];
-const savedIndex = devWorkAlert
+const savedIndex = devSecretChat
   ? scenes.findIndex((scene) => scene.id === "day2RequestGame")
   : scenes.findIndex((scene) => scene.id === savedDay2.sceneId);
 const state = {
@@ -88,10 +81,10 @@ const state = {
   affection: progress.shared.affection,
   trust: progress.shared.trust,
   clues: ClueRecords.normalizeList(progress.shared.clues),
-  decisions: { ...savedDay2.decisions, ...(devWorkAlert ? { day2Subtask: devWorkAlertSubtask } : {}) },
+  decisions: { ...savedDay2.decisions },
   seenNotifications: { ...savedDay2.seenNotifications },
   summariesSeen: { ...savedDay2.summariesSeen },
-  minigameResult: normalizeWorkAlertResult(savedDay2.minigameResult),
+  minigameResult: normalizeSecretChatResult(savedDay2.minigameResult),
   day1: { ...progress.shared.day1 },
   unreadClues: false,
 };
@@ -241,7 +234,7 @@ function buildGameSavePayload(scene) {
 }
 
 function saveToGameSlot(slotId, occupied) {
-  if (devWorkAlert) {
+  if (devSecretChat) {
     toast("직행 테스트에서는 진행을 저장하지 않습니다.");
     return;
   }
@@ -260,7 +253,7 @@ function saveToGameSlot(slotId, occupied) {
 const AUTOSAVE_CHECKPOINTS = new Set(["day2OvertimeLead", "day2End"]);
 
 function autoSaveAtCheckpoint(scene) {
-  if (devWorkAlert) return;
+  if (devSecretChat) return;
   if (!AUTOSAVE_CHECKPOINTS.has(scene.id)) return;
   const result = GameProgress.saveAutoSlot(localStorage, `day2:${scene.id}`, buildGameSavePayload(scene));
   if (result.status === "saved" || result.status === "updated") {
@@ -269,7 +262,7 @@ function autoSaveAtCheckpoint(scene) {
 }
 
 function loadFromGameSlot(slot) {
-  if (devWorkAlert) return;
+  if (devSecretChat) return;
   if (slot.empty || !slot.progress) return;
   if (!confirm(`SLOT ${String(slot.slotId).padStart(2, "0")}의 진행을 불러올까요?\n현재 저장하지 않은 진행은 사라집니다.`)) return;
   localStorage.setItem(GameProgress.STORAGE_KEY, JSON.stringify(slot.progress));
@@ -279,7 +272,7 @@ function loadFromGameSlot(slot) {
 }
 
 function saveProgress({ announce = false } = {}) {
-  if (devWorkAlert) return;
+  if (devSecretChat) return;
   progress.shared.work = state.work;
   progress.shared.affection = state.affection;
   progress.shared.trust = state.trust;
@@ -511,7 +504,10 @@ function notifyMessage(id) {
 function resolveDynamic(name) {
   const evening = state.day1.eveningTrust;
   const subtask = state.decisions.day2Subtask || "competitor";
-  const grade = normalizeWorkAlertResult(state.minigameResult)?.grade || "good";
+  const secretResult = normalizeSecretChatResult(state.minigameResult);
+  const grade = secretResult?.grade || "good";
+  const affectionBeforeChat = state.affection - (secretResult?.affectionDelta || 0);
+  const secretChatReply = SecretChatMinigameCore.reply(grade, affectionBeforeChat);
   const manualNana = state.day1.nanaUse !== "auto-summary";
   const coffeeHigh = state.day1.coffeeResult?.grade === "perfect" || state.day1.coffeeResult?.correctDrinks === 3;
   const values = {
@@ -528,17 +524,11 @@ function resolveDynamic(name) {
       "work-alone": "그건 사실상 선택권이 없는 것 아닙니까?",
     }[evening] || "알겠습니다. 오늘은 같이 확인하겠습니다.",
     subtaskSelected: `${Day2Story.SUBTASKS[subtask].title}부터 해보자. 숫자와는 다른 방식으로 신규 유저의 첫 경험을 볼 수 있을 것 같다.`,
-    workAlertResult: {
-      perfect: "생각보다 잘하네요. 제 요청도 안 놓쳤고.",
-      good: "급한 건 다 처리했어요. 잡담에 너무 성실하게 답한 것만 빼면요.",
-      normal: "처리 속도는 괜찮았어요. 다음엔 급한 요청부터 구분해 봐요.",
-      bad: "도윤 씨, 보안 교육을 스팸으로 보내면 인사팀에서 직접 찾아와요.",
-    }[grade],
-    workAlertReply: {
-      perfect: "선배 메시지만 따로 표시가 눈에 띄었습니다.",
-      good: "점심 메시지도 중요한 의사결정이라고 민재가 주장했습니다.",
-      normal: "다음에는 보낸 사람과 마감부터 확인하겠습니다.",
-      bad: "제목이 너무 광고 같았습니다.",
+    secretChatResult: secretChatReply.dialogue,
+    secretChatReply: {
+      perfect: "부장님보다 선배 답장을 먼저 보고 싶었습니다.",
+      good: "짧게 보내려던 게 생각보다 길어졌습니다.",
+      caught: "다음에는 점심시간까지 기다리겠습니다.",
     }[grade],
     lunchBranchMinjae: {
       competitor: "신규 유저 경험이면 내가 하던 게임도 봐봐. 튜토리얼은 짧은데 첫 보스가 너무 세서 절반이 거기서 접었어.",
@@ -625,9 +615,9 @@ function renderVisuals(scene) {
 
   refs.systemPanel.classList.toggle("show", Boolean(scene.systemPanel));
   refs.systemPanel.setAttribute("aria-hidden", String(!scene.systemPanel));
+  refs.stage.classList.toggle("system-panel-active", Boolean(scene.systemPanel));
   if (scene.systemPanel) {
-    refs.systemPanelTitle.textContent = scene.systemPanel.title;
-    refs.systemPanelRows.innerHTML = scene.systemPanel.rows.map((row) => `<p>${escapeHtml(row)}</p>`).join("");
+    PresentationScreen.apply(refs.systemPanel, scene.systemPanel);
   }
 }
 
@@ -780,17 +770,16 @@ function showChoiceResult(choice, before, relationshipChoice) {
   }, 3000);
 }
 
-function finishWorkAlert(result) {
-  if (devWorkAlert) {
-    startWorkAlert();
+function finishSecretChat(result) {
+  if (devSecretChat) {
+    startSecretChat();
     return;
   }
   if (state.minigameResult) return;
-  const normalizedResult = normalizeWorkAlertResult(result);
-  state.minigameResult = normalizedResult;
-  state.work += normalizedResult.workDelta;
-  state.trust += normalizedResult.trustDelta;
-  if (normalizedResult.grade === "perfect" && normalizedResult.harinHandled) state.affection += 1;
+  state.minigameResult = result;
+  state.decisions.secretChatOutcome = result.grade;
+  state.work += result.workDelta;
+  state.affection += result.affectionDelta || 0;
   state.index = nextVisibleIndex(state.index + 1);
   syncStats();
   saveProgress();
@@ -798,28 +787,20 @@ function finishWorkAlert(result) {
   render();
 }
 
-function startWorkAlert() {
+function startSecretChat() {
   if (devSkipMinigames) {
-    console.info("[DEV] 업무 알림 미니게임을 GOOD 결과로 스킵했습니다.");
-    finishWorkAlert({
-      score: 620,
-      maxScore: 880,
-      scorePercentage: 70.5,
+    console.info("[DEV] 개인 메시지 미니게임을 GOOD 결과로 스킵했습니다.");
+    finishSecretChat({
       grade: "good",
-      workDelta: 1,
-      trustDelta: 1,
-      outcomeCounts: { correct: 0, wrong: 0, missed: 0, criticalHandled: 0, criticalTotal: 0 },
-      harinHandled: false,
-      missedCritical: [],
-      results: [],
+      workDelta: 0,
+      affectionDelta: 1,
+      sent: 3,
+      warnings: 1,
       skipped: true,
     });
     return;
   }
-  WorkAlertMinigame.startDay2({
-    subtask: state.decisions.day2Subtask,
-    onComplete: finishWorkAlert,
-  });
+  SecretChatMinigame.start({ onComplete: finishSecretChat });
 }
 
 function summaryRow(icon, title, detail, value = "") {
@@ -845,14 +826,14 @@ function showDaySummary() {
   const tasks = [
     "DAY 1 조사 수치 교차 확인",
     subtask.title,
-    `쏟아지는 사내 요청 처리 · ${state.minigameResult?.grade?.toUpperCase() || "완료"}`,
+    `서하린에게 사적인 답장 · ${state.minigameResult?.grade?.toUpperCase() || "완료"}`,
     "오후 빌드 점검 지원",
     "조사 결과와 근거 링크 정리",
   ];
   refs.daySummaryWork.innerHTML = tasks.map((task, index) => summaryRow(index === 2 ? "✉" : "✓", task, index === 1 ? subtask.summary : "오늘 업무 완료")).join("");
   refs.daySummaryStats.innerHTML = [
     ["◆", "업무력", deltas.work, "조사·선택·미니게임 결과"],
-    ["♡", "호감도", deltas.affection, "DAY 2 대화와 요청 처리"],
+    ["♡", "호감도", deltas.affection, "DAY 2 대화와 개인 메시지"],
     ["◇", "신뢰도", deltas.trust, "협업 태도와 업무 분담"],
   ].map(([icon, name, value, detail]) => summaryRow(icon, name, detail, `${value >= 0 ? "+" : ""}${value}`)).join("");
   const snapshotIds = new Set(snapshot.clues.map((clue) => clue.id));
@@ -934,8 +915,8 @@ function render() {
   syncStats();
   saveProgress();
   autoSaveAtCheckpoint(scene);
-  if (scene.startWorkAlert && !state.minigameResult) {
-    startWorkAlert();
+  if (scene.startSecretChat && !state.minigameResult) {
+    startSecretChat();
     return;
   }
   if (scene.daySummary) showDaySummary();
@@ -946,7 +927,7 @@ function hasBlockingUi() {
     || refs.dayComplete.classList.contains("show")
     || $("#game-save-modal").classList.contains("open")
     || GameSettingsDialog.isOpen()
-    || !!document.querySelector(".work-alert-minigame:not([hidden])");
+    || !!document.querySelector(".secret-chat-minigame:not([hidden])");
 }
 
 async function next() {

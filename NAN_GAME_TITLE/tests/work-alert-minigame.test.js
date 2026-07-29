@@ -7,8 +7,11 @@ const {
   REQUESTS,
   SUBTASK_REQUESTS,
   DAY2_PRESET,
+  DAY3_REQUESTS,
+  DAY3_PRESET,
   buildDay2Requests,
   buildDay2Options,
+  buildDay3Options,
   createSeededRandom,
   formatClock,
   buildSchedule,
@@ -86,6 +89,20 @@ test("DAY 2 dev override는 시드와 시간만 변경하고 정식 카드 수�
   assert.equal(options.count, 16);
   assert.equal(options.onComplete, onComplete);
   assert.deepEqual(options.requests, buildDay2Requests("reviews"));
+});
+
+test("DAY 3 프리셋은 변조 조사 요청과 일반 업무를 16개 카드로 구성한다", () => {
+  const options = buildDay3Options();
+  assert.equal(DAY3_PRESET.seed, 20260729);
+  assert.equal(options.duration, 45);
+  assert.equal(options.lifeMs, 6500);
+  assert.equal(options.count, 16);
+  assert.deepEqual(options.requests, DAY3_REQUESTS);
+  assert.notEqual(options.requests, DAY3_REQUESTS);
+  assert.equal(DAY3_REQUESTS.some((request) => request.id === "d3-harin-preserve" && request.critical), true);
+  assert.equal(DAY3_REQUESTS.some((request) => request.id === "d3-automation-owner" && request.action === "delegate"), true);
+  assert.equal(DAY3_REQUESTS.some((request) => request.action === "spam"), true);
+  assert.equal(DAY3_REQUESTS.every((request) => request.id.startsWith("d3-")), true);
 });
 
 test("피드백 타이머는 재시작·완료 시 정리되고 오답 테두리는 영구히 남지 않는다", () => {
@@ -207,21 +224,20 @@ test("완료 결과에 점수 비율, 신뢰도, 처리 집계와 기존 상세 
   assert.deepEqual(final.results, results);
 });
 
-test("dev launcher only supplies formal Day 2 inputs and permitted test overrides", () => {
+test("dev launcher only supplies formal Day 3 inputs and permitted test overrides", () => {
   const dev = read("js/day2-minigame-dev.js");
   const html = read("dev/day2-minigame.html");
   const devCss = read("css/day2-minigame-dev.css");
 
-  assert.match(dev, /WorkAlertMinigame\.startDay2\(\{/);
-  assert.match(dev, /subtask:\s*subtask\.value/);
+  assert.match(dev, /WorkAlertMinigame\.startDay3\(\{/);
   assert.match(dev, /testOverrides:\s*\{\s*duration:\s*runDuration,\s*seed:\s*runSeed,/s);
   assert.doesNotMatch(dev, /WorkAlertMinigame\.start\(/);
   assert.doesNotMatch(dev, /lifeMs\s*:/);
-  assert.doesNotMatch(dev, /requestsFor|SUBTASK_REQUESTS|REQUESTS\.slice/);
-  assert.match(html, /work-alert-minigame\.css\?v=7/);
-  assert.match(html, /work-alert-minigame\.js\?v=7/);
+  assert.doesNotMatch(dev, /subtask|requestsFor|SUBTASK_REQUESTS|REQUESTS\.slice/);
+  assert.match(html, /work-alert-minigame\.css\?v=9/);
+  assert.match(html, /work-alert-minigame\.js\?v=8/);
   assert.match(html, /day2-minigame-dev\.css\?v=2/);
-  assert.match(html, /day2-minigame-dev\.js\?v=2/);
+  assert.match(html, /day2-minigame-dev\.js\?v=3/);
   assert.match(devCss, /\.minigame-dev \.work-alert-minigame\s*\{[\s\S]*?padding:\s*0 16px;/);
   assert.match(devCss, /\.minigame-dev \.wa-shell\s*\{[\s\S]*?calc\(100dvh - 64px\)/);
 });
@@ -246,6 +262,14 @@ test("motion and reduced-effect feedback CSS contracts remain visible", () => {
   assert.match(css, /\.reduce-effects \.work-alert-minigame \.wa-stats time\.danger/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?\.work-alert-minigame \.wa-floating-feedback\.show\s*\{[\s\S]*?animation:\s*none !important;[\s\S]*?opacity:\s*1;/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?\.work-alert-minigame \.wa-shell\.wrong-feedback::after\s*\{[\s\S]*?animation:\s*none !important;[\s\S]*?border-width:\s*3px;[\s\S]*?opacity:\s*1;/);
+});
+
+test("콤보 표시는 업무 메시지를 가리지 않도록 플레이 헤더 쪽에 배치된다", () => {
+  const css = read("css/work-alert-minigame.css");
+  assert.match(css, /\.wa-combo\s*\{[\s\S]*?top:\s*-56px;[\s\S]*?left:\s*50%;/);
+  for (const file of ["day3.html", "dev/day2-minigame.html"]) {
+    assert.match(read(file), /work-alert-minigame\.css\?v=9/);
+  }
 });
 
 test("결과 화면은 Figma 03 Result의 중앙 세로 정산 배치와 요청별 스크롤 처리 내역을 사용한다", () => {

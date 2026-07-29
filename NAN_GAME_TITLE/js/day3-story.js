@@ -24,7 +24,7 @@
     ...previousMessages,
     { id: "d3-pt-restore", room: "pt", at: "day3IntroCard", sender: "시스템", text: "DAY 2 검증 완료 복원 지점이 유지되고 있습니다.", day: 3, time: "08:55" },
     { id: "d3-harin-check", room: "harin", at: "day3HarinWorkCheck", sender: "서하린 사수", text: "오늘 아침에는 그 문서를 직접 열지 않았어요. 자동화에는 소유자 이름만 남을 수 있어요. 복원 지점은 그대로 보존해 주세요.", day: 3, time: "10:15" },
-    { id: "d3-harin-personal", room: "harin", at: "day3MinigameResult", sender: "서하린 사수", dynamic: "secretChatMessage", day: 3, time: "10:44" },
+    { id: "d3-harin-investigation", room: "harin", at: "day3MinigameResult", sender: "서하린 사수", dynamic: "workAlertMessage", day: 3, time: "10:44" },
     { id: "d3-minjae-past", room: "minjae", at: "day3MinjaeHint", sender: "강민재 동기", text: "예전 자료도 비슷한 말투였던 것 같아. 폴더 위치는 어제 말한 곳이고.", day: 3, time: "12:26" },
     { id: "d3-harin-evening", room: "harin", at: "day3EveningMessage", sender: "서하린 사수", dynamic: "eveningMessage", day: 3, time: "20:10" },
   ]);
@@ -53,10 +53,10 @@
     { id: "day3HarinWorkCheck", time: "10:15", speaker: "서하린", text: "오늘 아침에는 그 문서를 직접 열지 않았어요. 자동화에는 소유자 이름만 남을 수 있어요. 복원 지점은 그대로 보존해 주세요.", char: "harin", notification: "d3-harin-check" },
     { id: "day3HarinPlan", time: "10:16", speaker: "서하린", dynamic: "decisionResponse", char: "harin" },
     { id: "day3BossPressure", time: "10:18", speaker: "박태식", text: "원인 확인은 어디까지 됐어? 확인 안 된 이름은 채널에 올리지 말고, 점심 전에는 조사 방향만 보고해.", char: "boss", bg: "office" },
-    { id: "day3PrivateContactLead", time: "10:20", speaker: "서하린", text: "아침부터 정신없었죠. 그래도 점심은 꼭 챙겨요.", char: "harin", bg: "office" },
-    { id: "day3ContactObjective", time: "10:21", speaker: "한도윤", text: "업무 확인은 끝났다. 문득 어제 편의점에서 마주쳤던 순간이 떠올랐다. 오늘 같이 퇴근하자고 연락해 볼까.", bg: "office" },
-    { id: "day3SecretChatStart", time: "10:22", speaker: "시스템", text: "박태식 부장의 시선을 피해 서하린에게 사적인 답장을 전송합니다.", bg: "office", bgm: "minigame", startSecretChat: true },
-    { id: "day3MinigameResult", time: "10:44", speaker: "서하린", dynamic: "secretChatResult", char: "harin", bgm: "daily", notification: "d3-harin-personal" },
+    { id: "day3PrivateContactLead", time: "10:20", speaker: "서하린", text: "보고 전까지 요청이 더 몰릴 거예요. 변경본은 건드리지 말고 중요한 기록부터 보존해요.", char: "harin", bg: "office" },
+    { id: "day3ContactObjective", time: "10:21", speaker: "한도윤", text: "변조 조사와 일반 업무 요청이 한꺼번에 쏟아지기 시작했다. 확인된 기록을 지키면서 급한 요청부터 구분해야 한다.", bg: "office" },
+    { id: "day3SecretChatStart", time: "10:22", speaker: "시스템", text: "조사 관련 요청과 일반 메시지가 동시에 도착하고 있습니다.\n중요한 기록을 놓치지 말고 알맞게 처리하세요.", bg: "office", bgm: "minigame", startWorkAlert: true },
+    { id: "day3MinigameResult", time: "10:44", speaker: "서하린", dynamic: "workAlertResult", char: "harin", bgm: "daily", notification: "d3-harin-investigation" },
     { id: "day3BossReport", time: "11:35", speaker: "한도윤", dynamic: "bossReport", char: "boss", bg: "office" },
     { id: "day3BossReportResponse", time: "11:36", speaker: "박태식", text: "좋아. 사람 이름으로 결론 내리지 말고, 오후에는 직접 접근·자동화·연결 경로를 순서대로 확인해. 확인한 기록은 전부 남기고.", char: "boss", bg: "office" },
     { id: "day3LunchChoice", time: "12:20", speaker: "한도윤", text: "오전 내내 변조 기록만 들여다봤더니 머리가 무거웠다. 점심만큼은 다른 생각을 해 보자. 오늘은 뭘 먹을까?", bg: "cafeteria_day", location: "구내식당 · 점심", choiceKey: "lunchMenu", choices: [

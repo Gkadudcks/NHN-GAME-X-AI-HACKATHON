@@ -6,66 +6,55 @@ const path = require("node:path");
 const root = path.join(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
-test("DAY 2 work alert delegates to the official runner without assembling difficulty", () => {
+test("DAY 2는 개인 메시지 미니게임을 사용한다", () => {
   const script = read("js/day2.js");
   const html = read("day2.html");
 
-  assert.match(script, /WorkAlertMinigame\.startDay2\(\{\s*subtask: state\.decisions\.day2Subtask,\s*onComplete: finishWorkAlert,/s);
-  assert.doesNotMatch(script, /WorkAlertMinigame\.start\(/);
-  assert.doesNotMatch(script, /WorkAlertMinigame\.core\.REQUESTS/);
-  assert.doesNotMatch(script, /lifeMs:\s*\d+/);
-  assert.doesNotMatch(script, /seed:\s*20260720/);
-  assert.doesNotMatch(script, /duration:\s*45/);
-  assert.match(html, /work-alert-minigame\.css\?v=7/);
-  assert.match(html, /work-alert-minigame\.js\?v=7/);
-  assert.match(html, /day2\.js\?v=23/);
+  assert.match(script, /SecretChatMinigame\.start\(\{ onComplete: finishSecretChat \}\)/);
+  assert.doesNotMatch(script, /WorkAlertMinigame/);
+  assert.match(html, /secret-chat-minigame\.css\?v=1/);
+  assert.match(html, /secret-chat-minigame\.js\?v=5/);
+  assert.match(html, /day2\.js\?v=24/);
 });
 
-test("DAY 2 work alert direct mode uses memory progress, blocks saves, and repeats", () => {
+test("DAY 2 개인 메시지 직행 모드는 메모리 진행을 사용하고 저장을 막은 뒤 반복한다", () => {
   const script = read("js/day2.js");
-  const finishStart = script.indexOf("function finishWorkAlert");
-  const finishEnd = script.indexOf("function startWorkAlert", finishStart);
+  const finishStart = script.indexOf("function finishSecretChat");
+  const finishEnd = script.indexOf("function startSecretChat", finishStart);
 
-  assert.match(script, /const devWorkAlert = pageParams\.get\("dev"\) === "work-alert"/);
-  assert.match(script, /Object\.hasOwn\(Day2Story\.SUBTASKS, pageParams\.get\("subtask"\)\)[\s\S]*: "competitor"/);
-  assert.match(script, /const progress = devWorkAlert\s*\? GameProgress\.defaultProgress\(\)/);
-  assert.match(script, /devWorkAlert\s*\? scenes\.findIndex\(\(scene\) => scene\.id === "day2RequestGame"\)/);
-  assert.match(script, /devWorkAlert \? \{ day2Subtask: devWorkAlertSubtask \} : \{\}/);
-  assert.match(script, /function saveProgress\([^)]*\) \{\s*if \(devWorkAlert\) return;/);
-  assert.match(script, /function autoSaveAtCheckpoint\(scene\) \{\s*if \(devWorkAlert\) return;/);
-  assert.match(script, /function saveToGameSlot\([^)]*\) \{\s*if \(devWorkAlert\)/);
-  assert.match(script, /function loadFromGameSlot\(slot\) \{\s*if \(devWorkAlert\) return;/);
+  assert.match(script, /const devSecretChat = pageParams\.get\("dev"\) === "secret-chat"/);
+  assert.match(script, /const progress = devSecretChat\s*\? GameProgress\.defaultProgress\(\)/);
+  assert.match(script, /devSecretChat\s*\? scenes\.findIndex\(\(scene\) => scene\.id === "day2RequestGame"\)/);
+  assert.match(script, /function saveProgress\([^)]*\) \{\s*if \(devSecretChat\) return;/);
+  assert.match(script, /function autoSaveAtCheckpoint\(scene\) \{\s*if \(devSecretChat\) return;/);
+  assert.match(script, /function saveToGameSlot\([^)]*\) \{\s*if \(devSecretChat\)/);
+  assert.match(script, /function loadFromGameSlot\(slot\) \{\s*if \(devSecretChat\) return;/);
   assert.notEqual(finishStart, -1);
   assert.notEqual(finishEnd, -1);
-  assert.match(script.slice(finishStart, finishEnd), /if \(devWorkAlert\) \{\s*startWorkAlert\(\);\s*return;/);
+  assert.match(script.slice(finishStart, finishEnd), /if \(devSecretChat\) \{\s*startSecretChat\(\);\s*return;/);
 });
 
 test("DAY 2 retains the existing skip-minigames GOOD completion path", () => {
   const script = read("js/day2.js");
-  const start = script.indexOf("function startWorkAlert");
+  const start = script.indexOf("function startSecretChat");
   const end = script.indexOf("function summaryRow", start);
 
   assert.match(script, /const devSkipMinigames = pageParams\.get\("dev"\) === "skip-minigames"/);
   assert.match(script.slice(start, end), /if \(devSkipMinigames\)[\s\S]*grade: "good"/);
-  assert.match(script.slice(start, end), /score:\s*620[\s\S]*maxScore:\s*880[\s\S]*trustDelta:\s*1/);
+  assert.match(script.slice(start, end), /affectionDelta:\s*1[\s\S]*sent:\s*3[\s\S]*warnings:\s*1/);
 });
 
-test("DAY 2 업무 알림의 네 등급은 스탯과 직후 대사에 동일하게 반영된다", () => {
+test("DAY 2 개인 메시지 결과는 업무력과 호감도 및 직후 대사에 반영된다", () => {
   const script = read("js/day2.js");
-  const finishStart = script.indexOf("function finishWorkAlert");
-  const finishEnd = script.indexOf("function startWorkAlert", finishStart);
+  const finishStart = script.indexOf("function finishSecretChat");
+  const finishEnd = script.indexOf("function startSecretChat", finishStart);
   const finish = script.slice(finishStart, finishEnd);
 
-  assert.match(script, /perfect:\s*Object\.freeze\(\{ workDelta: 2, trustDelta: 1 \}\)/);
-  assert.match(script, /good:\s*Object\.freeze\(\{ workDelta: 1, trustDelta: 1 \}\)/);
-  assert.match(script, /normal:\s*Object\.freeze\(\{ workDelta: 1, trustDelta: 0 \}\)/);
-  assert.match(script, /bad:\s*Object\.freeze\(\{ workDelta: 0, trustDelta: -1 \}\)/);
-  assert.match(script, /result\.grade === "messy" \? "bad" : result\.grade/);
-  assert.match(finish, /state\.work \+= normalizedResult\.workDelta/);
-  assert.match(finish, /state\.trust \+= normalizedResult\.trustDelta/);
-  assert.match(finish, /normalizedResult\.grade === "perfect" && normalizedResult\.harinHandled/);
-  assert.match(script, /normal:\s*"처리 속도는 괜찮았어요\. 다음엔 급한 요청부터 구분해 봐요\."/);
-  assert.match(script, /normal:\s*"다음에는 보낸 사람과 마감부터 확인하겠습니다\."/);
+  assert.match(finish, /state\.work \+= result\.workDelta/);
+  assert.match(finish, /state\.affection \+= result\.affectionDelta \|\| 0/);
+  assert.match(script, /SecretChatMinigameCore\.reply\(grade, affectionBeforeChat\)/);
+  assert.match(script, /caught:\s*"다음에는 점심시간까지 기다리겠습니다\."/);
+  assert.match(script, /Number\.isFinite\(result\.sent\)[\s\S]*migrated: true/);
 });
 
 test("DAY 2 페이지는 필요한 스크립트를 올바른 순서로 불러온다", () => {
@@ -76,7 +65,7 @@ test("DAY 2 페이지는 필요한 스크립트를 올바른 순서로 불러온
   const art = html.indexOf('src="js/art-assets.js');
   const story = html.indexOf('src="js/day2-story.js');
   const bgm = html.indexOf('src="js/bgm-manager.js');
-  const minigame = html.indexOf('src="js/work-alert-minigame.js');
+  const minigame = html.indexOf('src="js/secret-chat-minigame.js');
   const engine = html.indexOf('src="js/day2.js');
   assert.equal([records, progress, clues, art, story, bgm, minigame, engine].every((index) => index >= 0), true);
   assert.equal(records < progress && progress < art && art < story && story < clues && clues < bgm && bgm < minigame && minigame < engine, true);

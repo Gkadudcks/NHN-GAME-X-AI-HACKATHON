@@ -13,6 +13,23 @@ const scenes = Day3Story.scenes;
 const $ = (selector) => document.querySelector(selector);
 const pageParams = new URLSearchParams(location.search);
 const devSkipMinigames = pageParams.get("dev") === "skip-minigames";
+const WORK_ALERT_REWARDS = Object.freeze({
+  perfect: Object.freeze({ workDelta: 2, trustDelta: 1 }),
+  good: Object.freeze({ workDelta: 1, trustDelta: 1 }),
+  normal: Object.freeze({ workDelta: 1, trustDelta: 0 }),
+  bad: Object.freeze({ workDelta: 0, trustDelta: -1 }),
+});
+
+function normalizeWorkAlertResult(result) {
+  if (!result) return null;
+  if (Number.isFinite(result.sent) || Number.isFinite(result.warnings)) {
+    const grade = result.grade === "perfect" ? "perfect" : result.grade === "caught" ? "bad" : "good";
+    return { grade, ...WORK_ALERT_REWARDS[grade], score: 0, maxScore: 0, results: [], migrated: true };
+  }
+  const legacyGrade = result.grade === "messy" ? "bad" : result.grade;
+  const grade = Object.hasOwn(WORK_ALERT_REWARDS, legacyGrade) ? legacyGrade : "good";
+  return { ...result, grade, ...WORK_ALERT_REWARDS[grade] };
+}
 const BACKGROUND_SOURCES = Object.freeze({
   cafeteria_day: ArtAssets.resolve("background.cafeteria.day"),
   elevator_lobby_night: ArtAssets.resolve("background.elevator_lobby.night"),
@@ -73,13 +90,10 @@ const state = {
   decisions: { ...savedDay3.decisions },
   seenNotifications: { ...savedDay3.seenNotifications },
   summariesSeen: { ...savedDay3.summariesSeen },
-  minigameResult: savedDay3.minigameResult,
+  minigameResult: normalizeWorkAlertResult(savedDay3.minigameResult),
   day1: { ...progress.shared.day1 },
   unreadClues: false,
 };
-if (state.minigameResult && !state.decisions.secretChatOutcome) {
-  state.decisions.secretChatOutcome = state.minigameResult.grade || "good";
-}
 
 let currentRoom = "";
 let choiceResultTimer;
@@ -489,12 +503,21 @@ function notifyMessage(id) {
 }
 
 function resolveDynamic(name) {
-  const grade = state.minigameResult?.grade || "good";
-  const affectionBeforeChat = state.affection - (state.minigameResult?.affectionDelta || 0);
-  const secretChatReply = SecretChatMinigameCore.reply(grade, affectionBeforeChat);
+  const grade = normalizeWorkAlertResult(state.minigameResult)?.grade || "good";
+  const affectionBeforeChat = state.affection;
   const values = {
-    secretChatResult: secretChatReply.dialogue,
-    secretChatMessage: secretChatReply.message,
+    workAlertResult: {
+      perfect: "중요한 기록을 전부 지켰네요. 조사 방향도 흔들리지 않았어요.",
+      good: "급한 조사 요청은 대부분 처리했어요. 이제 기록을 순서대로 확인해요.",
+      normal: "필요한 기록은 남았어요. 다음에는 보존 요청부터 먼저 구분해요.",
+      bad: "놓친 요청은 다시 확인할 수 있어요. 변경본부터 건드리지 말고 보존해요.",
+    }[grade],
+    workAlertMessage: {
+      perfect: "복원 지점과 변경본 모두 확인했어요. 그대로 보존해 주세요.",
+      good: "중요한 조사 요청은 확인했어요. 오후에 기록을 같이 비교해요.",
+      normal: "누락된 요청은 제가 다시 표시했어요. 보존본부터 확인해요.",
+      bad: "지금은 복원하지 마세요. 변경본을 보존한 뒤 하나씩 다시 확인해요.",
+    }[grade],
     decisionResponse: {
       accuse: "의심할 수는 있어요. 하지만 이름 하나만으로 결론부터 내리지는 말아 주세요.",
       verify: "좋아요. 믿는다는 말보다 그게 더 안심되네요. 기록으로 확인해요.",
@@ -587,7 +610,7 @@ function inheritedSceneValue(index, key) {
 
 function visibilityContext() {
   return {
-    affectionBeforeChat: state.affection - (state.minigameResult?.affectionDelta || 0),
+    affectionBeforeChat: state.affection,
   };
 }
 
@@ -644,9 +667,9 @@ function renderVisuals(scene) {
 
   refs.systemPanel.classList.toggle("show", Boolean(scene.systemPanel));
   refs.systemPanel.setAttribute("aria-hidden", String(!scene.systemPanel));
+  refs.stage.classList.toggle("system-panel-active", Boolean(scene.systemPanel));
   if (scene.systemPanel) {
-    refs.systemPanelTitle.textContent = scene.systemPanel.title;
-    refs.systemPanelRows.innerHTML = scene.systemPanel.rows.map((row) => `<p>${escapeHtml(row)}</p>`).join("");
+    PresentationScreen.apply(refs.systemPanel, scene.systemPanel);
   }
 }
 
@@ -776,7 +799,12 @@ function choose(choice, key, scene) {
   refs.stageChoices.innerHTML = "";
   refs.stageChoices.classList.remove("show");
   refs.stage.classList.remove("choice-mode");
+  sceneTransitionLocked = false;
   refs.next.disabled = false;
+  window.requestAnimationFrame(() => {
+    const activeScene = scenes[state.index];
+    if (activeScene === scene && state.decisions[key] && !cinematicLocked) refs.next.disabled = false;
+  });
   syncStats();
   showChoiceResult(choice, before, scene.relationshipChoice);
   saveProgress();
@@ -800,12 +828,12 @@ function showChoiceResult(choice, before, relationshipChoice) {
   }, 3000);
 }
 
-function finishSecretChat(result) {
+function finishWorkAlert(result) {
   if (state.minigameResult) return;
-  state.minigameResult = result;
-  state.decisions.secretChatOutcome = result.grade;
-  state.work += result.workDelta;
-  state.affection += result.affectionDelta || 0;
+  const normalizedResult = normalizeWorkAlertResult(result);
+  state.minigameResult = normalizedResult;
+  state.work += normalizedResult.workDelta;
+  state.trust += normalizedResult.trustDelta;
   state.index = nextVisibleIndex(state.index + 1);
   syncStats();
   saveProgress();
@@ -813,20 +841,25 @@ function finishSecretChat(result) {
   render();
 }
 
-function startSecretChat() {
+function startWorkAlert() {
   if (devSkipMinigames) {
-    console.info("[DEV] 사적인 연락 미니게임을 GOOD 결과로 스킵했습니다.");
-    finishSecretChat({
+    console.info("[DEV] 조사 업무 알림 미니게임을 GOOD 결과로 스킵했습니다.");
+    finishWorkAlert({
+      score: 700,
+      maxScore: 980,
+      scorePercentage: 71.4,
       grade: "good",
-      workDelta: 0,
-      affectionDelta: 1,
-      sent: 3,
-      warnings: 1,
+      workDelta: 1,
+      trustDelta: 1,
+      outcomeCounts: { correct: 0, wrong: 0, missed: 0, criticalHandled: 0, criticalTotal: 0 },
+      harinHandled: false,
+      missedCritical: [],
+      results: [],
       skipped: true,
     });
     return;
   }
-  SecretChatMinigame.start({ onComplete: finishSecretChat });
+  WorkAlertMinigame.startDay3({ onComplete: finishWorkAlert });
 }
 
 function summaryRow(icon, title, detail, value = "") {
@@ -851,15 +884,15 @@ function showDaySummary() {
   const tasks = [
     "DAY 3 최초 변경본 보존",
     "정상 원본과 변경본 비교",
-    `서하린 사적인 연락 · ${state.minigameResult?.grade?.toUpperCase() || "완료"}`,
+    `변조 조사 요청 대응 · ${state.minigameResult?.grade?.toUpperCase() || "완료"}`,
     "접근·자동화·폴더 연결 기록 조사",
     "DAY 2 복원 지점 유지",
   ];
   refs.daySummaryWork.innerHTML = tasks.map((task, index) => summaryRow(index === 2 ? "✉" : "✓", task, "오늘 업무 완료")).join("");
   refs.daySummaryStats.innerHTML = [
     ["◆", "업무력", deltas.work, "조사·선택·미니게임 결과"],
-    ["♡", "호감도", deltas.affection, "DAY 3 의심과 신뢰 선택"],
-    ["◇", "신뢰도", deltas.trust, "증거를 대하는 태도"],
+    ["♡", "호감도", deltas.affection, "DAY 3 의심과 관계 선택"],
+    ["◇", "신뢰도", deltas.trust, "증거와 조사 요청을 대하는 태도"],
   ].map(([icon, name, value, detail]) => summaryRow(icon, name, detail, `${value >= 0 ? "+" : ""}${value}`)).join("");
   const snapshotIds = new Set(snapshot.clues.map((clue) => clue.id));
   const dailyClues = state.clues.filter((clue) => !snapshotIds.has(clue.id));
@@ -929,8 +962,8 @@ function render() {
   syncStats();
   saveProgress();
   autoSaveAtCheckpoint(scene);
-  if (scene.startSecretChat && !state.minigameResult) {
-    startSecretChat();
+  if (scene.startWorkAlert && !state.minigameResult) {
+    startWorkAlert();
     return;
   }
   if (scene.daySummary) showDaySummary();
@@ -941,7 +974,7 @@ function hasBlockingUi() {
     || refs.dayComplete.classList.contains("show")
     || $("#game-save-modal").classList.contains("open")
     || GameSettingsDialog.isOpen()
-    || !!document.querySelector(".secret-chat-minigame:not([hidden])");
+    || !!document.querySelector(".work-alert-minigame:not([hidden])");
 }
 
 async function next() {
@@ -980,6 +1013,10 @@ $("#chat-back").onclick = closeChat;
 refs.next.onclick = next;
 refs.daySummaryExit.onclick = closeDaySummary;
 refs.dayCompleteMenu.onclick = () => { location.href = "index.html"; };
+refs.dayCompleteNext.onclick = () => {
+  GameProgress.startDay4(localStorage);
+  location.href = "day4.html?new=1";
+};
 $("#save").onclick = () => openGameSave("save");
 $("#load").onclick = () => openGameSave("load");
 $("#game-save-close").onclick = closeGameSave;
