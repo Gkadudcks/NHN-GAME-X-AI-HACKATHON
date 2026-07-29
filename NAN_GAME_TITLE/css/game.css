@@ -220,6 +220,23 @@
 :is(.system-grid p,.day-summary-stat-list article):nth-child(1) i:before{content:"▤"}:is(.system-grid p,.day-summary-stat-list article):nth-child(2) i:before{content:"♥"}:is(.system-grid p,.day-summary-stat-list article):nth-child(3) i:before{content:"◈"}
 .system-grid p span{position:relative;z-index:2;color:#5c5155;font-weight:850}.system-grid p>b{position:relative;z-index:2;color:var(--stat-accent);font-weight:950;text-shadow:0 1px #fff}
 
+/* Persistent PLAYER STATUS sizing */
+.status-panel{container-type:inline-size}
+.status-head span{font-size:13.5px}
+.status-head b{font-size:22.5px}
+.status-head small{font-size:13.5px}
+.system-grid p{height:69px}
+.system-grid span{font-size:15px}
+.system-grid b{font-size:27px;line-height:1}
+@container (max-width:430px){
+  .system-grid{grid-template-columns:1fr}
+}
+@media(max-height:600px) and (min-width:681px){
+  .status-head b{font-size:19.5px}
+  .status-head small{font-size:12px}
+  .system-grid p{height:57px}
+}
+
 /* Story-first daily summary */
 .day-summary-card{width:min(980px,96vw)}
 .day-summary-story-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(330px,.85fr);gap:0;margin:20px 0}

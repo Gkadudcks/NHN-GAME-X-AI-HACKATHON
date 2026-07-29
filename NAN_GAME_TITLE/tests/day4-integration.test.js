@@ -111,7 +111,7 @@ test("DAY 4는 기존 게임 화면 구조와 승인된 아트를 재사용하�
   assert.match(html, /class="messenger-appbar"/);
   assert.match(html, /data-tab="messages-view"/);
   assert.match(html, /data-tab="clues-view"/);
-  assert.match(html, /href="css\/game\.css\?v=27"/);
+  assert.match(html, /href="css\/game\.css\?v=28"/);
   assert.match(html, /src="js\/art-assets\.js\?v=4"/);
   assert.match(engine, /ArtAssets\.resolve\(scene\.bgAssetId\)/);
   assert.match(engine, /ArtAssets\.resolve\(entry\.assetId\)/);

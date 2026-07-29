@@ -74,7 +74,7 @@ test("자동저장 관련 정적 자산 캐시 버전이 모든 진입 페이지
   assert.match(index, /progress-store\.js\?v=4/);
   assert.match(index, /title-screen\.js\?v=15/);
   for (const html of [game, day2, day3]) {
-    assert.match(html, /game\.css\?v=27/);
+    assert.match(html, /game\.css\?v=28/);
     assert.match(html, /progress-store\.js\?v=4/);
     assert.match(html, /settings-dialog\.css\?v=2/);
     assert.match(html, /settings-store\.js\?v=3/);
