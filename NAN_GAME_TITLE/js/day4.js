@@ -363,7 +363,12 @@ function summaryRow(icon, title, detail, value = "") {
 }
 
 function showDaySummary() {
-  const grade = state.work - day4Start.work >= 3 ? "EXCELLENT" : state.work - day4Start.work >= 1 ? "GOOD" : "NEEDS CARE";
+  const deltas = {
+    work: state.work - day4Start.work,
+    affection: state.affection - day4Start.affection,
+    trust: state.trust - day4Start.trust,
+  };
+  const grade = deltas.work >= 3 ? "EXCELLENT" : deltas.work >= 1 ? "GOOD" : "NEEDS CARE";
   $("#day-summary-grade").textContent = grade;
   $("#day-summary-work").innerHTML = [
     summaryRow("✓", "녹음 지원", "가이드 녹음과 테이크 기록 완료"),
@@ -371,15 +376,27 @@ function showDaySummary() {
     summaryRow("✓", "보안 감사 요청", "자동화 요청 계정 조회 접수"),
     summaryRow("↗", "정시 퇴근 작전", state.minigameResult?.caught ? "추가 확인 업무 후 퇴근" : "엘리베이터 도착"),
   ].join("");
+  const details = $("#day-summary-work").closest(".day-summary-details");
+  if (details) details.open = false;
   $("#day-summary-stats").innerHTML = [
-    summaryRow("◆", "업무력", "DAY 4 시작 대비", `${state.work - day4Start.work >= 0 ? "+" : ""}${state.work - day4Start.work}`),
-    summaryRow("♡", "호감도", "DAY 4 시작 대비", `${state.affection - day4Start.affection >= 0 ? "+" : ""}${state.affection - day4Start.affection}`),
-    summaryRow("◇", "신뢰도", "DAY 4 시작 대비", `${state.trust - day4Start.trust >= 0 ? "+" : ""}${state.trust - day4Start.trust}`),
+    summaryRow("◆", "업무력", "DAY 4 시작 대비", `${deltas.work >= 0 ? "+" : ""}${deltas.work}`),
+    summaryRow("♡", "호감도", "DAY 4 시작 대비", `${deltas.affection >= 0 ? "+" : ""}${deltas.affection}`),
+    summaryRow("◇", "신뢰도", "DAY 4 시작 대비", `${deltas.trust >= 0 ? "+" : ""}${deltas.trust}`),
   ].join("");
   const startIds = new Set((day4Start.clues || []).map((clue) => clue.id));
   const records = state.clues.filter((clue) => !startIds.has(clue.id));
-  $("#day-summary-records").innerHTML = records.map((clue) => summaryRow("◇", clue.title, clue.detail)).join("") || summaryRow("◇", "새 기록 없음", "단서 탭을 확인해 주세요.");
-  $("#day-summary-reactions").innerHTML = '<blockquote><b>박태식 부장</b><p>“제출 기록까지 남겼으면 됐어. 내일 발표만 잘해.”</p></blockquote><article class="relationship-result"><small>RELATIONSHIP</small><p><b>서하린</b><em>:</em><strong>발표 준비 파트너</strong><span>— 근거를 함께 검증했다.</span></p></article>';
+  const representativeClue = records.at(-1);
+  $("#day-summary-records").innerHTML = summaryRow(
+    "◆",
+    `새로운 기록 ${records.length}개`,
+    representativeClue?.title || "새로 기록된 단서가 없습니다",
+  );
+  const relationshipChanged = deltas.affection !== 0 || deltas.trust !== 0;
+  const reactions = $("#day-summary-reactions");
+  reactions.closest(".day-summary-relation").hidden = !relationshipChanged;
+  reactions.innerHTML = relationshipChanged
+    ? '<article class="relationship-result"><small>RELATIONSHIP</small><p><b>서하린</b><em>:</em><strong>함께 검증한 선후배</strong><i>→</i><strong>발표 준비 파트너</strong><span>— 근거를 함께 검증하며 발표 준비 파트너가 됐습니다.</span></p></article>'
+    : "";
   $("#day-summary").classList.add("show");
   $("#day-summary").setAttribute("aria-hidden", "false");
   $("#day-summary-exit").focus();

@@ -831,6 +831,8 @@ function showDaySummary() {
     "조사 결과와 근거 링크 정리",
   ];
   refs.daySummaryWork.innerHTML = tasks.map((task, index) => summaryRow(index === 2 ? "✉" : "✓", task, index === 1 ? subtask.summary : "오늘 업무 완료")).join("");
+  const details = refs.daySummaryWork.closest(".day-summary-details");
+  if (details) details.open = false;
   refs.daySummaryStats.innerHTML = [
     ["◆", "업무력", deltas.work, "조사·선택·미니게임 결과"],
     ["♡", "호감도", deltas.affection, "DAY 2 대화와 개인 메시지"],
@@ -838,10 +840,20 @@ function showDaySummary() {
   ].map(([icon, name, value, detail]) => summaryRow(icon, name, detail, `${value >= 0 ? "+" : ""}${value}`)).join("");
   const snapshotIds = new Set(snapshot.clues.map((clue) => clue.id));
   const dailyClues = state.clues.filter((clue) => !snapshotIds.has(clue.id));
-  refs.daySummaryRecords.innerHTML = dailyClues.slice(-5).map((clue) => summaryRow("◆", clue.title, clue.detail)).join("") || summaryRow("◇", "새 기록 없음", "단서 탭을 확인해 주세요.");
+  const representativeClue = dailyClues.at(-1);
+  refs.daySummaryRecords.innerHTML = summaryRow(
+    "◆",
+    `새로운 기록 ${dailyClues.length}개`,
+    representativeClue?.title || "새로 기록된 단서가 없습니다",
+  );
   const beforeRelationship = relationshipName(snapshot.affection, snapshot.trust);
   const afterRelationship = relationshipName(state.affection, state.trust);
-  refs.daySummaryReactions.innerHTML = `<blockquote><b>박태식 부장</b><p>“숫자만 보지 않고 실제 플레이와 유저 반응까지 본 건 좋아. 근거 링크는 그대로 유지해.”</p></blockquote><article class="relationship-result"><small>RELATIONSHIP</small><p><b>서하린</b><em>:</em><strong>${escapeHtml(beforeRelationship)}</strong><i>→</i><strong>${escapeHtml(afterRelationship)}</strong><span>— 여러 종류의 업무를 함께 처리하며 서로의 방식에 익숙해졌습니다.</span></p></article>`;
+  const relationshipChanged = beforeRelationship !== afterRelationship;
+  const relationSection = refs.daySummaryReactions.closest(".day-summary-relation");
+  relationSection.hidden = !relationshipChanged;
+  refs.daySummaryReactions.innerHTML = relationshipChanged
+    ? `<article class="relationship-result"><small>RELATIONSHIP</small><p><b>서하린</b><em>:</em><strong>${escapeHtml(beforeRelationship)}</strong><i>→</i><strong>${escapeHtml(afterRelationship)}</strong><span>— 여러 종류의 업무를 함께 처리하며 서로의 방식에 익숙해졌습니다.</span></p></article>`
+    : "";
   refs.daySummary.classList.add("show");
   refs.daySummary.setAttribute("aria-hidden", "false");
   refs.next.disabled = true;

@@ -14,7 +14,7 @@ test("DAY 2는 개인 메시지 미니게임을 사용한다", () => {
   assert.doesNotMatch(script, /WorkAlertMinigame/);
   assert.match(html, /secret-chat-minigame\.css\?v=1/);
   assert.match(html, /secret-chat-minigame\.js\?v=5/);
-  assert.match(html, /day2\.js\?v=24/);
+  assert.match(html, /day2\.js\?v=25/);
 });
 
 test("DAY 2 개인 메시지 직행 모드는 메모리 진행을 사용하고 저장을 막은 뒤 반복한다", () => {

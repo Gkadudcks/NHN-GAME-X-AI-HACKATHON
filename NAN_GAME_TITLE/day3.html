@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>DAY 3 | NAN</title>
-<link rel="stylesheet" href="css/game.css?v=23">
+<link rel="stylesheet" href="css/game.css?v=27">
   <link rel="stylesheet" href="css/settings-dialog.css?v=2">
   <link rel="stylesheet" href="css/pause-menu.css?v=1">
   <link rel="stylesheet" href="css/location-transition.css?v=2">
@@ -141,14 +141,24 @@
   <section class="day-summary" id="day-summary" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="day-summary-title">
     <div class="day-summary-card">
       <header class="day-summary-head">
-        <div><small id="day-summary-kicker">DAY 3 · DAILY REPORT</small><h2 id="day-summary-title">오늘의 업무 정산</h2></div>
+        <div><small id="day-summary-kicker">DAY 3 · DAILY REPORT</small><h2 id="day-summary-title">오늘의 마무리</h2></div>
         <span id="day-summary-grade">GOOD</span>
       </header>
-      <div class="day-summary-columns">
-        <section class="day-summary-section"><h3>완료한 업무</h3><div class="day-summary-list" id="day-summary-work"></div></section>
-        <section class="day-summary-section"><h3>능력치 변화</h3><div class="day-summary-list" id="day-summary-stats"></div></section>
-        <section class="day-summary-section"><h3>오늘의 기록</h3><div class="day-summary-list" id="day-summary-records"></div></section>
-        <section class="day-summary-section day-summary-reactions"><h3>팀의 평가</h3><div id="day-summary-reactions"></div></section>
+      <div class="day-summary-story-grid">
+        <section class="day-summary-highlight">
+          <h3>오늘 확인한 핵심</h3>
+          <h2 id="day-summary-conclusion">명의는 확인됐지만, 실행자는 아직 모른다.</h2>
+          <p id="day-summary-note">원본과 변경본을 보존해 내일 실행 계정을 추적할 수 있게 됐습니다.</p>
+          <details class="day-summary-details">
+            <summary>업무 내역 보기</summary>
+            <div class="day-summary-list" id="day-summary-work"></div>
+          </details>
+        </section>
+        <div class="day-summary-facts">
+          <section class="day-summary-fact"><h3>능력치 변화</h3><div class="day-summary-list day-summary-stat-list" id="day-summary-stats"></div></section>
+          <section class="day-summary-fact"><h3>새로운 기록</h3><div class="day-summary-list" id="day-summary-records"></div></section>
+          <section class="day-summary-fact day-summary-relation"><h3>관계 변화</h3><div id="day-summary-reactions"></div></section>
+        </div>
       </div>
       <button class="day-summary-exit" id="day-summary-exit" type="button">정산을 마치고 퇴근 준비를 한다 <span>›</span></button>
     </div>
@@ -196,6 +206,6 @@
 <script src="js/bgm-manager.js?v=8"></script>
 <script src="js/work-alert-minigame.js?v=8"></script>
 <script src="js/presentation-screen.js?v=1"></script>
-<script src="js/day3.js?v=21"></script>
+<script src="js/day3.js?v=22"></script>
 </body>
 </html>
