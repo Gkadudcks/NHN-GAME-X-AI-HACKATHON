@@ -7,8 +7,6 @@ const {
   REQUESTS,
   SUBTASK_REQUESTS,
   DAY2_PRESET,
-  DAY3_REQUESTS,
-  DAY3_PRESET,
   buildDay2Requests,
   buildDay2Options,
   buildDay3Options,
@@ -91,18 +89,22 @@ test("DAY 2 dev override는 시드와 시간만 변경하고 정식 카드 수�
   assert.deepEqual(options.requests, buildDay2Requests("reviews"));
 });
 
-test("DAY 3 프리셋은 변조 조사 요청과 일반 업무를 16개 카드로 구성한다", () => {
-  const options = buildDay3Options();
-  assert.equal(DAY3_PRESET.seed, 20260729);
-  assert.equal(options.duration, 45);
-  assert.equal(options.lifeMs, 6500);
-  assert.equal(options.count, 16);
-  assert.deepEqual(options.requests, DAY3_REQUESTS);
-  assert.notEqual(options.requests, DAY3_REQUESTS);
-  assert.equal(DAY3_REQUESTS.some((request) => request.id === "d3-harin-preserve" && request.critical), true);
-  assert.equal(DAY3_REQUESTS.some((request) => request.id === "d3-automation-owner" && request.action === "delegate"), true);
-  assert.equal(DAY3_REQUESTS.some((request) => request.action === "spam"), true);
-  assert.equal(DAY3_REQUESTS.every((request) => request.id.startsWith("d3-")), true);
+test("DAY 3는 교체 전 요청·난이도·점수를 그대로 사용하고 날짜 표기만 바꾼다", () => {
+  const day2Options = buildDay2Options({ subtask: "reviews" });
+  const day3Options = buildDay3Options({ subtask: "reviews" });
+
+  assert.deepEqual(day3Options, { ...day2Options, day: 3 });
+  assert.equal(day3Options.seed, DAY2_PRESET.seed);
+  assert.equal(day3Options.duration, DAY2_PRESET.duration);
+  assert.equal(day3Options.lifeMs, DAY2_PRESET.lifeMs);
+  assert.equal(day3Options.count, 16);
+  assert.equal(maximumScore(day3Options.requests), 880);
+  assert.deepEqual(day3Options.requests, buildDay2Requests("reviews"));
+  assert.match(source, /data-wa-day-label/);
+  assert.match(source, /label\.textContent = `DAY \$\{day\} · MINI GAME`/);
+  assert.match(source, /<h2 id="wa-title">업무 알림 쳐내기<\/h2>/);
+  assert.match(source, /쌓여드는 요청을 읽고, 알맞은 업무 처리 방법을 선택하세요\./);
+  assert.doesNotMatch(source, /조사 요청 쳐내기|변경본 보존 요청/);
 });
 
 test("피드백 타이머는 재시작·완료 시 정리되고 오답 테두리는 영구히 남지 않는다", () => {
@@ -235,9 +237,10 @@ test("dev launcher only supplies formal Day 3 inputs and permitted test override
   assert.doesNotMatch(dev, /lifeMs\s*:/);
   assert.doesNotMatch(dev, /subtask|requestsFor|SUBTASK_REQUESTS|REQUESTS\.slice/);
   assert.match(html, /work-alert-minigame\.css\?v=9/);
-  assert.match(html, /work-alert-minigame\.js\?v=8/);
+  assert.match(html, /work-alert-minigame\.js\?v=9/);
   assert.match(html, /day2-minigame-dev\.css\?v=2/);
-  assert.match(html, /day2-minigame-dev\.js\?v=3/);
+  assert.match(html, /day2-minigame-dev\.js\?v=4/);
+  assert.match(html, /id="dev-seed"[^>]*value="20260720"/);
   assert.match(devCss, /\.minigame-dev \.work-alert-minigame\s*\{[\s\S]*?padding:\s*0 16px;/);
   assert.match(devCss, /\.minigame-dev \.wa-shell\s*\{[\s\S]*?calc\(100dvh - 64px\)/);
 });

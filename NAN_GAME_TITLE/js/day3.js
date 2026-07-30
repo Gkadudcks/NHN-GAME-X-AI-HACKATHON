@@ -79,6 +79,7 @@ const refs = {
 const progress = pageParams.has("new")
   ? GameProgress.resetDay3(localStorage)
   : GameProgress.startDay3(localStorage);
+const day2Subtask = progress.days[2]?.decisions?.day2Subtask || "competitor";
 const savedDay3 = progress.days[3];
 const savedIndex = scenes.findIndex((scene) => scene.id === savedDay3.sceneId);
 const state = {
@@ -845,9 +846,9 @@ function startWorkAlert() {
   if (devSkipMinigames) {
     console.info("[DEV] 조사 업무 알림 미니게임을 GOOD 결과로 스킵했습니다.");
     finishWorkAlert({
-      score: 700,
-      maxScore: 980,
-      scorePercentage: 71.4,
+      score: 620,
+      maxScore: 880,
+      scorePercentage: 70.5,
       grade: "good",
       workDelta: 1,
       trustDelta: 1,
@@ -859,7 +860,10 @@ function startWorkAlert() {
     });
     return;
   }
-  WorkAlertMinigame.startDay3({ onComplete: finishWorkAlert });
+  WorkAlertMinigame.startDay3({
+    subtask: day2Subtask,
+    onComplete: finishWorkAlert,
+  });
 }
 
 function summaryRow(icon, title, detail, value = "") {
