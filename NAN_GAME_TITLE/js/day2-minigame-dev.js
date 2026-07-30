@@ -9,8 +9,8 @@
 
   function run() {
     const runDuration = Math.max(12, Number(duration.value) || 45);
-    const runSeed = Number(seed.value) || 20260729;
-    status.textContent = `변조 조사 요청 · ${runDuration}초 · 시드 ${runSeed}`;
+    const runSeed = Number(seed.value) || 20260720;
+    status.textContent = `업무 알림 쳐내기 · ${runDuration}초 · 시드 ${runSeed}`;
 
     WorkAlertMinigame.startDay3({
       testOverrides: {
