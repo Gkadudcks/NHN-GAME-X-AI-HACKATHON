@@ -94,5 +94,5 @@ test("DAY 4 설정 변경은 현재 BGM 볼륨과 음소거 UI에 즉시 반영�
   assert.match(engine, /bgmManager\.setVolume\(GameSettingsDialog\.effectiveBgmVolume\(settings\)\)/);
   assert.match(engine, /function syncBgmUi/);
   assert.match(engine, /getBgmVolume\(\) > 0/);
-  assert.match(html, /src="js\/day4\.js\?v=17"/);
+  assert.match(html, /src="js\/day4\.js\?v=19"/);
 });

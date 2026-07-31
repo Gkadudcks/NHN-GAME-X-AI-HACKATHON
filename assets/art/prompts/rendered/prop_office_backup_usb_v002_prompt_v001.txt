@@ -1,0 +1,7 @@
+TASK: NON-GENERATIVE CANVAS NORMALIZATION
+ASSET: backup USB drive
+SOURCE: assets/art/props/review/prop_office_backup_usb_v001.png
+OUTPUT: assets/art/props/review/prop_office_backup_usb_v002.png
+
+Preserve the source RGBA pixels, silhouette, colors, outlines, lighting, and identity exactly. Crop only to the non-transparent alpha bounds, apply one uniform Lanczos scale so the visible pixels fit inside 468 x 468 px, then place the visible pixels horizontally centered with their lowest visible pixel at y=499 on a transparent 512 x 512 px canvas. Do not redraw, inpaint, rotate, recolor, sharpen, or add content.
+

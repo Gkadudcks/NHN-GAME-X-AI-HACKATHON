@@ -1,0 +1,8 @@
+Use case: identity-preserve
+Asset type: review-only second gait frame for the DAY 4 office-escape browser minigame.
+Input image: a two-slot edit canvas built from the approved minigame_character.doyun.run.right v002 seed.
+Primary request: keep frame 1 as the approved right-facing run and create frame 2 as the same Doyun at a clearly different opposite stride phase, with the forward leg bent and lifted while the other leg extends behind. He must continue facing and moving screen-right.
+Identity and costume invariants: same adult Korean man, short dark-brown hair, white rolled-sleeve office shirt, loose dark-navy tie, dark-navy slacks, black office shoes, employee ID lanyard and card, same face, natural adult proportions, thin clean line art and restrained 2-to-3-step cel shading.
+Composition: exactly two equal horizontal slots, one full-body character per slot, same apparent height, same bottom-center sole anchor and complete uncropped silhouette.
+Scene/backdrop: perfectly flat uniform #00ff00 chroma-key background for local removal.
+Constraints: no left-facing or mirror flip, no identity or clothing change, no extra character or limbs, no overlap, no text, labels, border, scenery, shadow, logo, watermark, pixel art, 3D or chibi.

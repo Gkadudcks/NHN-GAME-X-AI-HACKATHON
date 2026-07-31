@@ -1,0 +1,12 @@
+Use case: stylized-concept
+Asset type: review candidate for a collectible icon in a 2D browser game
+Primary request: one standalone modern office employee access card collectible, instantly readable at small game scale.
+Input images: Image 1 office chair and Image 2 open drawer are style references only for line weight, cel shading, restrained palette, and commercial visual-novel finish; do not copy their shapes.
+Subject: a pale-cream rectangular RFID badge in a navy-edged holder with a short dusty-coral lanyard loop, one simple blank portrait silhouette and two abstract bars; absolutely no readable name, letters, numbers, logo, or QR code.
+Style/medium: polished 2D visual-novel game item illustration, thin clean dark line art, crisp 2-3 tone cel shading, contemporary Korean office aesthetic.
+Composition/framing: exactly one badge centered, slight side three-quarter tilt, generous padding, square canvas, object occupies about 52% canvas.
+Lighting/mood: neutral soft office light, no cast shadow or glow.
+Color palette: cream, dark navy, pale blue, cool gray, dusty coral.
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background for background removal.
+Constraints: uniform background with no gradients or texture; no floor; no shadow; no reflection; no scenery; no people; no readable text; no logo; no watermark; no border; no extra objects; crisp separated outline; do not use #00ff00 in the subject.
+Avoid: credit card, bank card, passport, readable workplace badge, photorealism, 3D render.

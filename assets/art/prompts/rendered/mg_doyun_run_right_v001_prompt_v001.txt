@@ -1,0 +1,11 @@
+Use case: stylized-concept
+Asset type: approved-seed candidate for a 2D browser-game character sprite
+Primary request: one full-body adult Korean male office worker in a clear right-facing running pose, viewed mostly from the side and slightly from behind so facial detail is minimal. This is the player character Doyun for an office escape auto-run game.
+Subject: average-height natural adult male proportions; short tidy dark-brown hair; white office shirt with sleeves lightly rolled; loosened dark navy tie trailing backward; dark navy slacks; black office shoes; small employee ID card on a lanyard. Energetic but believable running stride, both feet and all limbs fully visible.
+Style/medium: clean polished 2D visual-novel game sprite, thin clean line art, 2-3 tone cel shading, crisp silhouette, production asset rather than concept sheet.
+Composition/framing: exactly one character centered with generous padding on all sides; full body; feet share a clear bottom-center anchor; square canvas.
+Lighting/mood: neutral soft studio light consistent across the body.
+Color palette: white, dark navy, charcoal, restrained dusty-coral accent only on the ID lanyard.
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background for background removal.
+Constraints: uniform chroma background; no cast shadow, contact shadow, reflection, scenery, labels, panel borders, animation frames, watermark, or text; natural adult anatomy; facing right; side/back view; preserve empty padding.
+Avoid: front-facing portrait, chibi, pixel art, 3D render, photorealism, exaggerated muscles, suit jacket, school uniform, extra limbs, cropped shoes, multiple poses.

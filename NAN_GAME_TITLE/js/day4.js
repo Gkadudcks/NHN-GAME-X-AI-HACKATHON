@@ -162,6 +162,8 @@ function formatGameSavedAt(value) {
 }
 
 let gameSaveMode = "save";
+let gameSavePauseHeld = false;
+let gameSaveReturnFocus = null;
 
 function buildGameSavePayload(scene) {
   saveProgress();
@@ -202,6 +204,14 @@ function renderGameSaveSlots() {
 }
 
 function openGameSave(mode = "save") {
+  const modal = $("#game-save-modal");
+  if (!modal.classList.contains("open")) {
+    const active = document.activeElement;
+    gameSaveReturnFocus = active?.closest?.("#pause-menu") ? null : active;
+    gameSavePauseHeld = true;
+    document.dispatchEvent(new CustomEvent("nan:pause-open"));
+    pauseCinematic();
+  }
   gameSaveMode = mode;
   const loading = mode === "load";
   $("#game-save-kicker").textContent = loading ? "LOAD PROGRESS" : "SAVE PROGRESS";
@@ -209,15 +219,56 @@ function openGameSave(mode = "save") {
   $("#game-save-guide").textContent = loading ? "불러올 카드를 선택하세요. 현재 진행은 선택한 저장 시점으로 바뀝니다." : "저장할 카드를 선택하세요. 타이틀의 이어하기와 같은 슬롯에 연동됩니다.";
   $("#game-save-help").textContent = loading ? "빈 슬롯은 선택할 수 없습니다. 다른 DAY의 저장도 바로 불러올 수 있습니다." : "빈 슬롯에는 새로 저장하고, 사용 중인 슬롯에는 확인 후 덮어씁니다.";
   renderGameSaveSlots();
-  $("#game-save-modal").classList.add("open");
-  $("#game-save-modal").setAttribute("aria-hidden", "false");
-  window.setTimeout(() => $("#game-save-list button:not(:disabled)")?.focus(), 50);
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+  window.setTimeout(() => ($("#game-save-list button:not(:disabled)") || $("#game-save-close"))?.focus(), 50);
 }
 
 function closeGameSave() {
-  $("#game-save-modal").classList.remove("open");
-  $("#game-save-modal").setAttribute("aria-hidden", "true");
-  $(`#${gameSaveMode === "load" ? "load" : "save"}`).focus();
+  const modal = $("#game-save-modal");
+  if (!modal.classList.contains("open")) return;
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden", "true");
+  if (gameSavePauseHeld) {
+    gameSavePauseHeld = false;
+    document.dispatchEvent(new CustomEvent("nan:pause-close"));
+    resumeCinematic();
+  }
+  const fallback = $(`#${gameSaveMode === "load" ? "load" : "save"}`);
+  const target = gameSaveReturnFocus?.isConnected ? gameSaveReturnFocus : fallback;
+  gameSaveReturnFocus = null;
+  target?.focus();
+}
+
+function trapGameSaveFocus(event) {
+  const modal = $("#game-save-modal");
+  if (event.key !== "Tab" || !modal.classList.contains("open")) return false;
+  const focusable = [...modal.querySelectorAll("button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])")]
+    .filter((element) => !element.closest("[hidden]") && element.getAttribute("aria-hidden") !== "true");
+  if (!focusable.length) {
+    event.preventDefault();
+    modal.focus();
+    return true;
+  }
+  const first = focusable[0];
+  const last = focusable.at(-1);
+  const active = document.activeElement;
+  if (!modal.contains(active)) {
+    event.preventDefault();
+    (event.shiftKey ? last : first).focus();
+    return true;
+  }
+  if (event.shiftKey && active === first) {
+    event.preventDefault();
+    last.focus();
+    return true;
+  }
+  if (!event.shiftKey && active === last) {
+    event.preventDefault();
+    first.focus();
+    return true;
+  }
+  return false;
 }
 
 function saveToGameSlot(slotId, occupied) {
@@ -837,6 +888,10 @@ document.addEventListener("nan:settings-close", resumeCinematic);
 document.addEventListener("pointerdown", () => bgmManager.resume(), { once: true });
 document.addEventListener("keydown", unlockAudio, { once: true });
 document.addEventListener("keydown", (event) => {
+  if (trapGameSaveFocus(event)) {
+    event.stopImmediatePropagation();
+    return;
+  }
   if (event.key === "Escape" && $("#game-save-modal").classList.contains("open")) {
     event.preventDefault();
     event.stopImmediatePropagation();

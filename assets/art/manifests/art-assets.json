@@ -25,6 +25,19 @@
     "framings": [
       "full_body",
       "waist_up"
+    ],
+    "actions": [
+      "run",
+      "run_alt",
+      "jump",
+      "slide",
+      "assist",
+      "chase",
+      "chase_alt",
+      "call"
+    ],
+    "directions": [
+      "right"
     ]
   },
   "profiles": {
@@ -55,6 +68,22 @@
         ".jpeg"
       ],
       "alpha": "forbidden"
+    },
+    "minigame_sprite": {
+      "width": 512,
+      "height": 512,
+      "extensions": [
+        ".png"
+      ],
+      "alpha": "required"
+    },
+    "minigame_prop": {
+      "width": 512,
+      "height": 512,
+      "extensions": [
+        ".png"
+      ],
+      "alpha": "required"
     }
   },
   "characters": {
@@ -75,6 +104,11 @@
         "surprised",
         "concerned",
         "tired"
+      ],
+      "allowed_minigame_actions": [
+        "run",
+        "run_alt",
+        "assist"
       ]
     },
     "boss": {
@@ -85,6 +119,11 @@
       ],
       "allowed_expressions": [
         "concerned"
+      ],
+      "allowed_minigame_actions": [
+        "chase",
+        "chase_alt",
+        "call"
       ]
     },
     "minjae": {
@@ -113,9 +152,486 @@
       "allowed_expressions": [
         "gentle_smile"
       ]
+    },
+    "doyun": {
+      "spec": "assets/art/characters/doyun/CHARACTER_SPEC.md",
+      "master_reference": null,
+      "allowed_poses": [
+        "neutral_standing"
+      ],
+      "allowed_expressions": [
+        "neutral"
+      ],
+      "allowed_minigame_actions": [
+        "run",
+        "run_alt",
+        "jump",
+        "slide"
+      ]
     }
   },
   "assets": [
+    {
+      "id": "minigame_character.doyun.run.right",
+      "kind": "minigame_character",
+      "profile": "minigame_sprite",
+      "character_id": "doyun",
+      "action": "run",
+      "direction": "right",
+      "active_version": "v002",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "review",
+          "path": "assets/art/characters/doyun/review/mg_doyun_run_right_v001.png",
+          "generation_log_id": "mg-doyun-run-right-v001-imagegen",
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "version": "v002",
+          "status": "approved",
+          "path": "assets/art/characters/doyun/approved/mg_doyun_run_right_v002.png",
+          "generation_log_id": "mg-doyun-run-right-v002-normalized",
+          "sha256": "09c1e2ccc82dc419fcca487456b63f888481871210ddcf123dc3e73c84432ddb",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-07-31T20:54:15.9148300+09:00"
+        }
+      ]
+    },
+    {
+      "id": "minigame_character.doyun.run_alt.right",
+      "kind": "minigame_character",
+      "profile": "minigame_sprite",
+      "character_id": "doyun",
+      "action": "run_alt",
+      "direction": "right",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "review",
+          "path": "assets/art/characters/doyun/review/mg_doyun_run_alt_right_v001.png",
+          "generation_log_id": "mg-doyun-run-alt-right-v001-imagegen",
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    {
+      "id": "minigame_character.doyun.jump.right",
+      "kind": "minigame_character",
+      "profile": "minigame_sprite",
+      "character_id": "doyun",
+      "action": "jump",
+      "direction": "right",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/characters/doyun/approved/mg_doyun_jump_right_v001.png",
+          "generation_log_id": "mg-doyun-jump-right-v001-review",
+          "sha256": "3a684e671ea231dafe716450fc93df79c68b9e3c329fb284a7a644e1ba94e402",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-01T00:37:38.9150322+09:00"
+        }
+      ]
+    },
+    {
+      "id": "minigame_character.doyun.slide.right",
+      "kind": "minigame_character",
+      "profile": "minigame_sprite",
+      "character_id": "doyun",
+      "action": "slide",
+      "direction": "right",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/characters/doyun/approved/mg_doyun_slide_right_v001.png",
+          "generation_log_id": "mg-doyun-slide-right-v001-review",
+          "sha256": "9850edebbc8fd24f137c98578fe0ec39d8068bfa301817ab54d91aaf8f471d35",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-01T00:37:38.9150322+09:00"
+        }
+      ]
+    },
+    {
+      "id": "minigame_character.harin.run.right",
+      "kind": "minigame_character",
+      "profile": "minigame_sprite",
+      "character_id": "harin",
+      "action": "run",
+      "direction": "right",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/characters/harin/approved/mg_harin_run_right_v001.png",
+          "generation_log_id": "mg-harin-run-right-v001-imagegen",
+          "sha256": "754cb03d47be7e183fcdc4ab6b2e2ccee84dbe48a6f83e84a40e267eef8d71d9",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-01T00:37:38.9150322+09:00"
+        }
+      ]
+    },
+    {
+      "id": "minigame_character.harin.run_alt.right",
+      "kind": "minigame_character",
+      "profile": "minigame_sprite",
+      "character_id": "harin",
+      "action": "run_alt",
+      "direction": "right",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "review",
+          "path": "assets/art/characters/harin/review/mg_harin_run_alt_right_v001.png",
+          "generation_log_id": "mg-harin-run-alt-right-v001-imagegen",
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    {
+      "id": "minigame_character.harin.assist.right",
+      "kind": "minigame_character",
+      "profile": "minigame_sprite",
+      "character_id": "harin",
+      "action": "assist",
+      "direction": "right",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/characters/harin/approved/mg_harin_assist_right_v001.png",
+          "generation_log_id": "mg-harin-assist-right-v001-imagegen",
+          "sha256": "20a78d83e7f39bd85bf05644f4d719056c32bdf3091754049ae46932814cae9a",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-01T00:37:38.9150322+09:00"
+        }
+      ]
+    },
+    {
+      "id": "minigame_character.boss.chase.right",
+      "kind": "minigame_character",
+      "profile": "minigame_sprite",
+      "character_id": "boss",
+      "action": "chase",
+      "direction": "right",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/characters/boss/approved/mg_boss_chase_right_v001.png",
+          "generation_log_id": "mg-boss-chase-right-v001-imagegen",
+          "sha256": "66abf05ccca6d1a5cbb1df2c9d37095aaeb34b7b273f4500c759b4e8645bde7a",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-01T00:37:38.9150322+09:00"
+        }
+      ]
+    },
+    {
+      "id": "minigame_character.boss.chase_alt.right",
+      "kind": "minigame_character",
+      "profile": "minigame_sprite",
+      "character_id": "boss",
+      "action": "chase_alt",
+      "direction": "right",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "review",
+          "path": "assets/art/characters/boss/review/mg_boss_chase_alt_right_v001.png",
+          "generation_log_id": "mg-boss-chase-alt-right-v001-imagegen",
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    {
+      "id": "minigame_character.boss.call.right",
+      "kind": "minigame_character",
+      "profile": "minigame_sprite",
+      "character_id": "boss",
+      "action": "call",
+      "direction": "right",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/characters/boss/approved/mg_boss_call_right_v001.png",
+          "generation_log_id": "mg-boss-call-right-v001-imagegen",
+          "sha256": "fbbdcc8c23af57ca4a2a0bee3e8509adf96bcdbfb14a5d3ed04015ca64fcff6c",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-01T00:37:38.9150322+09:00"
+        }
+      ]
+    },
+    {
+      "id": "prop.office.chair",
+      "kind": "prop",
+      "profile": "minigame_prop",
+      "category": "office",
+      "name": "chair",
+      "active_version": "v002",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "review",
+          "path": "assets/art/props/review/prop_office_chair_v001.png",
+          "generation_log_id": "prop-office-chair-v001-imagegen",
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "version": "v002",
+          "status": "approved",
+          "path": "assets/art/props/approved/prop_office_chair_v002.png",
+          "generation_log_id": "prop-office-chair-v002-normalized",
+          "sha256": "891c419d7806bad81cb9fdddbde4af4e65808f2e84109119838822e6a7ebbc13",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-07-31T20:54:15.9148300+09:00"
+        }
+      ]
+    },
+    {
+      "id": "prop.office.cable",
+      "kind": "prop",
+      "profile": "minigame_prop",
+      "category": "office",
+      "name": "cable",
+      "active_version": "v002",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "review",
+          "path": "assets/art/props/review/prop_office_cable_v001.png",
+          "generation_log_id": "prop-office-cable-v001-imagegen",
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "version": "v002",
+          "status": "approved",
+          "path": "assets/art/props/approved/prop_office_cable_v002.png",
+          "generation_log_id": "prop-office-cable-v002-normalized",
+          "sha256": "6263ea71d81fe5b1c4c252b6b14f380320654e23f923fb8537637df0c92cf1e9",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-07-31T20:54:15.9148300+09:00"
+        }
+      ]
+    },
+    {
+      "id": "prop.office.drawer",
+      "kind": "prop",
+      "profile": "minigame_prop",
+      "category": "office",
+      "name": "drawer",
+      "active_version": "v002",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "review",
+          "path": "assets/art/props/review/prop_office_drawer_v001.png",
+          "generation_log_id": "prop-office-drawer-v001-imagegen",
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "version": "v002",
+          "status": "approved",
+          "path": "assets/art/props/approved/prop_office_drawer_v002.png",
+          "generation_log_id": "prop-office-drawer-v002-normalized",
+          "sha256": "d576fa18441f6d5e380f6f908ce8ec6b8d0a6594b46637f727949728f5b79a4c",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-07-31T20:54:15.9148300+09:00"
+        }
+      ]
+    },
+    {
+      "id": "prop.office.papers",
+      "kind": "prop",
+      "profile": "minigame_prop",
+      "category": "office",
+      "name": "papers",
+      "active_version": "v002",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "review",
+          "path": "assets/art/props/review/prop_office_papers_v001.png",
+          "generation_log_id": "prop-office-papers-v001-imagegen",
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "version": "v002",
+          "status": "approved",
+          "path": "assets/art/props/approved/prop_office_papers_v002.png",
+          "generation_log_id": "prop-office-papers-v002-normalized",
+          "sha256": "45d44224d4baf9f24611aee27849df9bcae7cbcb19186f34a6ca6102eec85d46",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-07-31T20:54:15.9148300+09:00"
+        }
+      ]
+    },
+    {
+      "id": "prop.office.cart",
+      "kind": "prop",
+      "profile": "minigame_prop",
+      "category": "office",
+      "name": "cart",
+      "active_version": "v002",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "review",
+          "path": "assets/art/props/review/prop_office_cart_v001.png",
+          "generation_log_id": "prop-office-cart-v001-imagegen",
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "version": "v002",
+          "status": "approved",
+          "path": "assets/art/props/approved/prop_office_cart_v002.png",
+          "generation_log_id": "prop-office-cart-v002-normalized",
+          "sha256": "1752904ad4d6c87e4abb133f63c86cbb8be6530ce73639f76c4b98155fa3df00",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-07-31T20:54:15.9148300+09:00"
+        }
+      ]
+    },
+    {
+      "id": "prop.office.sign",
+      "kind": "prop",
+      "profile": "minigame_prop",
+      "category": "office",
+      "name": "sign",
+      "active_version": "v002",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "review",
+          "path": "assets/art/props/review/prop_office_sign_v001.png",
+          "generation_log_id": "prop-office-sign-v001-imagegen",
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "version": "v002",
+          "status": "approved",
+          "path": "assets/art/props/approved/prop_office_sign_v002.png",
+          "generation_log_id": "prop-office-sign-v002-normalized",
+          "sha256": "d1133505c1246811c7b62697429a8c5b2477e0ad94566e697fb7429e4aafe133",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-07-31T20:54:15.9148300+09:00"
+        }
+      ]
+    },
+    {
+      "id": "prop.office.access_card",
+      "kind": "prop",
+      "profile": "minigame_prop",
+      "category": "office",
+      "name": "access_card",
+      "active_version": "v002",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "review",
+          "path": "assets/art/props/review/prop_office_access_card_v001.png",
+          "generation_log_id": "prop-office-access-card-v001-imagegen",
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "version": "v002",
+          "status": "approved",
+          "path": "assets/art/props/approved/prop_office_access_card_v002.png",
+          "generation_log_id": "prop-office-access-card-v002-normalized",
+          "sha256": "b21612540824da203ef461c6f50e2364d9b5ef1810db5a262d0e93b89bfaa862",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-07-31T20:54:15.9148300+09:00"
+        }
+      ]
+    },
+    {
+      "id": "prop.office.phone",
+      "kind": "prop",
+      "profile": "minigame_prop",
+      "category": "office",
+      "name": "phone",
+      "active_version": "v002",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "review",
+          "path": "assets/art/props/review/prop_office_phone_v001.png",
+          "generation_log_id": "prop-office-phone-v001-imagegen",
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "version": "v002",
+          "status": "approved",
+          "path": "assets/art/props/approved/prop_office_phone_v002.png",
+          "generation_log_id": "prop-office-phone-v002-normalized",
+          "sha256": "0c7c96fccbf178aef7d06e6f15bfe45935df0db8139f8fd92f76143e371b5acb",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-07-31T20:54:15.9148300+09:00"
+        }
+      ]
+    },
+    {
+      "id": "prop.office.backup_usb",
+      "kind": "prop",
+      "profile": "minigame_prop",
+      "category": "office",
+      "name": "backup_usb",
+      "active_version": "v002",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "review",
+          "path": "assets/art/props/review/prop_office_backup_usb_v001.png",
+          "generation_log_id": "prop-office-backup-usb-v001-imagegen",
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "version": "v002",
+          "status": "approved",
+          "path": "assets/art/props/approved/prop_office_backup_usb_v002.png",
+          "generation_log_id": "prop-office-backup-usb-v002-normalized",
+          "sha256": "7ab4e803a35bf2c24e65b52c425ff170beadab409b97690ed7c1af4819698378",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-07-31T20:54:15.9148300+09:00"
+        }
+      ]
+    },
     {
       "id": "character.harin.neutral_standing.neutral",
       "kind": "character",

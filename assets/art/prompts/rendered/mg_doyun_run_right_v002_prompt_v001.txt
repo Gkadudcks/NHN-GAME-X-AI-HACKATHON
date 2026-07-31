@@ -1,0 +1,10 @@
+Use case: precise-object-edit
+Asset type: review candidate for a 2D browser-game character sprite
+Primary request: preserve the supplied Doyun running character exactly and correct only his sprite-canvas placement and scale.
+Input image: the supplied v001 sprite is the edit target and identity, costume, pose, anatomy, line, shading, and palette reference.
+Subject invariants: same adult Korean male, same short dark-brown hair, same white rolled-sleeve office shirt, loose dark navy tie, dark navy slacks, black office shoes, employee ID lanyard, same right-facing side/back running pose.
+Style invariants: preserve the thin clean line art, 2-3 tone cel shading, adult proportions, silhouette, colors, and all visible details without redesign.
+Composition/framing: one character on a square canvas; center him horizontally; move and scale the complete figure so the lowest shoe pixels sit 10-14 pixels above the bottom edge; keep 20-28 pixels of head clearance; do not crop any hair, hand, tie, leg, shoe, or ID card.
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background for background removal.
+Constraints: change only placement and uniform scale needed for the bottom-center sole anchor; no new pose, no redrawing, no cast shadow, no contact shadow, no reflection, no scenery, no text, no labels, no watermark; exactly one full-body character.
+Avoid: altered face, hair, clothing, anatomy, stride, direction, palette, line weight, shading, extra limbs, cropped shoes, multiple frames, transparent checkerboard.

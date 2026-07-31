@@ -168,7 +168,7 @@ test("DAY 4 캐릭터는 이전 DAY와 같은 실제 키 비율로 크기를 보
   assert.match(engine, /boss: Object\.freeze\(\{ name: "박태식", heightCm: 176 \}\)/);
   assert.match(engine, /DAY4_CHARACTER_STAGE_HEIGHT \* \(profile\.heightCm \/ DAY4_CHARACTER_BASE_HEIGHT\)/);
   assert.match(engine, /image\.style\.setProperty\("--sprite-height", `\$\{spriteHeight\}cqh`\)/);
-  assert.match(html, /src="js\/day4\.js\?v=17"/);
+  assert.match(html, /src="js\/day4\.js\?v=19"/);
 });
 
 test("DAY 4는 캐릭터 ID가 생략돼도 현재 화자인 서하린을 불투명하게 표시한다", () => {
@@ -246,7 +246,7 @@ test("DAY 4 페이지는 스토리와 추격 미니게임을 엔진 전에 불�
   const minigameIndex = html.indexOf('src="js/office-escape-minigame.js');
   const engineIndex = html.indexOf('src="js/day4.js');
   assert.ok(storyIndex >= 0 && storyIndex < minigameIndex && minigameIndex < engineIndex);
-  assert.match(html, /office-escape-minigame\.css\?v=4/);
+  assert.match(html, /office-escape-minigame\.css\?v=16/);
 });
 
 test("모든 DAY 자료 화면은 공용 PPT형 슬라이드 스타일을 사용한다", () => {
@@ -284,7 +284,7 @@ test("DAY 4는 모든 장면에 승인된 배경·캐릭터·CG를 적용한다"
   assert.match(html, /data-tab="messages-view"/);
   assert.match(html, /data-tab="clues-view"/);
   assert.match(html, /href="css\/game\.css\?v=28"/);
-  assert.match(html, /src="js\/art-assets\.js\?v=11"/);
+  assert.match(html, /src="js\/art-assets\.js\?v=13"/);
   assert.match(engine, /ArtAssets\.resolve\(scene\.bgAssetId\)/);
   assert.match(engine, /ArtAssets\.resolve\(entry\.assetId\)/);
   assert.match(engine, /ArtAssets\.resolve\(scene\.cgAssetId\)/);
@@ -340,6 +340,16 @@ test("DAY 4는 공용 슬롯 UI로 진행을 저장하고 불러온다", () => {
   assert.match(engine, /openLoad: \(\) => openGameSave\("load"\)/);
 });
 
+test("DAY 4 저장 모달은 미니게임 일시정지를 소유하고 키보드 포커스를 가둔다", () => {
+  const engine = read("js/day4.js");
+  assert.match(engine, /gameSavePauseHeld = true/);
+  assert.match(engine, /document\.dispatchEvent\(new CustomEvent\("nan:pause-open"\)\)/);
+  assert.match(engine, /document\.dispatchEvent\(new CustomEvent\("nan:pause-close"\)\)/);
+  assert.match(engine, /function trapGameSaveFocus\(event\)/);
+  assert.match(engine, /if \(trapGameSaveFocus\(event\)\)/);
+  assert.match(engine, /#game-save-list button:not\(:disabled\).*#game-save-close/);
+});
+
 test("DAY 4는 이전 DAY의 공용 게임 기능을 모두 연결한다", () => {
   const html = read("day4.html");
   const engine = read("js/day4.js");
@@ -359,21 +369,182 @@ test("DAY 4는 이전 DAY의 공용 게임 기능을 모두 연결한다", () =>
   assert.match(engine, /hasBlockingUi\(\)/);
 });
 
-test("퇴근 미니게임은 방향키·Space·뒤따르는 부장 충돌 판정을 사용한다", () => {
+test("퇴근 미니게임은 자동 달리기·점프·슬라이드와 피격 기반 결과를 사용한다", () => {
+  const html = read("day4.html");
+  const core = read("js/office-escape-minigame-core.js");
   const script = read("js/office-escape-minigame.js");
   const style = read("css/office-escape-minigame.css");
-  assert.match(script, /ArrowLeft/);
-  assert.match(script, /ArrowRight/);
-  assert.match(script, /Space/);
-  assert.match(script, /state\.bossX \+=/);
-  assert.match(script, /state\.bossX \+ 42 >= state\.playerX/);
-  assert.match(script, /grade = caught \? "caught" : elapsed <= 20 \? "perfect" : "close"/);
-  assert.match(script, /type: "chair"/);
-  assert.match(script, /oe-office-backdrop/);
+  assert.ok(html.indexOf("office-escape-minigame-core.js") < html.indexOf("office-escape-minigame.js"));
+  assert.doesNotMatch(script, /ArrowLeft|ArrowRight/);
+  assert.match(script, /"Space", "ArrowUp", "KeyW"/);
+  assert.match(script, /"ArrowDown", "KeyS"/);
+  assert.match(core, /state\.distance = Math\.min\(length, state\.distance \+ speed \* dt\)/);
+  assert.match(core, /const JUMP_BUFFER = 0\.15/);
+  assert.match(core, /const COYOTE_TIME = 0\.12/);
+  assert.match(core, /const INVULNERABLE_TIME = 0\.8/);
+  assert.match(core, /const PROP_ART_FRAMING = Object\.freeze/);
+  assert.match(core, /hitCount <= 2/);
+  assert.match(core, /type: "chair"/);
+  assert.match(core, /type: "backup-usb"/);
+  assert.match(script, /background\.office\.evening/);
+  assert.match(script, /background\.office\.night/);
+  assert.match(script, /background\.elevator_lobby\.night/);
+  assert.match(script, /"prop\.office\.chair"/);
+  assert.match(script, /"prop\.office\.sign"/);
+  assert.match(script, /"minigame_character\.doyun\.run\.right"/);
+  assert.match(script, /"minigame_character\.doyun\.run_alt\.right"/);
+  assert.match(script, /"minigame_character\.doyun\.jump\.right"/);
+  assert.match(script, /"minigame_character\.doyun\.slide\.right"/);
+  assert.match(script, /"minigame_character\.harin\.run\.right"/);
+  assert.match(script, /"minigame_character\.harin\.run_alt\.right"/);
+  assert.match(script, /"minigame_character\.boss\.chase\.right"/);
+  assert.match(script, /"minigame_character\.boss\.chase_alt\.right"/);
+  assert.match(script, /const GAIT_FRAME_MS = 160/);
+  assert.match(script, /function gaitArtId\(baseId, altId, snapshot\)/);
+  assert.match(script, /function preloadCharacterArt\(\)/);
+  assert.match(script, /prefersReducedMotion\(\)/);
+  assert.match(script, /failedArtSources: new Set\(\)/);
+  assert.match(script, /classList\.toggle\("has-gait-art"/);
+  assert.match(script, /OfficeEscapeMinigame = Object\.freeze\(\{ start, pause, resume, debugSnapshot \}\)/);
+  assert.match(script, /const playerX = playerScreenX\(width\)/);
+  assert.match(script, /width \* 0\.32/);
+  assert.match(script, /Math\.max\(96, width \* 0\.35\)/);
+  assert.match(script, /Math\.log1p\(Math\.abs\(delta\) \/ depth\)/);
+  assert.match(script, /const OBJECT_DRAW_AHEAD = 2800/);
+  assert.match(script, /const LANDMARK_DRAW_AHEAD = 3800/);
+  assert.match(script, /progress: 0\.03, kind: "door"/);
+  assert.match(script, /translate3d\(\$\{playerX\}px, \$\{-snapshot\.y\}px, 0\) scale\(\$\{playerScale\}\)/);
+  assert.match(script, /--oe-far-x/);
+  assert.match(script, /--oe-mid-x/);
+  assert.match(script, /--oe-near-x/);
+  assert.match(script, /renderDebugGeometry\(snapshot, width\)/);
+  assert.match(script, /data-landmark/);
   assert.match(script, /oe-progress-bar/);
-  assert.match(style, /\.oe-chair:before/);
-  assert.match(style, /\.oe-printer:before/);
-  assert.match(style, /\.oe-office-desks/);
+  assert.match(style, /\.oe-chair::before/);
+  assert.match(style, /\.oe-drawer/);
+  assert.match(style, /\.oe-touch-controls/);
+  assert.match(style, /--oe-object-art-size/);
+  assert.match(style, /\.oe-player-review-art\s*\{[^}]*left:\s*24px/s);
+  assert.match(style, /\.oe-player\.has-review-art\.sliding \.oe-player-review-art\s*\{[^}]*left:\s*42px/s);
+  assert.doesNotMatch(style, /rotate\(68deg\)/);
+  assert.match(script, /Core\.PROP_ART_FRAMING\[object\.type\]/);
+  const mobileStyle = style.slice(style.indexOf("@media (max-width: 850px)"), style.indexOf("@media (max-width: 480px)"));
+  assert.doesNotMatch(mobileStyle, /\.oe-harin\s*\{[^}]*display:\s*none/);
+  assert.match(mobileStyle, /\.oe-harin\s*\{[^}]*scale:\s*\.62/);
+  assert.match(style, /@media \(max-width: 850px\) and \(max-height: 560px\)/);
+  assert.match(style, /grid-template-rows: 64px minmax\(0, 1fr\) 72px/);
+  assert.match(style, /\.oe-danger-meter/);
+  assert.match(style, /\.oe-command-list/);
+  assert.match(style, /\.oe-player\.has-gait-art/);
+  assert.match(style, /prefers-reduced-motion/);
+});
+
+test("퇴근 미니게임의 승인 아트는 manifest 활성 버전과 런타임 resolver가 일치한다", () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, "..", "assets", "art", "manifests", "art-assets.json"), "utf8"));
+  const runtime = require("../js/art-assets.js");
+  const expectedVersions = new Map([
+    ["minigame_character.doyun.run.right", "v002"],
+    ["minigame_character.doyun.jump.right", "v001"],
+    ["minigame_character.doyun.slide.right", "v001"],
+    ["minigame_character.harin.run.right", "v001"],
+    ["minigame_character.harin.assist.right", "v001"],
+    ["minigame_character.boss.chase.right", "v001"],
+    ["minigame_character.boss.call.right", "v001"],
+    ["prop.office.chair", "v002"],
+    ["prop.office.cable", "v002"],
+    ["prop.office.drawer", "v002"],
+    ["prop.office.papers", "v002"],
+    ["prop.office.cart", "v002"],
+    ["prop.office.sign", "v002"],
+    ["prop.office.access_card", "v002"],
+    ["prop.office.phone", "v002"],
+    ["prop.office.backup_usb", "v002"],
+  ]);
+
+  for (const [id, expectedVersion] of expectedVersions) {
+    const asset = manifest.assets.find((entry) => entry.id === id);
+    const version = asset?.versions.find((entry) => entry.version === asset.active_version);
+    assert.equal(asset?.active_version, expectedVersion, `${id} should activate ${expectedVersion}`);
+    assert.equal(version?.status, "approved", `${id} should resolve only approved art`);
+    assert.match(version?.path || "", /\/approved\//, `${id} should use an immutable approved file`);
+    assert.equal(runtime.resolve(id).replace(/^\.\.\//, ""), version.path);
+    assert.equal(fs.existsSync(path.resolve(root, runtime.resolve(id))), true, `${id} runtime file should exist`);
+  }
+});
+
+test("DAY 4 보행 교대 프레임은 사용자 승인 전 review 상태로만 제공한다", () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, "..", "assets", "art", "manifests", "art-assets.json"), "utf8"));
+  const runtime = require("../js/art-assets.js");
+  const candidates = [
+    ["minigame_character.doyun.run_alt.right", "mg_doyun_run_alt_right_v001"],
+    ["minigame_character.harin.run_alt.right", "mg_harin_run_alt_right_v001"],
+    ["minigame_character.boss.chase_alt.right", "mg_boss_chase_alt_right_v001"],
+  ];
+
+  for (const [id, fileStem] of candidates) {
+    const asset = manifest.assets.find((entry) => entry.id === id);
+    const version = asset?.versions.find((entry) => entry.version === "v001");
+    assert.equal(asset?.active_version, null, `${id} must stay inactive until visual approval`);
+    assert.equal(version?.status, "review", `${id} must remain a review candidate`);
+    assert.match(version?.path || "", /\/review\//);
+    assert.throws(() => runtime.resolve(id), /Unknown art asset id/, `${id} must not resolve in production yet`);
+    assert.equal(fs.existsSync(path.join(root, "..", version.path)), true, `${id} review PNG should exist`);
+    assert.equal(fs.existsSync(path.join(root, "..", "assets", "art", "generation_logs", `${fileStem}.jsonl`)), true);
+    assert.equal(fs.existsSync(path.join(root, "..", "assets", "art", "prompts", "rendered", `${fileStem}_prompt_v001.txt`)), true);
+  }
+});
+
+test("DAY 4 퇴근 미니게임은 독립 개발 화면에서 반복 실행할 수 있다", () => {
+  const html = read("dev/day4-office-escape-minigame.html");
+  const dev = read("js/day4-office-escape-minigame-dev.js");
+  assert.match(html, /DAY 4 OFFICE ESCAPE LAB/);
+  assert.match(html, /<base href="\.\.\/">/);
+  assert.match(html, /office-escape-minigame-core\.js\?v=9/);
+  assert.match(html, /office-escape-minigame\.js\?v=18/);
+  assert.match(html, /day4-office-escape-minigame-dev\.js\?v=9/);
+  assert.match(html, /minigame-dev\.css\?v=1/);
+  assert.match(html, /@media \(min-width: 901px\) and \(max-height: 760px\)/);
+  assert.match(html, /grid-template-rows: 64px minmax\(0, 1fr\)/);
+  assert.match(html, /height: calc\(100dvh - 84px\)/);
+  assert.match(html, /\.minigame-dev \.oe-play-footer \{\s*min-height: 0;/);
+  assert.match(html, /id="dev-intro"/);
+  assert.match(html, /id="dev-hitboxes"/);
+  assert.match(dev, /autoStart: !intro\.checked/);
+  assert.match(dev, /testOverrides/);
+  assert.match(dev, /OfficeEscapeMinigameCore\.DEFAULT_LENGTH/);
+  assert.match(dev, /OfficeEscapeMinigame\.pause\(\)/);
+  assert.match(dev, /OfficeEscapeMinigame\.resume\(\)/);
+  assert.match(dev, /fetch\("\.\.\/assets\/art\/manifests\/art-assets\.json", \{ cache: "no-store" \}\)/);
+  assert.match(dev, /\[\.\.\.asset\.versions\]\.reverse\(\)/);
+  assert.match(dev, /version\.status === "review"/);
+  assert.match(dev, /Number\(version\.version\.slice\(1\)\) > activeNumber/);
+  assert.match(dev, /reviewAssetMap: reviewArt\.checked/);
+  assert.match(dev, /showHitboxes: hitboxes\.checked/);
+  assert.match(html, /data-office-escape-dev="true"/);
+  assert.match(read("js/office-escape-minigame.js"), /dataset\.officeEscapeDev === "true"/);
+  assert.match(dev, /JSON\.stringify\(result, null, 2\)/);
+});
+
+test("퇴근 미니게임은 일시정지 입력을 차단하고 재실행 상태를 깨끗하게 초기화한다", () => {
+  const script = read("js/office-escape-minigame.js");
+  assert.match(script, /root\?\.hidden \|\| !state\?\.playing \|\| state\.paused/);
+  assert.match(script, /function clearTransientTimers\(targetState = state\)/);
+  assert.match(script, /transientTimers: new Set\(\)/);
+  assert.match(script, /clearTransientTimers\(state\)/);
+  assert.match(script, /root\.classList\.remove\("paused", "hit", "zone-change"\)/);
+  assert.match(script, /refs\.harin\.classList\.remove\("assisting"\)/);
+  assert.match(script, /refs\.jump\.classList\.remove\("pressed"\)/);
+  assert.match(script, /refs\.slide\.classList\.remove\("pressed"\)/);
+});
+
+test("퇴근 미니게임 모달은 포커스와 입력 수명을 플레이 상태에 맞춰 관리한다", () => {
+  const script = read("js/office-escape-minigame.js");
+  assert.match(script, /function trapFocus\(event\)/);
+  assert.match(script, /event\.key === "Tab" && trapFocus\(event\)/);
+  assert.match(script, /function releaseControls\(\)/);
+  assert.match(script, /global\.addEventListener\("blur", releaseControls\)/);
+  assert.match(script, /document\.addEventListener\("visibilitychange"/);
+  assert.match(script, /if \(devMode && options\.autoStart\) begin\(\)/);
 });
 
 test("DAY 3 완료 화면에서 DAY 4를 시작할 수 있다", () => {

@@ -1,0 +1,10 @@
+Use case: stylized-concept
+Asset type: review candidate for a 2D browser-game obstacle prop
+Primary request: one standalone modern Korean office swivel chair, slightly tilted as if it just rolled into a running path; readable as a low obstacle in a side-scrolling game.
+Subject: navy fabric office chair with a short backrest, muted gray five-spoke wheeled base, one dusty-coral adjustment lever; believable compact proportions and a strong clean silhouette.
+Style/medium: polished 2D visual-novel game prop illustration, thin clean dark line art, crisp 2-3 tone cel shading, same restrained contemporary Korean office aesthetic as a visual novel.
+Composition/framing: exactly one chair centered, side three-quarter view, generous padding, fully visible wheels, square canvas, object occupies about 68% of canvas.
+Lighting/mood: neutral soft office light, no cast shadow.
+Color palette: dark navy, cool gray, charcoal, tiny dusty-coral accent.
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background for background removal.
+Constraints: uniform background with no gradients or texture; no floor plane; no shadow; no reflection; no scenery; no people; no text; no logo; no watermark; no border; no extra objects; crisp separated outline; do not use #00ff00 anywhere in the chair.

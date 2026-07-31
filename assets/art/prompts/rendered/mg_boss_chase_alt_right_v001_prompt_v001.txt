@@ -1,0 +1,9 @@
+Use case: identity-preserve
+Asset type: review-only second chase gait frame for the DAY 4 office-escape browser minigame.
+Input image: a two-slot edit canvas built from the approved minigame_character.boss.chase.right v001 seed.
+Primary request: keep frame 1 as the approved right-facing chase and create frame 2 as the same boss Park Taesik at the opposite heavy-running stride: one nearly straight leg reaches forward toward screen-right while the other bends backward behind the hips. He must keep charging screen-right rather than jumping.
+Identity and costume invariants: same broad Korean middle-aged office manager, square stern face, receding short black hair, thick eyebrows, rolled white shirt sleeves, loose black tie, black trousers and dress shoes, dark lanyard and one ID badge.
+Style: polished Korean office visual-novel illustration, clean thin line work, restrained low-to-medium saturation, natural adult anatomy and 2-to-3-step cel shading.
+Composition: exactly two equal horizontal slots, one full-body character per slot, same apparent height and bottom-center foot baseline, no crop or overlap.
+Scene/backdrop: perfectly flat uniform #00ff00 chroma-key background for local removal.
+Constraints: no left-facing or mirror flip, no cup, no identity, outfit or body change, no extra people or limbs, no text, labels, border, scenery, shadow, logo, watermark, comedy pose, pixel art, 3D or chibi.

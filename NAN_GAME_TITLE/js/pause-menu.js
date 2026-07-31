@@ -58,6 +58,32 @@
       options.onClose?.();
     }
 
+    function trapFocus(event) {
+      if (event.key !== "Tab" || !isOpen()) return;
+      const focusable = [...panel.querySelectorAll("button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])")]
+        .filter((element) => !element.closest?.("[hidden]") && element.getAttribute?.("aria-hidden") !== "true");
+      if (!focusable.length) {
+        event.preventDefault();
+        panel.focus?.();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      const active = documentRef.activeElement;
+      if (!overlay.contains(active)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+        return;
+      }
+      if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
     overlay.addEventListener("click", (event) => {
       if (event.target === overlay) close();
       const action = event.target.closest?.("[data-pause-action]")?.dataset.pauseAction;
@@ -80,6 +106,7 @@
       returnFromSettings = false;
       open();
     });
+    documentRef.addEventListener("keydown", trapFocus, true);
 
     return Object.freeze({ open, close, isOpen });
   }
