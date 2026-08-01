@@ -178,7 +178,7 @@
       "character_id": "doyun",
       "action": "run",
       "direction": "right",
-      "active_version": "v002",
+      "active_version": "v003",
       "versions": [
         {
           "version": "v001",
@@ -197,6 +197,15 @@
           "sha256": "09c1e2ccc82dc419fcca487456b63f888481871210ddcf123dc3e73c84432ddb",
           "reviewed_by": "user",
           "reviewed_at": "2026-07-31T20:54:15.9148300+09:00"
+        },
+        {
+          "version": "v003",
+          "status": "approved",
+          "path": "assets/art/characters/doyun/approved/mg_doyun_run_right_v003.png",
+          "generation_log_id": "mg-doyun-run-right-v003-imagegen-anatomy",
+          "sha256": "762e34c493b77ac3b38fb352f90dc72ab357a2661d692a4a96e5b927345a9e0a",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-01T10:57:41.1275672+09:00"
         }
       ]
     },
@@ -207,7 +216,7 @@
       "character_id": "doyun",
       "action": "run_alt",
       "direction": "right",
-      "active_version": null,
+      "active_version": "v003",
       "versions": [
         {
           "version": "v001",
@@ -217,6 +226,24 @@
           "sha256": null,
           "reviewed_by": null,
           "reviewed_at": null
+        },
+        {
+          "version": "v002",
+          "status": "review",
+          "path": "assets/art/characters/doyun/review/mg_doyun_run_alt_right_v002.png",
+          "generation_log_id": "mg-doyun-run-alt-right-v002-imagegen",
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "version": "v003",
+          "status": "approved",
+          "path": "assets/art/characters/doyun/approved/mg_doyun_run_alt_right_v003.png",
+          "generation_log_id": "mg-doyun-run-alt-right-v003-imagegen-anatomy",
+          "sha256": "8a0190dfea03b08e6ac1f9b392cfcf19137e0ca4345fcab1f33a008e6aac1bf5",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-01T10:57:41.1275672+09:00"
         }
       ]
     },
@@ -267,7 +294,7 @@
       "character_id": "harin",
       "action": "run",
       "direction": "right",
-      "active_version": "v001",
+      "active_version": "v002",
       "versions": [
         {
           "version": "v001",
@@ -277,6 +304,15 @@
           "sha256": "754cb03d47be7e183fcdc4ab6b2e2ccee84dbe48a6f83e84a40e267eef8d71d9",
           "reviewed_by": "user",
           "reviewed_at": "2026-08-01T00:37:38.9150322+09:00"
+        },
+        {
+          "version": "v002",
+          "status": "approved",
+          "path": "assets/art/characters/harin/approved/mg_harin_run_right_v002.png",
+          "generation_log_id": "mg-harin-run-right-v002-imagegen-anatomy",
+          "sha256": "11278a2454f9c2bfaed847d37c28ac8bbfa5158b43094496ecf7db9f80c66056",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-01T10:57:41.1275672+09:00"
         }
       ]
     },
@@ -287,7 +323,7 @@
       "character_id": "harin",
       "action": "run_alt",
       "direction": "right",
-      "active_version": null,
+      "active_version": "v003",
       "versions": [
         {
           "version": "v001",
@@ -297,6 +333,24 @@
           "sha256": null,
           "reviewed_by": null,
           "reviewed_at": null
+        },
+        {
+          "version": "v002",
+          "status": "review",
+          "path": "assets/art/characters/harin/review/mg_harin_run_alt_right_v002.png",
+          "generation_log_id": "mg-harin-run-alt-right-v002-imagegen",
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "version": "v003",
+          "status": "approved",
+          "path": "assets/art/characters/harin/approved/mg_harin_run_alt_right_v003.png",
+          "generation_log_id": "mg-harin-run-alt-right-v003-imagegen-anatomy",
+          "sha256": "9838e16fe5858d8cdc7cff1c639b06cbfbc8db240fec0357b6ed9e4eca12db87",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-01T10:57:41.1275672+09:00"
         }
       ]
     },
@@ -327,7 +381,7 @@
       "character_id": "boss",
       "action": "chase",
       "direction": "right",
-      "active_version": "v001",
+      "active_version": "v002",
       "versions": [
         {
           "version": "v001",
@@ -337,6 +391,15 @@
           "sha256": "66abf05ccca6d1a5cbb1df2c9d37095aaeb34b7b273f4500c759b4e8645bde7a",
           "reviewed_by": "user",
           "reviewed_at": "2026-08-01T00:37:38.9150322+09:00"
+        },
+        {
+          "version": "v002",
+          "status": "approved",
+          "path": "assets/art/characters/boss/approved/mg_boss_chase_right_v002.png",
+          "generation_log_id": "mg-boss-chase-right-v002-imagegen-anatomy",
+          "sha256": "da6a7714618b53c8d6c78791f2c36e6cd1994bebb9ffad00fdb4161921c091ec",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-01T10:57:41.1275672+09:00"
         }
       ]
     },
@@ -347,7 +410,7 @@
       "character_id": "boss",
       "action": "chase_alt",
       "direction": "right",
-      "active_version": null,
+      "active_version": "v003",
       "versions": [
         {
           "version": "v001",
@@ -357,6 +420,24 @@
           "sha256": null,
           "reviewed_by": null,
           "reviewed_at": null
+        },
+        {
+          "version": "v002",
+          "status": "review",
+          "path": "assets/art/characters/boss/review/mg_boss_chase_alt_right_v002.png",
+          "generation_log_id": "mg-boss-chase-alt-right-v002-imagegen",
+          "sha256": null,
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "version": "v003",
+          "status": "approved",
+          "path": "assets/art/characters/boss/approved/mg_boss_chase_alt_right_v003.png",
+          "generation_log_id": "mg-boss-chase-alt-right-v003-imagegen-anatomy",
+          "sha256": "ca090e87ff3696a7aa1bb938a49d2c62bd3c092ec1a7e02fd7652e912df3fed8",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-01T10:57:41.1275672+09:00"
         }
       ]
     },

@@ -55,3 +55,6 @@ Style:
 - Compute one scale from the largest detected frame and anchor.
 - Bottom-align frames into the target canvas.
 - Reuse the exact shipped frame for frame 01 when `--lock-frame1` is appropriate.
+- When foot alignment conflicts with a verified pelvis/root pivot, apply a reviewed
+  post-normalization translation with repeatable `--frame-offset INDEX:DX:DY` values.
+  Record the exact offsets in the generation log; never use them to hide identity drift.

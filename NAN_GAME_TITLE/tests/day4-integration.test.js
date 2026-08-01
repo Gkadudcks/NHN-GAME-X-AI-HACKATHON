@@ -246,7 +246,7 @@ test("DAY 4 페이지는 스토리와 추격 미니게임을 엔진 전에 불�
   const minigameIndex = html.indexOf('src="js/office-escape-minigame.js');
   const engineIndex = html.indexOf('src="js/day4.js');
   assert.ok(storyIndex >= 0 && storyIndex < minigameIndex && minigameIndex < engineIndex);
-  assert.match(html, /office-escape-minigame\.css\?v=16/);
+  assert.match(html, /office-escape-minigame\.css\?v=45/);
 });
 
 test("모든 DAY 자료 화면은 공용 PPT형 슬라이드 스타일을 사용한다", () => {
@@ -284,7 +284,7 @@ test("DAY 4는 모든 장면에 승인된 배경·캐릭터·CG를 적용한다"
   assert.match(html, /data-tab="messages-view"/);
   assert.match(html, /data-tab="clues-view"/);
   assert.match(html, /href="css\/game\.css\?v=28"/);
-  assert.match(html, /src="js\/art-assets\.js\?v=13"/);
+  assert.match(html, /src="js\/art-assets\.js\?v=14"/);
   assert.match(engine, /ArtAssets\.resolve\(scene\.bgAssetId\)/);
   assert.match(engine, /ArtAssets\.resolve\(entry\.assetId\)/);
   assert.match(engine, /ArtAssets\.resolve\(scene\.cgAssetId\)/);
@@ -381,6 +381,29 @@ test("퇴근 미니게임은 자동 달리기·점프·슬라이드와 피격 �
   assert.match(core, /state\.distance = Math\.min\(length, state\.distance \+ speed \* dt\)/);
   assert.match(core, /const JUMP_BUFFER = 0\.15/);
   assert.match(core, /const COYOTE_TIME = 0\.12/);
+  assert.match(core, /const SLIDE_MIN_DURATION = 0\.08/);
+  assert.match(core, /const GRAVITY = 1800/);
+  assert.match(core, /const PLAYER_X_OFFSET = 8/);
+  assert.match(core, /const ACTION_LEAD_TIME = Object\.freeze\(\{ jump: 0\.26, slide: 0\.75 \}\)/);
+  assert.match(core, /const JUMP_QUEUE_LEAD_TIME = 0\.55/);
+  assert.match(core, /const MIN_PREPARE_LEAD_TIME = 1\.25/);
+  assert.match(core, /function collisionCueMetrics\(object, speed\)/);
+  assert.match(core, /const cuePlayerRight = cuePlayerLeft \+ PLAYER_WIDTH/);
+  assert.match(core, /collisionGap: metrics\.entryGap/);
+  assert.match(core, /jumpQueueReady: object\.avoid === "jump" && leadTime <= JUMP_QUEUE_LEAD_TIME/);
+  assert.match(core, /const GAIT_FRAME_MS = 500/);
+  assert.match(core, /const GAIT_PHASE_DELAY_MS = Object\.freeze\(\{ doyun: 0, harin: 150, boss: 300 \}\)/);
+  assert.match(core, /function gaitFrameIndex\(elapsedSeconds, delayMs = 0\)/);
+  assert.match(core, /speedMultiplier: 0\.95/);
+  assert.match(core, /speedMultiplier: 1\.06/);
+  assert.match(core, /speedMultiplier: 1\.15/);
+  assert.match(core, /function nominalSpeedFor\(progress\)/);
+  assert.match(core, /const nominalSpeed = nominalSpeedFor\(progressBefore\)/);
+  assert.match(core, /telegraphDistanceFor\(nominalSpeed\)/);
+  assert.match(core, /id: "corridor-sign-switch"[^\n]+avoid: "slide"[^\n]+motion: "sway"/);
+  assert.match(core, /emit\("avoid", \{ object \}\)/);
+  assert.match(core, /function commitJump\(seconds = 0\.42\)/);
+  assert.match(core, /function cancelJump\(\)/);
   assert.match(core, /const INVULNERABLE_TIME = 0\.8/);
   assert.match(core, /const PROP_ART_FRAMING = Object\.freeze/);
   assert.match(core, /hitCount <= 2/);
@@ -399,9 +422,119 @@ test("퇴근 미니게임은 자동 달리기·점프·슬라이드와 피격 �
   assert.match(script, /"minigame_character\.harin\.run_alt\.right"/);
   assert.match(script, /"minigame_character\.boss\.chase\.right"/);
   assert.match(script, /"minigame_character\.boss\.chase_alt\.right"/);
-  assert.match(script, /const GAIT_FRAME_MS = 160/);
-  assert.match(script, /function gaitArtId\(baseId, altId, snapshot\)/);
+  assert.match(script, /const GAIT_PHASE_DELAY_MS = Core\.GAIT_PHASE_DELAY_MS/);
+  assert.match(script, /const GAIT_EMPHASIS_MS = 70/);
+  assert.match(script, /const SLIDE_FEEDBACK_MS = 320/);
+  assert.match(script, /const ACCESSIBLE_JUMP_MS = 420/);
+  assert.match(script, /const ACCESSIBLE_SLIDE_MS = 80/);
+  assert.match(script, /const ARRIVAL_MS = 750/);
+  assert.match(script, /const PLAYER_MOTION_FX_MS = 240/);
+  assert.match(script, /const ZONE_ENTRY_LABELS = Object\.freeze/);
+  assert.match(script, /function currentPlaceLabel\(snapshot, compact = false\)/);
+  assert.match(script, /refs\.currentZone\.textContent = currentPlaceLabel\(snapshot, global\.innerWidth <= 1020\)/);
+  assert.match(script, /refs\.currentZone\.setAttribute\("aria-label", `현재 장소: \$\{fullPlaceLabel\}`\)/);
+  assert.match(script, /const CUE_JUMP_COMMIT_SECONDS = ACCESSIBLE_JUMP_MS \/ 1000/);
+  assert.match(script, /const TUTORIAL_JUMP_ACCEPT_LEAD = 0\.9/);
+  assert.match(script, /const TUTORIAL_TAP_IDS = Object\.freeze\(\{ jump: "chair-tutorial", slide: "drawer-tutorial" \}\)/);
+  assert.match(script, /function gaitArtId\(baseId, altId, snapshot, delayMs = 0\)/);
+  assert.match(script, /Core\.gaitFrameIndex\(snapshot\?\.elapsed, delayMs\)/);
+  assert.match(script, /function hasGaitArt\(altId\)\s*\{\s*return !prefersReducedMotion\(\) && Boolean\(gameplayArt\(altId\)\)/);
+  assert.match(script, /const doyunPose = snapshot\.sliding \? "slide" : snapshot\.y > 1 \? "jump" : "run"/);
+  assert.match(script, /const harinPose = refs\.harin\.classList\.contains\("assisting"\) \? "assist" : "run"/);
+  assert.match(script, /gaitArtId\(CHARACTER_ART_IDS\.doyun\.run, CHARACTER_ART_IDS\.doyun\.runAlt, snapshot, GAIT_PHASE_DELAY_MS\.doyun\)/);
+  assert.match(script, /gaitArtId\(CHARACTER_ART_IDS\.harin\.run, CHARACTER_ART_IDS\.harin\.runAlt, snapshot, GAIT_PHASE_DELAY_MS\.harin\)/);
+  assert.match(script, /gaitArtId\(CHARACTER_ART_IDS\.boss\.chase, CHARACTER_ART_IDS\.boss\.chaseAlt, snapshot, GAIT_PHASE_DELAY_MS\.boss\)/);
+  assert.match(script, /function syncGaitEmphasis\(host, artId, enabled\)/);
+  assert.match(script, /syncGaitEmphasis\(refs\.harinArt, harinArtId, hasHarinGait\)/);
+  assert.match(script, /syncGaitEmphasis\(refs\.bossArt, bossArtId, hasBossGait\)/);
+  assert.match(script, /const bossCalling = snapshot\.elapsed < state\.bossCallUntil/);
+  assert.match(script, /const bossPose = bossCalling \? "call" : "chase"/);
+  assert.match(script, /state\.bossCallUntil = Math\.max\(state\.bossCallUntil, snapshot\.elapsed \+ 0\.28\)/);
+  assert.match(script, /bossCallUntil: 0/);
+  assert.doesNotMatch(script, /snapshot\.hitCount >= 2 \? "call"/);
+  assert.doesNotMatch(script, /syncGaitEmphasis\(refs\.player/);
   assert.match(script, /function preloadCharacterArt\(\)/);
+  assert.match(script, /function startSlideFeedback\(\)/);
+  assert.match(script, /function cancelSlideActivationTimer\(targetState = state\)/);
+  assert.match(script, /function cancelJumpActivationTimer\(targetState = state\)/);
+  assert.match(script, /function canQueueJump\(upcoming\)/);
+  assert.match(script, /function clearPendingJump\(targetState = state\)/);
+  assert.match(script, /function executePendingJump\(pending\)/);
+  assert.match(script, /function flushPendingJump\(\)/);
+  assert.match(script, /function activateJumpCue\(game, ownerToken = null\)/);
+  assert.match(script, /status: "queued"/);
+  assert.match(script, /pending\.status = "executed"/);
+  assert.match(script, /existing\.status === "queued" && ownerToken === null\) existing\.ownerToken = null/);
+  assert.match(script, /pending\.ownerToken !== ownerToken \|\| pending\.status !== "queued"/);
+  assert.match(script, /refs\?\.jump\.classList\.add\("queued"\)/);
+  assert.match(script, /flushPendingJump\(\);\s*const snapshot = state\.game\.step\(dt\)/);
+  assert.match(script, /if \(snapshot\.finished\) render\(snapshot\);\s*handleEvents\(events, snapshot\);\s*if \(snapshot\.finished\) return/);
+  assert.match(script, /pending\.game\.commitJump\(CUE_JUMP_COMMIT_SECONDS\)/);
+  assert.match(script, /game\.commitSlide\(upcoming\.clearLeadTime \+ 0\.05\)/);
+  assert.match(script, /activateJumpCue\(pointerGame, pointerToken\)/);
+  assert.match(script, /activateSlideCue\(pointerGame\)/);
+  assert.match(script, /activateJumpCue\(state\.game\)/);
+  assert.match(script, /activateSlideCue\(state\.game\)/);
+  assert.match(script, /function isDuplicateCueKeyboardClick\(action\)/);
+  assert.match(script, /state\.cueKeyboardAction = "";\s*state\.cueKeyboardAt = -Infinity;\s*return true/);
+  assert.match(script, /state\?\.cueKeyboardAction === "jump"\) state\.cueKeyboardAt = global\.performance\.now\(\)/);
+  assert.match(script, /state\?\.cueKeyboardAction === "slide"\) state\.cueKeyboardAt = global\.performance\.now\(\)/);
+  assert.equal((script.match(/if \(event\.detail !== 0\) return;/g) || []).length, 2);
+  assert.equal((script.match(/if \(pointerId !== null\) return;/g) || []).length, 2);
+  assert.equal((script.match(/if \(pointerId === null \|\| event\.pointerId !== pointerId\) return;/g) || []).length, 4);
+  assert.equal((script.match(/button\.addEventListener\("lostpointercapture", cancel\)/g) || []).length, 2);
+  assert.match(script, /&& !pendingJump\s*&& !\(upcoming && telegraphPhase === "act"\)/);
+  assert.match(script, /event\.code === "Space" && refs\.slide\.contains\(event\.target\)/);
+  assert.match(script, /refs\.jumpLabel\.textContent = jumpQueued/);
+  assert.match(script, /"입력 완료 ✓"/);
+  assert.match(script, /"미리 탭하세요 · 알맞을 때 점프합니다"/);
+  assert.match(script, /function slideCueAcceptWindow\(game\)/);
+  assert.match(script, /upcoming\?\.avoid === "slide" && upcoming\.telegraphPhase === "act"/);
+  assert.match(script, /refs\.slideLabel\.textContent = slideCueTapReady/);
+  assert.match(script, /refs\.telegraph\.dataset\.tapReady = cueTapReady \? "true" : "false"/);
+  assert.match(script, /upcoming\.id === "chair-pair-a"\s*\? "첫 연속: 점프 뒤 슬라이드"/);
+  assert.match(script, /firstComboPrepare\s*\? '<i aria-hidden="true">○<\/i><b>점프 후 ↓<\/b>'/);
+  assert.match(script, /firstComboPrepare \? "첫 연속, 점프 뒤 슬라이드"/);
+  assert.match(script, /"지금 점프, 탭하세요"/);
+  assert.match(script, /"지금 슬라이드, 탭하세요"/);
+  assert.match(script, /"복합기 복도 · 서랍과 케이블 조심!"/);
+  assert.match(script, /state\.game\.cancelSlide\(\)/);
+  assert.match(script, /upcoming\.telegraphPhase === "act"/);
+  assert.match(script, /state\.lastTelegraphKey !== telegraphKey/);
+  assert.match(script, /id: "meeting-7f", progress: 0\.17, kind: "glass"/);
+  assert.match(script, /<span>슬라이드 · 길게<\/span>/);
+  assert.match(script, /function showAvoidConfirm\(\)/);
+  assert.match(script, /event\.hitCount >= 3[\s\S]+퇴근 위기 · \$\{event\.object\.label\} 충돌[\s\S]+\$\{event\.object\.label\} 충돌 · \$\{correction\}/);
+  assert.match(script, /function triggerPlayerMotionFx\(type, duration = PLAYER_MOTION_FX_MS\)/);
+  assert.match(script, /function pauseVisualFxTimers\(\)/);
+  assert.match(script, /function resumeVisualFxTimers\(\)/);
+  assert.match(script, /pauseVisualFxTimers\(\);\s*releaseControls\(\)/);
+  assert.match(script, /resumeVisualFxTimers\(\);\s*root\.classList\.remove\("paused"\)/);
+  assert.match(script, /triggerPlayerMotionFx\("jump", 180\)/);
+  assert.match(script, /triggerPlayerMotionFx\("avoid"\)/);
+  assert.match(script, /state\.wasAirborne && !airborne/);
+  assert.match(script, /id="oe-remaining"/);
+  assert.match(script, /remainingSeconds = Math\.max\(0, Math\.ceil\(\(1 - snapshot\.progress\) \* snapshot\.duration\)\)/);
+  assert.match(script, /data-motion="\$\{object\.motion \|\| "still"\}"/);
+  assert.match(script, /classList\.toggle\("passing", Math\.abs\(x - playerX\) <= 72\)/);
+  assert.match(script, /classList\.toggle\("has-upcoming", Boolean\(upcoming\)\)/);
+  assert.match(script, /refs\.course\.dataset\.zoneEnter = ZONE_ENTRY_LABELS/);
+  assert.match(script, /function clearFeedback\(type\)/);
+  assert.match(script, /HIT_FEEDBACK_MIN_SECONDS = 0\.4/);
+  assert.match(script, /state\.feedbackLockedUntil = type === "hit"/);
+  assert.match(script, /state\.feedbackExpiresAt = type === "hit"/);
+  assert.match(script, /if \(type === "hit"\) \{\s*state\.feedbackTimer = 0;\s*return/);
+  assert.match(script, /snapshot\.elapsed >= state\.feedbackExpiresAt\) clearFeedback\("hit"\)/);
+  assert.match(script, /type === "hit" && \(state\.game\?\.snapshot\(\)\.elapsed \|\| 0\) < state\.feedbackLockedUntil/);
+  assert.match(script, /if \(upcoming && telegraphPhase === "prepare"\) clearFeedback\("hit"\)/);
+  assert.match(script, /feedback\("점프 통과!", "avoid", 1200\)/);
+  assert.match(script, /feedback\("슬라이드 통과!", "avoid", 1200\)/);
+  assert.match(script, /feedback\("엘리베이터 도착!", "arrival", ARRIVAL_MS\)/);
+  assert.match(script, /refs\.telegraph\.hidden = true/);
+  assert.match(script, /refs\.status\.textContent = "엘리베이터에 도착했습니다"/);
+  assert.match(script, /root\.classList\.add\("arrival"\)/);
+  assert.match(script, /state\.arrivalTimer = scheduleTransient\(\(\) => \{/);
+  assert.match(script, /refs\.feedback\.textContent = ""/);
   assert.match(script, /prefersReducedMotion\(\)/);
   assert.match(script, /failedArtSources: new Set\(\)/);
   assert.match(script, /classList\.toggle\("has-gait-art"/);
@@ -409,15 +542,72 @@ test("퇴근 미니게임은 자동 달리기·점프·슬라이드와 피격 �
   assert.match(script, /const playerX = playerScreenX\(width\)/);
   assert.match(script, /width \* 0\.32/);
   assert.match(script, /Math\.max\(96, width \* 0\.35\)/);
-  assert.match(script, /Math\.log1p\(Math\.abs\(delta\) \/ depth\)/);
-  assert.match(script, /const OBJECT_DRAW_AHEAD = 2800/);
-  assert.match(script, /const LANDMARK_DRAW_AHEAD = 3800/);
+  assert.match(script, /const phonePortrait = width <= 480 && refs\.course\.clientHeight >= 600/);
+  assert.match(script, /const shortLandscape = width <= 900 && refs\.course\.clientHeight <= 220/);
+  assert.match(script, /const compact = width <= 850 \|\| shortLandscape/);
+  assert.match(script, /const harinX = phonePortrait \? width \* 0\.143/);
+  assert.match(script, /const dangerThreePhone = phonePortrait && dangerLevel === 3/);
+  assert.match(script, /dangerThreePhone\s*\? harinX - 54/);
+  assert.match(script, /refs\.danger\.textContent = dangerLevel === 0 \? "안전"[^;]+"퇴근 위기"/);
+  assert.match(script, /refs\.course\.dataset\.dangerLevel = String\(dangerLevel\)/);
+  assert.match(script, /width \* 0\.065 \+ dangerLevel \* 11/);
+  assert.match(script, /const tinyPhone = phonePortrait && width < 360/);
+  assert.match(script, /tinyPhone \? 0\.68 : 0\.74/);
+  assert.match(script, /tinyPhone \? 0\.42 : 0\.46/);
+  assert.match(script, /tinyPhone \? 0\.34 : 0\.38/);
+  assert.match(script, /const SHORT_LANDSCAPE_WORLD_SCALE = 0\.52/);
+  assert.match(script, /const SUCCESS_STATUS_SECONDS = 0\.5/);
+  assert.match(script, /id="oe-item-count"/);
+  assert.match(script, /refs\.itemCount\.textContent = `수집 \$\{snapshot\.collectedItems\.length\}\/3`/);
+  assert.match(script, /state\.successStatusUntil = snapshot\.elapsed \+ SUCCESS_STATUS_SECONDS/);
+  assert.match(script, /classList\.toggle\("success", showSuccessStatus\)/);
+  assert.match(script, /!\(upcoming && telegraphPhase === "act"\)/);
+  assert.match(script, /function syncObjectArtWorldScale\(course, worldScale\)/);
+  assert.match(script, /const artSize = object\.width \/ frame\.alphaWidth \* worldScale/);
+  assert.match(script, /state\.objectArtWorldScale = null;[\s\S]*course\.forEach\(\(object\) =>/);
+  assert.match(script, /syncObjectArtWorldScale\(snapshot\.course, worldScale\)/);
+  assert.match(script, /function renderPausedLayout\(\)[\s\S]*state\.paused[\s\S]*render\(state\.lastSnapshot\)/);
+  assert.match(script, /global\.addEventListener\("resize", renderPausedLayout\)/);
+  assert.match(script, /object\.kind === "item" \? "collection" : "collision"/);
+  assert.match(script, /object\.kind === "item" \? "PICKUP" : "HIT"/);
+  assert.match(style, /\.oe-debug-box\.collection/);
+  assert.match(style, /\.oe-item-count/);
+  assert.match(style, /grid-template-columns:\s*minmax\(176px, \.65fr\) minmax\(260px, 1fr\)/);
+  assert.match(style, /\.oe-items span\s*\{[^}]*font-size:\s*13px/s);
+  assert.match(style, /grid-template-columns:\s*124px minmax\(120px, 1fr\)/);
+  assert.match(style, /\.oe-item-count\s*\{[^}]*display:\s*block[^}]*grid-column:\s*2[^}]*grid-row:\s*2[^}]*font-size:\s*13px/s);
+  assert.match(style, /\.office-escape\.paused \.oe-course \*::after[\s\S]*animation-play-state:\s*paused !important/);
+  assert.match(style, /\.oe-play-footer > p\.success/);
+  assert.match(script, /const playerScale = shortLandscape \? worldScale/);
+  assert.match(script, /const harinScale = shortLandscape \? worldScale/);
+  assert.match(script, /const bossScale = shortLandscape \? worldScale/);
+  assert.match(script, /const CAMERA_NEAR_BLEND_START = 420/);
+  assert.match(script, /const CAMERA_FAR_BLEND_END = 1400/);
+  assert.match(script, /const SHORT_LANDSCAPE_CAMERA_DEPTH_FACTOR = 0\.65/);
+  assert.match(script, /const SHORT_LANDSCAPE_CAMERA_MAX_DEPTH = 1200/);
+  assert.match(script, /function projectWorldDelta\(delta, width, worldScale = 1\)/);
+  assert.match(script, /const nearDepth = clamp\(width \* 0\.2, 74, 360\)/);
+  assert.match(script, /const farDepthFactor = shortLandscape \? SHORT_LANDSCAPE_CAMERA_DEPTH_FACTOR : 0\.45/);
+  assert.match(script, /const farDepthMax = shortLandscape \? SHORT_LANDSCAPE_CAMERA_MAX_DEPTH : 720/);
+  assert.match(script, /const farDepth = clamp\(width \* farDepthFactor \/ Math\.max\(worldScale, 0\.35\), 74, farDepthMax\)/);
+  assert.match(script, /const smoothBlend = blendProgress \* blendProgress \* \(3 - 2 \* blendProgress\)/);
+  assert.match(script, /projectWorldDelta\(worldX - snapshot\.distance, width, worldScale\) \* worldScale/);
+  assert.match(script, /const OBJECT_DRAW_AHEAD = 1900/);
+  assert.match(script, /const LANDMARK_DRAW_AHEAD = 2200/);
+  assert.match(script, /const FINISH_DRAW_AHEAD = 3000/);
+  assert.match(script, /const MAX_VISIBLE_LANDMARKS = 2/);
+  assert.match(script, /const courseDrawScale = Math\.min\(1, snapshot\.length \/ Core\.DEFAULT_LENGTH\)/);
+  assert.match(script, /visibleLandmarkCount < MAX_VISIBLE_LANDMARKS/);
+  assert.match(script, /const itemCueDistance = Math\.max\(280, 620 \* courseDrawScale\)/);
+  assert.match(script, /classList\.toggle\("collectible-cue", !upcoming && id === upcomingItem\?\.id\)/);
+  assert.match(script, /`선택 수집물 · 점프로 \$\{upcomingItem\.label\} 획득`/);
+  assert.match(script, /renderDebugGeometry\(snapshot, width, objectDrawAhead, worldScale\)/);
+  assert.match(script, /rect: object\.collisionRect/);
   assert.match(script, /progress: 0\.03, kind: "door"/);
-  assert.match(script, /translate3d\(\$\{playerX\}px, \$\{-snapshot\.y\}px, 0\) scale\(\$\{playerScale\}\)/);
+  assert.match(script, /translate3d\(\$\{playerX\}px, \$\{-snapshot\.y \* worldScale\}px, 0\) scale\(\$\{playerScale\}\)/);
   assert.match(script, /--oe-far-x/);
   assert.match(script, /--oe-mid-x/);
   assert.match(script, /--oe-near-x/);
-  assert.match(script, /renderDebugGeometry\(snapshot, width\)/);
   assert.match(script, /data-landmark/);
   assert.match(script, /oe-progress-bar/);
   assert.match(style, /\.oe-chair::before/);
@@ -428,14 +618,72 @@ test("퇴근 미니게임은 자동 달리기·점프·슬라이드와 피격 �
   assert.match(style, /\.oe-player\.has-review-art\.sliding \.oe-player-review-art\s*\{[^}]*left:\s*42px/s);
   assert.doesNotMatch(style, /rotate\(68deg\)/);
   assert.match(script, /Core\.PROP_ART_FRAMING\[object\.type\]/);
-  const mobileStyle = style.slice(style.indexOf("@media (max-width: 850px)"), style.indexOf("@media (max-width: 480px)"));
+  const mobileStyle = style.slice(style.indexOf("@media (max-width: 1020px)"), style.indexOf("@media (max-width: 480px)"));
   assert.doesNotMatch(mobileStyle, /\.oe-harin\s*\{[^}]*display:\s*none/);
   assert.match(mobileStyle, /\.oe-harin\s*\{[^}]*scale:\s*\.62/);
-  assert.match(style, /@media \(max-width: 850px\) and \(max-height: 560px\)/);
+  assert.match(style, /@media \(max-width: 900px\) and \(max-height: 560px\)/);
   assert.match(style, /grid-template-rows: 64px minmax\(0, 1fr\) 72px/);
   assert.match(style, /\.oe-danger-meter/);
   assert.match(style, /\.oe-command-list/);
   assert.match(style, /\.oe-player\.has-gait-art/);
+  assert.match(style, /@keyframes oe-gait-emphasis/);
+  assert.match(style, /#oe-harin-art\.gait-emphasis,\s*#oe-boss-art\.gait-emphasis\s*\{[^}]*position:\s*absolute[^}]*inset:\s*0/s);
+  assert.match(style, /from \{ scale: 1\.05; \}/);
+  assert.match(style, /to \{ scale: 1; \}/);
+  assert.match(style, /@keyframes oe-slide-feedback/);
+  assert.match(style, /@keyframes oe-telegraph-now/);
+  assert.match(style, /@keyframes oe-avoid-confirm/);
+  assert.match(style, /@keyframes oe-arrival/);
+  assert.match(style, /@keyframes oe-zone-enter/);
+  assert.match(style, /transform:\s*translateX\(var\(--oe-zone-enter-shift, 18px\)\);\s*clip-path:\s*inset\(0\)/);
+  assert.match(style, /@media \(max-width: 1020px\)[\s\S]*\.oe-course::after\s*\{[^}]*--oe-zone-enter-shift:\s*8px[^}]*right:\s*max\(14px, env\(safe-area-inset-right, 0px\)\)/s);
+  assert.match(style, /@media \(max-width: 480px\)[\s\S]*\.oe-course::after\s*\{[^}]*right:\s*max\(10px, env\(safe-area-inset-right, 0px\)\)/s);
+  assert.match(style, /@keyframes oe-footfall-burst/);
+  assert.match(style, /@keyframes oe-land-contact/);
+  assert.match(style, /\.office-escape\.zone-change \.oe-course::after/);
+  assert.match(style, /\.office-escape\.paused \.oe-course::after[\s\S]+animation-play-state:\s*paused/);
+  assert.match(style, /\.oe-course\.has-upcoming \.oe-hazard:not\(\.telegraphed\)/);
+  assert.match(style, /\.oe-item\.collectible-cue > span/);
+  assert.doesNotMatch(style, /backdrop-filter/);
+  assert.match(style, /\.oe-object\.telegraphed\[data-motion="roll"\]/);
+  assert.match(style, /\.oe-player\.motion-feedback\[data-motion-fx="land"\]/);
+  assert.match(style, /\.office-escape\.arrival \.oe-finish/);
+  assert.match(style, /\.oe-feedback\.arrival/);
+  assert.match(style, /\.oe-avoid-confirm\.show/);
+  assert.match(style, /\.oe-telegraph\[data-phase="prepare"\]/);
+  assert.match(style, /\.oe-telegraph\[data-phase="act"\]/);
+  assert.match(style, /\.oe-telegraph\[data-phase="act"\] b\s*\{[^}]*font-size:\s*24px/s);
+  assert.ok((style.match(/\.oe-telegraph\[data-phase="act"\] b\s*\{[^}]*font-size:\s*20px/gs) || []).length >= 3);
+  assert.match(style, /\.oe-object\.telegraphed\.action-ready/);
+  assert.match(style, /\.oe-player\.slide-feedback::before/);
+  assert.match(style, /\.oe-player\.has-review-art\.sliding \.oe-player-review-art img/);
+  assert.match(style, /\.oe-touch-controls button\.tap-feedback/);
+  assert.match(style, /\.oe-touch-controls button\.queued/);
+  assert.match(style, /@media \(max-width: 480px\)[\s\S]*\.oe-route-title small\s*\{[^}]*display:\s*block[^}]*grid-column:\s*1/s);
+  assert.match(style, /@media \(max-width: 480px\)\s*\{\s*#oe-remaining\s*\{[^}]*font-size:\s*13px/s);
+  assert.match(style, /@media \(max-width: 480px\)[\s\S]*\.oe-route ol\s*\{\s*display:\s*none/);
+  assert.match(style, /@media \(max-width: 480px\)[\s\S]*grid-template-columns:\s*112px minmax\(0, 1fr\)/);
+  assert.match(style, /@media \(max-width: 480px\)[\s\S]*\.oe-danger b\s*\{[^}]*font-size:\s*18px/s);
+  assert.match(style, /@media \(max-width: 480px\)[\s\S]*\.oe-route-title strong\s*\{[^}]*font-size:\s*14px/s);
+  assert.match(style, /@media \(max-width: 480px\)[\s\S]*\.oe-route-title > b\s*\{[^}]*font-size:\s*18px/s);
+  assert.match(style, /@media \(max-width: 480px\) and \(min-height: 600px\)[\s\S]*\.oe-play-footer > p\s*\{[^}]*height:\s*16px[^}]*font-size:\s*14px[^}]*line-height:\s*16px/s);
+  assert.match(style, /@media \(max-width: 900px\) and \(max-height: 560px\)[\s\S]*\.oe-play-footer > p\s*\{[^}]*height:\s*14px[^}]*font-size:\s*12px[^}]*line-height:\s*14px/s);
+  assert.match(style, /@media \(max-width: 900px\) and \(max-height: 560px\)[\s\S]*\.oe-play-footer > p\s*\{[^}]*clip-path:\s*none[^}]*font-size:\s*12px/s);
+  assert.match(style, /@media \(max-width: 900px\) and \(max-height: 560px\)[\s\S]*\.oe-play-footer\s*\{[^}]*position:\s*static[^}]*inset:\s*auto[^}]*height:\s*64px/s);
+  assert.match(style, /@media \(max-width: 900px\) and \(max-height: 560px\)[\s\S]*grid-template-rows:\s*48px minmax\(0, 1fr\) 64px/);
+  assert.match(style, /@media \(max-width: 900px\) and \(max-height: 560px\)[\s\S]*--oe-ground:\s*6%/);
+  assert.match(style, /@media \(max-width: 900px\) and \(max-height: 560px\)[\s\S]*\.oe-touch-controls\s*\{[^}]*position:\s*static[^}]*inset:\s*auto[^}]*width:\s*100%/s);
+  assert.match(style, /@media \(max-width: 900px\) and \(max-height: 560px\)[\s\S]*\.oe-telegraph\s*\{[^}]*top:\s*8px[^}]*bottom:\s*auto/s);
+  assert.match(style, /@media \(max-width: 900px\) and \(max-height: 560px\)[\s\S]*\.oe-player,[\s\S]*\.oe-harin,[\s\S]*\.oe-boss\s*\{[^}]*transform-origin:\s*bottom left/s);
+  assert.match(style, /@media \(max-width: 480px\)[\s\S]*\.oe-danger b\s*\{[^}]*white-space:\s*nowrap/s);
+  assert.match(style, /\.oe-course\[data-danger-level="3"\] \.oe-boss\.has-game-art img/);
+  assert.match(style, /padding-inline:\s*max\(8px, env\(safe-area-inset-left, 0px\)\)/);
+  assert.match(style, /transform-origin: 50% 100%/);
+  const gaitEmphasisStyle = style.slice(
+    style.indexOf("@keyframes oe-gait-emphasis"),
+    style.indexOf("@keyframes oe-slide-feedback"),
+  );
+  assert.doesNotMatch(gaitEmphasisStyle, /translate|top:|left:/);
   assert.match(style, /prefers-reduced-motion/);
 });
 
@@ -443,12 +691,15 @@ test("퇴근 미니게임의 승인 아트는 manifest 활성 버전과 런타�
   const manifest = JSON.parse(fs.readFileSync(path.join(root, "..", "assets", "art", "manifests", "art-assets.json"), "utf8"));
   const runtime = require("../js/art-assets.js");
   const expectedVersions = new Map([
-    ["minigame_character.doyun.run.right", "v002"],
+    ["minigame_character.doyun.run.right", "v003"],
+    ["minigame_character.doyun.run_alt.right", "v003"],
     ["minigame_character.doyun.jump.right", "v001"],
     ["minigame_character.doyun.slide.right", "v001"],
-    ["minigame_character.harin.run.right", "v001"],
+    ["minigame_character.harin.run.right", "v002"],
+    ["minigame_character.harin.run_alt.right", "v003"],
     ["minigame_character.harin.assist.right", "v001"],
-    ["minigame_character.boss.chase.right", "v001"],
+    ["minigame_character.boss.chase.right", "v002"],
+    ["minigame_character.boss.chase_alt.right", "v003"],
     ["minigame_character.boss.call.right", "v001"],
     ["prop.office.chair", "v002"],
     ["prop.office.cable", "v002"],
@@ -472,23 +723,30 @@ test("퇴근 미니게임의 승인 아트는 manifest 활성 버전과 런타�
   }
 });
 
-test("DAY 4 보행 교대 프레임은 사용자 승인 전 review 상태로만 제공한다", () => {
+test("DAY 4 최종 보행 6종은 승인 메타데이터와 추적 파일을 갖춘 활성 자산이다", () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(root, "..", "assets", "art", "manifests", "art-assets.json"), "utf8"));
   const runtime = require("../js/art-assets.js");
   const candidates = [
-    ["minigame_character.doyun.run_alt.right", "mg_doyun_run_alt_right_v001"],
-    ["minigame_character.harin.run_alt.right", "mg_harin_run_alt_right_v001"],
-    ["minigame_character.boss.chase_alt.right", "mg_boss_chase_alt_right_v001"],
+    ["minigame_character.doyun.run.right", "v003", "mg_doyun_run_right_v003"],
+    ["minigame_character.doyun.run_alt.right", "v003", "mg_doyun_run_alt_right_v003"],
+    ["minigame_character.harin.run.right", "v002", "mg_harin_run_right_v002"],
+    ["minigame_character.harin.run_alt.right", "v003", "mg_harin_run_alt_right_v003"],
+    ["minigame_character.boss.chase.right", "v002", "mg_boss_chase_right_v002"],
+    ["minigame_character.boss.chase_alt.right", "v003", "mg_boss_chase_alt_right_v003"],
   ];
 
-  for (const [id, fileStem] of candidates) {
+  for (const [id, approvedVersion, fileStem] of candidates) {
     const asset = manifest.assets.find((entry) => entry.id === id);
-    const version = asset?.versions.find((entry) => entry.version === "v001");
-    assert.equal(asset?.active_version, null, `${id} must stay inactive until visual approval`);
-    assert.equal(version?.status, "review", `${id} must remain a review candidate`);
-    assert.match(version?.path || "", /\/review\//);
-    assert.throws(() => runtime.resolve(id), /Unknown art asset id/, `${id} must not resolve in production yet`);
-    assert.equal(fs.existsSync(path.join(root, "..", version.path)), true, `${id} review PNG should exist`);
+    const version = asset?.versions.find((entry) => entry.version === approvedVersion);
+    assert.equal(asset?.active_version, approvedVersion, `${id} must activate the approved gait frame`);
+    assert.equal(version?.status, "approved", `${id} must be approved`);
+    assert.match(version?.path || "", /\/approved\//);
+    assert.match(version?.sha256 || "", /^[a-f0-9]{64}$/);
+    assert.equal(version?.reviewed_by, "user");
+    assert.match(version?.reviewed_at || "", /^2026-08-01T/);
+    assert.equal(runtime.resolve(id).replace(/^\.\.\//, ""), version.path);
+    assert.equal(fs.existsSync(path.join(root, "..", version.path)), true, `${id} approved PNG should exist`);
+    assert.equal(fs.existsSync(path.join(root, "..", version.path.replace("/approved/", "/review/"))), false, `${id} approved PNG must leave review staging`);
     assert.equal(fs.existsSync(path.join(root, "..", "assets", "art", "generation_logs", `${fileStem}.jsonl`)), true);
     assert.equal(fs.existsSync(path.join(root, "..", "assets", "art", "prompts", "rendered", `${fileStem}_prompt_v001.txt`)), true);
   }
@@ -499,12 +757,15 @@ test("DAY 4 퇴근 미니게임은 독립 개발 화면에서 반복 실행할 �
   const dev = read("js/day4-office-escape-minigame-dev.js");
   assert.match(html, /DAY 4 OFFICE ESCAPE LAB/);
   assert.match(html, /<base href="\.\.\/">/);
-  assert.match(html, /office-escape-minigame-core\.js\?v=9/);
-  assert.match(html, /office-escape-minigame\.js\?v=18/);
+  assert.match(html, /office-escape-minigame-core\.js\?v=19/);
+  assert.match(html, /office-escape-minigame\.css\?v=45/);
+  assert.match(html, /office-escape-minigame\.js\?v=56/);
   assert.match(html, /day4-office-escape-minigame-dev\.js\?v=9/);
   assert.match(html, /minigame-dev\.css\?v=1/);
   assert.match(html, /@media \(min-width: 901px\) and \(max-height: 760px\)/);
+  assert.match(html, /body\.minigame-dev \.minigame-dev-result\s*\{[^}]*height:\s*100dvh[^}]*min-height:\s*0[^}]*overflow:\s*auto/s);
   assert.match(html, /grid-template-rows: 64px minmax\(0, 1fr\)/);
+  assert.match(html, /grid-template-rows: 48px minmax\(0, 1fr\) 64px/);
   assert.match(html, /height: calc\(100dvh - 84px\)/);
   assert.match(html, /\.minigame-dev \.oe-play-footer \{\s*min-height: 0;/);
   assert.match(html, /id="dev-intro"/);
@@ -531,16 +792,19 @@ test("퇴근 미니게임은 일시정지 입력을 차단하고 재실행 상�
   assert.match(script, /function clearTransientTimers\(targetState = state\)/);
   assert.match(script, /transientTimers: new Set\(\)/);
   assert.match(script, /clearTransientTimers\(state\)/);
-  assert.match(script, /root\.classList\.remove\("paused", "hit", "zone-change"\)/);
+  assert.match(script, /root\.classList\.remove\("paused", "hit", "zone-change", "arrival"\)/);
   assert.match(script, /refs\.harin\.classList\.remove\("assisting"\)/);
-  assert.match(script, /refs\.jump\.classList\.remove\("pressed"\)/);
-  assert.match(script, /refs\.slide\.classList\.remove\("pressed"\)/);
+  assert.match(script, /refs\.jump\.classList\.remove\("pressed", "queued"\)/);
+  assert.match(script, /refs\.slide\.classList\.remove\("pressed", "tap-feedback"\)/);
 });
 
 test("퇴근 미니게임 모달은 포커스와 입력 수명을 플레이 상태에 맞춰 관리한다", () => {
   const script = read("js/office-escape-minigame.js");
   assert.match(script, /function trapFocus\(event\)/);
+  assert.match(script, /root\.hidden \|\| root\.hasAttribute\("inert"\)[\s\S]+root\.getAttribute\("aria-hidden"\) === "true"/);
   assert.match(script, /event\.key === "Tab" && trapFocus\(event\)/);
+  assert.match(script, /function pause\(\) \{[\s\S]+root\.setAttribute\("inert", ""\);[\s\S]+root\.setAttribute\("aria-hidden", "true"\)/);
+  assert.match(script, /function resume\(\) \{[\s\S]+root\.removeAttribute\("inert"\);[\s\S]+root\.setAttribute\("aria-hidden", "false"\)/);
   assert.match(script, /function releaseControls\(\)/);
   assert.match(script, /global\.addEventListener\("blur", releaseControls\)/);
   assert.match(script, /document\.addEventListener\("visibilitychange"/);

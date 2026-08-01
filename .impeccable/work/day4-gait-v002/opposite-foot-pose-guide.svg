@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="512" viewBox="0 0 1024 512">
+  <rect width="1024" height="512" fill="#f4f2eb"/>
+  <line x1="512" y1="0" x2="512" y2="512" stroke="#777" stroke-width="3"/>
+  <g font-family="Arial, sans-serif" font-weight="700" fill="#222" text-anchor="middle">
+    <text x="256" y="34" font-size="24">FRAME A — LEFT/NEAR LEG FORWARD</text>
+    <text x="768" y="34" font-size="24">FRAME B — RIGHT/FAR LEG FORWARD</text>
+    <text x="256" y="493" font-size="18">RED = LEFT / VIEWER-NEAR LIMBS</text>
+    <text x="768" y="493" font-size="18">BLUE = RIGHT / VIEWER-FAR LIMBS</text>
+  </g>
+  <g stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <g>
+      <circle cx="268" cy="92" r="38" fill="#f4f2eb" stroke="#222" stroke-width="10"/>
+      <path d="M298 86 L325 98 L298 108" fill="#222" stroke="#222" stroke-width="5"/>
+      <path d="M255 132 L246 292" stroke="#222" stroke-width="32"/>
+      <path d="M248 158 L190 215 L145 253" stroke="#e33b32" stroke-width="24"/>
+      <path d="M260 157 L323 199 L371 181" stroke="#2563d9" stroke-width="20"/>
+      <path d="M245 291 L332 354 L411 427" stroke="#e33b32" stroke-width="31"/>
+      <path d="M252 291 L178 350 L96 426" stroke="#2563d9" stroke-width="26"/>
+      <circle cx="248" cy="158" r="12" fill="#e33b32" stroke="none"/>
+      <circle cx="260" cy="157" r="10" fill="#2563d9" stroke="none"/>
+      <circle cx="245" cy="291" r="15" fill="#e33b32" stroke="none"/>
+      <circle cx="252" cy="291" r="13" fill="#2563d9" stroke="none"/>
+    </g>
+    <g>
+      <circle cx="780" cy="92" r="38" fill="#f4f2eb" stroke="#222" stroke-width="10"/>
+      <path d="M810 86 L837 98 L810 108" fill="#222" stroke="#222" stroke-width="5"/>
+      <path d="M767 132 L758 292" stroke="#222" stroke-width="32"/>
+      <path d="M760 157 L833 201 L879 181" stroke="#e33b32" stroke-width="24"/>
+      <path d="M772 158 L708 215 L663 253" stroke="#2563d9" stroke-width="20"/>
+      <path d="M757 291 L690 350 L608 426" stroke="#e33b32" stroke-width="31"/>
+      <path d="M764 291 L844 354 L923 427" stroke="#2563d9" stroke-width="26"/>
+      <circle cx="760" cy="157" r="12" fill="#e33b32" stroke="none"/>
+      <circle cx="772" cy="158" r="10" fill="#2563d9" stroke="none"/>
+      <circle cx="757" cy="291" r="15" fill="#e33b32" stroke="none"/>
+      <circle cx="764" cy="291" r="13" fill="#2563d9" stroke="none"/>
+    </g>
+  </g>
+  <g font-family="Arial, sans-serif" font-weight="700" font-size="18">
+    <text x="58" y="88" fill="#e33b32">NEAR</text>
+    <text x="350" y="148" fill="#2563d9">FAR</text>
+    <text x="570" y="88" fill="#e33b32">NEAR</text>
+    <text x="862" y="148" fill="#2563d9">FAR</text>
+  </g>
+</svg>

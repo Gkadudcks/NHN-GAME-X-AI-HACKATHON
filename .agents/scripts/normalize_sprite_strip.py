@@ -51,7 +51,44 @@ def parse_args() -> argparse.Namespace:
         default=8,
         help="Pixels with alpha above this threshold count as sprite content. Default: 8.",
     )
+    parser.add_argument(
+        "--frame-offset",
+        action="append",
+        default=[],
+        metavar="INDEX:DX:DY",
+        help=(
+            "Optional one-based frame translation after shared-scale normalization. "
+            "Repeat for multiple frames, for example --frame-offset 2:-12:-18."
+        ),
+    )
     return parser.parse_args()
+
+
+def parse_frame_offsets(
+    values: Iterable[str],
+    frame_count: int,
+) -> dict[int, tuple[int, int]]:
+    offsets: dict[int, tuple[int, int]] = {}
+    for value in values:
+        parts = value.split(":")
+        if len(parts) != 3:
+            raise SystemExit(
+                f"Invalid --frame-offset {value!r}; expected INDEX:DX:DY."
+            )
+        try:
+            index, dx, dy = (int(part) for part in parts)
+        except ValueError as exc:
+            raise SystemExit(
+                f"Invalid --frame-offset {value!r}; INDEX, DX, and DY must be integers."
+            ) from exc
+        if not 1 <= index <= frame_count:
+            raise SystemExit(
+                f"Invalid --frame-offset {value!r}; INDEX must be between 1 and {frame_count}."
+            )
+        if index in offsets:
+            raise SystemExit(f"Frame {index} has more than one --frame-offset.")
+        offsets[index] = (dx, dy)
+    return offsets
 
 
 def threshold_bbox(image: Image.Image, alpha_threshold: int) -> tuple[int, int, int, int] | None:
@@ -95,6 +132,7 @@ def compose_frame(
     image: Image.Image | None,
     frame_size: int,
     scale: float,
+    offset: tuple[int, int] = (0, 0),
 ) -> Image.Image:
     canvas = Image.new("RGBA", (frame_size, frame_size), (0, 0, 0, 0))
     if image is None:
@@ -103,8 +141,8 @@ def compose_frame(
     width = max(1, int(round(image.width * scale)))
     height = max(1, int(round(image.height * scale)))
     resized = image.resize((width, height), Image.Resampling.NEAREST)
-    offset_x = (frame_size - width) // 2
-    offset_y = frame_size - height
+    offset_x = (frame_size - width) // 2 + offset[0]
+    offset_y = frame_size - height + offset[1]
     canvas.alpha_composite(resized, (offset_x, offset_y))
     return canvas
 
@@ -125,6 +163,9 @@ def main() -> None:
         raise SystemExit("--frame-size must be positive.")
     if args.lock_frame1 and not args.anchor:
         raise SystemExit("--lock-frame1 requires --anchor.")
+    frame_offsets = parse_frame_offsets(args.frame_offset, args.frames)
+    if args.lock_frame1 and frame_offsets.get(1, (0, 0)) != (0, 0):
+        raise SystemExit("Frame 1 cannot be offset when --lock-frame1 is enabled.")
 
     strip = Image.open(args.input).convert("RGBA")
     slots = split_strip(strip, args.frames)
@@ -144,7 +185,12 @@ def main() -> None:
             else:
                 frame = compose_frame(anchor_content, args.frame_size, scale)
         else:
-            frame = compose_frame(content, args.frame_size, scale)
+            frame = compose_frame(
+                content,
+                args.frame_size,
+                scale,
+                frame_offsets.get(index, (0, 0)),
+            )
         frame.save(out_dir / f"{index:02d}.png")
 
 

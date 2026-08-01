@@ -7,7 +7,7 @@
   <title>DAY 4 정시 퇴근 작전 · 개발 전용</title>
   <link rel="stylesheet" href="css/fonts.css?v=1">
   <link rel="stylesheet" href="css/minigame-dev.css?v=1">
-  <link rel="stylesheet" href="css/office-escape-minigame.css?v=16">
+  <link rel="stylesheet" href="css/office-escape-minigame.css?v=45">
   <style>
     .minigame-dev .office-escape { top: 64px; padding: 10px; }
     .minigame-dev .oe-shell { width: min(1280px, 99vw); }
@@ -50,7 +50,7 @@
         justify-content: center;
         min-width: 0;
         padding-inline: 6px;
-        font-size: 11px;
+        font-size: 12px;
       }
       .minigame-dev .office-escape {
         top: 64px;
@@ -67,6 +67,11 @@
       }
     }
     @media (max-width: 900px) and (max-height: 620px) {
+      body.minigame-dev .minigame-dev-result {
+        height: 100dvh;
+        min-height: 0;
+        overflow: auto;
+      }
       body.minigame-dev .minigame-dev-toolbar {
         min-height: 48px;
         padding-block: 4px;
@@ -81,7 +86,7 @@
       }
       .minigame-dev .oe-play {
         display: grid;
-        grid-template-rows: 56px minmax(0, 1fr) 72px;
+        grid-template-rows: 48px minmax(0, 1fr) 64px;
       }
       .minigame-dev .oe-course {
         height: auto;
@@ -93,7 +98,7 @@
       }
       .minigame-dev .oe-play-footer {
         min-height: 0;
-        padding: 2px 9px;
+        padding: 0 8px;
       }
       .minigame-dev .oe-touch-controls {
         height: 48px;
@@ -153,9 +158,9 @@
     </section>
   </main>
 
-  <script src="js/art-assets.js?v=13"></script>
-  <script src="js/office-escape-minigame-core.js?v=9"></script>
-  <script src="js/office-escape-minigame.js?v=18"></script>
+  <script src="js/art-assets.js?v=14"></script>
+  <script src="js/office-escape-minigame-core.js?v=19"></script>
+  <script src="js/office-escape-minigame.js?v=56"></script>
   <script src="js/day4-office-escape-minigame-dev.js?v=9"></script>
 </body>
 </html>

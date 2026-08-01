@@ -1,0 +1,6 @@
+Create a 1024x512 two-frame running sprite strip of the exact Kim Doyun identity and rendering style from the approved run sprite. Use the successful boss gait strip only as a readable two-phase motion template and the red/blue pose guide as the exact character-left/right near/far limb map. Do not copy the boss identity, body type, clothing, or facial features.
+
+LEFT slot: Doyun FRAME A, with one arm back and the opposite arm forward, one leg forward and the opposite leg back.
+RIGHT slot: Doyun FRAME B. The arm behind in LEFT comes visibly forward across the chest in RIGHT; the arm forward in LEFT moves behind the torso in RIGHT; the back/trailing leg becomes the forward/leading leg in RIGHT; and the previous leading leg trails with a bent lifted heel. Make the opposite arm/foot phase obvious through forearm placement, bent knee, shoe angle, and overlap. Both slots face screen-right. Do not simply lengthen the same stride or keep the same arms.
+
+Preserve Doyun's exact brown hair, youthful face, slim proportions, white rolled-sleeve shirt, dark tie, red lanyard, navy trousers, black shoes, cel shading, and outline. Match scale, torso/head placement, bottom-center foot anchor, and framing across slots. Pure flat #00FF00 background. No text, labels, guide colors, shadows, props, extra limbs, blur, gradients, transparency, cropping, or camera change.
