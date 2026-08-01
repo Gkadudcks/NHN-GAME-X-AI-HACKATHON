@@ -10,6 +10,10 @@ const html = fs.readFileSync(path.join(root, "day3.html"), "utf8");
 const engine = fs.readFileSync(path.join(root, "js", "day3.js"), "utf8");
 const day2Engine = fs.readFileSync(path.join(root, "js", "day2.js"), "utf8");
 
+test("DAY 3는 놀란 서하린 장면과 구분된 퇴근 선택지가 반영된 스토리 캐시 버전을 사용한다", () => {
+  assert.match(html, /day3-story\.js\?v=24/);
+});
+
 test("DAY 3 loads the DAY 2 story before its own story", () => {
   const day2Story = html.indexOf('src="js/day2-story.js');
   const day3Story = html.indexOf('src="js/day3-story.js');

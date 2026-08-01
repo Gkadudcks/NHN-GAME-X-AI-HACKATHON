@@ -75,8 +75,8 @@
     state.result = { grade, caught, elapsed: Math.round(elapsed * 10) / 10, distance: Math.round(state.playerX) };
     refs.resultTitle.textContent = caught ? "부장님에게 붙잡혔습니다" : grade === "perfect" ? "완벽한 정시 퇴근!" : "아슬아슬하게 탈출!";
     refs.resultCopy.textContent = caught
-      ? "10분짜리 추가 확인 업무를 마친 뒤 하린과 같은 엘리베이터를 탔습니다."
-      : grade === "perfect" ? "박태식의 시야를 벗어나 하린과 바로 엘리베이터에 탔습니다." : "마지막 말풍선을 피해 하린과 함께 엘리베이터에 도착했습니다.";
+      ? "정시 퇴근에 실패했습니다. 하린은 먼저 퇴근하고 도윤은 추가 확인 업무를 맡게 됩니다."
+      : grade === "perfect" ? "박태식의 시야를 벗어나 하린과 바로 엘리베이터에 탔습니다." : "마지막 호출을 피해 하린과 함께 엘리베이터에 도착했습니다.";
     show(refs.result);
     refs.continue.focus();
   }

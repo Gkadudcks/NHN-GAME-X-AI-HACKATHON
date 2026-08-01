@@ -18,6 +18,7 @@ let settingsController;
 // Web Audio의 loopStart를 사용해 도입부는 한 번만 재생하고 편집된 본체만 반복합니다.
 const bgmManager = new GameBgmManager(titleBgm, getConfiguredBgmVolume);
 window.BGMManager = bgmManager;
+bgmManager.preload(["title", "day-transition"]);
 let titleBgmPromise = null;
 
 function setActiveMenu(index) {

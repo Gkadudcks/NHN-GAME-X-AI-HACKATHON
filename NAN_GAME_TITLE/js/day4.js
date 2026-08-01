@@ -18,7 +18,23 @@ function characterIdFromSpeaker(speaker = "") {
   if (speaker === "박태식") return "boss";
   return "";
 }
+function choicePromptLabel(scene) {
+  const speaker = (scene?.speaker || "").trim();
+  return speaker && !["한도윤", "시스템", "내레이션"].includes(speaker) ? speaker : "상황";
+}
 const scenes = Day4Story.scenes;
+function locationAt(index) {
+  for (let cursor = Math.min(index, scenes.length - 1); cursor >= 0; cursor -= 1) {
+    if (sceneMatchesBranch(scenes[cursor]) && scenes[cursor]?.location) return scenes[cursor].location;
+  }
+  return "";
+}
+function bgmAt(index) {
+  for (let cursor = Math.min(index, scenes.length - 1); cursor >= 0; cursor -= 1) {
+    if (sceneMatchesBranch(scenes[cursor]) && scenes[cursor]?.bgm) return scenes[cursor].bgm;
+  }
+  return "";
+}
 const $ = (selector) => document.querySelector(selector);
 const progress = new URLSearchParams(location.search).has("new") ? GameProgress.resetDay4(localStorage) : GameProgress.startDay4(localStorage);
 const saved = progress.days[4];
@@ -35,13 +51,28 @@ const state = {
   minigameResult: saved.minigameResult,
   unreadClues: saved.seenNotifications?.["unread:clues"] === true,
 };
+function sceneMatchesBranch(scene) {
+  if (!scene?.branch) return true;
+  if (!state.minigameResult) return false;
+  const branch = state.minigameResult.caught ? "failure" : "success";
+  return scene.branch === branch;
+}
+function nextSceneIndex(fromIndex) {
+  for (let cursor = fromIndex + 1; cursor < scenes.length; cursor += 1) {
+    if (sceneMatchesBranch(scenes[cursor])) return cursor;
+  }
+  return scenes.length - 1;
+}
+function normalizeSceneIndex() {
+  if (!sceneMatchesBranch(scenes[state.index])) state.index = nextSceneIndex(state.index - 1);
+}
 function getBgmVolume() {
   const settings = GameSettings.load(localStorage);
   return settings.masterMuted || settings.bgmMuted ? 0 : (settings.masterVolume / 100) * (settings.bgmVolume / 100);
 }
 const bgmManager = new GameBgmManager($("#bgm"), getBgmVolume);
 window.BGMManager = bgmManager;
-bgmManager.preload(["daily", "harin", "mystery", "minigame"]);
+bgmManager.preload(["daily", "harin", "recordingStudio", "mystery", "minigame", "overtime"]);
 let pauseMenu;
 let locked = false;
 let choiceResultTimer;
@@ -57,7 +88,7 @@ let cinematicPaused = false;
 let deferNextNotification = false;
 const locationTransition = GameLocationTransition.install();
 const day4Start = progress.day4StartSnapshot || { work: 0, affection: 0, trust: 0, clues: [] };
-const AUTOSAVE_CHECKPOINTS = new Set(["day4AuditRequest", "day4Submit", "day4End"]);
+const AUTOSAVE_CHECKPOINTS = new Set(["day4AuditRequest", "day4Submit", "day4SuccessEnd", "day4FailureEnd"]);
 function escapeHtml(value) {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 }
@@ -125,7 +156,10 @@ function saveDay4Slot(checkpoint) {
 }
 
 async function unlockAudio() {
-  const played = await bgmManager.resume();
+  const sceneBgm = bgmAt(state.index);
+  const played = sceneBgm
+    ? await bgmManager.play(sceneBgm, { fadeIn: 200 })
+    : await bgmManager.resume();
   syncBgmUi(played);
   return played;
 }
@@ -434,11 +468,30 @@ function openStatHelp(button) {
 }
 
 function dynamicText(scene) {
-  if (scene.dynamic === "escapeResult") {
-    const grade = state.minigameResult?.grade;
-    if (grade === "perfect") return "엘리베이터 도착. 오늘은 추가 업무 없이 정시에 퇴근했다.";
-    if (grade === "caught") return "부장님에게 붙잡혀 10분짜리 확인 업무를 마쳤지만, 하린은 엘리베이터 앞에서 기다리고 있었다.";
-    return "마지막 호출을 아슬아슬하게 피하고 하린과 같은 엘리베이터에 탔다.";
+  const affectionTone = state.affection < 2 ? "low" : state.affection < 4 ? "mid" : "high";
+  if (scene.dynamic === "studioAnswer") {
+    if (affectionTone === "low") return scene.text;
+    if (affectionTone === "mid") return "몇 번 와봤어요. 장비 이름은 다 외우지 않아도 돼요. 제가 옆에서 순서대로 알려드릴게요.";
+    return "몇 번 와봤어요. 도윤 씨는 처음이니까 제가 옆에서 하나씩 알려드릴게요. 같이 맞추면 금방 익숙해질 거예요.";
+  }
+  if (scene.dynamic === "lastTake") {
+    if (affectionTone === "low") return scene.text;
+    if (affectionTone === "mid") return "처음인데 잘했어요. 같이 기록을 맞추니까 마지막 테이크도 금방 찾았네요.";
+    return "처음인데도 저랑 호흡이 잘 맞았어요. 다음에도 같이 들어오면 든든하겠네요.";
+  }
+  if (scene.dynamic === "leaveLead") {
+    if (affectionTone === "low") return scene.text;
+    if (affectionTone === "mid") return "오늘도 같이 마무리했네요. 확인한 상태만 보존하고, 부장님 오시기 전에 같이 나가요.";
+    return "오늘 확인한 상태만 보존하고 같이 퇴근해요. 도윤 씨랑 나가려는데 또 일을 붙잡히면 아쉽잖아요.";
+  }
+  if (scene.dynamic === "dinnerConversation") {
+    if (affectionTone === "low") {
+      return "내일 발표가 있으니 오래 있지는 말아요. 그래도 오늘 맡은 일은 잘 마무리했어요. 수고했어요, 도윤 씨.";
+    }
+    if (affectionTone === "mid") {
+      return "회사 밖에서 보니까 도윤 씨도 조금 편해 보이네요. 오늘처럼 서로 맞춰 가면 내일 발표도 괜찮을 것 같아요.";
+    }
+    return "오늘 같이 퇴근해서 다행이에요. 다음에는 이렇게 급하게 빠져나오지 않아도, 편하게 같이 저녁 먹어요.";
   }
   return scene.text;
 }
@@ -469,8 +522,7 @@ function selectChoice(scene, choice) {
 function showChoiceResult(choice, before) {
   const entries = Object.entries(choice.delta || {}).filter(([key, value]) => STAT_LABELS[key] && value !== 0);
   if (!entries.length) return;
-  const icons = { work: "◆", affection: "♡", trust: "◇" };
-  $("#choice-result-list").innerHTML = entries.map(([key, value]) => `<article class="${value > 0 ? "gain" : "loss"}"><i>${icons[key]}</i><div><span>${STAT_LABELS[key].slice(2)}</span><small>${before[key]} → ${state[key]}</small></div><strong>${value > 0 ? "+" : ""}${value}</strong></article>`).join("");
+  $("#choice-result-list").innerHTML = entries.map(([key, value]) => `<article class="${value > 0 ? "gain" : "loss"} stat-${key}"><i aria-hidden="true"></i><div><span>${STAT_LABELS[key].slice(2)}</span><small>${before[key]} → ${state[key]}</small></div><strong>${value > 0 ? "+" : ""}${value}</strong></article>`).join("");
   const panel = $("#choice-result");
   panel.classList.remove("show");
   panel.setAttribute("aria-hidden", "false");
@@ -515,6 +567,8 @@ function completeCinematic(scene) {
   cinematicTimer = window.setTimeout(() => {
     $("#speaker").textContent = scene.speaker;
     $("#dialogue").textContent = dynamicText(scene);
+    $("#dialogue-card").hidden = false;
+    SceneMotion.applyDialogueEmphasis($("#stage"), scene);
     cinematicLocked = false;
     cinematicTimer = null;
     cinematicScene = null;
@@ -530,10 +584,9 @@ function startCinematic(scene) {
   cinematicRemaining = scene.cinematicDelay;
   cinematicDeadline = performance.now() + cinematicRemaining;
   cinematicPaused = false;
+  $("#dialogue-card").hidden = true;
   $("#stage").classList.add("cinematic-only");
   if (scene.cinematicTarget === "sprite") $("#stage").classList.add("sprite-cinematic");
-  $("#speaker").textContent = "";
-  $("#dialogue").textContent = "";
   $("#next").disabled = true;
   completeCinematic(scene);
 }
@@ -633,7 +686,7 @@ function finishEscape(result) {
   state.minigameResult = result;
   if (result.grade === "perfect") state.affection += 1;
   if (result.grade === "caught") state.work += 1;
-  state.index += 1;
+  state.index = nextSceneIndex(state.index);
   saveProgress();
   render();
 }
@@ -654,7 +707,7 @@ function showDaySummary() {
     summaryRow("✓", "녹음 지원", "가이드 녹음과 테이크 기록 완료"),
     summaryRow("✓", "증빙 패키지", "정상 수치 18.4%와 원본 링크 제출"),
     summaryRow("✓", "보안 감사 요청", "자동화 요청 계정 조회 접수"),
-    summaryRow("↗", "정시 퇴근 작전", state.minigameResult?.caught ? "추가 확인 업무 후 퇴근" : "엘리베이터 도착"),
+    summaryRow("↗", "정시 퇴근 작전", state.minigameResult?.caught ? "정시 퇴근 실패 · 추가 확인 업무 완료" : "정시 퇴근 성공 · 서하린과 저녁 식사"),
   ].join("");
   const details = $("#day-summary-work").closest(".day-summary-details");
   if (details) details.open = false;
@@ -691,6 +744,7 @@ function closeDaySummary() {
 }
 
 function render() {
+  normalizeSceneIndex();
   const deferNotification = deferNextNotification;
   deferNextNotification = false;
   const scene = scenes[state.index] || scenes[0];
@@ -700,8 +754,10 @@ function render() {
   $("#clock").textContent = scene.time;
   $("#scene-label").textContent = scene.location || $("#scene-label").textContent;
   renderArt(scene);
-  $("#speaker").textContent = cinematic ? "" : scene.speaker;
-  $("#dialogue").textContent = cinematic ? "" : dynamicText(scene);
+  if (!cinematic) {
+    $("#speaker").textContent = scene.speaker;
+    $("#dialogue").textContent = dynamicText(scene);
+  }
   $("#next").disabled = cinematic;
   $("#next").textContent = scene.end ? "DAY 4 완료　›" : "다음　›";
   $("#system-panel").classList.toggle("show", Boolean(scene.system));
@@ -724,7 +780,7 @@ function render() {
   $("#dialogue-card").hidden = false;
   if (pendingChoice) {
     $("#dialogue-card").hidden = true;
-    $("#stage-choices").innerHTML = `<header class="stage-choice-prompt"><small>CHOICE</small><strong>${escapeHtml(scene.text)}</strong></header>` +
+    $("#stage-choices").innerHTML = `<header class="stage-choice-prompt"><small>${escapeHtml(choicePromptLabel(scene))}</small><strong>${escapeHtml(scene.text)}</strong></header>` +
       scene.choices.map((choice, index) => {
         const lock = choiceLock(choice);
         const effects = lock
@@ -740,6 +796,7 @@ function render() {
   if (scene.notification && !deferNotification) notifyMessage(scene.notification);
   renderMessages();
   if (cinematic) startCinematic(scene);
+  SceneMotion.play($("#stage"), scene);
   saveProgress();
   autoSaveAtCheckpoint(scene);
   if (scene.startEscape && !state.minigameResult) {
@@ -758,16 +815,16 @@ async function nextScene() {
   if (scene.choices && !state.decisions[scene.choiceKey]) return;
   if (scene.end) {
     progress.days[4].complete = true;
-    saveDay4Slot("day4End");
+    saveDay4Slot(scene.id);
     showDaySummary();
     return;
   }
-  const nextIndex = Math.min(scenes.length - 1, state.index + 1);
+  const nextIndex = nextSceneIndex(state.index);
   const targetScene = scenes[nextIndex];
   locked = true;
   $("#next").disabled = true;
   await preloadSceneImages(targetScene);
-  const locationChanged = await locationTransition.playIfChanged($("#scene-label").textContent, targetScene.location);
+  const locationChanged = await locationTransition.playIfChanged(locationAt(state.index), locationAt(nextIndex));
   state.index = nextIndex;
   deferNextNotification = locationChanged;
   render();

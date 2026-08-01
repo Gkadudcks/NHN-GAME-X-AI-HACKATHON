@@ -1,0 +1,10 @@
+Use case: identity-preserve
+Asset type: full-body transparent-background character sprite for a Korean office romance visual novel
+Primary request: Create a relaxed lunch-break pose variant of the exact same adult Korean man from the minjae master reference. Remove the documents and laptop completely. He stands casually after lunch with relaxed shoulders, naturally empty hands, and a mild friendly smile.
+Reference: NAN_GAME_TITLE/assets/characters/minjae-source.png at maximum identity strength.
+Style: polished commercial anime visual novel illustration, clean thin line art, soft 2-to-3-step cel shading, natural adult anatomy.
+Composition: full body, front three-quarter view, entire hair and shoes visible, 1024x1536 transparent sprite canvas.
+Constraints: preserve the fixed face, eyes, hairstyle, body proportions, black suit, white shirt, black tie, navy lanyard, blank employee ID, belt and dress shoes.
+Approved vocabulary: relaxed_standing + gentle_smile.
+Avoid: documents, paper, clipboard, folder, laptop, food, drink, furniture, scenery, text, logo, watermark, altered identity, extra fingers, cropped feet.
+Generation source used a flat green chroma-key background and local alpha removal.

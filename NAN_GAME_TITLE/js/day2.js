@@ -3,7 +3,7 @@
 const ASSET = "assets/";
 const CHARACTER_PROFILES = {
   harin: { name: "서하린", heightCm: 165, image: "harin-standing.png" },
-  minjae: { name: "강민재", heightCm: 182, image: "minjae-standing.png" },
+  minjae: { name: "강민재", heightCm: 182, assetId: "character.minjae.relaxed_standing.gentle_smile" },
   boss: { name: "박태식", heightCm: 176, image: "boss-standing.png" },
   sea: { name: "윤세아", heightCm: 161, assetId: "character.sea.neutral_standing.gentle_smile" },
   nanabot: { name: "나나봇", heightCm: 110, image: "nanabot-standing.png", scale: 0.52, defaultPosition: "center" },
@@ -66,11 +66,16 @@ const refs = {
   dayTransition: $("#day-transition"),
 };
 
-const progress = devSecretChat
+let progress = devSecretChat
   ? GameProgress.defaultProgress()
   : pageParams.has("new")
     ? GameProgress.resetDay2(localStorage)
     : GameProgress.startDay2(localStorage);
+if (!devSecretChat && progress.currentDay === 2 && !progress.days[2].complete && !progress.days[2].seenNotifications["feature:subway-intro-v1"]) {
+  progress = GameProgress.resetDay2(localStorage);
+  progress.days[2].seenNotifications["feature:subway-intro-v1"] = true;
+  GameProgress.save(localStorage, progress);
+}
 const savedDay2 = progress.days[2];
 const savedIndex = devSecretChat
   ? scenes.findIndex((scene) => scene.id === "day2RequestGame")
@@ -89,6 +94,20 @@ const state = {
   unreadClues: false,
 };
 
+const harinArrivalIndex = scenes.findIndex((scene) => scene.id === "day2HarinMessage");
+const harinThoughtIndex = scenes.findIndex((scene) => scene.id === "day2IntroThought");
+delete state.seenNotifications["notified:harin-yesterday"];
+delete state.seenNotifications["focused:harin-yesterday"];
+if (state.index < harinArrivalIndex || state.index >= harinThoughtIndex) {
+  state.seenNotifications["unread:harin"] = false;
+  state.seenNotifications["unread:count:harin"] = 0;
+}
+if (state.index === harinArrivalIndex && state.seenNotifications["notified:harin-morning"] && !state.seenNotifications["focused:harin-morning"]) {
+  delete state.seenNotifications["notified:harin-morning"];
+  state.seenNotifications["unread:harin"] = false;
+  state.seenNotifications["unread:count:harin"] = 0;
+}
+
 let currentRoom = "";
 let choiceResultTimer;
 let sceneTransitionLocked = false;
@@ -98,6 +117,7 @@ let cinematicScene = null;
 let cinematicDeadline = 0;
 let cinematicRemaining = 0;
 let cinematicPaused = false;
+let messageFocusTimer;
 const audio = $("#bgm");
 
 const statDescriptions = {
@@ -139,7 +159,7 @@ function getSfxVolume() {
 
 const bgmManager = new GameBgmManager(audio, getBgmVolume);
 window.BGMManager = bgmManager;
-bgmManager.preload(["daily", "minigame", "mystery", "overtime", "happyEnding", "middleEnding", "badEnding"]);
+bgmManager.preload(["commute", "daily", "minigame", "mystery", "overtime", "happyEnding", "middleEnding", "badEnding"]);
 
 function syncBgmUi(played) {
   refs.soundPrompt.classList.toggle("hidden", played);
@@ -386,8 +406,21 @@ function messageDayDivider(day) {
 function visibleMessages(room) {
   return Day2Story.MESSAGES.filter((message) => (
     message.room === room
+    && (!message.requiresDecision || state.decisions[message.requiresDecision])
     && (messageDay(message) < 2 || isAtOrAfter(message.at))
   ));
+}
+
+function resolveMessageText(message) {
+  if (message.dynamic === "morningReply") {
+    const replies = {
+      warm: "출근 전부터 챙겨주셔서 감사합니다. 도착하면 바로 같이 확인해요.",
+      reliable: "확인했습니다. 원본은 유지하고 오전에 숫자부터 같이 검증하겠습니다.",
+      concise: "네, 확인했습니다. 출근해서 오전에 같이 보겠습니다.",
+    };
+    return replies[state.decisions.day2MorningReply] || message.text;
+  }
+  return message.text;
 }
 
 function renderMessages() {
@@ -400,7 +433,7 @@ function renderMessages() {
     button.hidden = messages.length === 0;
     if (!messages.length) return;
     const latest = messages.at(-1);
-    button.querySelector(".chat-copy small").textContent = `${latest.sender}: ${latest.text}`;
+    button.querySelector(".chat-copy small").textContent = `${latest.sender}: ${resolveMessageText(latest)}`;
     button.querySelector("time").textContent = latest.time;
     const count = unreadCount(room);
     const unread = count > 0 && currentRoom !== room;
@@ -422,7 +455,8 @@ function renderMessages() {
     const day = messageDay(message);
     const divider = day === renderedDay ? "" : messageDayDivider(day);
     renderedDay = day;
-    return `${divider}<article class="message" data-message-day="${day}"><b>${escapeHtml(message.sender)}</b><p>${escapeHtml(message.text)}</p><small>${escapeHtml(messageClock(message))}</small></article>`;
+    const ownMessage = message.sender === "한도윤" ? " me" : "";
+    return `${divider}<article class="message${ownMessage}" data-message-day="${day}"><b>${escapeHtml(message.sender)}</b><p>${escapeHtml(resolveMessageText(message))}</p><small>${escapeHtml(messageClock(message))}</small></article>`;
   }).join("");
   box.scrollTop = box.scrollHeight;
 }
@@ -487,7 +521,7 @@ function renderMessageTabAlert({ pulse = false } = {}) {
 }
 
 function notifyMessage(id) {
-  if (!id || state.seenNotifications[`notified:${id}`]) return;
+  if (!id || state.seenNotifications[`notified:${id}`]) return false;
   state.seenNotifications[`notified:${id}`] = true;
   const room = notificationRoom(id);
   if (room) markUnread(room);
@@ -499,6 +533,19 @@ function notifyMessage(id) {
   if (room) toast(`${Day2Story.ROOMS[room].title.replace(/^# /, "")}에 새 메시지가 도착했습니다.`);
   window.setTimeout(() => refs.messenger.classList.remove("message-arrived"), 1900);
   renderMessages();
+  return true;
+}
+
+function focusIncomingMessage(room, notificationId) {
+  window.clearTimeout(messageFocusTimer);
+  refs.next.disabled = true;
+  messageFocusTimer = window.setTimeout(() => {
+    setTab("messages-view");
+    openChat(room);
+    state.seenNotifications[`focused:${notificationId}`] = true;
+    refs.next.disabled = false;
+    saveProgress();
+  }, 1750);
 }
 
 function resolveDynamic(name) {
@@ -510,19 +557,31 @@ function resolveDynamic(name) {
   const secretChatReply = SecretChatMinigameCore.reply(grade, affectionBeforeChat);
   const manualNana = state.day1.nanaUse !== "auto-summary";
   const coffeeHigh = state.day1.coffeeResult?.grade === "perfect" || state.day1.coffeeResult?.correctDrinks === 3;
+  const affectionTone = state.affection < 2 ? "low" : state.affection < 4 ? "mid" : "high";
+  const introHarinByChoice = {
+    "accept-help": "어제는 든든하다더니 오늘은 저보다 먼저 왔네요.",
+    "prove-self": "도움받는다고 도윤 씨 일이 사라지는 건 아니라는 말, 생각해 봤어요?",
+    "neighbor-joke": "회사에서는 이웃보다 사수가 먼저예요. 지각하지 않은 건 칭찬해 줄게요.",
+    "work-alone": "오늘도 혼자 하겠다고 하면 오전 일정은 전부 제 자리에서 진행할 거예요.",
+  }[evening] || "오늘은 숫자부터 같이 봐요. 혼자 끝내겠다는 말은 잠깐 보류하고요.";
   const values = {
-    introHarin: {
-      "accept-help": "어제는 든든하다더니 오늘은 저보다 먼저 왔네요.",
-      "prove-self": "도움받는다고 도윤 씨 일이 사라지는 건 아니라는 말, 생각해 봤어요?",
-      "neighbor-joke": "회사에서는 이웃보다 사수가 먼저예요. 지각하지 않은 건 칭찬해 줄게요.",
-      "work-alone": "오늘도 혼자 하겠다고 하면 오전 일정은 전부 제 자리에서 진행할 거예요.",
-    }[evening] || "오늘은 숫자부터 같이 봐요. 혼자 끝내겠다는 말은 잠깐 보류하고요.",
+    introHarin: affectionTone === "low"
+      ? introHarinByChoice
+      : affectionTone === "mid"
+        ? "오늘도 먼저 와 있었네요. 준비됐으면 숫자부터 같이 봐요."
+        : "도윤 씨 올 줄 알고 자료 먼저 열어뒀어요. 오늘도 같이 맞춰 봐요.",
     introDoyun: {
       "accept-help": "같이 보려면 준비는 해둬야 하니까요.",
       "prove-self": "적어도 오늘은 확인받는 걸 피하지 않겠습니다.",
-      "neighbor-joke": "사수와 이웃을 구분하는 기준이 지각입니까?",
+      "neighbor-joke": "어제는 아침에 먼저 인사하는 것부터 해보자고 하셨죠. 좋은 아침입니다, 선배.",
       "work-alone": "그건 사실상 선택권이 없는 것 아닙니까?",
     }[evening] || "알겠습니다. 오늘은 같이 확인하겠습니다.",
+    introHarinReaction: {
+      "accept-help": "좋아요. 오늘은 말한 대로 같이 해봐요.",
+      "prove-self": "그 정도면 충분해요. 대신 또 혼자 버티지는 말고요.",
+      "neighbor-joke": "좋은 아침이네요, 도윤 씨.",
+      "work-alone": "선택권이 없어서가 아니라, 같이 확인하는 게 더 안전해서 그래요.",
+    }[evening] || "네. 좋은 아침이에요, 도윤 씨.",
     subtaskSelected: `${Day2Story.SUBTASKS[subtask].title}부터 해보자. 숫자와는 다른 방식으로 신규 유저의 첫 경험을 볼 수 있을 것 같다.`,
     secretChatResult: secretChatReply.dialogue,
     secretChatReply: {
@@ -540,10 +599,18 @@ function resolveDynamic(name) {
       reviews: "내가 만든 게임은 아니니까 아직은 괜찮아.",
       journey: "과장 아니야?",
     }[subtask],
-    nanaLead: manualNana ? "재현 절차의 표현만 간결하게 정리할까요?" : "재현 결과를 한 문장으로 요약했습니다. ‘사용자 안내 경험을 개선할 기회가 발견되었습니다.’",
+    nanaLead: manualNana ? "재현 절차의 표현만 간결하게 정리할까요?" : "재현 결과를 한 문장으로 요약했습니다. ‘사용자 안내 방식을 개선할 필요가 있습니다.’",
     nanaDoyun: manualNana ? "원문 단계는 유지하고 문장만 다듬어 줘." : "버그가 재현됐다는 말이 사라졌는데요.",
-    nanaHarin: manualNana ? "어제보다 사용법이 확실해졌네요." : "그래서 오늘은 원문 단계를 먼저 적고 요약은 마지막에 써요.",
-    coffeeHarin: coffeeHigh ? "첫날 주문은 정확히 기억하네요." : "이번에는 맞았어요. 첫날보다 발전했네요.",
+    nanaHarin: affectionTone === "low"
+      ? (manualNana ? "어제보다 사용법이 확실해졌네요." : "그래서 오늘은 원문 단계를 먼저 적고 요약은 마지막에 써요.")
+      : affectionTone === "mid"
+        ? (manualNana ? "이제 나나봇을 어떻게 써야 할지 감을 잡았네요. 좋아요." : "이번에는 원문부터 같이 확인하고, 요약은 마지막에 붙여요.")
+        : (manualNana ? "이제 제가 옆에서 계속 확인하지 않아도 되겠네요. 그래도 같이 한 번 더 볼까요?" : "도윤 씨가 원문을 잡아 주면 제가 요약을 같이 확인할게요."),
+    coffeeHarin: affectionTone === "low"
+      ? (coffeeHigh ? "첫날 주문은 정확히 기억하네요." : "이번에는 맞았어요. 첫날보다 발전했네요.")
+      : affectionTone === "mid"
+        ? (coffeeHigh ? "첫날 주문까지 기억했네요. 고마워요." : "이번에는 딱 맞았어요. 고마워요.")
+        : (coffeeHigh ? "제 주문까지 기억해 줬네요. 역시 도윤 씨한테 부탁하길 잘했어요." : "이번에는 제 취향까지 맞췄네요. 같이 마시면서 마무리해요."),
     coffeeDoyun: coffeeHigh ? "다시 만들 일은 없었으니까요." : "아직도 기억하고 계셨습니까?",
   };
   return values[name] || "";
@@ -592,7 +659,19 @@ function inheritedSceneValue(index, key) {
 }
 
 function renderVisuals(scene) {
-  const effectiveBg = inheritedSceneValue(state.index, "bg");
+  let backgroundSource = null;
+  for (let cursor = state.index; cursor >= 0; cursor -= 1) {
+    const candidate = scenes[cursor];
+    if (!Day2Story.isVisible(candidate, state.decisions)) continue;
+    if (candidate.bgAssetId) {
+      backgroundSource = ArtAssets.resolve(candidate.bgAssetId);
+      break;
+    }
+    if (candidate.bg && BACKGROUND_SOURCES[candidate.bg]) {
+      backgroundSource = BACKGROUND_SOURCES[candidate.bg];
+      break;
+    }
+  }
   const placeholder = scene.placeholder === "inherit" ? inheritedPlaceholder(state.index) : scene.placeholder;
   refs.scenePlaceholder.classList.toggle("show", Boolean(placeholder));
   refs.scenePlaceholder.setAttribute("aria-hidden", String(!placeholder));
@@ -601,8 +680,8 @@ function renderVisuals(scene) {
     refs.placeholderTitle.textContent = placeholder.title;
     refs.placeholderDetail.textContent = placeholder.detail;
     refs.stage.style.backgroundImage = "none";
-  } else if (effectiveBg && BACKGROUND_SOURCES[effectiveBg]) {
-    refs.stage.style.backgroundImage = `url('${BACKGROUND_SOURCES[effectiveBg]}')`;
+  } else if (backgroundSource) {
+    refs.stage.style.backgroundImage = `url('${backgroundSource}')`;
   }
 
   const characterPlaceholder = scene.placeholderCharacter;
@@ -635,6 +714,8 @@ function completeCinematic(scene) {
   cinematicTimer = window.setTimeout(() => {
     refs.speaker.textContent = scene.speaker;
     refs.dialogue.textContent = scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text;
+    refs.dialogueCard.hidden = false;
+    SceneMotion.applyDialogueEmphasis(refs.stage, scene);
     cinematicLocked = false;
     cinematicScene = null;
     cinematicDeadline = 0;
@@ -650,6 +731,7 @@ function startCinematic(scene) {
   cinematicRemaining = scene.cinematicDelay;
   cinematicDeadline = performance.now() + cinematicRemaining;
   cinematicPaused = false;
+  refs.dialogueCard.hidden = true;
   refs.stage.classList.add("cinematic-only");
   if (scene.cinematicTarget === "sprite") refs.stage.classList.add("sprite-cinematic");
   refs.next.disabled = true;
@@ -674,6 +756,7 @@ function resumeCinematic() {
 function preloadSceneImages(scene) {
   if (!scene?.cinematicDelay) return Promise.resolve();
   const sources = [];
+  if (scene.bgAssetId) sources.push(ArtAssets.resolve(scene.bgAssetId));
   if (scene.bg && BACKGROUND_SOURCES[scene.bg]) sources.push(BACKGROUND_SOURCES[scene.bg]);
   (scene.characters || []).forEach((entry) => {
     if (entry.assetId) sources.push(ArtAssets.resolve(entry.assetId));
@@ -695,10 +778,16 @@ function nextVisibleIndex(fromIndex) {
   return index;
 }
 
-function addStageChoicePrompt(text) {
+function choicePromptLabel(scene) {
+  const speaker = (scene?.speaker || "").trim();
+  return speaker && !["한도윤", "시스템", "내레이션"].includes(speaker) ? speaker : "상황";
+}
+
+function addStageChoicePrompt(scene) {
   const prompt = document.createElement("header");
   prompt.className = "stage-choice-prompt";
-  prompt.innerHTML = `<small>CHOICE</small><strong>${escapeHtml(text)}</strong>`;
+  const text = scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text;
+  prompt.innerHTML = `<small>${escapeHtml(choicePromptLabel(scene))}</small><strong>${escapeHtml(text)}</strong>`;
   refs.stageChoices.appendChild(prompt);
 }
 
@@ -747,6 +836,7 @@ function choose(choice, key, scene) {
   refs.stageChoices.classList.remove("show");
   refs.stage.classList.remove("choice-mode");
   refs.next.disabled = false;
+  renderMessages();
   syncStats();
   showChoiceResult(choice, before, scene.relationshipChoice);
   saveProgress();
@@ -756,9 +846,8 @@ function showChoiceResult(choice, before, relationshipChoice) {
   const entries = Object.entries(choice.delta || {}).filter(([, delta]) => delta !== 0);
   if (!entries.length) return;
   const names = { work: "업무력", affection: "호감도", trust: "신뢰도" };
-  const icons = { work: "◆", affection: "♡", trust: "◇" };
   $("#choice-result-title").textContent = relationshipChoice ? "서하린과의 관계가 변했습니다" : "선택이 능력치에 반영되었습니다";
-  $("#choice-result-list").innerHTML = entries.map(([stat, delta]) => `<article class="${delta > 0 ? "gain" : "loss"}"><i>${icons[stat]}</i><div><span>${names[stat]}</span><small>${before[stat]} → ${state[stat]}</small></div><strong>${delta > 0 ? "+" : ""}${delta}</strong></article>`).join("");
+  $("#choice-result-list").innerHTML = entries.map(([stat, delta]) => `<article class="${delta > 0 ? "gain" : "loss"} stat-${stat}"><i aria-hidden="true"></i><div><span>${names[stat]}</span><small>${before[stat]} → ${state[stat]}</small></div><strong>${delta > 0 ? "+" : ""}${delta}</strong></article>`).join("");
   const panel = $("#choice-result");
   panel.classList.remove("show");
   panel.setAttribute("aria-hidden", "false");
@@ -800,7 +889,7 @@ function startSecretChat() {
     });
     return;
   }
-  SecretChatMinigame.start({ onComplete: finishSecretChat });
+  SecretChatMinigame.start({ onComplete: finishSecretChat, affection: state.affection });
 }
 
 function summaryRow(icon, title, detail, value = "") {
@@ -878,7 +967,8 @@ function goToDay3() {
   refs.dayComplete.setAttribute("aria-hidden", "true");
   refs.dayTransition.classList.add("show");
   refs.dayTransition.setAttribute("aria-hidden", "false");
-  bgmManager.stop({ fadeOut: 220 });
+  bgmManager.stop();
+  UiSfx.playPageTurn();
   const suffix = devSkipMinigames ? "?new=1&dev=skip-minigames" : "?new=1";
   window.setTimeout(() => { location.href = `day3.html${suffix}`; }, 2200);
 }
@@ -902,8 +992,10 @@ function render() {
   }
   refs.clock.textContent = scene.time;
   refs.dialogueCard.hidden = pendingChoice;
-  refs.speaker.textContent = cinematic ? "" : scene.speaker;
-  refs.dialogue.textContent = cinematic ? "" : (scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text);
+  if (!cinematic) {
+    refs.speaker.textContent = scene.speaker;
+    refs.dialogue.textContent = scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text;
+  }
   refs.next.disabled = cinematic;
   refs.next.textContent = scene.end ? "타이틀로　›" : "다음　›";
   $("#scene-label").textContent = inheritedSceneValue(state.index, "location") || (Number(scene.time.split(":")[0]) >= 12 ? "게임사업실 · 오후" : "게임사업실 · 오전");
@@ -911,19 +1003,23 @@ function render() {
   renderCharacters(scene);
   if (effectiveBgm) playBgm(effectiveBgm);
   if (scene.clue) addClue(scene.clue);
-  if (scene.notification && !deferNotification) notifyMessage(scene.notification);
+  const notificationShown = scene.notification && !deferNotification ? notifyMessage(scene.notification) : false;
+  if (scene.messageFocus && (notificationShown || !state.seenNotifications[`focused:${scene.notification}`])) {
+    focusIncomingMessage(scene.messageFocus, scene.notification);
+  }
   renderMessages();
   refs.stageChoices.innerHTML = "";
   refs.stageChoices.classList.remove("show");
   refs.stage.classList.remove("choice-mode");
   if (pendingChoice) {
-    addStageChoicePrompt(scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text);
+    addStageChoicePrompt(scene);
     scene.choices.forEach((choice) => addStageChoice(choice, choiceKey, scene));
     refs.stageChoices.classList.add("show");
     refs.stage.classList.add("choice-mode");
     refs.next.disabled = true;
   }
   if (cinematic) startCinematic(scene);
+  SceneMotion.play(refs.stage, scene);
   syncStats();
   saveProgress();
   autoSaveAtCheckpoint(scene);

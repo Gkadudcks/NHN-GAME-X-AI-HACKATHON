@@ -2,6 +2,8 @@
   const TRACKS = Object.freeze({
     title: { source: "assets/audio/looped/title.ogg", loopSource: "assets/audio/looped/title-loop.ogg", loopStart: 11.75 },
     daily: { source: "assets/audio/looped/daily.ogg", loopSource: "assets/audio/looped/daily-loop.ogg", loopStart: 9.25 },
+    commute: { source: "assets/audio/looped/subway-ride-pixabay-57289-rail-only-v2.wav", loopSource: "assets/audio/looped/subway-ride-pixabay-57289-rail-only-v2.wav", loopStart: 0 },
+    recordingStudio: { source: "assets/audio/looped/shared-headphones-loop.wav", loopSource: "assets/audio/looped/shared-headphones-loop.wav", loopStart: 0 },
     harin: { source: "assets/audio/looped/harin.ogg", loopSource: "assets/audio/looped/harin-loop.ogg", loopStart: 14.75 },
     overtime: { source: "assets/audio/looped/overtime.ogg", loopSource: "assets/audio/looped/overtime-loop.ogg", loopStart: 18.0 },
     mystery: { source: "assets/audio/looped/mystery.ogg", loopSource: "assets/audio/looped/mystery-loop.ogg", loopStart: 26.0 },
@@ -9,7 +11,6 @@
     happyEnding: { source: "assets/audio/looped/happy-ending.ogg", loopSource: "assets/audio/looped/happy-ending-loop.ogg", loopStart: 20.25 },
     middleEnding: { source: "assets/audio/looped/middle-ending.ogg", loopSource: "assets/audio/looped/middle-ending-loop.ogg", loopStart: 25.0 },
     badEnding: { source: "assets/audio/looped/bad-ending.ogg", loopSource: "assets/audio/looped/bad-ending-loop.ogg", loopStart: 5.5 },
-    "day-transition": null,
   });
 
   class BGMManager {
@@ -184,6 +185,11 @@
       });
     }
 
+    cancelFades() {
+      for (const frame of this.fadeFrames) cancelAnimationFrame(frame);
+      this.fadeFrames.clear();
+    }
+
     stopSource() {
       if (!this.sourceNode) return;
       try { this.sourceNode.stop(); } catch (_error) {}
@@ -318,8 +324,21 @@
       return this.resumeFallback();
     }
 
-    stop(options) {
-      return this.play("day-transition", options);
+    stop() {
+      this.transitionId += 1;
+      this.cancelFades();
+      this.stopSource();
+      this.stopFallback();
+      this.currentScene = null;
+      this.backend = null;
+      this.paused = true;
+      this.setInternalVolume(0);
+      if (this.audio) {
+        delete this.audio.dataset.scene;
+        this.audio.removeAttribute("src");
+        this.audio.load();
+      }
+      return true;
     }
   }
 

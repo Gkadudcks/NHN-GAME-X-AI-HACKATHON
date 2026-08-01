@@ -33,7 +33,8 @@ test("하린은 첫 변조를 발견했을 때 당황한 뒤 보존 조치를 �
   assert.match(scene.text, /^잠깐만요\./);
   assert.match(scene.text, /제가 검토한 문장이 아닌데요\?/);
   assert.match(scene.text, /지금 상태와 변경 기록부터 남겨요\.$/);
-  assert.equal(scene.char, "harin");
+  assert.equal(scene.characters[0].assetId, "character.harin.hand_to_chest.surprised");
+  assert.equal(scene.activeCharacter, "harin");
 });
 
 test("하린은 수정 기록에서 자기 이름을 발견한 장면에 당황 스프라이트를 사용한다", () => {
@@ -46,15 +47,24 @@ test("DAY 3 장면 ID와 필수 필드가 유효하다", () => {
   assert.deepEqual(story.validateScenes(story.scenes), []);
 });
 
-test("엘리베이터 CG는 충분한 호감도에서만 일반 대사 앞에 노출된다", () => {
+test("엘리베이터 선택지는 호감도 단계별로 모두 노출하고 최고 단계에서 CG로 이어진다", () => {
+  const choice = story.scenes.find((scene) => scene.id === "day3DepartureChoice");
   const cg = story.scenes.find((scene) => scene.id === "day3ElevatorCg");
   const after = story.scenes.find((scene) => scene.id === "day3ElevatorAfterCg");
+  const lobby = story.scenes.find((scene) => scene.id === "day3ElevatorLobby");
   const fallback = story.scenes.find((scene) => scene.id === "day3DepartureHarin");
-  assert.equal(story.isVisible(cg, {}, { affectionBeforeChat: 4 }), true);
-  assert.equal(story.isVisible(after, {}, { affectionBeforeChat: 4 }), true);
-  assert.equal(story.isVisible(fallback, {}, { affectionBeforeChat: 4 }), false);
-  assert.equal(story.isVisible(cg, {}, { affectionBeforeChat: 3 }), false);
-  assert.equal(story.isVisible(fallback, {}, { affectionBeforeChat: 3 }), true);
+  assert.equal(choice.choiceKey, "elevatorPlan");
+  assert.deepEqual(choice.choices.map((item) => [item.id, item.minAffection || 0]), [["wait", 4], ["lobby", 2], ["leave", 0]]);
+  assert.equal(choice.choices[0].text, "왠지 선배가 기다리고 있을 것 같아 엘리베이터 로비로 향한다.");
+  assert.equal(choice.choices[1].text, "선배에게 먼저 퇴근하겠다고 인사한다.");
+  assert.equal(choice.choices[2].text, "말없이 먼저 사무실을 나선다.");
+  assert.match(choice.choices[0].reply, /열린 엘리베이터 앞에 익숙한 모습/);
+  assert.doesNotMatch(choice.choices[0].text + choice.choices[0].reply, /서하린을 기다린다|선배를 기다렸다/);
+  assert.equal(story.isVisible(cg, { elevatorPlan: "wait" }), true);
+  assert.equal(story.isVisible(after, { elevatorPlan: "wait" }), true);
+  assert.equal(story.isVisible(lobby, { elevatorPlan: "wait" }), false);
+  assert.equal(story.isVisible(lobby, { elevatorPlan: "lobby" }), true);
+  assert.equal(story.isVisible(fallback, { elevatorPlan: "leave" }), true);
   assert.equal(cg.cgAssetId, "event_cg.day3.elevator_waiting");
 });
 
@@ -76,6 +86,8 @@ test("의심 선택은 몰아붙이기·검증·맹목적 신뢰를 구분한다
   const scene = story.scenes.find((entry) => entry.id === "day3Decision");
   assert.deepEqual(scene.choices.map((choice) => choice.id), ["accuse", "verify", "blindTrust"]);
   assert.ok(scene.choices.find((choice) => choice.id === "verify").delta.trust > 0);
+  assert.equal(scene.choices.find((choice) => choice.id === "accuse").delta.affection, -1);
+  assert.equal(scene.choices.find((choice) => choice.id === "blindTrust").delta.affection, -1);
 });
 
 test("하린에 대한 판단은 직접 접근 기록을 보기 전에 내려진다", () => {

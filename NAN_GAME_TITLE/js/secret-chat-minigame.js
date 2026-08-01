@@ -17,6 +17,28 @@
     return { grade: "caught", workDelta: -1, affectionDelta: 0 };
   }
 
+  function messageReply(index = 0, affection = 0) {
+    const level = affection >= 4 ? "high" : affection >= 2 ? "mid" : "low";
+    const replies = [
+      {
+        low: "점심 메뉴는 오전 조사부터 끝내고 생각해요.",
+        mid: "아직 못 정했어요. 오전 조사 끝나면 같이 봐요.",
+        high: "저도 고민 중이었어요. 조사 끝나면 같이 골라요.",
+      },
+      {
+        low: "입맛에 맞았다니 다행이에요.",
+        mid: "그 음료 괜찮죠. 너무 달지 않아서 저도 가끔 골라요.",
+        high: "그거 괜찮죠? 다음에는 다른 것도 추천해 드릴게요.",
+      },
+      {
+        low: "일단 오늘 일부터 마무리해요.",
+        mid: "시간이 괜찮으면요. 우선 오늘 일부터 끝내요.",
+        high: "좋아요. 오늘 일찍 끝나면 같이 내려가요.",
+      },
+    ];
+    return replies[index]?.[level] || replies[index]?.low || "";
+  }
+
   function reply(gradeResult = "good", affection = 0) {
     const level = affection >= 4 ? "high" : affection >= 2 ? "mid" : "low";
     const dialogue = {
@@ -44,7 +66,7 @@
     return Object.freeze({ dialogue: dialogue[level] || dialogue.mid || "", message: message[level] });
   }
 
-  return Object.freeze({ QUESTIONS, grade, reply });
+  return Object.freeze({ QUESTIONS, grade, reply, messageReply });
 });
 
 (function initBrowser(global) {
@@ -70,17 +92,88 @@
           <button id="sc-start" class="sc-primary" type="button">대화 시작</button>
         </section>
         <section id="sc-play" class="sc-screen sc-play" hidden>
-          <div class="sc-watch" id="sc-watch" data-phase="safe">
-            <span class="sc-boss">박태식 부장</span><strong id="sc-status">서류 확인 중 · 안전</strong>
-            <div class="sc-meter"><i id="sc-meter"></i></div>
+          <div class="sc-office-scene" aria-label="통창이 있는 도트 사무실">
+            <div class="sc-office-wall"><div class="sc-office-window"></div></div>
+            <div class="sc-boss-desk"><i></i></div>
+            <div class="sc-team-pod" aria-hidden="true">
+              <div class="sc-pixel-desk sc-desk-doyun"></div>
+              <div class="sc-pixel-desk sc-desk-harin"></div>
+              <div class="sc-pixel-desk sc-desk-minjae"></div>
+            </div>
+            <div class="sc-pixel-actor sc-actor-boss" id="sc-office-boss" aria-label="박태식 부장">
+              <svg class="sc-boss-back" viewBox="0 0 56 80" shape-rendering="crispEdges" aria-hidden="true">
+                <rect x="18" y="4" width="20" height="4" fill="#403739"/><rect x="12" y="8" width="32" height="5" fill="#403739"/>
+                <rect x="9" y="13" width="38" height="25" fill="#d7a888"/><rect x="11" y="9" width="34" height="16" fill="#463b3a"/>
+                <rect x="8" y="24" width="8" height="14" fill="#463b3a"/><rect x="40" y="24" width="8" height="14" fill="#463b3a"/>
+                <rect x="18" y="37" width="20" height="6" fill="#d7a888"/><rect x="8" y="43" width="40" height="25" fill="#eee8df"/>
+                <rect x="3" y="46" width="8" height="20" fill="#eee8df"/><rect x="45" y="46" width="8" height="20" fill="#eee8df"/>
+                <rect x="12" y="68" width="14" height="10" fill="#34343c"/><rect x="31" y="68" width="14" height="10" fill="#34343c"/>
+              </svg>
+              <svg class="sc-boss-front" viewBox="0 0 56 80" shape-rendering="crispEdges" aria-hidden="true">
+                <rect x="18" y="4" width="20" height="4" fill="#403739"/><rect x="12" y="8" width="32" height="5" fill="#403739"/>
+                <rect x="9" y="13" width="38" height="24" fill="#d7a888"/><rect x="12" y="11" width="32" height="7" fill="#463b3a"/>
+                <rect x="15" y="24" width="6" height="3" fill="#30292b"/><rect x="35" y="24" width="6" height="3" fill="#30292b"/>
+                <rect x="19" y="31" width="18" height="4" fill="#8f604f"/><rect x="18" y="37" width="20" height="6" fill="#d7a888"/>
+                <rect x="8" y="43" width="40" height="25" fill="#eee8df"/><rect x="25" y="43" width="7" height="24" fill="#34333a"/>
+                <rect x="3" y="46" width="8" height="20" fill="#eee8df"/><rect x="45" y="46" width="8" height="20" fill="#eee8df"/>
+                <rect x="12" y="68" width="14" height="10" fill="#34343c"/><rect x="31" y="68" width="14" height="10" fill="#34343c"/>
+              </svg><span>박태식 부장</span>
+            </div>
+            <div class="sc-pixel-actor sc-actor-doyun" aria-label="한도윤">
+              <svg viewBox="0 0 56 80" shape-rendering="crispEdges" aria-hidden="true">
+                <rect x="17" y="3" width="22" height="4" fill="#252b38"/><rect x="11" y="7" width="35" height="13" fill="#252b38"/>
+                <rect x="15" y="12" width="27" height="25" fill="#edbf9f"/><rect x="10" y="11" width="9" height="20" fill="#252b38"/><rect x="39" y="9" width="7" height="20" fill="#252b38"/>
+                <rect x="20" y="24" width="4" height="3" fill="#303039"/><rect x="34" y="24" width="4" height="3" fill="#303039"/>
+                <rect x="21" y="37" width="16" height="6" fill="#edbf9f"/><rect x="11" y="43" width="35" height="25" fill="#364b63"/>
+                <rect x="24" y="43" width="9" height="22" fill="#e9edef"/><rect x="5" y="46" width="8" height="20" fill="#364b63"/><rect x="44" y="46" width="8" height="20" fill="#364b63"/>
+                <rect x="13" y="68" width="14" height="10" fill="#252c3a"/><rect x="31" y="68" width="14" height="10" fill="#252c3a"/>
+              </svg><span>한도윤</span>
+            </div>
+            <div class="sc-pixel-actor sc-actor-harin" aria-label="서하린">
+              <svg viewBox="0 0 56 80" shape-rendering="crispEdges" aria-hidden="true">
+                <rect x="17" y="3" width="22" height="4" fill="#5a3535"/><rect x="10" y="7" width="36" height="19" fill="#5a3535"/>
+                <rect x="15" y="11" width="27" height="27" fill="#f0c2a5"/><rect x="9" y="12" width="9" height="29" fill="#5a3535"/><rect x="39" y="11" width="8" height="30" fill="#5a3535"/>
+                <rect x="20" y="24" width="4" height="3" fill="#493134"/><rect x="34" y="24" width="4" height="3" fill="#493134"/><rect x="25" y="32" width="8" height="3" fill="#c16d72"/>
+                <rect x="21" y="39" width="16" height="5" fill="#f0c2a5"/><rect x="11" y="44" width="35" height="24" fill="#202937"/>
+                <rect x="23" y="44" width="12" height="22" fill="#edf0ef"/><rect x="5" y="47" width="8" height="19" fill="#202937"/><rect x="44" y="47" width="8" height="19" fill="#202937"/>
+                <rect x="14" y="68" width="13" height="10" fill="#20232e"/><rect x="31" y="68" width="13" height="10" fill="#20232e"/>
+              </svg><span>서하린</span>
+            </div>
+            <div class="sc-pixel-actor sc-actor-minjae" aria-label="강민재">
+              <svg viewBox="0 0 56 80" shape-rendering="crispEdges" aria-hidden="true">
+                <rect x="15" y="3" width="25" height="4" fill="#252a34"/><rect x="9" y="7" width="38" height="14" fill="#252a34"/>
+                <rect x="15" y="12" width="27" height="26" fill="#e9bb9d"/><rect x="9" y="10" width="10" height="21" fill="#252a34"/><rect x="39" y="9" width="8" height="19" fill="#252a34"/>
+                <rect x="19" y="23" width="7" height="5" fill="none" stroke="#39414c" stroke-width="2"/><rect x="32" y="23" width="7" height="5" fill="none" stroke="#39414c" stroke-width="2"/><rect x="26" y="25" width="6" height="2" fill="#39414c"/>
+                <rect x="21" y="38" width="16" height="6" fill="#e9bb9d"/><rect x="11" y="44" width="35" height="24" fill="#68798b"/>
+                <rect x="23" y="44" width="12" height="22" fill="#e9edef"/><rect x="5" y="47" width="8" height="19" fill="#68798b"/><rect x="44" y="47" width="8" height="19" fill="#68798b"/>
+                <rect x="14" y="68" width="13" height="10" fill="#303746"/><rect x="31" y="68" width="13" height="10" fill="#303746"/>
+              </svg><span>강민재</span>
+            </div>
+            <div class="sc-watch sc-patrol" id="sc-watch" data-phase="safe">
+              <span class="sc-boss">박태식 부장</span><strong id="sc-status">서류 확인 중 · 안전</strong>
+              <div class="sc-meter"><i id="sc-meter"></i></div>
+            </div>
+            <div class="sc-scene-warning" id="sc-scene-warning" aria-hidden="true"><b>!</b><span>잠시 후 부장님이 뒤돌아봅니다</span></div>
+            <div class="sc-scene-reply" id="sc-scene-reply" aria-live="polite"><b>서하린</b><span></span></div>
+            <div class="sc-scene-result" id="sc-scene-result" aria-live="assertive"><b></b><span></span></div>
           </div>
-          <div class="sc-phone">
-            <small>서하린 선배에게</small><p id="sc-question"></p>
-            <div class="sc-progress"><i id="sc-progress"></i></div>
-            <button id="sc-hold" type="button">누르고 답장 작성</button>
+          <div class="sc-control-area">
+            <div class="sc-mission">
+              <b>각자의 책상에서 업무 중입니다</b>
+              <span id="sc-feedback">부장의 움직임을 확인하세요.</span>
+            </div>
+            <div class="sc-message-preview">
+              <small>서하린에게 · 보낼 메시지 <b id="sc-message-order">1/3</b></small>
+              <p id="sc-question"></p>
+              <div id="sc-thread" hidden aria-live="polite"></div>
+              <div class="sc-progress"><i id="sc-progress"></i></div>
+            </div>
+            <div class="sc-actions">
+              <button id="sc-hold" type="button">누르고 답장 작성</button>
+              <div class="sc-count"><span class="sc-count-sent">전송 <b id="sc-sent">0</b>/3</span><span class="sc-count-warning">경고 <b id="sc-warnings">0</b>/3</span></div>
+              <small>부장님이 돌아보면 버튼을 놓으세요</small>
+            </div>
           </div>
-          <p id="sc-feedback">부장의 움직임을 확인하세요.</p>
-          <div class="sc-count"><span>전송 <b id="sc-sent">0</b>/3</span><span>경고 <b id="sc-warnings">0</b>/3</span></div>
         </section>
         <section id="sc-result" class="sc-screen sc-result" hidden>
           <small id="sc-result-kicker">CONTACT COMPLETE</small><h3 id="sc-result-title"></h3><p id="sc-result-text"></p>
@@ -93,6 +186,10 @@
       intro: root.querySelector("#sc-intro"), play: root.querySelector("#sc-play"), result: root.querySelector("#sc-result"),
       start: root.querySelector("#sc-start"), time: root.querySelector("#sc-time"), watch: root.querySelector("#sc-watch"),
       status: root.querySelector("#sc-status"), meter: root.querySelector("#sc-meter"), question: root.querySelector("#sc-question"),
+      thread: root.querySelector("#sc-thread"),
+      messageOrder: root.querySelector("#sc-message-order"),
+      officeBoss: root.querySelector("#sc-office-boss"),
+      sceneReply: root.querySelector("#sc-scene-reply"), sceneResult: root.querySelector("#sc-scene-result"),
       progress: root.querySelector("#sc-progress"), hold: root.querySelector("#sc-hold"), feedback: root.querySelector("#sc-feedback"),
       sent: root.querySelector("#sc-sent"), warnings: root.querySelector("#sc-warnings"), resultTitle: root.querySelector("#sc-result-title"),
       resultText: root.querySelector("#sc-result-text"), work: root.querySelector("#sc-work"), trust: root.querySelector("#sc-trust"),
@@ -131,9 +228,30 @@
 
   function renderQuestion() {
     refs.question.textContent = global.SecretChatMinigameCore.QUESTIONS[state.sent] || "하고 싶었던 말을 모두 보냈습니다.";
+    refs.messageOrder.textContent = `${Math.min(state.sent + 1, 3)}/3`;
     refs.progress.style.width = `${state.progress}%`;
     refs.sent.textContent = state.sent;
     refs.warnings.textContent = state.warnings;
+  }
+
+  function appendExchange(index) {
+    const sent = global.SecretChatMinigameCore.QUESTIONS[index];
+    const received = global.SecretChatMinigameCore.messageReply(index, state.affection);
+    const exchange = document.createElement("div");
+    exchange.className = "sc-exchange";
+    exchange.innerHTML = `<p class="sc-message sc-message-sent"><small>한도윤</small>${sent}</p><p class="sc-message sc-message-received"><small>서하린</small>${received}</p>`;
+    refs.thread.appendChild(exchange);
+    refs.thread.scrollTop = refs.thread.scrollHeight;
+    refs.sceneReply.querySelector("span").textContent = received;
+    refs.sceneReply.classList.add("show");
+    refs.sceneResult.querySelector("b").textContent = "전송 성공!";
+    refs.sceneResult.querySelector("span").textContent = `${index + 1}번째 답장을 보냈습니다`;
+    refs.sceneResult.classList.add("show", "success");
+    global.UiSfx?.playMinigameCue?.("success");
+    window.setTimeout(() => {
+      refs.sceneReply.classList.remove("show");
+      if (index < 2) refs.sceneResult.classList.remove("show", "success");
+    }, index < 2 ? 1300 : 2100);
   }
 
   function finish() {
@@ -161,22 +279,46 @@
     refs.time.textContent = String(Math.ceil(remaining));
     const phase = phaseAt(now - state.started);
     refs.watch.dataset.phase = phase;
+    refs.play.dataset.phase = phase;
+    refs.officeBoss.dataset.phase = phase;
+    if (phase !== state.lastPhase) {
+      if (phase === "warning") global.UiSfx?.playMinigameCue?.("warning");
+      state.lastPhase = phase;
+    }
     refs.status.textContent = phaseCopy(phase);
     refs.meter.style.width = `${Math.min(100, ((now - state.started) % 7000) / 70)}%`;
     if (state.typing && phase === "danger") {
       state.typing = false;
       state.warnings += 1;
       refs.feedback.textContent = "부장과 눈이 마주쳤습니다. 업무 화면으로 전환했습니다.";
+      refs.play.classList.remove("caught");
+      void refs.play.offsetWidth;
+      refs.play.classList.add("caught");
+      refs.sceneResult.querySelector("b").textContent = "발각!";
+      refs.sceneResult.querySelector("span").textContent = `경고 ${state.warnings}/3`;
+      refs.sceneResult.className = "sc-scene-result show caught";
+      global.UiSfx?.playMinigameCue?.("caught");
+      window.setTimeout(() => {
+        refs.play.classList.remove("caught");
+        refs.sceneResult.classList.remove("show", "caught");
+      }, 900);
       renderQuestion();
       if (state.warnings >= 3) return finish();
     } else if (state.typing && phase !== "danger") {
       state.progress += delta * (phase === "warning" ? 0.025 : 0.045);
       if (state.progress >= 100) {
+        const messageIndex = state.sent;
         state.sent += 1;
         state.progress = 0;
-        refs.feedback.textContent = "메시지를 전송했습니다.";
+        state.typing = false;
+        appendExchange(messageIndex);
+        refs.feedback.textContent = "서하린의 답장이 도착했습니다.";
         renderQuestion();
-        if (state.sent >= 3) return finish();
+        if (state.sent >= 3) {
+          refs.hold.disabled = true;
+          state.finishTimer = window.setTimeout(finish, 2200);
+          return;
+        }
       } else renderQuestion();
     }
     if (remaining <= 0) return finish();
@@ -184,7 +326,11 @@
   }
 
   function begin() {
-    state = { sent: 0, warnings: 0, progress: 0, typing: false, done: false, paused: false, started: performance.now(), last: performance.now(), frame: 0, onComplete: state?.onComplete };
+    state = { sent: 0, warnings: 0, progress: 0, typing: false, done: false, paused: false, started: performance.now(), last: performance.now(), lastPhase: "safe", frame: 0, onComplete: state?.onComplete, affection: state?.affection || 0 };
+    refs.thread.replaceChildren();
+    refs.sceneReply.classList.remove("show");
+    refs.sceneResult.className = "sc-scene-result";
+    refs.hold.disabled = false;
     screen(refs.play);
     renderQuestion();
     refs.hold.focus();
@@ -201,7 +347,7 @@
 
   function start(options = {}) {
     ensureRoot();
-    state = { onComplete: options.onComplete, done: true };
+    state = { onComplete: options.onComplete, affection: Number(options.affection) || 0, done: true };
     screen(refs.intro);
     root.hidden = false;
     root.setAttribute("aria-hidden", "false");

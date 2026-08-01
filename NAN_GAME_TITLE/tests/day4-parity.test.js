@@ -83,6 +83,8 @@ test("DAY 4 장소 전환은 이미지 준비 후 실행하고 도착 메시지�
   const engine = read("js/day4.js");
   assert.ok(engine.indexOf("await preloadSceneImages(targetScene)") < engine.indexOf("await locationTransition.playIfChanged"));
   assert.ok(engine.indexOf("await locationTransition.playIfChanged") < engine.indexOf("notifyMessage(targetScene.notification)"));
+  assert.match(engine, /function locationAt\(index\)/);
+  assert.match(engine, /locationTransition\.playIfChanged\(locationAt\(state\.index\), locationAt\(nextIndex\)\)/);
   assert.match(engine, /setTimeout\(resolve, 500\)/);
   assert.match(engine, /deferNextNotification/);
 });
@@ -94,5 +96,12 @@ test("DAY 4 설정 변경은 현재 BGM 볼륨과 음소거 UI에 즉시 반영�
   assert.match(engine, /bgmManager\.setVolume\(GameSettingsDialog\.effectiveBgmVolume\(settings\)\)/);
   assert.match(engine, /function syncBgmUi/);
   assert.match(engine, /getBgmVolume\(\) > 0/);
-  assert.match(html, /src="js\/day4\.js\?v=17"/);
+  assert.match(html, /src="js\/day4\.js\?v=32"/);
+});
+
+test("DAY 4 BGM 시작 버튼은 초기 로딩 중에도 현재 장면의 음악을 직접 재생한다", () => {
+  const engine = read("js/day4.js");
+  assert.match(engine, /function bgmAt\(index\)/);
+  assert.match(engine, /const sceneBgm = bgmAt\(state\.index\)/);
+  assert.match(engine, /await bgmManager\.play\(sceneBgm, \{ fadeIn: 200 \}\)/);
 });

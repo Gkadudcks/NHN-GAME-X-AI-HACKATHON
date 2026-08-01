@@ -688,6 +688,8 @@ function completeCinematic(scene) {
   cinematicTimer = window.setTimeout(() => {
     refs.speaker.textContent = scene.speaker;
     refs.dialogue.textContent = scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text;
+    refs.dialogueCard.hidden = false;
+    SceneMotion.applyDialogueEmphasis(refs.stage, scene);
     cinematicLocked = false;
     cinematicScene = null;
     cinematicDeadline = 0;
@@ -703,6 +705,7 @@ function startCinematic(scene) {
   cinematicRemaining = scene.cinematicDelay;
   cinematicDeadline = performance.now() + cinematicRemaining;
   cinematicPaused = false;
+  refs.dialogueCard.hidden = true;
   refs.stage.classList.add("cinematic-only");
   if (scene.cinematicTarget === "sprite") refs.stage.classList.add("sprite-cinematic");
   refs.next.disabled = true;
@@ -749,10 +752,16 @@ function nextVisibleIndex(fromIndex) {
   return index;
 }
 
-function addStageChoicePrompt(text) {
+function choicePromptLabel(scene) {
+  const speaker = (scene?.speaker || "").trim();
+  return speaker && !["한도윤", "시스템", "내레이션"].includes(speaker) ? speaker : "상황";
+}
+
+function addStageChoicePrompt(scene) {
   const prompt = document.createElement("header");
   prompt.className = "stage-choice-prompt";
-  prompt.innerHTML = `<small>CHOICE</small><strong>${escapeHtml(text)}</strong>`;
+  const text = scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text;
+  prompt.innerHTML = `<small>${escapeHtml(choicePromptLabel(scene))}</small><strong>${escapeHtml(text)}</strong>`;
   refs.stageChoices.appendChild(prompt);
 }
 
@@ -815,9 +824,8 @@ function showChoiceResult(choice, before, relationshipChoice) {
   const entries = Object.entries(choice.delta || {}).filter(([, delta]) => delta !== 0);
   if (!entries.length) return;
   const names = { work: "업무력", affection: "호감도", trust: "신뢰도" };
-  const icons = { work: "◆", affection: "♡", trust: "◇" };
   $("#choice-result-title").textContent = relationshipChoice ? "서하린과의 관계가 변했습니다" : "선택이 능력치에 반영되었습니다";
-  $("#choice-result-list").innerHTML = entries.map(([stat, delta]) => `<article class="${delta > 0 ? "gain" : "loss"}"><i>${icons[stat]}</i><div><span>${names[stat]}</span><small>${before[stat]} → ${state[stat]}</small></div><strong>${delta > 0 ? "+" : ""}${delta}</strong></article>`).join("");
+  $("#choice-result-list").innerHTML = entries.map(([stat, delta]) => `<article class="${delta > 0 ? "gain" : "loss"} stat-${stat}"><i aria-hidden="true"></i><div><span>${names[stat]}</span><small>${before[stat]} → ${state[stat]}</small></div><strong>${delta > 0 ? "+" : ""}${delta}</strong></article>`).join("");
   const panel = $("#choice-result");
   panel.classList.remove("show");
   panel.setAttribute("aria-hidden", "false");
@@ -953,8 +961,10 @@ function render() {
   }
   refs.clock.textContent = scene.time;
   refs.dialogueCard.hidden = pendingChoice;
-  refs.speaker.textContent = cinematic ? "" : scene.speaker;
-  refs.dialogue.textContent = cinematic ? "" : (scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text);
+  if (!cinematic) {
+    refs.speaker.textContent = scene.speaker;
+    refs.dialogue.textContent = scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text;
+  }
   refs.next.disabled = cinematic;
   refs.next.textContent = scene.end ? "타이틀로　›" : "다음　›";
   $("#scene-label").textContent = inheritedSceneValue(state.index, "location") || (Number(scene.time.split(":")[0]) >= 12 ? "게임사업실 · 오후" : "게임사업실 · 오전");
@@ -968,13 +978,14 @@ function render() {
   refs.stageChoices.classList.remove("show");
   refs.stage.classList.remove("choice-mode");
   if (pendingChoice) {
-    addStageChoicePrompt(scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text);
+    addStageChoicePrompt(scene);
     scene.choices.forEach((choice) => addStageChoice(choice, choiceKey, scene));
     refs.stageChoices.classList.add("show");
     refs.stage.classList.add("choice-mode");
     refs.next.disabled = true;
   }
   if (cinematic) startCinematic(scene);
+  SceneMotion.play(refs.stage, scene);
   syncStats();
   saveProgress();
   autoSaveAtCheckpoint(scene);
@@ -1035,7 +1046,8 @@ refs.dayCompleteNext.onclick = () => {
   refs.dayComplete.setAttribute("aria-hidden", "true");
   refs.dayTransition.classList.add("show");
   refs.dayTransition.setAttribute("aria-hidden", "false");
-  bgmManager.stop({ fadeOut: 220 });
+  bgmManager.stop();
+  UiSfx.playPageTurn();
   window.setTimeout(() => { location.href = "day4.html?new=1"; }, 2200);
 };
 $("#save").onclick = () => openGameSave("save");
