@@ -119,7 +119,7 @@ class ArtValidator:
             self.error(location, "must be an object")
             return {}
         result: dict[str, list[str]] = {}
-        for key in ("poses", "expressions", "positions", "framings"):
+        for key in ("poses", "expressions", "positions", "framings", "actions", "directions"):
             items = values.get(key)
             if not isinstance(items, list) or not items:
                 self.error(f"{location}.{key}", "must be a non-empty array")
@@ -195,6 +195,10 @@ class ArtValidator:
         kind = asset.get("kind")
         if kind == "character":
             return f"{asset.get('character_id')}_{asset.get('pose')}_{asset.get('expression')}_{version}.png"
+        if kind == "minigame_character":
+            return f"mg_{asset.get('character_id')}_{asset.get('action')}_{asset.get('direction')}_{version}.png"
+        if kind == "prop":
+            return f"prop_{asset.get('category')}_{asset.get('name')}_{version}.png"
         if kind == "background":
             return f"{asset.get('location')}_{asset.get('variant')}_{version}"
         if kind == "event_cg":
@@ -243,7 +247,7 @@ class ArtValidator:
         if not isinstance(asset_id, str) or not ASSET_ID_RE.fullmatch(asset_id):
             self.error(f"{location}.id", "must be a lowercase dotted stable ID")
             return None
-        if kind not in {"character", "background", "event_cg"}:
+        if kind not in {"character", "background", "event_cg", "minigame_character", "prop"}:
             self.error(location, f"invalid kind {kind!r}")
         profile = profiles.get(profile_name)
         if profile is None:
@@ -252,6 +256,8 @@ class ArtValidator:
             "character": "character_sprite",
             "background": "background_16_9",
             "event_cg": "event_cg_16_9",
+            "minigame_character": "minigame_sprite",
+            "prop": "minigame_prop",
         }.get(kind)
         if expected_profile is not None and profile_name != expected_profile:
             self.error(location, f"{kind} assets must use profile {expected_profile!r}")
@@ -272,6 +278,26 @@ class ArtValidator:
                 if expression not in character.get("allowed_expressions", []):
                     self.error(location, f"expression {expression!r} is not allowed for {character_id}")
             expected_id = f"character.{character_id}.{pose}.{expression}"
+        elif kind == "minigame_character":
+            character_id = asset.get("character_id")
+            character = characters.get(character_id)
+            if character is None:
+                self.error(location, f"unknown character_id {character_id!r}")
+            action, direction = asset.get("action"), asset.get("direction")
+            if action not in controlled.get("actions", []):
+                self.error(location, f"action {action!r} is not controlled")
+            if direction not in controlled.get("directions", []):
+                self.error(location, f"direction {direction!r} is not controlled")
+            if character is not None and action not in character.get("allowed_minigame_actions", []):
+                self.error(location, f"action {action!r} is not allowed for {character_id}")
+            expected_id = f"minigame_character.{character_id}.{action}.{direction}"
+        elif kind == "prop":
+            category, name = asset.get("category"), asset.get("name")
+            if not isinstance(category, str) or not SLUG_RE.fullmatch(category):
+                self.error(location, f"invalid prop category {category!r}")
+            if not isinstance(name, str) or not SLUG_RE.fullmatch(name):
+                self.error(location, f"invalid prop name {name!r}")
+            expected_id = f"prop.{category}.{name}"
         elif kind == "background":
             expected_id = f"background.{asset.get('location')}.{asset.get('variant')}"
         else:
@@ -326,10 +352,12 @@ class ArtValidator:
             self.referenced_images.add(normalized)
             path_parts = PurePosixPath(path_value).parts
             status_directory = STATUS_DIRECTORY.get(status)
-            if kind == "character":
+            if kind in {"character", "minigame_character"}:
                 expected_prefix = ("assets", "art", "characters", str(asset.get("character_id")))
             elif kind == "background":
                 expected_prefix = ("assets", "art", "backgrounds")
+            elif kind == "prop":
+                expected_prefix = ("assets", "art", "props")
             else:
                 expected_prefix = ("assets", "art", "event_cg")
             if path_parts[: len(expected_prefix)] != expected_prefix:
@@ -347,9 +375,9 @@ class ArtValidator:
                 self.error(version_location, f"invalid image file name {file_name!r}")
             expected_name = self.expected_file_name(asset, version)
             if expected_name is not None:
-                if kind == "character" and file_name != expected_name:
+                if kind in {"character", "minigame_character", "prop"} and file_name != expected_name:
                     self.error(version_location, f"expected file name {expected_name!r}")
-                elif kind != "character" and Path(file_name).stem != expected_name:
+                elif kind not in {"character", "minigame_character", "prop"} and Path(file_name).stem != expected_name:
                     self.error(version_location, f"expected file stem {expected_name!r}")
             if status == "approved":
                 if not version_data.get("sha256"):
@@ -374,7 +402,7 @@ class ArtValidator:
 
     def find_unregistered_images(self) -> None:
         art_root = self.root / "assets/art"
-        for category in ("characters", "backgrounds", "event_cg"):
+        for category in ("characters", "backgrounds", "event_cg", "props"):
             base = art_root / category
             if not base.exists():
                 self.error(category, "required asset directory is missing")

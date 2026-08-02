@@ -1,0 +1,4 @@
+interface:
+  display_name: "DAY4 Office Escape Loop"
+  short_description: "Build and verify the DAY4 auto-run minigame"
+  default_prompt: "Use $day4-office-escape-loop to continue the DAY4 office escape implementation and verification loop."

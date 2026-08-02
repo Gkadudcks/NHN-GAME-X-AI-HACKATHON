@@ -1,0 +1,9 @@
+Use case: identity-preserve
+Asset type: review-only second gait frame for the DAY 4 office-escape browser minigame.
+Input image: a two-slot edit canvas built from the approved minigame_character.harin.run.right v001 seed.
+Primary request: keep frame 1 as the approved right-facing run and create frame 2 as the same Seo Harin at the opposite stride phase, with the previously forward leg extending backward and the other leg lifting toward screen-right. She must continue facing and moving screen-right.
+Identity and costume invariants: same adult Korean woman, soft oval face, warm-brown almond eyes, dark-brown chin-to-shoulder bob with side-swept bangs, fitted black blazer, white collared blouse, high-waisted black knee-length pencil skirt, black low-heeled pumps, silver drop earrings, navy lanyard and white ID card.
+Style: polished Korean office visual-novel illustration, clean thin line art, restrained 2-to-3-step cel shading, natural adult anatomy and the same palette.
+Composition: exactly two equal horizontal slots, one complete character per slot, same scale and bottom-center foot baseline, no crop or overlap.
+Scene/backdrop: perfectly flat uniform #00ff00 chroma-key background for local removal.
+Constraints: no left-facing or mirror flip, no costume, hair or identity change, no extra figure or limbs, no text, labels, border, logo, watermark, scenery, sexualization, pixel art, 3D or chibi.

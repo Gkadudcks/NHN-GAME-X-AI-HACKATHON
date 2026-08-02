@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-31T00:00:00+09:00",
+  "title": "Design System: NAN DAY 4 Office Escape",
+  "extensions": {
+    "colorMeta": {
+      "night-shift-navy": { "role": "neutral", "displayName": "Night Shift Navy", "canonical": "#101c2f", "tonalRamp": ["#080e17", "#101c2f", "#1b304d", "#29476d", "#40658f", "#668cb5", "#9ebbe0", "#e8f2ff"] },
+      "night-deep": { "role": "neutral", "displayName": "Night Deep", "canonical": "#080f1c", "tonalRamp": ["#03060a", "#080f1c", "#121f34", "#20324e", "#3b506e", "#647a98", "#a2b2c7", "#ebf0f7"] },
+      "elevator-ivory": { "role": "neutral", "displayName": "Elevator Ivory", "canonical": "#f3e8cd", "tonalRamp": ["#302a1e", "#554932", "#7d6b49", "#a38d65", "#c7af83", "#e3ca9e", "#f3e8cd", "#fffaf0"] },
+      "exit-green": { "role": "primary", "displayName": "Exit Green", "canonical": "#24c982", "tonalRamp": ["#06331f", "#075a36", "#0c8250", "#15a96a", "#24c982", "#58ddab", "#9aefd0", "#e2fff2"] },
+      "warning-orange": { "role": "secondary", "displayName": "Warning Orange", "canonical": "#ff8a1f", "tonalRamp": ["#3b1800", "#6b2e00", "#984700", "#c86500", "#ff8a1f", "#ffad58", "#ffd19d", "#fff0df"] },
+      "impact-red": { "role": "tertiary", "displayName": "Impact Red", "canonical": "#f04455", "tonalRamp": ["#3a0710", "#6a111b", "#951d2a", "#c53040", "#f04455", "#ff7885", "#ffb0b7", "#ffe6e8"] },
+      "smoked-glass": { "role": "neutral", "displayName": "Smoked Glass", "canonical": "rgba(87, 111, 131, .34)", "tonalRamp": ["rgba(18, 28, 39, .34)", "rgba(42, 57, 70, .34)", "rgba(62, 80, 94, .34)", "rgba(87, 111, 131, .34)", "rgba(113, 141, 160, .34)", "rgba(149, 174, 188, .34)", "rgba(190, 209, 218, .34)", "rgba(234, 244, 247, .34)"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Escape Display", "purpose": "Intro clock and title; use only for the immediate escape premise." },
+      "headline": { "displayName": "Route Headline", "purpose": "HUD clock, outcome mark, and action label hierarchy." },
+      "body": { "displayName": "Briefing Body", "purpose": "Short input and result explanation." },
+      "label": { "displayName": "Wayfinding Label", "purpose": "Route zones, small status, and compact pickup marks." }
+    },
+    "shadows": [
+      { "name": "shell-containment", "value": "0 28px 80px rgba(0, 0, 0, .58), 0 8px 20px rgba(0, 0, 0, .36)", "purpose": "Desktop shell containment." },
+      { "name": "hud-separation", "value": "0 7px 18px rgba(0, 0, 0, .28)", "purpose": "Separates HUD from the moving world." },
+      { "name": "world-contact", "value": "drop-shadow(0 8px 5px rgba(3, 7, 13, .5))", "purpose": "Grounds obstacle artwork." },
+      { "name": "tactile-offset", "value": "6px 7px 0 rgba(3, 8, 15, .38)", "purpose": "Feedback and assistance stamp." }
+    ],
+    "motion": [
+      { "name": "zone-crossfade", "value": "opacity .55s ease", "purpose": "Backdrop zone handoff." },
+      { "name": "runner-breath", "value": ".34s cubic-bezier(.2, .7, .2, 1) infinite alternate", "purpose": "Subtle running motion for approved character art." },
+      { "name": "telegraph-pulse", "value": ".5s ease-in-out infinite alternate", "purpose": "Raises and brightens an upcoming obstacle cue." },
+      { "name": "impact-burst", "value": ".26s cubic-bezier(.16, .84, .3, 1)", "purpose": "Fast collision burst." },
+      { "name": "hit-shake", "value": ".18s linear", "purpose": "Short course shake after impact." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "850px" },
+      { "name": "compact-landscape-height", "value": "560px" },
+      { "name": "narrow-mobile", "value": "480px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Escape CTA",
+      "kind": "button",
+      "refersTo": "exit-cta",
+      "description": "The intro and result action that signals the next move toward escape.",
+      "html": "<button class=\"ds-exit-cta\" type=\"button\">퇴근 시작</button>",
+      "css": ".ds-exit-cta { min-width: 210px; padding: 15px 24px; border: 0; border-radius: 4px; color: #101c2f; background: #24c982; box-shadow: 7px 8px 0 rgba(3, 8, 15, .4); font: 900 17px Pretendard, 'Noto Sans KR', system-ui, sans-serif; cursor: pointer; } .ds-exit-cta:hover { background: #47daa0; } .ds-exit-cta:focus-visible { outline: 3px solid #f3e8cd; outline-offset: 3px; background: #47daa0; } .ds-exit-cta:active { transform: translate(2px, 2px); box-shadow: 5px 6px 0 rgba(3, 8, 15, .4); }"
+    },
+    {
+      "name": "Action Control",
+      "kind": "button",
+      "refersTo": "action-control",
+      "description": "One of the two immediate game verbs, visible as a tactile control.",
+      "html": "<button class=\"ds-action-control\" type=\"button\"><i aria-hidden=\"true\">↑</i><span>점프 · 길게</span><kbd>Space</kbd></button>",
+      "css": ".ds-action-control { min-width: 210px; height: 60px; display: grid; grid-template-columns: 30px 1fr auto; gap: 8px; padding: 0 14px; border: 1px solid rgba(243, 232, 205, .36); border-radius: 7px; color: #f3e8cd; background: rgba(8, 16, 29, .68); box-shadow: 0 5px 12px rgba(3, 8, 15, .28); font-family: Pretendard, 'Noto Sans KR', system-ui, sans-serif; align-items: center; cursor: pointer; } .ds-action-control i { font-style: normal; font-size: 26px; } .ds-action-control span { font-size: 24px; font-weight: 900; white-space: nowrap; } .ds-action-control kbd { color: #f3e8cd; font-size: 12px; } .ds-action-control:hover, .ds-action-control:focus-visible { border-color: #24c982; } .ds-action-control:focus-visible { outline: 3px solid #24c982; outline-offset: 3px; } .ds-action-control:active { color: #101c2f; background: #ff8a1f; box-shadow: 0 2px 6px rgba(3, 8, 15, .32); transform: translateY(2px); }"
+    },
+    {
+      "name": "Pursuit Alert",
+      "kind": "custom",
+      "refersTo": "status-hud",
+      "description": "Compact boss-distance marker with warning and escalation state.",
+      "html": "<div class=\"ds-pursuit-alert\"><i aria-hidden=\"true\">!</i><span>부장</span><b>안전</b></div>",
+      "css": ".ds-pursuit-alert { display: grid; grid-template-columns: 30px auto; grid-template-rows: auto auto; align-items: center; gap: 0 10px; color: #f3e8cd; font-family: Pretendard, 'Noto Sans KR', system-ui, sans-serif; } .ds-pursuit-alert i { grid-row: 1 / 3; width: 26px; height: 26px; display: grid; place-items: center; border: 2px solid #ff8a1f; border-radius: 2px; color: #ff8a1f; font-style: normal; font-size: 15px; transform: rotate(45deg); } .ds-pursuit-alert span { color: color-mix(in srgb, #f3e8cd 70%, #101c2f); font-size: 13px; font-weight: 750; line-height: 1; } .ds-pursuit-alert b { font-size: 18px; line-height: 1.1; } .ds-pursuit-alert:hover i, .ds-pursuit-alert:hover b { color: #f04455; border-color: #f04455; } .ds-pursuit-alert:focus-within { outline: 3px solid #24c982; outline-offset: 3px; }"
+    },
+    {
+      "name": "Route Progress",
+      "kind": "nav",
+      "refersTo": "status-hud",
+      "description": "The continuous orange-to-green escape route and active zone waypoint.",
+      "html": "<nav class=\"ds-route\" aria-label=\"퇴근 경로\"><span>17:58</span><b>34%</b><i><em></em></i><ol><li class=\"is-active\">사무실</li><li>복합기 복도</li><li>엘리베이터</li></ol></nav>",
+      "css": ".ds-route { min-width: 300px; display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; color: #f3e8cd; font-family: Pretendard, 'Noto Sans KR', system-ui, sans-serif; } .ds-route > span { font-size: 24px; font-weight: 900; letter-spacing: -.02em; } .ds-route > b { color: #24c982; font-size: 18px; align-self: end; } .ds-route > i { position: relative; grid-column: 1 / 3; height: 5px; margin: 0 6px; background: rgba(243, 232, 205, .26); } .ds-route > i em { position: absolute; inset: 0 62% 0 0; min-width: 4px; display: block; background: linear-gradient(90deg, #ff8a1f, #24c982); box-shadow: 0 0 10px rgba(36, 201, 130, .22); } .ds-route ol { grid-column: 1 / 3; display: grid; grid-template-columns: repeat(3, 1fr); margin: 0; padding: 0; list-style: none; } .ds-route li { padding-top: 8px; color: rgba(243, 232, 205, .56); font-size: 12px; font-weight: 750; text-align: center; } .ds-route li.is-active { color: #f3e8cd; text-decoration: underline 2px #24c982; text-underline-offset: 4px; } .ds-route:focus-visible { outline: 3px solid #24c982; outline-offset: 3px; }"
+    },
+    {
+      "name": "Collectible Marker",
+      "kind": "chip",
+      "refersTo": "status-hud",
+      "description": "Small route pickup marker that turns green after collection.",
+      "html": "<span class=\"ds-pickup is-collected\">USB</span>",
+      "css": ".ds-pickup { width: 42px; height: 42px; display: inline-grid; place-items: center; border-bottom: 2px solid rgba(243, 232, 205, .32); color: rgba(243, 232, 205, .48); font: 750 11px Pretendard, 'Noto Sans KR', system-ui, sans-serif; } .ds-pickup.is-collected { border-color: #24c982; color: #24c982; box-shadow: 0 4px 0 -2px rgba(36, 201, 130, .24); } .ds-pickup:hover { color: #f3e8cd; } .ds-pickup:focus-visible { outline: 3px solid #24c982; outline-offset: 3px; }"
+    },
+    {
+      "name": "Hazard Telegraph",
+      "kind": "custom",
+      "refersTo": "action-control-pressed",
+      "description": "World-attached instruction for the imminent jump or slide.",
+      "html": "<div class=\"ds-telegraph\" role=\"status\"><i aria-hidden=\"true\">↑</i><b>점프</b></div>",
+      "css": ".ds-telegraph { display: inline-flex; align-items: center; gap: 7px; color: #ff8a1f; font-family: Pretendard, 'Noto Sans KR', system-ui, sans-serif; font-size: 22px; text-shadow: 0 3px 8px rgba(3, 7, 13, .75); animation: ds-telegraph-pulse .5s ease-in-out infinite alternate; } .ds-telegraph i { width: 34px; height: 34px; display: grid; place-items: center; border: 2px solid currentColor; border-radius: 50%; font-style: normal; } .ds-telegraph b { font-size: 22px; letter-spacing: .02em; } .ds-telegraph:hover { filter: brightness(1.18); } .ds-telegraph:focus-visible { outline: 3px solid #24c982; outline-offset: 3px; } @keyframes ds-telegraph-pulse { to { transform: translateY(-6px); filter: brightness(1.18); } }"
+    },
+    {
+      "name": "Harin Assistance Callout",
+      "kind": "custom",
+      "refersTo": "exit-cta",
+      "description": "Brief ivory support cue that distinguishes assistance from an overlay card.",
+      "html": "<div class=\"ds-harin-callout\">여긴 제가 볼게요!</div>",
+      "css": ".ds-harin-callout { width: 150px; padding: 8px 10px; border: 1px solid rgba(36, 201, 130, .58); border-radius: 4px; color: #101c2f; background: #f3e8cd; box-shadow: 6px 7px 0 rgba(8, 15, 28, .42); font: 750 13px Pretendard, 'Noto Sans KR', system-ui, sans-serif; } .ds-harin-callout:hover { border-color: #24c982; box-shadow: 6px 7px 0 rgba(36, 201, 130, .28); } .ds-harin-callout:focus-visible { outline: 3px solid #24c982; outline-offset: 3px; }"
+    },
+    {
+      "name": "Office Threshold",
+      "kind": "custom",
+      "refersTo": "status-hud",
+      "description": "Translucent office portal that passes through the world to signal a zone change.",
+      "html": "<div class=\"ds-threshold\"><i></i><b>복도 전환</b></div>",
+      "css": ".ds-threshold { position: relative; width: 148px; height: 220px; border: 7px solid rgba(76, 96, 112, .68); border-bottom: 0; background: linear-gradient(90deg, rgba(116, 151, 171, .08), rgba(15, 25, 39, .2)); box-shadow: inset 0 0 0 1px rgba(243, 232, 205, .14), 8px 0 24px rgba(3, 7, 13, .24); } .ds-threshold::after { position: absolute; right: -12px; bottom: -4px; left: -12px; height: 4px; content: ''; background: rgba(243, 232, 205, .38); } .ds-threshold i { position: absolute; top: 8%; bottom: 0; left: 50%; width: 2px; background: rgba(243, 232, 205, .2); } .ds-threshold b { position: absolute; top: 12px; left: 50%; padding: 5px 8px; color: #f3e8cd; background: rgba(8, 16, 29, .86); font: 750 13px Pretendard, 'Noto Sans KR', system-ui, sans-serif; white-space: nowrap; transform: translateX(-50%); } .ds-threshold:hover { border-color: rgba(36, 201, 130, .5); } .ds-threshold:focus-visible { outline: 3px solid #24c982; outline-offset: 3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "17:58 Threshold Rush",
+    "overview": "This system belongs only to the DAY 4 `부장님 피해서 퇴근하기` minigame world, not to NAN's visual-novel or story UI. It makes a single continuous office escape legible: Doyun stays grounded near the left third while hazards, landmarks, and thresholds advance from the right toward the elevator.\n\nNight Shift Navy, Elevator Ivory, Exit Green, and Warning Orange establish a late-office emergency wayfinding world. Smoked glass, dim approved office backdrops, and floor seams produce layered photographic depth; the interface remains a game instrument, never a static-background web dashboard.",
+    "keyCharacteristics": [
+      "Compact 64px status HUD above a predominantly playable world.",
+      "Physical portal and floor-line thresholds that pass the player instead of merely changing a scene.",
+      "Tactile emergency wayfinding: square-edged labels, bright route marks, and clear action states.",
+      "Fixed player framing, grounded shadows, and staged boss/Harin depth that make pursuit readable."
+    ],
+    "rules": [
+      { "name": "The Exit Line Rule", "body": "Carry the direction of escape through a floor-adjacent progression from Warning Orange to Exit Green; do not replace it with a detached dashboard progress treatment.", "section": "colors" },
+      { "name": "The Impact Reserve Rule", "body": "Impact Red belongs to danger escalation and collision only; normal calls to action remain Exit Green or Warning Orange.", "section": "colors" },
+      { "name": "The Two-Verb Rule", "body": "In active play, emphasize only the two player verbs—jump and slide—so the visual hierarchy never competes with the action decision.", "section": "typography" },
+      { "name": "The Threshold-Rhythm Rule", "body": "Zone changes must be communicated by physical doorway, corridor, gate, or elevator thresholds crossing the shared world projection—not by a whole-screen swap or a card transition.", "section": "layout" },
+      { "name": "The Grounded Depth Rule", "body": "Use tonal parallax and floor contact before adding surface lift; a floating dashboard card is not a substitute for world depth.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep Doyun fixed near the left third and move hazards, landmarks, and the exit through the shared floor baseline.",
+      "Do use the orange-to-green floor line and route indicator to make the course's escape direction visible at a glance.",
+      "Do use layered approved backdrops, smoked glass, and grounded shadows to show office depth.",
+      "Do retain both jump and slide as immediately visible, keyboard-focusable, touch-sized controls."
+    ],
+    "donts": [
+      "Don't turn the active course into a static office image with dashboard cards layered on top.",
+      "Don't use the elevator as a permanent background object; make it a destination threshold that arrives in world space.",
+      "Don't use Impact Red as a decorative accent or use bright color to obscure obstacle clearance.",
+      "Don't let perspective decoration, effect placement, or visual art change collision geometry."
+    ]
+  }
+}

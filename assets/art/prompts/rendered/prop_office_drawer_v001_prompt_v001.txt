@@ -1,0 +1,11 @@
+Use case: stylized-concept
+Asset type: review candidate for a 2D browser-game overhead obstacle prop
+Primary request: one standalone open office filing-cabinet drawer protruding horizontally into a running path, readable in side view as an obstacle a character must slide under.
+Subject: cool-gray metal drawer box pulled fully open toward the left, shallow enough to pass under, with a few cream paper folders visible inside and a dusty-coral handle; no full cabinet body, only the protruding drawer and short mounting edge.
+Style/medium: polished 2D visual-novel game prop illustration, thin clean dark line art, crisp 2-3 tone cel shading, contemporary Korean office aesthetic.
+Composition/framing: exactly one elongated drawer centered, strict side three-quarter view, wide horizontal silhouette, generous padding, square canvas, object occupies about 72% of width and 34% of height.
+Lighting/mood: neutral soft office light, no cast shadow.
+Color palette: cool gray, charcoal, cream paper, tiny dusty-coral accent.
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background for background removal.
+Constraints: uniform background with no gradients or texture; no floor; no shadow; no reflection; no scenery; no people; no text; no logo; no watermark; no border; no extra objects; crisp separated outline; do not use #00ff00 anywhere in the drawer.
+Avoid: full filing cabinet, desk, front-facing drawer, vertical composition, floating paper sheets, realistic photo, 3D render.

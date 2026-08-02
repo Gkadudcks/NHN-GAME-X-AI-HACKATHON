@@ -1,0 +1,6 @@
+Create a 1024x512 two-frame browser-game running sprite strip of the exact stern middle-aged boss from the approved chase sprite. Follow the two opposite anatomical gait configurations in the red/blue pose guide: red is character-left/viewer-near and blue is character-right/viewer-far. Never copy guide colors or labels.
+
+LEFT slot is FRAME A: near/left leg reaches forward, far/right leg trails back, near/left arm drives back, and far/right arm drives forward.
+RIGHT slot is FRAME B: near/left leg trails back with heel lifted, far/right leg crosses visibly in front and reaches forward, near/left arm drives forward across the chest, and far/right arm drives back partly behind the torso. Both frames face screen-right. Use clear overlap/layering so the actual left/right foot and arm roles swap; simply bending or extending the same leading limb is wrong. Exaggerate the contrast enough to read at small game scale while keeping a grounded running contact, not a jump.
+
+Preserve the same receding black hair, stern face, stocky body, rolled white shirt, loosened dark tie, lanyard, dark trousers and shoes, cel shading, and strong outline. Match scale, bottom-center foot anchor, torso position, and framing across slots. Pure flat #00FF00 background. No text, labels, guide colors, shadows, props, extra limbs, blur, gradients, transparency, cropping, or camera change.

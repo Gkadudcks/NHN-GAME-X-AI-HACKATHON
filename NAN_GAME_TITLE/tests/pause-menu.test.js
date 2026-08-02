@@ -8,7 +8,7 @@ test("all gameplay pages load the shared pause menu", () => {
   for (const file of ["game.html", "day2.html", "day3.html", "day4.html"]) {
     const html = fs.readFileSync(path.join(root, file), "utf8");
     assert.match(html, /pause-menu\.css/);
-    assert.match(html, /pause-menu\.js/);
+    assert.match(html, /pause-menu\.js\?v=2/);
   }
   for (const file of ["game.js", "day2.js", "day3.js", "day4.js"]) {
     const script = fs.readFileSync(path.join(root, "js", file), "utf8");
@@ -23,6 +23,14 @@ test("continue action delegates to the existing load-slot flow", () => {
   assert.match(script, /action === "continue"/);
   assert.match(script, /options\.openLoad\?\.\(\)/);
   assert.doesNotMatch(script, /setItem\(|getSaveSlots\(/);
+});
+
+test("pause dialog traps keyboard focus while it is open", () => {
+  const script = fs.readFileSync(path.join(root, "js", "pause-menu.js"), "utf8");
+  assert.match(script, /function trapFocus\(event\)/);
+  assert.match(script, /event\.key !== "Tab" \|\| !isOpen\(\)/);
+  assert.match(script, /documentRef\.addEventListener\("keydown", trapFocus, true\)/);
+  assert.match(script, /event\.shiftKey \? last : first/);
 });
 
 test("pause menu is layered above every minigame overlay", () => {
