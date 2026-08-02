@@ -86,12 +86,22 @@
       time: "DAY 1 · 17:18",
     },
     {
-      id: "harin-yesterday",
+      id: "harin-morning",
       room: "harin",
-      at: "day2IntroCard",
+      at: "day2HarinMessage",
       sender: "서하린 사수",
-      text: "내일 오전에 숫자부터 같이 검증해요. 그리고 오늘 만든 초안, 덮어쓰지 말고요.",
-      time: "DAY 1 · 20:25",
+      text: "출근하면 오전에 숫자부터 같이 검증해요. 어제 만든 초안은 덮어쓰지 말고 그대로 두고요.",
+      time: "DAY 2 · 08:47",
+    },
+    {
+      id: "day2-doyun-harin-reply",
+      room: "harin",
+      at: "day2HarinReplyChoice",
+      sender: "한도윤",
+      text: "확인했습니다. 출근해서 오전에 같이 보겠습니다.",
+      dynamic: "morningReply",
+      requiresDecision: "day2MorningReply",
+      time: "08:48",
     },
     {
       id: "harin-metrics-link",
@@ -136,11 +146,29 @@
   ]);
 
   const scenes = [
-    { id: "day2IntroCard", time: "08:52", speaker: "시스템", text: "DAY 2 · TUESDAY\n계약 종료까지 4일", bg: "office", bgm: "daily", location: "게임사업실 · 오전" },
-    { id: "day2HarinMessage", time: "08:53", speaker: "시스템", text: "서하린과의 개인 메시지 · 어젯밤 20:25\n“내일 오전에 숫자부터 같이 검증해요. 그리고 오늘 만든 초안, 덮어쓰지 말고요.”", bg: "office", notification: "harin-yesterday" },
-    { id: "day2IntroThought", time: "08:54", speaker: "한도윤", text: "어제 편의점에서 헤어진 뒤 하린이 보낸 메시지였다.\n읽었던 문장인데도 회사에서 다시 보니 이상하게 더 사적인 말처럼 느껴졌다." },
+    { id: "day2IntroCard", time: "08:46", speaker: "시스템", text: "DAY 2 · TUESDAY\n계약 종료까지 4일", bgAssetId: "background.subway.morning", bgm: "commute", location: "출근길 지하철 · 오전" },
+    { id: "day2HarinMessage", time: "08:47", speaker: "시스템", text: "흔들리는 지하철 안에서 서하린이 보낸 개인 메시지를 확인했다.", notification: "harin-morning", messageFocus: "harin" },
+    {
+      id: "day2HarinReplyChoice",
+      time: "08:48",
+      speaker: "한도윤",
+      text: "출근길에 확인한 메시지에 어떻게 답장할까?",
+      choiceKey: "day2MorningReply",
+      replySpeaker: "한도윤",
+      relationshipChoice: true,
+      choices: [
+        { value: "warm", text: "출근 전부터 챙겨주셔서 감사합니다. 도착하면 바로 같이 확인해요.", reply: "출근 전부터 챙겨주셔서 감사합니다. 도착하면 바로 같이 확인해요.", delta: { affection: 1 } },
+        { value: "reliable", text: "확인했습니다. 원본은 유지하고 오전에 숫자부터 같이 검증하겠습니다.", reply: "확인했습니다. 원본은 유지하고 오전에 숫자부터 같이 검증하겠습니다.", delta: { trust: 1 } },
+        { value: "concise", text: "네, 확인했습니다. 출근해서 오전에 같이 보겠습니다.", reply: "네, 확인했습니다. 출근해서 오전에 같이 보겠습니다.", delta: { work: 1 } }
+      ]
+    },
+    { id: "day2IntroThought", time: "08:49", speaker: "한도윤", text: "답장을 보내고 휴대폰 화면을 껐다.\n업무 이야기뿐인데도 어제 편의점에서 나눈 대화가 자연스럽게 떠올랐다." },
+    { id: "day2OfficeArrival", time: "08:52", speaker: "한도윤", text: "지하철에서 내려 사무실에 도착했다. 하린과 숫자를 확인하기 전에 자료부터 열어보기로 했다.", bg: "office", bgm: "daily", location: "게임사업실 · 오전" },
     { id: "day2ConvenienceRecall", time: "08:57", speaker: "서하린", dynamic: "introHarin", char: "harin" },
     { id: "day2ConvenienceReply", time: "08:58", speaker: "한도윤", dynamic: "introDoyun", char: "harin" },
+    { id: "day2ConvenienceReaction", time: "08:59", speaker: "서하린", dynamic: "introHarinReaction", char: "harin" },
+    { id: "day2MorningSmallTalkDoyun", time: "09:00", speaker: "한도윤", text: "오늘 지하철은 유난히 붐비더군요.", char: "harin" },
+    { id: "day2MorningSmallTalkHarin", time: "09:01", speaker: "서하린", text: "저도요. 한 정거장 전부터 내릴 준비를 했는데도 겨우 내렸어요.", char: "harin" },
 
     { id: "day2VerifyLead", time: "09:05", speaker: "서하린", text: "DAY 1에 잡은 문제를 숫자로 한 번만 확인하고 다음 일로 넘어가죠.", char: "harin" },
     { id: "day2VerifyReply", time: "09:06", speaker: "한도윤", text: "최근 7일 신규 설치자와 첫 전투 도달자를 같은 기준으로 맞췄습니다.", char: "harin" },
@@ -213,11 +241,11 @@
     { id: "day2SubtaskC3", time: "13:40", speaker: "서하린", text: "1분 42초. 민재 말이 아주 과장은 아니었네요.", char: "harin", when: { decision: "day2Subtask", equals: "journey" } },
     { id: "day2SubtaskC4", time: "13:41", speaker: "한도윤", text: "그 말을 본인에게 알려줄 필요는 없습니다.", char: "harin", when: { decision: "day2Subtask", equals: "journey" } },
 
-    { id: "day2ArchiveSearch", time: "14:32", speaker: "한도윤", text: "조사 결과를 정리할 공용 슬라이드 틀을 검색했다.", bg: "office", bgm: "mystery" },
-    { id: "day2ArchivePanel", time: "14:32", speaker: "시스템", text: "사내 클라우드에서 관련 항목을 불러왔습니다.", systemPanel: { title: "RELATED CLOUD ITEM", rows: ["2024_온보딩개선_최종대응", "연결된 자동화 1개", "현재 비활성"] } },
-    { id: "day2ArchiveRecognition", time: "14:33", speaker: "한도윤", text: "이 폴더, 어제 봤던….", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned", position: "center", framing: "waist_up" }], activeCharacter: "harin", cinematicDelay: 3000, cinematicTarget: "sprite" },
-    { id: "day2ArchiveDetails", time: "14:33", speaker: "시스템", text: "정보 패널이 잠시 열렸습니다.", systemPanel: { title: "AUTOMATION DETAILS", rows: ["온보딩_공용슬라이드_동기화", "상태 · 비활성", "소유자 · 서하린", "마지막 실행 · 2024-11-07 23:48"] }, clue: CLUES.inactiveAutomation },
-    { id: "day2ArchiveHarin1", time: "14:34", speaker: "서하린", text: "그건 예전에 쓰던 연결이에요. 지금은 꺼져 있어요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin" },
+    { id: "day2ArchiveSearch", time: "14:32", speaker: "한도윤", text: "조사 결과를 정리할 공용 슬라이드 틀을 검색했다.", bg: "office", bgm: "mystery", skip: true },
+    { id: "day2ArchivePanel", time: "14:32", speaker: "한도윤", text: "조사 결과를 정리할 공용 슬라이드 틀을 검색하자, 낯익은 과거 폴더 하나가 함께 나타났다.", bg: "office", bgm: "mystery", systemPanel: { title: "RELATED CLOUD ITEM", rows: ["2024_온보딩개선_최종대응", "연결된 자동화 1개", "현재 비활성"] }, skip: true },
+    { id: "day2ArchiveRecognition", time: "14:33", speaker: "한도윤", text: "공용 슬라이드 틀을 찾다가, 어제 봤던 과거 폴더를 발견했다.", bg: "office", bgm: "mystery", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned", position: "center", framing: "waist_up" }], activeCharacter: "harin", motion: "surprised", effect: "discovery" },
+    { id: "day2ArchiveDetails", time: "14:33", speaker: "시스템", text: "자동화 소유자는 서하린, 마지막 실행 시각은 2024-11-07 23:48로 기록되어 있다.", emphasis: ["서하린", "2024-11-07 23:48"], systemPanel: { title: "AUTOMATION DETAILS", rows: ["온보딩_공용슬라이드_동기화", "상태 · 비활성", "소유자 · 서하린", "마지막 실행 · 2024-11-07 23:48"] }, clue: CLUES.inactiveAutomation },
+    { id: "day2ArchiveHarin1", time: "14:34", speaker: "서하린", text: "그건 예전에 쓰던 연결이에요. 지금은 꺼져 있어요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin", motion: "nervous", camera: "focus" },
     { id: "day2ArchiveDoyun", time: "14:34", speaker: "한도윤", text: "선배 이름이 남아 있네요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin" },
     { id: "day2ArchiveHarin2", time: "14:35", speaker: "서하린", text: "제가 만들었으니까요. 지금 필요한 틀은 그 아래 ‘공용 발표 기본형’이에요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin" },
     { id: "day2BuildNotice", time: "14:35", speaker: "시스템", text: "윤세아에게 새 메시지가 도착했습니다.\n“오후 빌드 점검 10분 뒤 시작합니다.”", notification: "sea-build" },
@@ -249,11 +277,11 @@
 
     { id: "day2Past1", time: "19:48", speaker: "서하린", text: "예전에도 이렇게 늦게까지 자료를 정리한 적이 있어요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin", placeholder: "inherit" },
     { id: "day2Past2", time: "19:49", speaker: "한도윤", text: "아까 잠깐 보였던 폴더와 관련 있습니까?", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin", placeholder: "inherit" },
-    { id: "day2Past3", time: "19:50", speaker: "서하린", text: "네. 그때는 제가 전부 해결해야 한다고 생각했어요. 결과는 좋지 않았고요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin", placeholder: "inherit" },
+    { id: "day2Past3", time: "19:50", speaker: "서하린", text: "네. 그때는 제가 전부 해결해야 한다고 생각했어요. 결과는 좋지 않았고요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin", placeholder: "inherit", motion: "sad", camera: "tension" },
     { id: "day2Past4", time: "19:51", speaker: "한도윤", text: "그래서 혼자 하려는 사람을 보면 그냥 지나치지 못하는 겁니까?", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin", placeholder: "inherit" },
     { id: "day2Past5", time: "19:52", speaker: "서하린", text: "…비슷해 보이면요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin", placeholder: "inherit" },
     { id: "day2Past6", time: "19:53", speaker: "한도윤", text: "더 묻지는 않겠습니다.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin", placeholder: "inherit" },
-    { id: "day2Past7", time: "19:54", speaker: "서하린", text: "고마워요. 아직은 그게 더 편해요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin", placeholder: "inherit" },
+    { id: "day2Past7", time: "19:54", speaker: "서하린", text: "고마워요. 아직은 그게 더 편해요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin", placeholder: "inherit", motion: "happy", camera: "focus" },
     {
       id: "day2OvertimeChoice",
       time: "19:55",
@@ -266,8 +294,8 @@
       choices: [
         { value: "finish-together", text: "오늘 남은 일은 같이 끝내죠.", minAffection: 2, delta: { affection: 1, trust: 2 }, reply: "그 말이면 충분해요. 이번에는 진짜로 같이 끝내요." },
         { value: "wait-until-ready", text: "말하고 싶을 때 이야기해 주세요.", minAffection: 4, delta: { affection: 2, trust: 1 }, reply: "재촉하지 않는 사람한테는 오히려 먼저 말하게 되더라고요." },
-        { value: "verify-record", text: "이름이 남은 기록은 언젠가 확인해야 합니다.", delta: { work: 1 }, reply: "맞아요. 확인은 해야 해요. 이름만 보고 결론 내리지만 않으면 돼요." },
-        { value: "take-responsibility", text: "이번 일만큼은 제가 책임지고 싶습니다.", delta: { work: 1, trust: -1 }, reply: "책임지는 것과 혼자 남는 건 다르다고 했어요. 오늘은 같이 가요." },
+        { value: "verify-record", text: "이름이 남은 기록은 사실관계부터 확인하겠습니다.", delta: { work: 1 }, reply: "맞아요. 이름만 보고 결론 내리지 않고 차근차근 확인하면 돼요." },
+        { value: "take-responsibility", text: "우선 제 몫은 제가 마무리해보겠습니다.", delta: { work: 1, affection: -1, trust: -1 }, reply: "제 몫을 다하는 것과 혼자 남는 건 달라요. 오늘은 같이 가요." },
       ],
     },
 
@@ -282,6 +310,7 @@
   ];
 
   function isVisible(scene, decisions = {}) {
+    if (scene.skip) return false;
     if (!scene.when) return true;
     return decisions[scene.when.decision] === scene.when.equals;
   }

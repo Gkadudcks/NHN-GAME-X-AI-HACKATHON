@@ -939,6 +939,35 @@
       ]
     },
     {
+      "id": "character.minjae.relaxed_standing.gentle_smile",
+      "kind": "character",
+      "profile": "character_sprite",
+      "character_id": "minjae",
+      "pose": "relaxed_standing",
+      "expression": "gentle_smile",
+      "active_version": "v002",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/characters/minjae/approved/minjae_relaxed_standing_gentle_smile_v001.png",
+          "generation_log_id": "minjae-relaxed-standing-gentle-smile-v001-imagegen",
+          "sha256": "3932ab5095cacfca6a7a421d331eb7e3783301b0e7c47c8e6c3150ceb82ee268",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-31T00:54:44.2221612+09:00"
+        },
+        {
+          "version": "v002",
+          "status": "approved",
+          "path": "assets/art/characters/minjae/approved/minjae_relaxed_standing_gentle_smile_v002.png",
+          "generation_log_id": "minjae-relaxed-standing-gentle-smile-v002-alpha-cleanup",
+          "sha256": "3932ab5095cacfca6a7a421d331eb7e3783301b0e7c47c8e6c3150ceb82ee268",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-07-31T00:54:44.2221612+09:00"
+        }
+      ]
+    },
+    {
       "id": "background.office.day",
       "kind": "background",
       "profile": "background_16_9",
@@ -954,6 +983,25 @@
           "sha256": "4e8eac4f26fd7f1872de4b9931271a2b9b1c31d8f65bd46533074bca82842be3",
           "reviewed_by": "codex",
           "reviewed_at": "2026-07-29T21:52:03.5008645+09:00"
+        }
+      ]
+    },
+    {
+      "id": "background.office.secret_chat",
+      "kind": "background",
+      "profile": "background_16_9",
+      "location": "office",
+      "variant": "secret_chat",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/backgrounds/approved/office_secret_chat_v001.png",
+          "generation_log_id": "office-secret-chat-v001-imagegen",
+          "sha256": "069b32fb8b79ebdfe2291788f989e39de06479bf31ef6d57bfff81e7b000798e",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-01T16:33:20.9924038+09:00"
         }
       ]
     },
@@ -1116,6 +1164,43 @@
           "sha256": "e8630fa65b2eef55949358e6af41bb01e6ddd83600a7d00e056efcd8cc14f6fc",
           "reviewed_by": "user",
           "reviewed_at": "2026-07-27T19:23:35.1261218+09:00"
+        }
+      ]
+    },
+    {
+      "id": "background.subway.morning",
+      "kind": "background",
+      "profile": "background_16_9",
+      "location": "subway",
+      "variant": "morning",
+      "active_version": "v003",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/backgrounds/approved/subway_morning_v001.png",
+          "generation_log_id": "subway-morning-v001-imagegen",
+          "sha256": "7829ff246c9bdd48fcf6fbeb5696bfc29e82eb37eda59bf489bf0c0a7b7488ec",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-08-01T13:57:58.2220607+09:00"
+        },
+        {
+          "version": "v002",
+          "status": "approved",
+          "path": "assets/art/backgrounds/approved/subway_morning_v002.png",
+          "generation_log_id": "subway-morning-v002-imagegen",
+          "sha256": "808258824599b571d2e83d703a22ea3356eadf99e70b120a4c16d5792934bd7e",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-08-01T14:37:31.1188813+09:00"
+        },
+        {
+          "version": "v003",
+          "status": "approved",
+          "path": "assets/art/backgrounds/approved/subway_morning_v003.png",
+          "generation_log_id": "subway-morning-v003-imagegen",
+          "sha256": "40eb761a11c215c3af87d99f280a735c8991a7142f51a3ce66e1001f4d40100d",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-08-01T14:46:45.5933516+09:00"
         }
       ]
     },

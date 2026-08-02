@@ -10,6 +10,10 @@ const html = fs.readFileSync(path.join(root, "day3.html"), "utf8");
 const engine = fs.readFileSync(path.join(root, "js", "day3.js"), "utf8");
 const day2Engine = fs.readFileSync(path.join(root, "js", "day2.js"), "utf8");
 
+test("DAY 3는 놀란 서하린 장면과 구분된 퇴근 선택지가 반영된 스토리 캐시 버전을 사용한다", () => {
+  assert.match(html, /day3-story\.js\?v=24/);
+});
+
 test("DAY 3 loads the DAY 2 story before its own story", () => {
   const day2Story = html.indexOf('src="js/day2-story.js');
   const day3Story = html.indexOf('src="js/day3-story.js');
@@ -41,8 +45,10 @@ test("DAY 3 엔진은 DAY 3 저장과 단서 날짜를 사용한다", () => {
   assert.match(engine, /defaultDay:\s*3/);
 });
 
-test("DAY 3 업무 알림은 사건 조사 전용 프리셋과 네 등급 보상을 사용한다", () => {
-  assert.match(engine, /WorkAlertMinigame\.startDay3\(\{ onComplete: finishWorkAlert \}\)/);
+test("DAY 3 업무 알림은 DAY 2 하위 업무와 원본 프리셋을 이어받고 네 등급 보상을 DAY 3에 반영한다", () => {
+  assert.match(engine, /const day2Subtask = progress\.days\[2\]\?\.decisions\?\.day2Subtask \|\| "competitor"/);
+  assert.match(engine, /WorkAlertMinigame\.startDay3\(\{\s*subtask: day2Subtask,\s*onComplete: finishWorkAlert,/s);
+  assert.match(engine, /score:\s*620,\s*maxScore:\s*880,\s*scorePercentage:\s*70\.5,/s);
   assert.match(engine, /perfect:\s*Object\.freeze\(\{ workDelta: 2, trustDelta: 1 \}\)/);
   assert.match(engine, /bad:\s*Object\.freeze\(\{ workDelta: 0, trustDelta: -1 \}\)/);
   assert.match(engine, /state\.work \+= normalizedResult\.workDelta/);

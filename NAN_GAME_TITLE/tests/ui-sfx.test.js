@@ -27,5 +27,25 @@ test("기본 클릭음은 soft이며 후보를 런타임에서 바꿀 수 있다
   assert.match(source, /function setVariant\(name\)/);
   assert.match(source, /soft: "assets\/audio\/ui-click-soft-v2\.wav"/);
   assert.match(source, /warm: "assets\/audio\/ui-click-warm-v2\.wav"/);
-  assert.match(source, /master \* sfx \* 0\.46/);
+  assert.match(source, /master \* sfx \* multiplier/);
+});
+
+test("CG 전환용 PAGE-TURN 효과음을 설정된 효과음 음량으로 재생한다", () => {
+  const source = fs.readFileSync(path.join(root, "js/ui-sfx.js"), "utf8");
+  assert.match(source, /new Audio\("assets\/audio\/page-turn\.wav"\)/);
+  assert.match(source, /function playPageTurn\(\)/);
+  assert.match(source, /getVolume\(0\.8\)/);
+  assert.match(source, /pageTurnAudio\.currentTime = 0/);
+  assert.match(source, /playPageTurn,/);
+});
+
+test("개인 메시지 미니게임은 주의·발각·성공 도트 효과음을 합성한다", () => {
+  const source = fs.readFileSync(path.join(root, "js/ui-sfx.js"), "utf8");
+  assert.match(source, /function playMinigameCue\(name\)/);
+  assert.match(source, /warning:\s*\{/);
+  assert.match(source, /caught:\s*\{/);
+  assert.match(source, /success:\s*\{/);
+  assert.match(source, /createOscillator\(\)/);
+  assert.match(source, /getVolume\(pattern\.multiplier\)/);
+  assert.match(source, /playMinigameCue,/);
 });

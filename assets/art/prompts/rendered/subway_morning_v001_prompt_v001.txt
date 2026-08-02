@@ -1,0 +1,21 @@
+[PROJECT VISUAL STYLE | prompt-v1]
+Modern Korean office romance visual novel with light mystery elements.
+Polished commercial anime visual novel illustration.
+Clean, thin, consistent line art.
+Soft 2-to-3-step cel shading with minimal painterly texture.
+Natural proportions and realistic contemporary environment design.
+Warm, low-contrast, low-to-medium-saturation palette using navy, beige, cream, muted brown, and pale blue.
+Soft diffused light with subtle cool ambient shadows.
+Clean game-ready edges and a consistent finish across all assets.
+
+[BACKGROUND | background.subway.morning | v001]
+Interior of a modern Seoul-style commuter subway car during a busy weekday morning commute.
+Eye-level 35mm perspective, wide 16:9 visual novel background.
+View diagonally down the carriage with long bench seats, silver poles, overhead hand straps, sliding doors, windows, and a clean aisle.
+Soft cool morning daylight enters through the windows, balanced by warm neutral carriage lighting.
+Pack the carriage with adult office commuters: every seat occupied and many people standing closely through the aisle, holding straps or looking at phones.
+Render every passenger with the same refined anime facial construction, fine line art, smooth hair shapes, and soft cel shading used by the established game character art.
+All passengers are secondary background extras; no prominent main character, no duplicated established-character face, and no one looking at the camera.
+Leave only a modest lower-center patch calm enough for dialogue UI.
+No readable text, no route map labels, no advertisements, no logos, no watermark.
+Clean commercial anime visual novel background, medium detail, not photorealistic, not 3D CGI, no dramatic bloom.

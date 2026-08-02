@@ -10,11 +10,19 @@ test("DAY 2는 개인 메시지 미니게임을 사용한다", () => {
   const script = read("js/day2.js");
   const html = read("day2.html");
 
-  assert.match(script, /SecretChatMinigame\.start\(\{ onComplete: finishSecretChat \}\)/);
+  assert.match(script, /SecretChatMinigame\.start\(\{ onComplete: finishSecretChat, affection: state\.affection \}\)/);
   assert.doesNotMatch(script, /WorkAlertMinigame/);
-  assert.match(html, /secret-chat-minigame\.css\?v=1/);
-  assert.match(html, /secret-chat-minigame\.js\?v=5/);
-  assert.match(html, /day2\.js\?v=25/);
+    assert.match(html, /secret-chat-minigame\.css\?v=10/);
+    assert.match(html, /ui-sfx\.js\?v=5/);
+    assert.match(html, /secret-chat-minigame\.js\?v=13/);
+  assert.match(html, /day2\.js\?v=53/);
+});
+
+test("DAY 1의 이웃 대화는 DAY 2 아침 인사로 자연스럽게 이어진다", () => {
+  const script = read("js/day2.js");
+  assert.match(script, /"neighbor-joke": "어제는 아침에 먼저 인사하는 것부터 해보자고 하셨죠\. 좋은 아침입니다, 선배\."/);
+  assert.match(script, /"neighbor-joke": "좋은 아침이네요, 도윤 씨\."/);
+  assert.doesNotMatch(script, /사수와 이웃을 구분하는 기준이 지각입니까/);
 });
 
 test("DAY 2 개인 메시지 직행 모드는 메모리 진행을 사용하고 저장을 막은 뒤 반복한다", () => {
@@ -23,7 +31,7 @@ test("DAY 2 개인 메시지 직행 모드는 메모리 진행을 사용하고 �
   const finishEnd = script.indexOf("function startSecretChat", finishStart);
 
   assert.match(script, /const devSecretChat = pageParams\.get\("dev"\) === "secret-chat"/);
-  assert.match(script, /const progress = devSecretChat\s*\? GameProgress\.defaultProgress\(\)/);
+  assert.match(script, /let progress = devSecretChat\s*\? GameProgress\.defaultProgress\(\)/);
   assert.match(script, /devSecretChat\s*\? scenes\.findIndex\(\(scene\) => scene\.id === "day2RequestGame"\)/);
   assert.match(script, /function saveProgress\([^)]*\) \{\s*if \(devSecretChat\) return;/);
   assert.match(script, /function autoSaveAtCheckpoint\(scene\) \{\s*if \(devSecretChat\) return;/);
@@ -221,9 +229,35 @@ test("중간 슬롯을 불러와도 직전 장면의 배경과 BGM을 복원한�
   for (const scriptName of ["js/game.js", "js/day2.js"]) {
     const script = read(scriptName);
     assert.match(script, /function inheritedSceneValue\(index,\s*key\)/);
-    assert.match(script, /inheritedSceneValue\(state\.index,\s*["']bg["']\)/);
+    if (scriptName === "js/day2.js") {
+      assert.match(script, /for \(let cursor = state\.index; cursor >= 0; cursor -= 1\)/);
+      assert.match(script, /candidate\.bgAssetId/);
+      assert.match(script, /candidate\.bg && BACKGROUND_SOURCES\[candidate\.bg\]/);
+    } else {
+      assert.match(script, /inheritedSceneValue\(state\.index,\s*["']bg["']\)/);
+    }
     assert.match(script, /inheritedSceneValue\(state\.index,\s*["']bgm["']\)/);
   }
+});
+
+test("개인 메시지 미니게임은 현재 호감도를 전달하고 하린의 실시간 답장을 표시한다", () => {
+  const script = read("js/day2.js");
+  const minigame = read("js/secret-chat-minigame.js");
+  const style = read("css/secret-chat-minigame.css");
+  assert.match(script, /SecretChatMinigame\.start\(\{ onComplete: finishSecretChat, affection: state\.affection \}\)/);
+  assert.match(minigame, /messageReply\(index, state\.affection\)/);
+  assert.match(minigame, /서하린의 답장이 도착했습니다/);
+  assert.match(minigame, /setTimeout\(finish, 2200\)/);
+  assert.match(style, /\.sc-message-received/);
+});
+
+test("기존 DAY 2 진행본은 지하철 도입부를 한 번만 다시 시작한다", () => {
+  const script = read("js/day2.js");
+  assert.match(script, /progress\.currentDay === 2/);
+  assert.match(script, /!progress\.days\[2\]\.complete/);
+  assert.match(script, /feature:subway-intro-v1/);
+  assert.match(script, /progress = GameProgress\.resetDay2\(localStorage\)/);
+  assert.match(script, /GameProgress\.save\(localStorage, progress\)/);
 });
 
 test("장면 전환은 연속 입력과 모달 뒤쪽 진행을 차단한다", () => {
@@ -234,7 +268,7 @@ test("장면 전환은 연속 입력과 모달 뒤쪽 진행을 차단한다", (
     assert.match(script, /hasBlockingUi\(\)/);
   }
   assert.match(day1, /preloadSceneImage/);
-  assert.match(day1, /refs\.dialogue\.textContent=cinematic\?'':s\.text/);
+  assert.match(day1, /if\(!cinematic\)\{refs\.speaker\.textContent=s\.speaker;refs\.dialogue\.textContent=s\.text\}/);
   assert.match(day1, /cinematicTimer=setTimeout\(\(\)=>\{refs\.speaker\.textContent=scene\.speaker;refs\.dialogue\.textContent=scene\.text/);
   const gameCss = read("css/game.css");
   assert.doesNotMatch(gameCss, /cinematic-only \.event-cg\{transition:none\}/);
@@ -242,9 +276,13 @@ test("장면 전환은 연속 입력과 모달 뒤쪽 진행을 차단한다", (
   assert.match(gameCss, /cinematic-only \.event-cg:after/);
 });
 
-test("왼쪽 대사 진행은 오른쪽 메신저·단서 탭을 바꾸지 않는다", () => {
+test("일반 대사 진행은 탭을 바꾸지 않고 지정된 신규 메시지만 메신저로 전환한다", () => {
   assert.doesNotMatch(read("js/game.js"), /setTab\('messages-view'\)/);
-  assert.doesNotMatch(read("js/day2.js"), /setTab\("messages-view"\)/);
+  const day2 = read("js/day2.js");
+  const focusStart = day2.indexOf("function focusIncomingMessage");
+  const focusEnd = day2.indexOf("\n}", focusStart);
+  assert.match(day2.slice(focusStart, focusEnd), /setTab\("messages-view"\)/);
+  assert.doesNotMatch(day2.slice(focusEnd), /setTab\("messages-view"\)/);
 });
 
 test("DAY 2 야근 커피 장면은 승인된 서하린 피곤 스프라이트를 사용한다", () => {
@@ -260,4 +298,52 @@ test("DAY 2 야근 커피 장면은 승인된 서하린 피곤 스프라이트�
   assert.equal(fs.existsSync(path.resolve(root, runtime.resolve(id))), true);
   assert.match(story, /day2CoffeeHarin[^\n]+character\.harin\.holding_cup\.tired/);
   assert.doesNotMatch(story, /day2CoffeeHarin[^\n]+placeholderCharacter/);
+});
+
+test("DAY 2의 서하린 메시지는 도착 애니메이션 뒤 대화방을 열어 읽음 처리한다", () => {
+  const engine = read("js/day2.js");
+  assert.match(engine, /function focusIncomingMessage\(room, notificationId\)/);
+  assert.match(engine, /setTab\("messages-view"\)/);
+  assert.match(engine, /openChat\(room\)/);
+  assert.match(engine, /focused:\$\{notificationId\}/);
+  assert.match(engine, /}, 1750\)/);
+  assert.match(engine, /message\.sender === "한도윤" \? " me" : ""/);
+  assert.match(engine, /message\.requiresDecision/);
+  assert.match(engine, /function resolveMessageText\(message\)/);
+  assert.match(engine, /backgroundSource = ArtAssets\.resolve\(candidate\.bgAssetId\)/);
+});
+
+test("CG 진입 시 페이드아웃 중인 대화창을 먼저 비우지 않는다", () => {
+  for (const file of ["game.js", "day2.js", "day3.js", "day4.js"]) {
+    const engine = read(`js/${file}`);
+    assert.doesNotMatch(engine, /textContent\s*=\s*cinematic\s*\?\s*["']{2}/, file);
+  }
+  assert.doesNotMatch(read("js/day4.js"), /function startCinematic[\s\S]*?#dialogue"\)\.textContent\s*=\s*""/);
+});
+
+test("CG 전용 구간에는 대화창을 완전히 숨기고 다음 대사에서 복원한다", () => {
+  for (const file of ["game.js", "day2.js", "day3.js"]) {
+    const engine = read(`js/${file}`);
+    assert.match(engine, /dialogueCard\.hidden\s*=\s*true/, `${file}: CG 진입 시 숨김`);
+    assert.match(engine, /dialogueCard\.hidden\s*=\s*false/, `${file}: CG 연출 후 복원`);
+  }
+
+  const day4 = read("js/day4.js");
+  assert.match(day4, /dialogue-card"\)\.hidden\s*=\s*true/);
+  assert.match(day4, /dialogue-card"\)\.hidden\s*=\s*false/);
+});
+
+test("CG 진입에는 PAGE-TURN 효과음을 재생하지 않는다", () => {
+  for (const file of ["game.js", "day2.js", "day3.js", "day4.js"]) {
+    const engine = read(`js/${file}`);
+    const startCinematic = engine.match(/function startCinematic[\s\S]*?\n}/)?.[0] || "";
+    assert.doesNotMatch(startCinematic, /UiSfx\.playPageTurn\(\)/, file);
+  }
+});
+
+test("DAY 종료 후 다음 날 전환 화면에서 PAGE-TURN 효과음을 재생한다", () => {
+  for (const file of ["game.js", "day2.js", "day3.js"]) {
+    const engine = read(`js/${file}`);
+    assert.match(engine, /dayTransition[\s\S]{0,300}UiSfx\.playPageTurn\(\)/, file);
+  }
 });

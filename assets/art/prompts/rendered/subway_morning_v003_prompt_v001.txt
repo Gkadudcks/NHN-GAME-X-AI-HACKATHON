@@ -1,0 +1,14 @@
+[PROJECT VISUAL STYLE | prompt-v1]
+Modern Korean office romance visual novel with light mystery elements.
+Polished commercial anime visual novel illustration.
+Clean, thin, consistent line art with soft 2-to-3-step cel shading.
+Natural proportions, realistic contemporary environment design, and subdued morning colors.
+
+[BACKGROUND | background.subway.morning | v003]
+Preserve the approved crowded morning subway composition and varied commuter clothing.
+Move the cream cable-knit cardigan woman from the immediate right foreground seat into a natural standing position in the right side of the central aisle.
+Keep her dark shoulder-length hair, gray-brown long skirt, dark brown shoulder bag, smartphone pose, proportions, and subdued expression.
+Remove the vacated blue seat section, seat base, side rail, and armrest from the immediate right foreground.
+Continue the gray reflective carriage floor through that area as open standing space; the wall-side seating begins farther back.
+Preserve every other passenger, carriage fixture, window, door, strap, pole, city view, lighting, camera, perspective, crowd density, and color palette.
+No duplicate of the repositioned woman, replacement seat, floating rail, malformed anatomy, readable text, logo, or watermark.

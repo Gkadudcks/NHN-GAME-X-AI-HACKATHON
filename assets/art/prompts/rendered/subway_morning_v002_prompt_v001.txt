@@ -1,0 +1,20 @@
+[PROJECT VISUAL STYLE | prompt-v1]
+Modern Korean office romance visual novel with light mystery elements.
+Polished commercial anime visual novel illustration.
+Clean, thin, consistent line art.
+Soft 2-to-3-step cel shading with minimal painterly texture.
+Natural proportions and realistic contemporary environment design.
+Warm, low-contrast, low-to-medium-saturation palette.
+
+[BACKGROUND | background.subway.morning | v002]
+Create an original crowded Korean morning commuter subway interior.
+Use the supplied subway photograph only as a structural reference: long blue bench seats running along both side walls, a broad straight central aisle, repeated sliding-door and window bays, vertical stainless poles, and parallel rows of hanging straps.
+Do not reproduce the photograph's exact camera, colors, fixtures, or arrangement.
+Use an eye-level wide 16:9 view looking down the carriage, with both longitudinal bench rows clearly visible.
+Fill every bench and crowd the central aisle with standing passengers while preserving a modest lower-center area for dialogue UI.
+Show a believable mix of office workers, university students, and middle-aged commuters.
+Give passengers visibly varied outfits: suits, trench coats, cardigans, knit sweaters, casual jackets, hoodies, denim jackets, long skirts, and slacks.
+Vary backpacks, canvas totes, laptop bags, crossbody bags, and handbags.
+Use navy, charcoal, beige, camel, olive, dusty blue, muted burgundy, cream, and gray without obvious clusters of cloned clothing.
+All passengers are anonymous background extras, with no prominent main character and nobody looking at the camera.
+No readable text, advertisements, route-map labels, logos, watermark, malformed hands, duplicate faces, repeated poses, or empty-car appearance.

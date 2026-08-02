@@ -70,11 +70,26 @@ test("DAY 4는 녹음실 내부 대화를 거친 뒤 헤드폰 CG를 보여준�
   const answer = story.scenes.find((scene) => scene.id === "day4StudioAnswer");
   assert.equal(arrival.location, "사내 녹음실 · 부스");
   assert.equal(arrival.bgAssetId, "background.recording_booth.day");
+  assert.equal(arrival.bgm, "recordingStudio");
   assert.match(arrival.text, /녹음실은 처음/);
   assert.match(question.text, /오신 적 있으세요/);
   assert.match(answer.text, /이벤트 대사 검수/);
   assert.equal(story.scenes.find((scene) => scene.id === "day4MoveStudio").cgAssetId, "event_cg.day4.harin_headphone_handoff");
-  assert.match(read("day4.html"), /src="js\/day4-story\.js\?v=16"/);
+  assert.match(read("day4.html"), /src="js\/day4-story\.js\?v=27"/);
+});
+
+test("DAY 4는 녹음 부스 내부의 헤드폰 CG에서 장소 이동을 반복하지 않는다", () => {
+  const ids = story.scenes.map((scene) => scene.id);
+  const inheritedLocation = (index) => {
+    for (let cursor = index; cursor >= 0; cursor -= 1) {
+      if (story.scenes[cursor].location) return story.scenes[cursor].location;
+    }
+    return "";
+  };
+  assert.equal(
+    inheritedLocation(ids.indexOf("day4StudioArrival")),
+    inheritedLocation(ids.indexOf("day4MoveStudio")),
+  );
 });
 
 test("DAY 4 녹음실은 대사 분위기에 맞춰 서하린 표정 세 종류를 사용한다", () => {
@@ -82,10 +97,12 @@ test("DAY 4 녹음실은 대사 분위기에 맞춰 서하린 표정 세 종류�
   for (const id of ["day4StudioArrival", "day4StudioQuestion", "day4StudioAnswer", "day4HarinPast", "day4LastTake"]) {
     assert.equal(assetOf(id), "character.harin.relaxed_standing.gentle_smile");
   }
-  for (const id of ["day4HeadphoneChoice", "day4MicShare", "day4MicChoice"]) {
+  for (const id of ["day4HeadphoneChoice", "day4MicSmallTalk", "day4MicChoice"]) {
     assert.equal(assetOf(id), "character.harin.relaxed_standing.embarrassed");
   }
-  assert.equal(assetOf("day4GuideRecording"), "character.harin.relaxed_standing.neutral");
+  for (const id of ["day4GuideRecording", "day4MicShare"]) {
+    assert.equal(assetOf(id), "character.harin.relaxed_standing.neutral");
+  }
   const resolver = read("js/art-assets.js");
   assert.match(resolver, /"character\.harin\.relaxed_standing\.gentle_smile"/);
   assert.match(resolver, /"character\.harin\.relaxed_standing\.embarrassed"/);
@@ -155,10 +172,72 @@ test("DAY 4 대화 장면은 현장에 남아 있는 상대 캐릭터를 유지�
     "day4EvidenceChoice",
     "day4Rehearsal",
     "day4LeaveLead",
-    "day4EscapeResult",
+    "day4SuccessArrival",
+    "day4SuccessDinnerInvite",
+    "day4SuccessDinnerTalk",
+    "day4FailureCaught",
+    "day4FailureHarinLeaves",
   ]) {
     assert.ok(story.scenes.find((scene) => scene.id === id).characters?.length, `${id} should keep a character visible`);
   }
+});
+
+test("DAY 4 퇴근 반응은 누적 호감도와 탈출 결과를 함께 반영한다", () => {
+  const reaction = story.scenes.find((scene) => scene.id === "day4SuccessDinnerTalk");
+  const engine = read("js/day4.js");
+  assert.equal(reaction.speaker, "서하린");
+  assert.equal(reaction.dynamic, "dinnerConversation");
+  assert.ok(story.scenes.findIndex((scene) => scene.id === "day4SuccessArrival")
+    < story.scenes.findIndex((scene) => scene.id === reaction.id));
+  assert.match(engine, /scene\.dynamic === "dinnerConversation"/);
+  assert.match(engine, /state\.affection < 2/);
+  assert.match(engine, /state\.affection < 4/);
+  assert.match(engine, /편하게 같이 저녁 먹어요/);
+  for (const id of ["day4StudioAnswer", "day4LastTake", "day4LeaveLead"]) {
+    assert.ok(story.scenes.find((scene) => scene.id === id).dynamic);
+  }
+  assert.match(engine, /affectionTone === "low"/);
+  assert.match(engine, /affectionTone === "mid"/);
+});
+
+test("DAY 4 미니게임 성공 뒤에는 서하린과 저녁 식사 장면이 이어진다", () => {
+  const success = story.scenes.filter((scene) => scene.branch === "success");
+  const ids = success.map((scene) => scene.id);
+  assert.deepEqual(ids, [
+    "day4SuccessArrival",
+    "day4SuccessDinnerInvite",
+    "day4SuccessDinnerArrival",
+    "day4SuccessDinnerTalk",
+    "day4SuccessDinnerReply",
+    "day4SuccessEnd",
+  ]);
+  assert.match(success.find((scene) => scene.id === "day4SuccessDinnerInvite").text, /같이 먹고 갈래요/);
+  assert.equal(success.find((scene) => scene.id === "day4SuccessDinnerArrival").bgAssetId, "background.restaurant.lunch");
+  assert.equal(success.at(-1).end, true);
+});
+
+test("DAY 4 미니게임 실패 뒤에는 서하린이 먼저 퇴근하고 야근 장면이 이어진다", () => {
+  const failure = story.scenes.filter((scene) => scene.branch === "failure");
+  const ids = failure.map((scene) => scene.id);
+  assert.deepEqual(ids, [
+    "day4FailureCaught",
+    "day4FailureHarinLeaves",
+    "day4FailureOvertime",
+    "day4FailureMessage",
+    "day4FailureReply",
+    "day4FailureEnd",
+  ]);
+  assert.match(failure.find((scene) => scene.id === "day4FailureHarinLeaves").text, /저 먼저 갈게요/);
+  assert.equal(failure.find((scene) => scene.id === "day4FailureOvertime").bgAssetId, "background.office.night");
+  assert.equal(failure.at(-1).end, true);
+});
+
+test("DAY 4 엔진은 미니게임 결과와 일치하는 후속 장면만 진행한다", () => {
+  const engine = read("js/day4.js");
+  assert.match(engine, /function sceneMatchesBranch\(scene\)/);
+  assert.match(engine, /state\.minigameResult\.caught \? "failure" : "success"/);
+  assert.match(engine, /function nextSceneIndex\(fromIndex\)/);
+  assert.match(engine, /state\.index = nextSceneIndex\(state\.index\)/);
 });
 
 test("DAY 4 캐릭터는 이전 DAY와 같은 실제 키 비율로 크기를 보정한다", () => {
@@ -168,7 +247,7 @@ test("DAY 4 캐릭터는 이전 DAY와 같은 실제 키 비율로 크기를 보
   assert.match(engine, /boss: Object\.freeze\(\{ name: "박태식", heightCm: 176 \}\)/);
   assert.match(engine, /DAY4_CHARACTER_STAGE_HEIGHT \* \(profile\.heightCm \/ DAY4_CHARACTER_BASE_HEIGHT\)/);
   assert.match(engine, /image\.style\.setProperty\("--sprite-height", `\$\{spriteHeight\}cqh`\)/);
-  assert.match(html, /src="js\/day4\.js\?v=19"/);
+  assert.match(html, /src="js\/day4\.js\?v=33"/);
 });
 
 test("DAY 4는 캐릭터 ID가 생략돼도 현재 화자인 서하린을 불투명하게 표시한다", () => {
@@ -191,16 +270,40 @@ test("DAY 4 선택지는 오전 관계·업무 선택과 오후 증빙 우선순
   }
 });
 
+test("DAY 4에서 하린의 사적 대화를 업무 녹음으로 남기려 하면 호감도가 내려간다", () => {
+  const scene = story.scenes.find((entry) => entry.id === "day4MicChoice");
+  const guide = story.scenes.find((entry) => entry.id === "day4MicShare");
+  const smallTalk = story.scenes.find((entry) => entry.id === "day4MicSmallTalk");
+  const choice = scene.choices.find((entry) => entry.id === "keepTake");
+  assert.equal(choice.delta.affection, -1);
+  assert.match(guide.text, /문장 길이와 호흡을 확인/);
+  assert.match(smallTalk.text, /생각보다 덜 긴장/);
+  assert.ok(story.scenes.indexOf(guide) < story.scenes.indexOf(smallTalk));
+  assert.ok(story.scenes.indexOf(smallTalk) < story.scenes.indexOf(scene));
+  assert.match(scene.text, /방금 나눈 대화까지 녹음/);
+  assert.match(choice.text, /참고용으로 남겨도/);
+  assert.match(choice.reply, /동의 없이 사적인 대화를 남기는 건 싫어요/);
+  assert.match(scene.choices.find((entry) => entry.id === "checkLevels").text, /새 테이크 번호/);
+  assert.match(scene.choices.find((entry) => entry.id === "apologize").text, /의사를 먼저 확인/);
+  assert.ok(scene.choices.every((entry) => entry.replySpeaker === "서하린"));
+});
+
 test("DAY 4 선택지는 겹치지 않는 행동과 한글 능력치 태그를 사용한다", () => {
   const headphone = story.scenes.find((scene) => scene.id === "day4HeadphoneChoice");
   const engine = read("js/day4.js");
   const style = read("css/game.css");
   assert.deepEqual(headphone.choices.map((choice) => choice.id), ["matchPace", "yieldHeadphone", "untangleTogether"]);
-  assert.match(headphone.text, /어깨가 가까워졌다/);
-  assert.match(headphone.choices[0].text, /선이 짧네요/);
-  assert.match(headphone.choices[1].text, /음량 표시/);
-  assert.match(headphone.choices[2].text, /팀워크가 필요한 일/);
-  assert.doesNotMatch(headphone.choices.map((choice) => choice.text).join(" "), /헤드폰을 잠시 넘기|엉킨 헤드폰 선/);
+  assert.match(headphone.text, /각자 쓴 헤드폰 선/);
+  assert.match(headphone.visual, /각자의 헤드폰/);
+  assert.match(headphone.choices[0].text, /괜찮은 거리인지 먼저/);
+  assert.match(headphone.choices[1].text, /좌우 채널과 음량부터/);
+  assert.match(headphone.choices[2].text, /같은 소리를 나란히/);
+  assert.deepEqual(headphone.choices.map((choice) => choice.delta), [
+    { trust: 1 },
+    { work: 1 },
+    { affection: 1 },
+  ]);
+  assert.doesNotMatch(headphone.choices.map((choice) => choice.text).join(" "), /헤드폰을 잠시 넘기|엉킨 헤드폰 선|한쪽씩 나눠/);
   assert.ok(headphone.choices.every((choice) => choice.replySpeaker === "서하린"));
   assert.ok(headphone.choices.every((choice) => !choice.reply.includes("하린은")));
   assert.match(engine, /const replySpeaker = choice\.replySpeaker \|\| scene\.replySpeaker \|\| scene\.speaker/);
@@ -283,8 +386,8 @@ test("DAY 4는 모든 장면에 승인된 배경·캐릭터·CG를 적용한다"
   assert.match(html, /class="messenger-appbar"/);
   assert.match(html, /data-tab="messages-view"/);
   assert.match(html, /data-tab="clues-view"/);
-  assert.match(html, /href="css\/game\.css\?v=28"/);
-  assert.match(html, /src="js\/art-assets\.js\?v=14"/);
+  assert.match(html, /href="css\/game\.css\?v=41"/);
+  assert.match(html, /src="js\/art-assets\.js\?v=18"/);
   assert.match(engine, /ArtAssets\.resolve\(scene\.bgAssetId\)/);
   assert.match(engine, /ArtAssets\.resolve\(entry\.assetId\)/);
   assert.match(engine, /ArtAssets\.resolve\(scene\.cgAssetId\)/);
@@ -300,7 +403,9 @@ test("DAY 4는 모든 장면에 승인된 배경·캐릭터·CG를 적용한다"
     "background.meeting_room.afternoon",
     "background.office.day",
     "background.office.evening",
+    "background.office.night",
     "background.recording_booth.day",
+    "background.restaurant.lunch",
     "character.boss.holding_cup.concerned",
     "character.harin.arms_folded.concerned",
     "character.harin.relaxed_standing.embarrassed",
@@ -820,7 +925,7 @@ test("DAY 3 완료 화면에서 DAY 4를 시작할 수 있다", () => {
   assert.match(engine, /GameProgress\.startDay4\(localStorage\)/);
   assert.match(engine, /refs\.dayComplete\.classList\.remove\("show"\)/);
   assert.match(engine, /refs\.dayTransition\.classList\.add\("show"\)/);
-  assert.match(engine, /bgmManager\.stop\(\{ fadeOut: 220 \}\)/);
+  assert.match(engine, /bgmManager\.stop\(\)/);
   assert.match(engine, /setTimeout\(\(\) => \{ location\.href = "day4\.html\?new=1"; \}, 2200\)/);
   assert.match(read("js/title-screen.js"), /Number\(slot\.day\) === 4 \? "day4\.html"/);
 });
