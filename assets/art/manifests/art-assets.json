@@ -1082,6 +1082,25 @@
       ]
     },
     {
+      "id": "background.presentation_room.day",
+      "kind": "background",
+      "profile": "background_16_9",
+      "location": "presentation_room",
+      "variant": "day",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/backgrounds/approved/presentation_room_day_v001.png",
+          "generation_log_id": "presentation-room-day-v001-built-in",
+          "sha256": "0f8f41cbb53b407ce744ff18b08819afb01c0a87a14650fd85cf9669d4c4da3d",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-02T22:44:48.6902705+09:00"
+        }
+      ]
+    },
+    {
       "id": "character.sea.neutral_standing.gentle_smile",
       "kind": "character",
       "profile": "character_sprite",
@@ -1126,6 +1145,25 @@
           "sha256": "8f53374ab9fd622c49416f84173440f504fbc60e74bba2551efd3a70c0d0cefb",
           "reviewed_by": "codex",
           "reviewed_at": "2026-07-23T23:52:12.1510616+09:00"
+        }
+      ]
+    },
+    {
+      "id": "background.bistro.evening",
+      "kind": "background",
+      "profile": "background_16_9",
+      "location": "bistro",
+      "variant": "evening",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/backgrounds/approved/bistro_evening_v001.png",
+          "generation_log_id": "bistro-evening-v001-built-in",
+          "sha256": "96fde8bcb6d7ce61d311175a81afcba3762b682912079b8750ce80938aad2545",
+          "reviewed_by": "codex",
+          "reviewed_at": "2026-08-02T19:36:17.1169922+09:00"
         }
       ]
     },
@@ -1281,6 +1319,25 @@
       ]
     },
     {
+      "id": "prop.day5.warm_tea",
+      "kind": "prop",
+      "profile": "minigame_prop",
+      "category": "day5",
+      "name": "warm_tea",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/minigames/day4-office-escape/props/approved/prop_day5_warm_tea_v001.png",
+          "generation_log_id": "prop-day5-warm-tea-v001-built-in-imagegen",
+          "sha256": "03c4821162a0b99853e62781985625d1640ad0c2c8633aa9c1cfa7dab21b5f8a",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-02T22:00:00+09:00"
+        }
+      ]
+    },
+    {
       "id": "event_cg.day3.elevator_waiting",
       "kind": "event_cg",
       "profile": "event_cg_16_9",
@@ -1317,6 +1374,26 @@
           "sha256": "1e8d8f7ea4164c59e8aae30c7f727a80fb3a534ff9a40c911c6ca109a20da1bd",
           "reviewed_by": "user",
           "reviewed_at": "2026-07-29T21:44:40.8102924+09:00"
+        }
+      ]
+    },
+    {
+      "id": "event_cg.day5.weekend_invitation",
+      "kind": "event_cg",
+      "profile": "event_cg_16_9",
+      "scene": "day5",
+      "beat": "weekend_invitation",
+      "framing": "waist_up",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/event_cg/approved/cg_day5_weekend_invitation_v001.png",
+          "generation_log_id": "cg-day5-weekend-invitation-v001-built-in-imagegen",
+          "sha256": "90cbb2babc87c238251087f19d9974d6a0b6d04e3d5701dbb8ce49c8f8796917",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-02T21:22:35.6324312+09:00"
         }
       ]
     },

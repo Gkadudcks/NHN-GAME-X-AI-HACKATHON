@@ -212,7 +212,7 @@ test("DAY 4 미니게임 성공 뒤에는 서하린과 저녁 식사 장면이 �
     "day4SuccessEnd",
   ]);
   assert.match(success.find((scene) => scene.id === "day4SuccessDinnerInvite").text, /같이 먹고 갈래요/);
-  assert.equal(success.find((scene) => scene.id === "day4SuccessDinnerArrival").bgAssetId, "background.restaurant.lunch");
+  assert.equal(success.find((scene) => scene.id === "day4SuccessDinnerArrival").bgAssetId, "background.bistro.evening");
   assert.equal(success.at(-1).end, true);
 });
 
@@ -247,7 +247,7 @@ test("DAY 4 캐릭터는 이전 DAY와 같은 실제 키 비율로 크기를 보
   assert.match(engine, /boss: Object\.freeze\(\{ name: "박태식", heightCm: 176 \}\)/);
   assert.match(engine, /DAY4_CHARACTER_STAGE_HEIGHT \* \(profile\.heightCm \/ DAY4_CHARACTER_BASE_HEIGHT\)/);
   assert.match(engine, /image\.style\.setProperty\("--sprite-height", `\$\{spriteHeight\}cqh`\)/);
-  assert.match(html, /src="js\/day4\.js\?v=33"/);
+  assert.match(html, /src="js\/day4\.js\?v=34"/);
 });
 
 test("DAY 4는 캐릭터 ID가 생략돼도 현재 화자인 서하린을 불투명하게 표시한다", () => {
@@ -386,7 +386,7 @@ test("DAY 4는 모든 장면에 승인된 배경·캐릭터·CG를 적용한다"
   assert.match(html, /class="messenger-appbar"/);
   assert.match(html, /data-tab="messages-view"/);
   assert.match(html, /data-tab="clues-view"/);
-  assert.match(html, /href="css\/game\.css\?v=41"/);
+  assert.match(html, /href="css\/game\.css\?v=46"/);
   assert.match(html, /src="js\/art-assets\.js\?v=18"/);
   assert.match(engine, /ArtAssets\.resolve\(scene\.bgAssetId\)/);
   assert.match(engine, /ArtAssets\.resolve\(entry\.assetId\)/);
@@ -399,13 +399,13 @@ test("DAY 4는 모든 장면에 승인된 배경·캐릭터·CG를 적용한다"
     ...(scene.characters || []).map((entry) => entry.assetId),
   ]).filter(Boolean);
   assert.deepEqual([...new Set(referencedIds)].sort(), [
+    "background.bistro.evening",
     "background.elevator_lobby.night",
     "background.meeting_room.afternoon",
     "background.office.day",
     "background.office.evening",
     "background.office.night",
     "background.recording_booth.day",
-    "background.restaurant.lunch",
     "character.boss.holding_cup.concerned",
     "character.harin.arms_folded.concerned",
     "character.harin.relaxed_standing.embarrassed",
@@ -446,13 +446,20 @@ test("DAY 4는 공용 슬롯 UI로 진행을 저장하고 불러온다", () => {
 });
 
 test("DAY 4 저장 모달은 미니게임 일시정지를 소유하고 키보드 포커스를 가둔다", () => {
+  const html = read("day4.html");
   const engine = read("js/day4.js");
+  const gameStyle = read("css/game.css");
+  const minigameStyle = read("minigames/day4-office-escape/style.css");
+  assert.match(html, /css\/game\.css\?v=46/);
   assert.match(engine, /gameSavePauseHeld = true/);
   assert.match(engine, /document\.dispatchEvent\(new CustomEvent\("nan:pause-open"\)\)/);
   assert.match(engine, /document\.dispatchEvent\(new CustomEvent\("nan:pause-close"\)\)/);
   assert.match(engine, /function trapGameSaveFocus\(event\)/);
   assert.match(engine, /if \(trapGameSaveFocus\(event\)\)/);
   assert.match(engine, /#game-save-list button:not\(:disabled\).*#game-save-close/);
+  const saveModalLayer = Number(gameStyle.match(/\.game-save-modal\{[^}]*z-index:(\d+)/)?.[1]);
+  const escapeLayer = Number(minigameStyle.match(/\.office-escape\s*\{[^}]*z-index:\s*(\d+)/)?.[1]);
+  assert.ok(saveModalLayer > escapeLayer);
 });
 
 test("DAY 4는 이전 DAY의 공용 게임 기능을 모두 연결한다", () => {

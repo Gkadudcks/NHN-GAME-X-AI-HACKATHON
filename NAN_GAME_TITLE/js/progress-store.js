@@ -136,6 +136,19 @@
     };
   }
 
+  function defaultDay5() {
+    return {
+      sceneId: "day5Intro",
+      decisions: {},
+      seenNotifications: {},
+      summariesSeen: {},
+      evidence: {},
+      minigameResult: null,
+      ending: null,
+      complete: false,
+    };
+  }
+
   function defaultProgress() {
     return {
       schemaVersion: SCHEMA_VERSION,
@@ -156,10 +169,12 @@
         2: defaultDay2(),
         3: defaultDay3(),
         4: defaultDay4(),
+        5: defaultDay5(),
       },
       day2StartSnapshot: null,
       day3StartSnapshot: null,
       day4StartSnapshot: null,
+      day5StartSnapshot: null,
       savedAt: null,
     };
   }
@@ -213,6 +228,20 @@
     };
   }
 
+  function sanitizeDay5(value) {
+    const input = isObject(value) ? value : {};
+    return {
+      sceneId: stringOr(input.sceneId, "day5Intro"),
+      decisions: objectCopy(input.decisions),
+      seenNotifications: objectCopy(input.seenNotifications),
+      summariesSeen: objectCopy(input.summariesSeen),
+      evidence: objectCopy(input.evidence),
+      minigameResult: isObject(input.minigameResult) ? cloneJson(input.minigameResult) : null,
+      ending: ["bad", "middle", "nice"].includes(input.ending) ? input.ending : null,
+      complete: input.complete === true,
+    };
+  }
+
   function sanitizeSnapshot(value) {
     if (!isObject(value)) return null;
     return {
@@ -230,7 +259,7 @@
     const days = isObject(input.days) ? input.days : {};
     return {
       schemaVersion: SCHEMA_VERSION,
-      currentDay: [1, 2, 3, 4].includes(Number(input.currentDay)) ? Number(input.currentDay) : 1,
+      currentDay: [1, 2, 3, 4, 5].includes(Number(input.currentDay)) ? Number(input.currentDay) : 1,
       shared: {
         work: finiteNumber(shared.work),
         affection: finiteNumber(shared.affection),
@@ -247,10 +276,12 @@
         2: sanitizeDay2(days[2]),
         3: sanitizeDay3(days[3]),
         4: sanitizeDay4(days[4]),
+        5: sanitizeDay5(days[5]),
       },
       day2StartSnapshot: sanitizeSnapshot(input.day2StartSnapshot),
       day3StartSnapshot: sanitizeSnapshot(input.day3StartSnapshot),
       day4StartSnapshot: sanitizeSnapshot(input.day4StartSnapshot),
+      day5StartSnapshot: sanitizeSnapshot(input.day5StartSnapshot),
       savedAt: typeof input.savedAt === "string" ? input.savedAt : null,
     };
   }
@@ -510,9 +541,39 @@
     return load(storage);
   }
 
+  function startDay5(storage) {
+    const progress = load(storage);
+    progress.currentDay = 5;
+    progress.days[1].complete = true;
+    progress.days[2].complete = true;
+    progress.days[3].complete = true;
+    progress.days[4].complete = true;
+    if (!progress.day5StartSnapshot) progress.day5StartSnapshot = snapshotShared(progress.shared);
+    save(storage, progress);
+    return load(storage);
+  }
+
+  function resetDay5(storage) {
+    const progress = load(storage);
+    const snapshot = progress.day5StartSnapshot || snapshotShared(progress.shared);
+    progress.shared.work = snapshot.work;
+    progress.shared.affection = snapshot.affection;
+    progress.shared.trust = snapshot.trust;
+    progress.shared.clues = clueList(snapshot.clues);
+    progress.currentDay = 5;
+    progress.days[1].complete = true;
+    progress.days[2].complete = true;
+    progress.days[3].complete = true;
+    progress.days[4].complete = true;
+    progress.days[5] = defaultDay5();
+    progress.day5StartSnapshot = snapshotShared(snapshot);
+    save(storage, progress);
+    return load(storage);
+  }
+
   function updateDayState(storage, day, patch) {
     const dayNumber = Number(day);
-    if (![1, 2, 3, 4].includes(dayNumber)) return load(storage);
+    if (![1, 2, 3, 4, 5].includes(dayNumber)) return load(storage);
     const progress = load(storage);
     const current = progress.days[dayNumber];
     const nextPatch = typeof patch === "function" ? patch(cloneJson(current, {})) : patch;
@@ -521,7 +582,8 @@
     progress.days[dayNumber] = dayNumber === 1 ? sanitizeDay1(merged)
       : dayNumber === 2 ? sanitizeDay2(merged)
         : dayNumber === 3 ? sanitizeDay3(merged)
-          : sanitizeDay4(merged);
+          : dayNumber === 4 ? sanitizeDay4(merged)
+            : sanitizeDay5(merged);
     save(storage, progress);
     return load(storage);
   }
@@ -549,6 +611,8 @@
     resetDay3,
     startDay4,
     resetDay4,
+    startDay5,
+    resetDay5,
     updateDayState,
   });
 });

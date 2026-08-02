@@ -54,6 +54,7 @@
       progress.setAttribute("aria-valuenow", "0");
       progressBar.style.width = "0%";
       progressText.textContent = "0%";
+      documentRef.documentElement.classList.add("location-transition-active");
       overlay.classList.add("show");
       overlay.setAttribute("aria-hidden", "false");
       return new Promise((resolve) => {
@@ -78,6 +79,7 @@
           progressText.textContent = "100%";
           overlay.classList.remove("show");
           overlay.setAttribute("aria-hidden", "true");
+          documentRef.documentElement.classList.remove("location-transition-active");
           finishCurrent = null;
           global.setTimeout(() => resolve(true), fadeDuration);
         }

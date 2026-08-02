@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DAY 5 발표 시네마틱 프로토타입</title>
+  <link rel="stylesheet" href="../../../css/day5-presentation-motion-prototype.css">
+</head>
+<body>
+<main id="stage" class="stage state-intro">
+  <div class="camera" aria-hidden="true">
+    <div class="background"></div>
+    <div class="background back-detail"></div>
+    <div class="background foreground"></div>
+    <div class="projector-beam"></div>
+    <div id="screenPanel" class="screen-panel">
+      <small>NAN · CONVERSION PRESENTATION</small>
+      <h2 id="screenTitle">신규 사용자 경험 개선</h2>
+      <div id="screenContent" class="screen-content"></div>
+    </div>
+  </div>
+  <div class="cinema-bars" aria-hidden="true"></div>
+  <div id="vignette" class="vignette" aria-hidden="true"></div>
+  <div id="impact" class="impact" aria-hidden="true"></div>
+
+  <header class="hud">
+    <b>DAY 5</b><span id="clock">10:00</span><span id="location">발표실 · 오전</span>
+    <button id="skipTyping" type="button">빠른 출력</button>
+  </header>
+
+  <section id="memory" class="memory" hidden aria-live="assertive">
+    <small>보존된 원본</small>
+    <strong id="memoryMain">DAY 4 · 17:08</strong>
+    <span id="memorySub">제출 직후 확인</span>
+  </section>
+
+  <section id="choice" class="choices" hidden aria-label="대응 선택">
+    <p>첫 대응을 선택하세요</p>
+    <button data-choice="evidence">확인한 사실부터 설명한다.</button>
+    <button data-choice="cause">가능한 원인을 먼저 설명한다.</button>
+  </section>
+
+  <section id="dialogueCard" class="dialogue-card" hidden aria-live="polite">
+    <div class="speaker-row"><b id="speaker"></b><span>STORY</span></div>
+    <p id="dialogue"></p>
+    <button id="next" class="next" type="button">다음　›</button>
+  </section>
+
+  <section id="intro" class="intro">
+    <div>
+      <small>DAY 5 · CINEMATIC PROTOTYPE</small>
+      <h1>정직원 전환 발표</h1>
+      <p>대화창을 진행하며 발표 수치 불일치 사건을 처음부터 끝까지 확인하세요.</p>
+      <button id="start" type="button">발표 시작</button>
+    </div>
+  </section>
+
+  <section id="ending" class="ending" hidden>
+    <small>PRESENTATION RESUMED</small>
+    <h1>검증을 마치고 발표가 재개되었다.</h1>
+    <p>수치 오류는 숨기지 않았고, 확인된 기록과 변경 경로가 평가 자료에 함께 남았다.</p>
+    <button id="restart" type="button">처음부터 다시 보기</button>
+  </section>
+</main>
+<script src="../../../js/art-assets.js"></script>
+<script src="../../../js/day5-presentation-motion-prototype.js"></script>
+</body>
+</html>

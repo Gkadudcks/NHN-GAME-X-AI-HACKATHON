@@ -1,28 +1,31 @@
-"use strict";
+﻿"use strict";
 
-const DAY4_CHARACTER_PROFILES = Object.freeze({
+const DAY5_CHARACTER_PROFILES = Object.freeze({
   harin: Object.freeze({ name: "서하린", heightCm: 165 }),
   boss: Object.freeze({ name: "박태식", heightCm: 176 }),
+  minjae: Object.freeze({ name: "강민재", heightCm: 178 }),
 });
-const DAY4_CHARACTER_BASE_HEIGHT = 182;
-const DAY4_CHARACTER_STAGE_HEIGHT = 84;
-const DAY4_CHARACTER_POSITIONS = Object.freeze({ farLeft: 18, left: 31, center: 50, right: 69, farRight: 82 });
+const DAY5_CHARACTER_BASE_HEIGHT = 182;
+const DAY5_CHARACTER_STAGE_HEIGHT = 84;
+const DAY5_CHARACTER_POSITIONS = Object.freeze({ farLeft: 18, left: 31, center: 50, right: 69, farRight: 82 });
 function characterIdFromAsset(entry = {}) {
   if (entry.id) return entry.id;
   if (entry.assetId?.includes("harin")) return "harin";
   if (entry.assetId?.includes("boss")) return "boss";
+  if (entry.assetId?.includes("minjae")) return "minjae";
   return "";
 }
 function characterIdFromSpeaker(speaker = "") {
   if (speaker === "서하린") return "harin";
   if (speaker === "박태식") return "boss";
+  if (speaker === "강민재") return "minjae";
   return "";
 }
 function choicePromptLabel(scene) {
   const speaker = (scene?.speaker || "").trim();
   return speaker && !["한도윤", "시스템", "내레이션"].includes(speaker) ? speaker : "상황";
 }
-const scenes = Day4Story.scenes;
+const scenes = Day5Story.scenes;
 function locationAt(index) {
   for (let cursor = Math.min(index, scenes.length - 1); cursor >= 0; cursor -= 1) {
     if (sceneMatchesBranch(scenes[cursor]) && scenes[cursor]?.location) return scenes[cursor].location;
@@ -36,8 +39,8 @@ function bgmAt(index) {
   return "";
 }
 const $ = (selector) => document.querySelector(selector);
-const progress = new URLSearchParams(location.search).has("new") ? GameProgress.resetDay4(localStorage) : GameProgress.startDay4(localStorage);
-const saved = progress.days[4];
+const progress = new URLSearchParams(location.search).has("new") ? GameProgress.resetDay5(localStorage) : GameProgress.startDay5(localStorage);
+const saved = progress.days[5];
 const state = {
   index: Math.max(0, scenes.findIndex((scene) => scene.id === saved.sceneId)),
   work: progress.shared.work,
@@ -49,13 +52,27 @@ const state = {
   summariesSeen: { ...saved.summariesSeen },
   evidence: { ...saved.evidence },
   minigameResult: saved.minigameResult,
+  ending: saved.ending,
   unreadClues: saved.seenNotifications?.["unread:clues"] === true,
 };
 function sceneMatchesBranch(scene) {
-  if (!scene?.branch) return true;
-  if (!state.minigameResult) return false;
-  const branch = state.minigameResult.caught ? "failure" : "success";
-  return scene.branch === branch;
+  if (scene?.strategy && state.decisions.responseStrategy !== scene.strategy) return false;
+  if (scene?.ending && calculateEnding() !== scene.ending) return false;
+  return true;
+}
+
+function calculateEnding() {
+  const correct = [
+    state.decisions.factVerification === "verified_facts",
+    state.decisions.ownerDistinction === "distinguish_roles",
+    state.decisions.causalChain === "correct_chain",
+    state.decisions.responsibility === "minjae_request_concealment",
+    state.decisions.recoverySource === "current_week",
+    state.decisions.recoveryBinding === "fixed_source",
+  ].filter(Boolean).length;
+  if (correct < 4 || state.trust < 0) return "bad";
+  if (correct === 6 && state.trust >= 5 && state.affection >= 3) return "nice";
+  return "middle";
 }
 function nextSceneIndex(fromIndex) {
   for (let cursor = fromIndex + 1; cursor < scenes.length; cursor += 1) {
@@ -72,13 +89,13 @@ function getBgmVolume() {
 }
 const bgmManager = new GameBgmManager($("#bgm"), getBgmVolume);
 window.BGMManager = bgmManager;
-bgmManager.preload(["daily", "harin", "recordingStudio", "mystery", "minigame", "overtime"]);
+bgmManager.preload(["daily", "harin", "mystery", "minigame", "overtime", "badEnding", "middleEnding", "happyEnding"]);
 let pauseMenu;
 let locked = false;
 let choiceResultTimer;
 let currentRoom = "";
 let activeStatHelp = null;
-let escapeActive = false;
+let evidenceRecoveryActive = false;
 let cinematicLocked = false;
 let cinematicTimer;
 let cinematicScene = null;
@@ -87,8 +104,8 @@ let cinematicRemaining = 0;
 let cinematicPaused = false;
 let deferNextNotification = false;
 const locationTransition = GameLocationTransition.install();
-const day4Start = progress.day4StartSnapshot || { work: 0, affection: 0, trust: 0, clues: [] };
-const AUTOSAVE_CHECKPOINTS = new Set(["day4AuditRequest", "day4Submit", "day4SuccessEnd", "day4FailureEnd"]);
+const day5Start = progress.day5StartSnapshot || { work: 0, affection: 0, trust: 0, clues: [] };
+const AUTOSAVE_CHECKPOINTS = new Set(["day5PresentationStart", "day5Mismatch", "day5AuditArrives", "day5Result", "day5BadEnd", "day5MiddleEnd", "day5NiceEnd"]);
 function escapeHtml(value) {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 }
@@ -119,33 +136,34 @@ function choiceLock(choice) {
 }
 
 function saveProgress() {
-  progress.currentDay = 4;
+  progress.currentDay = 5;
   progress.shared.work = state.work;
   progress.shared.affection = state.affection;
   progress.shared.trust = state.trust;
   progress.shared.clues = ClueRecords.normalizeList(state.clues);
-  progress.days[4] = {
-    sceneId: scenes[state.index]?.id || "day4Intro",
+  progress.days[5] = {
+    sceneId: scenes[state.index]?.id || "day5Intro",
     decisions: { ...state.decisions },
     seenNotifications: { ...state.seenNotifications, "unread:clues": state.unreadClues },
     summariesSeen: { ...state.summariesSeen },
     evidence: { ...state.evidence },
     minigameResult: state.minigameResult,
-    complete: progress.days[4].complete,
+    ending: calculateEnding(),
+    complete: progress.days[5].complete,
   };
   GameProgress.save(localStorage, progress);
 }
 
-function saveDay4Slot(checkpoint) {
+function saveDay5Slot(checkpoint) {
   saveProgress();
   const scene = scenes[state.index] || scenes[0];
   const snapshot = GameProgress.load(localStorage);
-  GameProgress.saveAutoSlot(localStorage, `day4:${checkpoint}`, {
-    day: 4,
-    sceneTitle: "발표 전날",
+  GameProgress.saveAutoSlot(localStorage, `day5:${checkpoint}`, {
+    day: 5,
+    sceneTitle: "정직원 전환 발표",
     sceneTime: scene.time,
     savedAt: snapshot.savedAt,
-    resumeUrl: "day4.html",
+    resumeUrl: "day5.html",
     work: state.work,
     affection: state.affection,
     trust: state.trust,
@@ -180,7 +198,7 @@ async function toggleBgm() {
 
 function autoSaveAtCheckpoint(scene) {
   if (!AUTOSAVE_CHECKPOINTS.has(scene.id)) return;
-  const result = GameProgress.saveAutoSlot(localStorage, `day4:${scene.id}`, buildGameSavePayload(scene));
+  const result = GameProgress.saveAutoSlot(localStorage, `day5:${scene.id}`, buildGameSavePayload(scene));
   if (result.status === "saved" || result.status === "updated") toast(`SLOT ${String(result.slotId).padStart(2, "0")}에 자동 저장했습니다.`);
 }
 
@@ -203,11 +221,11 @@ function buildGameSavePayload(scene) {
   saveProgress();
   const snapshot = GameProgress.load(localStorage);
   return {
-    day: 4,
-    sceneTitle: "발표 전날",
+    day: 5,
+    sceneTitle: "정직원 전환 발표",
     sceneTime: scene.time,
     savedAt: snapshot.savedAt,
-    resumeUrl: "day4.html",
+    resumeUrl: "day5.html",
     work: state.work,
     affection: state.affection,
     trust: state.trust,
@@ -320,7 +338,7 @@ function loadFromGameSlot(slot) {
   localStorage.setItem(GameProgress.STORAGE_KEY, JSON.stringify(slot.progress));
   if (slot.day1Save) localStorage.setItem(GameProgress.LEGACY_DAY1_KEY, JSON.stringify(slot.day1Save));
   else localStorage.removeItem(GameProgress.LEGACY_DAY1_KEY);
-  location.href = slot.resumeUrl || (Number(slot.day) === 4 ? "day4.html" : Number(slot.day) === 3 ? "day3.html" : Number(slot.day) === 2 ? "day2.html" : "game.html");
+  location.href = slot.resumeUrl || (Number(slot.day) === 5 ? "day5.html" : Number(slot.day) === 4 ? "day4.html" : Number(slot.day) === 3 ? "day3.html" : Number(slot.day) === 2 ? "day2.html" : "game.html");
 }
 
 function addClue(clue) {
@@ -331,7 +349,7 @@ function addClue(clue) {
   if (clue.id === "d4_verified_retention") state.evidence.verifiedRetention = 18.4;
   if (clue.id === "d4_evidence_submission") {
     state.evidence.packageId = "EVD-D4-1708";
-    state.evidence.submittedAt = "DAY 4 · 17:08";
+    state.evidence.submittedAt = "DAY 5 · 17:08";
     state.evidence.ptValue = 18.4;
     state.evidence.evidenceValue = 18.4;
     state.evidence.sourceAlias = "retention_7d_verified";
@@ -345,7 +363,7 @@ function renderRecords() {
     $("#clue-list").innerHTML = '<div class="clue-empty"><span>◇</span><strong>아직 기록된 단서가 없습니다</strong><p>대화와 자료를 조사하면 중요한 정보가 여기에 정리됩니다.</p></div>';
     return;
   }
-  ClueMindmap.render($("#clue-list"), { clues: state.clues, currentDay: 4 });
+  ClueMindmap.render($("#clue-list"), { clues: state.clues, currentDay: 5 });
 }
 
 const MESSAGE_DAY_NAMES = Object.freeze(["", "월요일", "화요일", "수요일", "목요일", "금요일"]);
@@ -363,7 +381,7 @@ function messageDay(message) {
   const explicit = Number(message.day);
   if (explicit >= 1 && explicit <= 5) return explicit;
   const embedded = String(message.time || "").match(/DAY\s*([1-5])/i);
-  return embedded ? Number(embedded[1]) : 4;
+  return embedded ? Number(embedded[1]) : 5;
 }
 
 function messageClock(message) {
@@ -371,7 +389,7 @@ function messageClock(message) {
 }
 
 function visibleMessages(room) {
-  return Day4Story.MESSAGES.filter((message) => message.room === room && (messageDay(message) < 4 || isAtOrAfter(message.at)));
+  return Day5Story.MESSAGES.filter((message) => message.room === room && (messageDay(message) < 5 || isAtOrAfter(message.at)));
 }
 
 function messageText(message) {
@@ -401,7 +419,7 @@ function clearUnread(room) {
 function renderMessageTabAlert({ pulse = false } = {}) {
   const tab = document.querySelector('[data-tab="messages-view"]');
   const badge = $("#message-new");
-  const count = Object.keys(Day4Story.ROOMS).reduce((sum, room) => sum + unreadCount(room), 0);
+  const count = Object.keys(Day5Story.ROOMS).reduce((sum, room) => sum + unreadCount(room), 0);
   badge.textContent = String(count);
   badge.hidden = count === 0;
   tab.classList.toggle("has-unread", count > 0);
@@ -414,7 +432,7 @@ function renderMessageTabAlert({ pulse = false } = {}) {
 }
 
 function renderMessages() {
-  const rooms = Object.keys(Day4Story.ROOMS);
+  const rooms = Object.keys(Day5Story.ROOMS);
   const visibleRooms = rooms.filter((room) => visibleMessages(room).length);
   $("#chat-list-empty").hidden = visibleRooms.length > 0;
   rooms.forEach((room) => {
@@ -456,7 +474,7 @@ function playMessageSfx() {
 
 function notifyMessage(id) {
   if (!id || state.seenNotifications[`notified:${id}`]) return;
-  const message = Day4Story.MESSAGES.find((entry) => entry.id === id);
+  const message = Day5Story.MESSAGES.find((entry) => entry.id === id);
   if (!message) return;
   state.seenNotifications[`notified:${id}`] = true;
   if (currentRoom !== message.room) markUnread(message.room);
@@ -466,12 +484,12 @@ function notifyMessage(id) {
   renderMessages();
   renderMessageTabAlert({ pulse: true });
   playMessageSfx();
-  toast(`${Day4Story.ROOMS[message.room].title.replace(/^# /, "")}에 새 메시지가 도착했습니다.`);
+  toast(`${Day5Story.ROOMS[message.room].title.replace(/^# /, "")}에 새 메시지가 도착했습니다.`);
   window.setTimeout(() => $("#messenger").classList.remove("message-arrived"), 1900);
 }
 
 function openChat(roomId) {
-  const room = Day4Story.ROOMS[roomId];
+  const room = Day5Story.ROOMS[roomId];
   if (!room) return;
   currentRoom = roomId;
   $("#room-type").textContent = room.type;
@@ -519,30 +537,48 @@ function openStatHelp(button) {
 }
 
 function dynamicText(scene) {
-  const affectionTone = state.affection < 2 ? "low" : state.affection < 4 ? "mid" : "high";
-  if (scene.dynamic === "studioAnswer") {
-    if (affectionTone === "low") return scene.text;
-    if (affectionTone === "mid") return "몇 번 와봤어요. 장비 이름은 다 외우지 않아도 돼요. 제가 옆에서 순서대로 알려드릴게요.";
-    return "몇 번 와봤어요. 도윤 씨는 처음이니까 제가 옆에서 하나씩 알려드릴게요. 같이 맞추면 금방 익숙해질 거예요.";
+  const escapedDay4 = progress.days[4]?.minigameResult && !progress.days[4].minigameResult.caught;
+  if (scene.dynamic === "day4ResultGreeting") return escapedDay4 ? "생각보다 일찍 왔네요. 어제 저녁에는 그렇게 여유 있어 보이더니." : "어제 늦게 갔는데도 일찍 왔네요. 잠은 제대로 잤어요?";
+  if (scene.dynamic === "day4ResultReply") return escapedDay4 ? "어제는 선배 덕분에 긴장을 좀 풀었습니다. 오늘은 제가 먼저 준비해 두려고 했고요." : "네. 어제 확인을 끝내고 간 덕분에 마음은 오히려 편했습니다.";
+  if (scene.dynamic === "day4ResultClose") return escapedDay4 ? "그럼 어제 저녁도 나름 도움이 됐네요. 너무 일찍부터 긴장하지만 말아요." : "다행이네요. 오늘은 확인한 기록을 믿고 발표에만 집중해요.";
+  if (scene.dynamic === "presentationOpening") {
+    if (state.decisions.presentationFocus === "verification") return "정직원 전환 발표를 시작하겠습니다. 먼저 18.4%의 정상 원본과 교차 검증 과정부터 설명드리겠습니다.";
+    if (state.decisions.presentationFocus === "user_experience") return "정직원 전환 발표를 시작하겠습니다. 신규 사용자가 실제로 체감한 개선 효과부터 말씀드리겠습니다.";
+    return "정직원 전환 발표를 시작하겠습니다. 자동화는 보조 도구로만 사용했고 최종 수치는 사람이 검증했습니다.";
   }
-  if (scene.dynamic === "lastTake") {
-    if (affectionTone === "low") return scene.text;
-    if (affectionTone === "mid") return "처음인데 잘했어요. 같이 기록을 맞추니까 마지막 테이크도 금방 찾았네요.";
-    return "처음인데도 저랑 호흡이 잘 맞았어요. 다음에도 같이 들어오면 든든하겠네요.";
+  if (scene.dynamic === "presentationFocusDetail") {
+    if (state.decisions.presentationFocus === "verification") return "이번 발표에서 가장 먼저 말씀드릴 부분은 결과보다 검증 과정입니다. 동일한 원본과 계산식을 두 차례 확인해 수치가 우연히 맞은 것이 아닌지 검증했습니다.";
+    if (state.decisions.presentationFocus === "user_experience") return "이번 개선의 목적은 숫자만 높이는 것이 아니었습니다. 신규 사용자가 첫 목표를 더 빨리 이해하고, 실제 플레이의 재미까지 도달하도록 경험의 순서를 바꾸는 것이었습니다.";
+    return "자동화가 계산 결과를 대신 판단하게 두지 않았습니다. 자동화는 반복 작업을 보조했고, 대상과 기간을 고정해 최종 수치를 승인한 것은 사람의 검증 과정이었습니다.";
   }
-  if (scene.dynamic === "leaveLead") {
-    if (affectionTone === "low") return scene.text;
-    if (affectionTone === "mid") return "오늘도 같이 마무리했네요. 확인한 상태만 보존하고, 부장님 오시기 전에 같이 나가요.";
-    return "오늘 확인한 상태만 보존하고 같이 퇴근해요. 도윤 씨랑 나가려는데 또 일을 붙잡히면 아쉽잖아요.";
+  if (scene.dynamic === "strategySetup") {
+    if (state.decisions.responseStrategy === "defend_evidence") return "정상 원본과 DAY 2 교차 검증 기록을 첫 번째 증거 창에 열어 두겠습니다.";
+    if (state.decisions.responseStrategy === "clarify_scope") return "대상과 기간을 바로 확인할 수 있도록 두 자료의 산정 기준을 나란히 띄워 두겠습니다.";
+    if (state.decisions.responseStrategy === "coordinate_harin") return "선배는 정상 원본 창을 맡아 주십시오. 질문이 나오면 제가 요청하고 직접 설명하겠습니다.";
+    return "가능한 원인을 메모해 뒀지만, 실제 답변에서는 확인된 기록을 먼저 열겠습니다.";
   }
-  if (scene.dynamic === "dinnerConversation") {
-    if (affectionTone === "low") {
-      return "내일 발표가 있으니 오래 있지는 말아요. 그래도 오늘 맡은 일은 잘 마무리했어요. 수고했어요, 도윤 씨.";
-    }
-    if (affectionTone === "mid") {
-      return "회사 밖에서 보니까 도윤 씨도 조금 편해 보이네요. 오늘처럼 서로 맞춰 가면 내일 발표도 괜찮을 것 같아요.";
-    }
-    return "오늘 같이 퇴근해서 다행이에요. 다음에는 이렇게 급하게 빠져나오지 않아도, 편하게 같이 저녁 먹어요.";
+  if (scene.dynamic === "focusReaction") {
+    if (state.decisions.presentationFocus === "verification") return "수치뿐 아니라 교차 검증 과정을 먼저 제시한 점이 명확하군요. 계속해 주세요.";
+    if (state.decisions.presentationFocus === "user_experience") return "사용자가 체감한 변화에서 출발하니 개선 목적이 잘 보입니다. 계속해 주세요.";
+    return "자동화와 사람의 검증 범위를 구분한 점을 확인했습니다. 계속해 주세요.";
+  }
+  if (scene.dynamic === "strategyCallback") {
+    if (state.decisions.responseStrategy === "defend_evidence") return "정상 수치는 18.4%입니다. 지금 보존된 원본과 교차 검증 기록을 바로 제시하겠습니다.";
+    if (state.decisions.responseStrategy === "clarify_scope") return "먼저 두 자료가 같은 신규 가입 사용자와 같은 발표 기준 주차를 대상으로 하는지 확인하겠습니다.";
+    if (state.decisions.responseStrategy === "coordinate_harin") return "서하린 선배, 보존한 정상 원본을 열어 주십시오. 저는 발표 흐름을 유지하며 산정 기준을 설명하겠습니다.";
+    return "자동화 과정에서 문제가 생겼을 가능성이… 잠깐, 원인을 단정하기 전에 검증된 기록부터 확인하겠습니다.";
+  }
+  if (scene.dynamic === "recoveryResult") return state.decisions.recoverySource === "current_week" && state.decisions.recoveryBinding === "fixed_source"
+    ? "복구 전후 검증을 완료했습니다. PT와 고정된 증빙이 모두 18.4%로 일치합니다."
+    : "복구 검증에서 불안정한 연결이 남았습니다. 정상 원본은 구두로 제시할 수 있지만 증빙 완성도가 낮아집니다.";
+  if (scene.dynamic === "resumeStatement") return state.decisions.recoverySource === "current_week" && state.decisions.recoveryBinding === "fixed_source"
+    ? "정상 원본과 동일한 18.4% 수치로 증빙 자료를 복구했습니다. 산정 기준과 변경 경로도 함께 제출하겠습니다."
+    : "정상 원본의 18.4%는 확인했습니다. 다만 증빙 연결 복구는 추가 검토가 필요해 원본과 변경 기록으로 먼저 설명드리겠습니다.";
+  if (scene.dynamic === "evaluationResult") {
+    const ending = calculateEnding();
+    if (ending === "bad") return "검증과 복구 과정에서 핵심 근거를 충분히 확보하지 못했다. 정직원 전환은 보류다.";
+    if (ending === "nice") return "정직원 전환 승인이다. 사고의 전체 경로와 재발 방지까지 완성한 대응도 높게 평가됐다.";
+    return "정직원 전환 승인이다. 남은 기술 조사는 보안 담당이 이어 간다. 네가 확인한 사실과 대응은 충분히 인정받았어.";
   }
   return scene.text;
 }
@@ -598,7 +634,7 @@ function unlockCg(scene) {
     const image = ArtAssets.resolve(scene.cgAssetId);
     const savedCgs = JSON.parse(localStorage.getItem("nan-unlocked-cgs-v1")) || [];
     const archive = savedCgs.filter((entry) => typeof entry === "object" && entry?.id !== scene.cgAssetId);
-    archive.push({ id: scene.cgAssetId, image, day: `DAY 4 · ${scene.time}`, title: scene.cgTitle || scene.location || "기록된 장면" });
+    archive.push({ id: scene.cgAssetId, image, day: `DAY 5 · ${scene.time}`, title: scene.cgTitle || scene.location || "기록된 장면" });
     localStorage.setItem("nan-unlocked-cgs-v1", JSON.stringify(archive));
   } catch (_error) {}
 }
@@ -661,6 +697,7 @@ function preloadSceneImages(scene) {
   const sources = [];
   if (scene?.cgAssetId) sources.push(ArtAssets.resolve(scene.cgAssetId));
   if (scene?.bgAssetId) sources.push(ArtAssets.resolve(scene.bgAssetId));
+  if (scene?.propAssetId) sources.push(ArtAssets.resolve(scene.propAssetId));
   (scene?.characters || []).forEach((entry) => { if (entry.assetId) sources.push(ArtAssets.resolve(entry.assetId)); });
   return Promise.all(sources.map((source) => new Promise((resolve) => {
     const image = new Image();
@@ -707,6 +744,21 @@ function renderArt(scene) {
     cgImage.removeAttribute("src");
     cgImage.alt = "";
   }
+  const propCutin = $("#story-prop-cutin");
+  const propCutinImage = $("#story-prop-cutin-image");
+  if (scene.propAssetId) {
+    propCutinImage.src = ArtAssets.resolve(scene.propAssetId);
+    propCutinImage.alt = scene.propTitle || "스토리 소품";
+    propCutin.classList.add("show");
+    propCutin.setAttribute("aria-hidden", "false");
+    stage.classList.add("prop-cutin-active");
+  } else {
+    propCutin.classList.remove("show");
+    propCutin.setAttribute("aria-hidden", "true");
+    stage.classList.remove("prop-cutin-active");
+    propCutinImage.removeAttribute("src");
+    propCutinImage.alt = "";
+  }
   const characters = scene.characters || [];
   const visibleCharacterIds = characters.map(characterIdFromAsset);
   const speakerCharacter = characterIdFromSpeaker(scene.speaker);
@@ -714,7 +766,7 @@ function renderArt(scene) {
   $("#character-layer").dataset.count = String(characters.length);
   $("#character-layer").replaceChildren(...characters.map((entry, index) => {
     const characterId = characterIdFromAsset(entry);
-    const profile = DAY4_CHARACTER_PROFILES[characterId];
+    const profile = DAY5_CHARACTER_PROFILES[characterId];
     const image = document.createElement("img");
     const position = entry.position || (characters.length === 1 ? "right" : characters.length === 2 ? (index === 0 ? "left" : "right") : index === 0 ? "left" : index === 1 ? "center" : "right");
     const framingClass = entry.framing ? ` framing-${entry.framing.replace(/_/g, "-")}` : "";
@@ -722,22 +774,60 @@ function renderArt(scene) {
     image.src = ArtAssets.resolve(entry.assetId);
     image.alt = profile?.name || "등장인물";
     image.classList.toggle("boss-urgent", characterId === "boss");
-    image.style.setProperty("--position-x", DAY4_CHARACTER_POSITIONS[position] ?? DAY4_CHARACTER_POSITIONS.right);
+    image.style.setProperty("--position-x", DAY5_CHARACTER_POSITIONS[position] ?? DAY5_CHARACTER_POSITIONS.right);
     if (profile) {
-      const spriteHeight = DAY4_CHARACTER_STAGE_HEIGHT * (profile.heightCm / DAY4_CHARACTER_BASE_HEIGHT) * (entry.scale || 1);
+      const spriteHeight = DAY5_CHARACTER_STAGE_HEIGHT * (profile.heightCm / DAY5_CHARACTER_BASE_HEIGHT) * (entry.scale || 1);
       image.style.setProperty("--sprite-height", `${spriteHeight}cqh`);
     }
+    image.addEventListener("animationend", (event) => {
+      if (event.target !== image) return;
+      image.classList.remove("speaker-beat", "emotion-beat", "emotion-recover");
+    });
     image.onerror = () => image.remove();
     return image;
   }));
 }
 
-function finishEscape(result) {
-  escapeActive = false;
+function finishEvidenceRecovery(result) {
+  evidenceRecoveryActive = false;
+  $("#stage").classList.remove("evidence-recovery-active");
   state.minigameResult = result;
-  if (result.grade === "perfect") state.affection += 1;
-  if (result.grade === "caught") state.work += 1;
-  state.index = nextSceneIndex(state.index);
+  state.decisions.recoverySource = result.source;
+  state.decisions.recoveryBinding = result.binding;
+  if (result.grade === "perfect") {
+    state.work += 4;
+    state.trust += 3;
+  } else if (result.grade === "good") {
+    state.work += 1;
+  } else {
+    state.work -= 2;
+    state.trust -= 2;
+  }
+  state.index = Math.max(0, scenes.findIndex((scene) => scene.id === "day5RecoveryVerify"));
+  saveProgress();
+  render();
+}
+
+function finishFactVerification(result) {
+  evidenceRecoveryActive = false;
+  $("#stage").classList.remove("evidence-recovery-active");
+  const selectedIds = result.selectedIds || [result.selected || "unresolved"];
+  state.decisions.factVerification = selectedIds[0];
+  state.decisions.aliasVerification = selectedIds[1] || "unresolved";
+  state.decisions.ownerDistinction = selectedIds[2] || "unresolved";
+  state.decisions.causalChain = selectedIds[3] || "unresolved";
+  state.decisions.responsibility = selectedIds[4] || "unresolved";
+  if (result.grade === "perfect") {
+    state.work += 8;
+    state.trust += 6;
+  } else if (result.correct >= 3) {
+    state.work += 2;
+    state.trust += 1;
+  } else {
+    state.work -= 3;
+    state.trust -= 4;
+  }
+  state.index = Math.max(0, scenes.findIndex((scene) => scene.id === "day5MinjaeConfront"));
   saveProgress();
   render();
 }
@@ -748,26 +838,31 @@ function summaryRow(icon, title, detail, value = "") {
 
 function showDaySummary() {
   const deltas = {
-    work: state.work - day4Start.work,
-    affection: state.affection - day4Start.affection,
-    trust: state.trust - day4Start.trust,
+    work: state.work - day5Start.work,
+    affection: state.affection - day5Start.affection,
+    trust: state.trust - day5Start.trust,
   };
-  const grade = deltas.work >= 3 ? "EXCELLENT" : deltas.work >= 1 ? "GOOD" : "NEEDS CARE";
+  const ending = calculateEnding();
+  const grade = ending.toUpperCase();
   $("#day-summary-grade").textContent = grade;
+  $("#day-summary-conclusion").textContent = ending === "nice" ? "사건의 전체 경로를 밝히고 다음 일정으로 나아갔다."
+    : ending === "middle" ? "정직원으로 인정받고 믿을 수 있는 동료가 되었다."
+      : "발표의 신뢰를 충분히 회복하지 못했다.";
+  $("#day-summary-note").textContent = "DAY 5의 선택과 누적 신뢰·호감도를 합산한 최종 결과입니다.";
   $("#day-summary-work").innerHTML = [
-    summaryRow("✓", "녹음 지원", "가이드 녹음과 테이크 기록 완료"),
-    summaryRow("✓", "증빙 패키지", "정상 수치 18.4%와 원본 링크 제출"),
-    summaryRow("✓", "보안 감사 요청", "자동화 요청 계정 조회 접수"),
-    summaryRow("↗", "정시 퇴근 작전", state.minigameResult?.caught ? "정시 퇴근 실패 · 추가 확인 업무 완료" : "정시 퇴근 성공 · 서하린과 저녁 식사"),
+    summaryRow("✓", "정상 수치 검증", "18.4% 원본과 DAY 4 제출 기록 확인"),
+    summaryRow("✓", "긴급 검증 회의", state.decisions.causalChain === "correct_chain" ? "자동화 변경 인과 완성" : "일부 변경 경로 조사 이관"),
+    summaryRow("✓", "증빙 복구", state.decisions.recoveryBinding === "fixed_source" ? "고정 출처로 안정 복구" : "연결 안정성 추가 검토"),
+    summaryRow("↗", "정직원 전환", ending === "bad" ? "보류" : "승인"),
   ].join("");
   const details = $("#day-summary-work").closest(".day-summary-details");
   if (details) details.open = false;
   $("#day-summary-stats").innerHTML = [
-    summaryRow("◆", "업무력", "DAY 4 시작 대비", `${deltas.work >= 0 ? "+" : ""}${deltas.work}`),
-    summaryRow("♡", "호감도", "DAY 4 시작 대비", `${deltas.affection >= 0 ? "+" : ""}${deltas.affection}`),
-    summaryRow("◇", "신뢰도", "DAY 4 시작 대비", `${deltas.trust >= 0 ? "+" : ""}${deltas.trust}`),
+    summaryRow("◆", "업무력", "DAY 5 시작 대비", `${deltas.work >= 0 ? "+" : ""}${deltas.work}`),
+    summaryRow("♡", "호감도", "DAY 5 시작 대비", `${deltas.affection >= 0 ? "+" : ""}${deltas.affection}`),
+    summaryRow("◇", "신뢰도", "DAY 5 시작 대비", `${deltas.trust >= 0 ? "+" : ""}${deltas.trust}`),
   ].join("");
-  const startIds = new Set((day4Start.clues || []).map((clue) => clue.id));
+  const startIds = new Set((day5Start.clues || []).map((clue) => clue.id));
   const records = state.clues.filter((clue) => !startIds.has(clue.id));
   const representativeClue = records.at(-1);
   $("#day-summary-records").innerHTML = summaryRow(
@@ -775,12 +870,9 @@ function showDaySummary() {
     `새로운 기록 ${records.length}개`,
     representativeClue?.title || "새로 기록된 단서가 없습니다",
   );
-  const relationshipChanged = deltas.affection !== 0 || deltas.trust !== 0;
   const reactions = $("#day-summary-reactions");
-  reactions.closest(".day-summary-relation").hidden = !relationshipChanged;
-  reactions.innerHTML = relationshipChanged
-    ? '<article class="relationship-result"><small>RELATIONSHIP</small><p><b>서하린</b><em>:</em><strong>함께 검증한 선후배</strong><i>→</i><strong>발표 준비 파트너</strong><span>— 근거를 함께 검증하며 발표 준비 파트너가 됐습니다.</span></p></article>'
-    : "";
+  reactions.closest(".day-summary-relation").hidden = false;
+  reactions.innerHTML = `<article class="relationship-result"><small>FINAL ENDING</small><p><b>${grade}</b><span>— 업무 평가와 서하린의 누적 신뢰가 함께 반영됐습니다.</span></p></article>`;
   $("#day-summary").classList.add("show");
   $("#day-summary").setAttribute("aria-hidden", "false");
   $("#day-summary-exit").focus();
@@ -810,7 +902,7 @@ function render() {
     $("#dialogue").textContent = dynamicText(scene);
   }
   $("#next").disabled = cinematic;
-  $("#next").textContent = scene.end ? "DAY 4 완료　›" : "다음　›";
+  $("#next").textContent = scene.end ? "DAY 5 완료　›" : (scene.nextLabel || "다음　›");
   $("#system-panel").classList.toggle("show", Boolean(scene.system));
   $("#system-panel").setAttribute("aria-hidden", String(!scene.system));
   $("#stage").classList.toggle("system-panel-active", Boolean(scene.system));
@@ -821,6 +913,11 @@ function render() {
   }
   if (scene.system) {
     PresentationScreen.apply($("#system-panel"), scene.system);
+  }
+  const cinematicPresentation = Day5PresentationCinematic.apply(scene);
+  if (cinematicPresentation) {
+    $("#system-panel").classList.remove("show");
+    $("#system-panel").setAttribute("aria-hidden", "true");
   }
   addClue(scene.clue);
   renderRecords();
@@ -848,16 +945,36 @@ function render() {
   renderMessages();
   if (cinematic) startCinematic(scene);
   SceneMotion.play($("#stage"), scene);
+  if (cinematicPresentation && !pendingChoice && !cinematic) {
+    Day5PresentationCinematic.playDialogue(scene, dynamicText(scene));
+  }
   saveProgress();
   autoSaveAtCheckpoint(scene);
-  if (scene.startEscape && !state.minigameResult) {
-    escapeActive = true;
-    OfficeEscapeMinigame.start({ onComplete: finishEscape });
+  if (scene.startFactVerification && !state.decisions.factVerification) {
+    evidenceRecoveryActive = true;
+    $("#stage").classList.add("evidence-recovery-active");
+    EvidenceRecoveryMinigame.start({
+      mode: "validation",
+      durationMs: 65000,
+      mount: $("#stage"),
+      guideMount: $("#stage"),
+      onComplete: finishFactVerification,
+    });
+  }
+  if (scene.startEvidenceRecovery && !state.minigameResult) {
+    evidenceRecoveryActive = true;
+    $("#stage").classList.add("evidence-recovery-active");
+    EvidenceRecoveryMinigame.start({
+      durationMs: 75000,
+      mount: $("#stage"),
+      guideMount: $("#stage"),
+      onComplete: finishEvidenceRecovery,
+    });
   }
 }
 
 function hasBlockingUi() {
-  return locked || cinematicLocked || escapeActive || GameSettingsDialog.isOpen() || pauseMenu?.isOpen() || $("#game-save-modal").classList.contains("open") || $("#day-summary").classList.contains("show") || $("#day-complete").classList.contains("show") || locationTransition?.isActive();
+  return locked || cinematicLocked || Day5PresentationCinematic.isLocked() || evidenceRecoveryActive || GameSettingsDialog.isOpen() || pauseMenu?.isOpen() || $("#game-save-modal").classList.contains("open") || $("#day-summary").classList.contains("show") || $("#day-complete").classList.contains("show") || locationTransition?.isActive();
 }
 
 async function nextScene() {
@@ -865,8 +982,8 @@ async function nextScene() {
   const scene = scenes[state.index];
   if (scene.choices && !state.decisions[scene.choiceKey]) return;
   if (scene.end) {
-    progress.days[4].complete = true;
-    saveDay4Slot(scene.id);
+    progress.days[5].complete = true;
+    saveDay5Slot(scene.id);
     showDaySummary();
     return;
   }
@@ -885,7 +1002,7 @@ async function nextScene() {
     saveProgress();
   }
   locked = false;
-  if (!cinematicLocked) $("#next").disabled = false;
+  if (!cinematicLocked && !Day5PresentationCinematic.isLocked()) $("#next").disabled = false;
 }
 
 $("#next").onclick = nextScene;
@@ -894,16 +1011,6 @@ $("#load").onclick = () => openGameSave("load");
 $("#game-save-close").onclick = closeGameSave;
 $("#game-save-modal").onclick = (event) => { if (event.target.id === "game-save-modal") closeGameSave(); };
 $("#day-summary-exit").onclick = closeDaySummary;
-$("#day-complete-next").onclick = () => {
-  GameProgress.startDay5(localStorage);
-  $("#day-complete").classList.remove("show");
-  $("#day-complete").setAttribute("aria-hidden", "true");
-  $("#day-transition").classList.add("show");
-  $("#day-transition").setAttribute("aria-hidden", "false");
-  bgmManager.stop();
-  UiSfx.playPageTurn();
-  window.setTimeout(() => { location.href = "day5.html?new=1"; }, 2200);
-};
 $("#day-complete-menu").onclick = () => { location.href = "index.html"; };
 const settingsApi = GameSettingsDialog.install({
   onApply: (settings) => {
@@ -917,7 +1024,18 @@ const settingsApi = GameSettingsDialog.install({
     return false;
   },
 });
-pauseMenu = GamePauseMenu.install({ openSettings: () => settingsApi.open(), openLoad: () => openGameSave("load"), onOpen: pauseCinematic, onClose: resumeCinematic });
+pauseMenu = GamePauseMenu.install({
+  openSettings: () => settingsApi.open(),
+  openLoad: () => openGameSave("load"),
+  onOpen: () => {
+    pauseCinematic();
+    if (evidenceRecoveryActive) EvidenceRecoveryMinigame.pause();
+  },
+  onClose: () => {
+    resumeCinematic();
+    if (evidenceRecoveryActive) EvidenceRecoveryMinigame.resume();
+  },
+});
 $("#mute").onclick = toggleBgm;
 $("#sound-prompt").onclick = unlockAudio;
 document.querySelectorAll("[data-tab]").forEach((button) => {
@@ -966,3 +1084,4 @@ document.addEventListener("keydown", (event) => {
   }
 }, true);
 render();
+

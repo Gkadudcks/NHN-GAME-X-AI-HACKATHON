@@ -1,0 +1,10 @@
+Use case: precise-object-edit
+Asset type: high-quality 16:9 visual-novel NICE-ending event CG master.
+References: approved Seo Harin embarrassed sprite, approved DAY 3 elevator CG, and the user-selected DAY 5 composition candidate.
+Scene: Seo Harin stands centered inside an opaque office elevator at the moment she gathers her courage to invite the unseen protagonist on a weekend date.
+Composition: intimate centered eye-level close-up; Harin fills most of the frame; closed brushed-metal doors and a secondary control panel remain visible.
+Expression: warm direct eye contact, tender hopeful eyes, natural blush, lips gently parted, slight forward lean, one hand near her lanyard.
+Elevator controls: top indicator displays 1; panel rows are 10|9, 8|7, 6|5, 4|3, 2|1, B1|B2, B3|B4, and centered B5; only 1 is illuminated.
+Style: polished commercial anime visual-novel CG, thin clean linework, soft 2–3-step cel shading, realistic adult proportions, warm diffused lighting.
+Constraints: preserve Seo Harin's established face, brown bob, brown eyes, pearl earrings, black blazer, white blouse, navy lanyard and adult proportions.
+Avoid: glass elevator, city view, extra people, malformed hands, duplicated buttons, missing labels, multiple illuminated buttons, logos, watermark, photorealism, 3D CGI, chibi proportions.

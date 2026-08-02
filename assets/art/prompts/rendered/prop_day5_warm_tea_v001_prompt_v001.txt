@@ -1,0 +1,8 @@
+Use case: precise-object-edit
+Asset type: Korean office romance visual-novel story prop cut-in, isolated game asset
+Primary request: Add a small fictional NAN company wordmark and geometric spark to the center of the kraft sleeve on a cream warm-tea takeout cup.
+Style: polished 2D Korean romance visual-novel prop illustration with clean linework and soft cel shading.
+Composition: one centered cup, full silhouette and steam visible with generous padding.
+Background: perfectly flat solid #00ff00 chroma key for removal.
+Preserve: cup shape, lid, sleeve, steam, warm palette, scale, and lighting.
+Avoid: real company branding, extra text, hands, desk, cast shadow, reflection, or watermark.

@@ -1,0 +1,107 @@
+.evidence-recovery-game{
+  position:fixed;z-index:1900;inset:0;display:grid;place-items:center;padding:24px;
+  color:#403439;background:linear-gradient(145deg,#25191ff5,#3b2830f2);
+  opacity:0;visibility:hidden;transition:.25s
+}
+.evidence-recovery-game.show{opacity:1;visibility:visible}
+.evidence-recovery-game.presentation-guide{position:fixed;z-index:1900;background:#1d1319a8;backdrop-filter:blur(8px)}
+.evidence-recovery-game.presentation-guide .evidence-recovery-guide{animation:evidence-guide-in .4s cubic-bezier(.2,.75,.2,1) both}
+.evidence-recovery-game.embedded{
+  position:absolute;z-index:1900;inset:0;padding:clamp(64px,7vh,92px) clamp(28px,6vw,92px) clamp(28px,5vh,60px);
+  container-type:size;background:
+    radial-gradient(circle at 50% 38%,#5d354763 0 18%,transparent 48%),
+    linear-gradient(135deg,#130d12f2,#2b1822ec);
+  overflow:hidden
+}
+.evidence-recovery-guide,.evidence-recovery-card{
+  width:min(820px,94vw);border:1px solid #ffffff80;border-radius:24px;
+  background:#fffaf4;box-shadow:0 30px 90px #10070b99
+}
+.evidence-recovery-guide[hidden],.evidence-recovery-card[hidden],.evidence-court[hidden]{display:none!important}
+.evidence-recovery-guide{padding:34px}
+.evidence-recovery-guide>small,.evidence-recovery-card small{color:#d65d68;font-size:10px;font-weight:900;letter-spacing:.18em}
+.evidence-recovery-guide h2{margin:7px 0 8px;font-size:34px}.evidence-recovery-guide>p{margin:0;color:#75636a;font-size:14px;line-height:1.55}
+.evidence-recovery-rules{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:20px 0}
+.evidence-recovery-rules article{display:grid;grid-template-columns:34px 1fr;align-items:center;gap:10px;padding:11px;border:1px solid #eadbd7;border-radius:12px;background:#fff}
+.evidence-recovery-rules article>b{width:32px;height:32px;display:grid;place-items:center;color:#fff;border-radius:9px;background:#d9616c;font-size:10px}
+.evidence-recovery-rules span,.evidence-recovery-rules strong,.evidence-recovery-rules span i{display:block}.evidence-recovery-rules span{color:#857178;font-size:10px;line-height:1.4}.evidence-recovery-rules strong{margin-bottom:2px;color:#493b40;font-size:12px}.evidence-recovery-rules span i{font-style:normal}
+.evidence-recovery-guide>button{width:100%;padding:13px 18px;color:#fff;border:0;border-radius:11px;background:#d9616c;cursor:pointer;font-size:14px;font-weight:900}
+.evidence-recovery-guide>button b{float:right;font-size:19px}.evidence-recovery-guide>button:hover,.evidence-recovery-guide>button:focus-visible{outline:3px solid #f2a1a75c;filter:brightness(1.05)}
+.evidence-recovery-card{padding:20px}
+.evidence-recovery-card>header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.evidence-recovery-card h2{margin:3px 0 0;font-size:25px}
+.evidence-recovery-timer{text-align:right}.evidence-recovery-timer span{display:block;color:#97838a;font-size:8px}.evidence-recovery-timer strong{display:block;color:#55464b;font-size:23px;font-variant-numeric:tabular-nums}
+.evidence-recovery-game.urgent .evidence-recovery-timer strong{color:#d64e5b;animation:evidence-urgent .55s ease-in-out infinite alternate}
+.evidence-recovery-progress{height:6px;margin:12px 0;border-radius:99px;background:#eadfdb;overflow:hidden}.evidence-recovery-progress i{height:100%;display:block;width:0;border-radius:inherit;background:linear-gradient(90deg,#e36a72,#f29a83);transition:width .42s}
+.evidence-recovery-workspace{position:relative;min-height:210px;padding:48px 18px 15px;overflow:hidden;border:1px solid #eadbd7;border-radius:15px;background:linear-gradient(#fffdf9f2,#fff)}
+.evidence-recovery-workspace>small,.evidence-recovery-workspace>h3,.evidence-recovery-options{position:relative;z-index:2}
+.evidence-recovery-workspace h3{margin:5px 0 13px;font-size:16px;line-height:1.35;word-break:keep-all}
+.evidence-recovery-stream{position:absolute;z-index:0;left:0;right:0;top:0;height:38px;overflow:hidden;border-bottom:1px solid #edddd9;background:#2a2025}
+.evidence-recovery-stream i{position:absolute;top:10px;left:100%;color:#ff9ca5;font-size:8px;font-style:normal;font-weight:900;letter-spacing:.12em;white-space:nowrap;animation:evidence-stream 5.2s linear infinite;animation-delay:calc(var(--stream-index)*-1.7s)}
+.evidence-recovery-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.evidence-recovery-options button{position:relative;min-width:0;min-height:78px;display:grid;grid-template-columns:23px 1fr;align-items:center;gap:8px;padding:10px;color:#4e4146;border:1px solid #dfd2cf;border-radius:11px;background:#fffaf7;cursor:pointer;text-align:left;transition:.16s;animation:evidence-node-float 2.4s ease-in-out infinite;animation-delay:calc(var(--node-index)*-.55s)}
+.evidence-recovery-options button>i{width:20px;height:20px;border:2px solid #d9c9c7;border-radius:50%;box-shadow:inset 0 0 0 4px #fff}
+.evidence-recovery-options button span,.evidence-recovery-options button small,.evidence-recovery-options button strong{display:block;min-width:0}.evidence-recovery-options button small{margin-bottom:3px;color:#b09ca1;font-size:6px;letter-spacing:.1em}.evidence-recovery-options button strong{font-size:10px;line-height:1.35}
+.evidence-recovery-options button:hover,.evidence-recovery-options button:focus-visible{z-index:3;color:#fff;border-color:#dc6570;background:#dc6570;outline:none;transform:translateY(-3px) scale(1.025);animation-play-state:paused}
+.evidence-recovery-options button:hover small,.evidence-recovery-options button:focus-visible small{color:#ffd9dc}
+.evidence-recovery-options button.verified{color:#fff;border-color:#45a874;background:#45a874;animation:none}.evidence-recovery-options button.verified>i{border-color:#fff;background:#fff;box-shadow:inset 0 0 0 5px #45a874}
+.evidence-recovery-options button.rejected{color:#fff;border-color:#d84d5a;background:#d84d5a;animation:none}.evidence-recovery-options button.rejected>i{border-color:#fff;background:#fff;box-shadow:inset 0 0 0 5px #d84d5a}
+.evidence-recovery-card>footer{display:flex;justify-content:space-between;gap:14px;margin-top:11px;color:#8a767d;font-size:9px}.evidence-recovery-card>footer b{color:#cf5965}
+.evidence-recovery-game.fault .evidence-recovery-card{animation:evidence-fault .42s both}
+.evidence-recovery-game.fault::after{content:"TRACE ERROR · -05 SEC";position:absolute;z-index:40;top:10px;right:12px;padding:5px 8px;color:#fff;border-radius:6px;background:#d83f4e;font-size:7px;font-weight:900;letter-spacing:.1em}
+.evidence-recovery-game.embedded .evidence-recovery-guide,.evidence-recovery-game.embedded .evidence-recovery-card{width:min(1320px,100%);height:100%;padding:clamp(22px,3cqw,42px);border:1px solid #ffabb84d;border-radius:26px;box-shadow:0 34px 110px #070306b8}
+.evidence-recovery-game.embedded .evidence-recovery-guide:not([hidden]){display:flex;flex-direction:column;justify-content:center}
+.evidence-recovery-game.embedded .evidence-recovery-guide h2{font-size:clamp(18px,3.2cqw,26px)}
+.evidence-recovery-game.embedded .evidence-recovery-guide>p{font-size:clamp(9px,1.5cqw,12px)}
+.evidence-recovery-game.embedded .evidence-recovery-rules{margin:12px 0}
+.evidence-recovery-game.embedded .evidence-recovery-card h2{font-size:clamp(22px,2.6cqw,34px)}
+.evidence-recovery-game.embedded .evidence-recovery-workspace{min-height:0;height:calc(100% - 135px);padding:clamp(150px,20vh,210px) clamp(18px,2.4vw,38px) 24px;background:linear-gradient(145deg,#fffaf7,#fff)}
+.evidence-recovery-game.embedded .evidence-recovery-workspace>small{font-size:12px}
+.evidence-recovery-game.embedded .evidence-recovery-workspace h3{margin:7px 0 20px;font-size:clamp(20px,2vw,30px)}
+.evidence-recovery-game.embedded .evidence-recovery-stream{display:flex;align-items:stretch;gap:clamp(22px,3vw,52px);height:clamp(120px,16vh,160px);padding:18px clamp(18px,2.4vw,38px);overflow:visible;border:0;background:linear-gradient(100deg,#281b22,#3a222e)}
+.evidence-recovery-game.embedded .evidence-recovery-stream i{position:relative;top:auto;left:auto;flex:1;display:flex;align-items:center;gap:12px;min-width:0;padding:12px 14px;color:#fff;border:1px solid #ff8b9b73;border-radius:14px;background:#ffffff0d;font-style:normal;animation:evidence-trace-pulse 1.8s ease-in-out infinite;animation-delay:calc(var(--stream-index)*.16s)}
+.evidence-recovery-game.embedded .evidence-recovery-stream i:not(:last-child)::after{content:"➜";position:absolute;z-index:3;right:clamp(-42px,-2.7vw,-24px);top:50%;color:#ff7186;font-size:clamp(18px,2vw,30px);transform:translateY(-50%);filter:drop-shadow(0 0 7px #ff526f)}
+.evidence-recovery-game.embedded .evidence-recovery-stream i small{display:grid;flex:0 0 34px;height:34px;place-items:center;color:#2a151e;border-radius:50%;background:#ff778b;font-size:10px;font-weight:900}
+.evidence-recovery-game.embedded .evidence-recovery-stream i span,.evidence-recovery-game.embedded .evidence-recovery-stream i b,.evidence-recovery-game.embedded .evidence-recovery-stream i em{display:block;min-width:0}
+.evidence-recovery-game.embedded .evidence-recovery-stream i b{font-size:clamp(11px,1vw,15px);white-space:normal}
+.evidence-recovery-game.embedded .evidence-recovery-stream i em{margin-top:4px;color:#ffbdc7;font-size:clamp(8px,.75vw,11px);font-style:normal;overflow-wrap:anywhere}
+.evidence-recovery-game.embedded .evidence-recovery-options button{min-height:clamp(82px,11vh,116px);padding:16px}
+.evidence-recovery-game.embedded .evidence-recovery-options button strong{font-size:clamp(12px,1.05vw,16px)}
+.evidence-court{width:min(1500px,100%);height:100%;display:grid;grid-template-rows:auto 7px 1fr auto;gap:14px;color:#fff}
+.evidence-court>header,.evidence-court>footer{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.evidence-court>header small,.evidence-court-arena>small{color:#ff7186;font-size:11px;font-weight:1000;letter-spacing:.18em}
+.evidence-court>header h2{margin:4px 0 0;font-size:clamp(24px,3vw,44px)}
+.evidence-court .evidence-recovery-timer span{color:#d5bbc5}.evidence-court .evidence-recovery-timer strong{color:#fff;font-size:32px}
+.evidence-court-progress{position:relative;overflow:hidden;border-radius:99px;background:#ffffff24}
+.evidence-court-progress::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--progress,0%);background:linear-gradient(90deg,#ff526c,#ff9a83);transition:width .45s}
+.evidence-court-arena{position:relative;min-height:0;padding:clamp(22px,3vw,46px);overflow:hidden;border:1px solid #ff91a43d;border-radius:26px;background:linear-gradient(145deg,#21151dd9,#100b0fe8);box-shadow:inset 0 0 80px #ff466315}
+.evidence-court-arena::before{content:"";position:absolute;inset:-40%;background:conic-gradient(from 90deg,transparent,#ff58720d,transparent 24%);animation:court-sweep 7s linear infinite;pointer-events:none}
+.evidence-court-dialogue{position:relative;z-index:2;max-width:1220px;margin:14px auto 12px;padding:20px 28px 22px;border:1px solid #ff829552;border-radius:22px;background:linear-gradient(135deg,#38252edb,#21161ce8);box-shadow:0 24px 55px #05020470;animation:court-claim-in .45s cubic-bezier(.2,.8,.2,1)}
+.evidence-court-dialogue>strong{display:inline-block;margin-bottom:8px;color:#ff7d91;font-size:14px}
+.evidence-court-arena blockquote{margin:0;padding:0;color:#fff;font-size:clamp(18px,1.85vw,29px);font-weight:800;line-height:1.55;text-align:left;word-break:keep-all}
+.evidence-court-arena>p{position:relative;z-index:2;margin:0 auto 22px;color:#d9c4cc;font-size:clamp(12px,1.1vw,16px);text-align:center}
+.evidence-court-playfield{position:relative;z-index:2;height:calc(100% - 175px);min-height:230px;display:flex;align-items:center;justify-content:center;gap:clamp(14px,2vw,28px)}
+.evidence-court-playfield button{color:#fff;border:1px solid #ff879965;border-radius:16px;background:#36212bd9;box-shadow:0 18px 42px #05020470;cursor:pointer;transition:.18s}
+.evidence-court-playfield button small,.evidence-court-playfield button strong,.evidence-court-playfield button span{display:block}.evidence-court-playfield button small{color:#ff8fa0;font-size:9px;letter-spacing:.12em}.evidence-court-playfield button strong{margin-top:7px;font-size:clamp(13px,1.15vw,18px);line-height:1.35}.evidence-court-playfield button span{margin-top:5px;color:#d4afb9;font-size:11px;overflow-wrap:anywhere}
+.evidence-court-playfield button:hover,.evidence-court-playfield button:focus-visible{border-color:#fff;background:#d84f64;outline:none;transform:scale(1.05)}
+.is-capture{align-items:center}.court-answer-dialogue{width:min(1180px,96%);padding:24px 30px;border:1px solid #ffffff2e;border-radius:22px;background:#fdf8f3;color:#382a31;box-shadow:0 25px 60px #05020485;animation:court-response-in .4s both}.court-answer-dialogue>strong{display:block;margin-bottom:10px;color:#dc586d;font-size:14px}.court-answer-dialogue p{margin:0;font-size:clamp(17px,1.6vw,25px);font-weight:750;line-height:1.9;word-break:keep-all}.court-answer-dialogue button{display:inline;padding:4px 9px;color:#7a2738;border:0;border-bottom:3px solid #ed667b;border-radius:5px;background:#ffdce2;box-shadow:none;font:inherit;font-weight:900}.court-answer-dialogue button:hover,.court-answer-dialogue button:focus-visible{color:#fff;background:#dc5268;transform:translateY(-2px)}
+.is-connect{align-items:stretch}.court-node{position:relative;flex:1;max-width:290px;padding:22px 18px}.court-node.linked{border-color:#62e5ab;background:#17664d;box-shadow:0 0 32px #57e7a25c;transform:translateY(-8px)}.court-node.linked::after{content:"LINKED";position:absolute;right:12px;top:10px;color:#8fffc9;font-size:9px;font-weight:900}
+.court-contradiction{display:inline!important;margin-left:8px;padding:5px 10px;color:#fff;border:1px dashed #ff7288!important;background:#8c2738!important;font:inherit;animation:court-contradiction 1s ease-in-out infinite alternate}.court-contradiction.targeted{color:#2a1118!important;background:#fff!important;box-shadow:0 0 35px #ff5f78}
+.is-rebuttal{align-items:center}.court-evidence{flex:0 0 min(30%,360px);min-height:110px;padding:20px;animation:court-evidence-in .35s both;animation-delay:calc(var(--item-index)*.08s)}
+.is-verdict{align-items:stretch}.court-verdict{flex:1;max-width:390px;padding:24px}.court-verdict:first-child{border-color:#ffd36e}
+.evidence-court>footer{padding:0 6px;color:#d7bec7;font-size:13px}.evidence-court>footer b{color:#ff8295}
+.evidence-recovery-game.fault .evidence-court-arena{animation:evidence-fault .42s both;box-shadow:inset 0 0 100px #ff243f42}
+@keyframes evidence-stream{to{transform:translateX(-920px)}}
+@keyframes evidence-trace-pulse{50%{border-color:#ff91a4;box-shadow:0 0 24px #ff57703b;transform:translateY(-3px)}}
+@keyframes court-sweep{to{transform:rotate(360deg)}}
+@keyframes court-claim-in{from{opacity:0;transform:translateX(70px) skewX(-5deg)}to{opacity:1;transform:none}}
+@keyframes court-response-in{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+@keyframes court-evidence-in{from{opacity:0;transform:translateY(45px) rotate(-2deg)}to{opacity:1;transform:none}}
+@keyframes court-contradiction{to{box-shadow:0 0 24px #ff536f}}
+@keyframes evidence-guide-in{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes evidence-node-float{50%{transform:translateY(-4px)}}
+@keyframes evidence-fault{20%{transform:translateX(-6px)}40%{transform:translateX(7px)}65%{transform:translateX(-3px)}85%{transform:translateX(2px)}}
+@keyframes evidence-urgent{to{transform:scale(1.08);text-shadow:0 0 12px #d64e5b70}}
+@media(max-width:680px){.evidence-recovery-guide,.evidence-recovery-card{padding:18px}.evidence-recovery-rules{grid-template-columns:1fr}.evidence-recovery-options{grid-template-columns:1fr}.evidence-recovery-workspace{min-height:300px}.evidence-recovery-options button{min-height:54px}}
+@media(prefers-reduced-motion:reduce){.evidence-recovery-stream i,.evidence-recovery-options button,.evidence-recovery-game.fault .evidence-recovery-card,.evidence-recovery-game.urgent .evidence-recovery-timer strong,.evidence-recovery-game.presentation-guide .evidence-recovery-guide{animation:none}}
+.reduce-effects .evidence-recovery-stream i,.reduce-effects .evidence-recovery-options button,.reduce-effects .evidence-recovery-game.fault .evidence-recovery-card,.reduce-effects .evidence-recovery-game.urgent .evidence-recovery-timer strong{animation:none}

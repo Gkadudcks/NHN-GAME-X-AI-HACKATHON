@@ -1,0 +1,394 @@
+/* DAY 4 urgent-request beat: a short impact shake, never a continuous vibration. */
+.stage::after {
+  background: none;
+}
+
+.stage > .shade {
+  background: transparent;
+}
+
+/* Full-screen evidence panels replace the character view for that beat. */
+.stage.system-panel-active .character-layer {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.stage.evidence-recovery-active .system-panel,
+.stage.evidence-recovery-active .character-layer,
+.stage.evidence-recovery-active .dialogue-card,
+.stage.evidence-recovery-active .scene-label {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* DAY 5 character motion must preserve the height calculated from each profile. */
+.character-layer .character {
+  transform: translateX(-50%) translateY(18px);
+}
+
+.character-layer .character.visible,
+.character-layer .character.listening {
+  transform: translateX(-50%) translateY(0);
+}
+
+.stage.camera-focus .character-layer,
+.stage.camera-tension .character-layer,
+.stage.camera-romance .character-layer,
+.stage.camera-reveal .character-layer,
+.stage.camera-impact .character-layer {
+  transform-origin: bottom center;
+}
+
+.stage.camera-focus .character-layer {
+  animation: day5-camera-focus 1.1s cubic-bezier(.18, .7, .22, 1) both;
+}
+
+.stage.camera-tension .character-layer {
+  animation: day5-camera-tension 1.4s cubic-bezier(.18, .65, .2, 1) both;
+}
+
+.stage.camera-romance .character-layer {
+  animation: day5-camera-romance 1.6s cubic-bezier(.18, .65, .2, 1) both;
+}
+
+.stage.camera-reveal .character-layer {
+  animation: day5-camera-reveal 1.1s cubic-bezier(.18, .72, .2, 1) both;
+}
+
+.stage.camera-impact .character-layer {
+  animation: day5-camera-impact .48s cubic-bezier(.2, .8, .25, 1) both;
+}
+
+.character-layer .character.speaking.speaker-beat {
+  animation: day5-speaker-focus-in .42s cubic-bezier(.2, .72, .25, 1) both;
+}
+
+.character.emotion-beat.emotion-surprised {
+  animation-name: day5-emotion-surprised;
+}
+
+.character.emotion-beat.emotion-nervous {
+  animation-name: day5-emotion-nervous;
+}
+
+.character.emotion-beat.emotion-happy {
+  animation-name: day5-emotion-happy;
+}
+
+.character.emotion-beat.emotion-embarrassed {
+  animation-name: day5-emotion-embarrassed;
+}
+
+.character.emotion-beat.emotion-angry {
+  animation-name: day5-emotion-angry;
+}
+
+.character.emotion-beat.emotion-sad {
+  animation-name: day5-emotion-sad;
+}
+
+.character.emotion-beat.emotion-determined {
+  animation-name: day5-emotion-determined;
+}
+
+.character.emotion-recover {
+  animation-name: day5-emotion-recover;
+}
+
+@keyframes day5-speaker-focus-in {
+  0%, 100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  45% { opacity: .84; transform: translateX(-50%) translateY(-4px); }
+}
+
+@keyframes day5-camera-focus {
+  0%, 100% { transform: scale(1); }
+  48% { transform: scale(1.025); }
+}
+
+@keyframes day5-camera-tension {
+  0%, 100% { transform: scale(1); }
+  45% { transform: scale(1.035); }
+}
+
+@keyframes day5-camera-romance {
+  0%, 100% { filter: brightness(1) saturate(1); transform: scale(1); }
+  50% { filter: brightness(1.045) saturate(1.04); transform: scale(1.025); }
+}
+
+@keyframes day5-camera-reveal {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  38% { opacity: .72; transform: scale(1.035); }
+}
+
+@keyframes day5-camera-impact {
+  0%, 100% { transform: translateX(0) scale(1); }
+  25% { transform: translateX(-5px) scale(1.025); }
+  52% { transform: translateX(4px) scale(1.018); }
+  76% { transform: translateX(-2px) scale(1.008); }
+}
+
+@keyframes day5-emotion-surprised {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  35% { transform: translateX(-50%) translateY(-10px); }
+}
+
+@keyframes day5-emotion-nervous {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  25% { transform: translateX(calc(-50% - 4px)) translateY(0); }
+  50% { transform: translateX(calc(-50% + 3px)) translateY(0); }
+  75% { transform: translateX(calc(-50% - 2px)) translateY(0); }
+}
+
+@keyframes day5-emotion-happy {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  45% { transform: translateX(-50%) translateY(-9px); }
+}
+
+@keyframes day5-emotion-embarrassed {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(calc(-50% + 8px)) translateY(4px); }
+}
+
+@keyframes day5-emotion-angry {
+  0%, 100% { filter: brightness(1) saturate(1) drop-shadow(0 18px 26px #1c101752); }
+  45% { filter: brightness(1.08) saturate(1.06) drop-shadow(0 18px 26px #1c101752); }
+}
+
+@keyframes day5-emotion-sad {
+  0%, 100% { filter: brightness(1) saturate(1); transform: translateX(-50%) translateY(0); }
+  55% { filter: brightness(.88) saturate(.82); transform: translateX(-50%) translateY(7px); }
+}
+
+@keyframes day5-emotion-determined {
+  0%, 100% { filter: brightness(1); transform: translateX(-50%) translateY(0); }
+  55% { filter: brightness(1.08); transform: translateX(-50%) translateY(-2px); }
+}
+
+@keyframes day5-emotion-recover {
+  0%, 100% { filter: brightness(1) saturate(1); transform: translateX(-50%) translateY(0); }
+  45% { filter: brightness(1.04) saturate(1.02); transform: translateX(-50%) translateY(-2px); }
+}
+
+.stage.urgent-scene {
+  animation: day4-urgent-screen-shake .28s linear both;
+}
+
+.stage.urgent-scene.urgent-impact {
+  animation-name: day4-urgent-screen-shake-strong;
+  animation-duration: .38s;
+}
+
+.stage.urgent-scene .dialogue-card {
+  animation: day4-urgent-dialogue-in .3s cubic-bezier(.16, .8, .3, 1) both;
+}
+
+.stage.urgent-scene .scene-label {
+  animation: day4-urgent-label .55s ease both;
+}
+
+.stage.urgent-scene .hud #clock {
+  color: #c93645;
+  font-weight: 900;
+  animation: day4-urgent-clock .75s ease 2;
+}
+
+.stage.urgent-scene .character.boss-urgent {
+  animation: day4-boss-urgent-enter .34s cubic-bezier(.12, .82, .25, 1) both;
+}
+
+@keyframes day4-urgent-screen-shake {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-3px, 1px); }
+  40% { transform: translate(3px, -1px); }
+  60% { transform: translate(-2px, -1px); }
+  80% { transform: translate(2px, 1px); }
+}
+
+@keyframes day4-urgent-screen-shake-strong {
+  0%, 100% { transform: translate(0, 0); }
+  12% { transform: translate(-7px, 2px); }
+  25% { transform: translate(6px, -2px); }
+  38% { transform: translate(-5px, -1px); }
+  52% { transform: translate(5px, 2px); }
+  66% { transform: translate(-3px, 1px); }
+  80% { transform: translate(3px, -1px); }
+}
+
+@keyframes day4-urgent-dialogue-in {
+  from { opacity: .25; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes day4-urgent-label {
+  0% { border-left-width: 3px; transform: translateX(-8px); }
+  45% { border-left-width: 8px; }
+  100% { border-left-width: 3px; transform: translateX(0); }
+}
+
+@keyframes day4-urgent-clock {
+  50% {
+    color: #fff;
+    border-radius: 6px;
+    background: #d84f5c;
+    box-shadow: 0 0 0 6px rgba(216, 79, 92, .14);
+    transform: scale(1.08);
+  }
+}
+
+@keyframes day4-boss-urgent-enter {
+  0%, 100% {
+    opacity: 1;
+    filter: brightness(1) drop-shadow(0 18px 26px rgba(28, 16, 23, .32));
+    transform: translateX(-50%);
+  }
+  38% {
+    opacity: .9;
+    filter: brightness(.86) drop-shadow(0 20px 30px rgba(28, 16, 23, .42));
+    transform: translateX(-40%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage.urgent-scene,
+  .stage.urgent-scene .dialogue-card,
+  .stage.urgent-scene .scene-label,
+  .stage.urgent-scene .hud #clock,
+  .stage.urgent-scene .character.boss-urgent {
+    animation: none;
+  }
+}
+
+.reduce-effects .stage.urgent-scene,
+.reduce-effects .stage.urgent-scene .dialogue-card,
+.reduce-effects .stage.urgent-scene .scene-label,
+.reduce-effects .stage.urgent-scene .hud #clock,
+.reduce-effects .stage.urgent-scene .character.boss-urgent {
+  animation: none;
+}
+
+.story-prop-cutin {
+  position: absolute;
+  z-index: 8;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .28s ease, visibility .28s ease;
+}
+
+.story-prop-cutin::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: transparent;
+}
+
+.story-prop-cutin::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(27cqw, 330px);
+  aspect-ratio: .84;
+  border: 2px solid rgba(255, 255, 255, .9);
+  border-radius: 32px;
+  background: rgba(255, 250, 244, .82);
+  box-shadow:
+    0 20px 44px rgba(40, 25, 22, .22),
+    inset 0 1px 0 rgba(255, 255, 255, .94);
+  backdrop-filter: blur(4px) saturate(.94);
+  transform: translate(-50%, -50%) scale(.94);
+  opacity: 0;
+}
+
+.story-prop-cutin.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.story-prop-cutin.show::after {
+  animation: day5-tea-card-in .52s cubic-bezier(.16, .84, .24, 1) both;
+}
+
+.story-prop-cutin img {
+  position: relative;
+  z-index: 1;
+  width: min(34cqw, 390px);
+  max-height: 58cqh;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 26px rgba(27, 18, 13, .24));
+  animation: day5-prop-cutin-in .52s cubic-bezier(.16, .84, .24, 1) both;
+}
+
+.stage.prop-cutin-active .character-layer {
+  opacity: 1;
+}
+
+.stage.prop-cutin-active .system-panel {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.stage.prop-cutin-active .system-panel.show::before {
+  display: none;
+}
+
+.stage.prop-cutin-active::after {
+  background: none;
+}
+
+.stage.prop-cutin-active > .shade {
+  background: transparent;
+}
+
+@keyframes day5-prop-cutin-in {
+  0% { opacity: 0; transform: translateY(22px) scale(.94); }
+  72% { opacity: 1; transform: translateY(-2px) scale(1.008); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes day5-tea-card-in {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(.94); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@media (max-width: 760px) {
+  .story-prop-cutin img {
+    width: min(56cqw, 340px);
+    max-height: 52cqh;
+  }
+
+  .story-prop-cutin::after {
+    width: min(54cqw, 310px);
+    border-radius: 26px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-prop-cutin,
+  .story-prop-cutin::after,
+  .story-prop-cutin img {
+    animation: none;
+    transition: none;
+  }
+
+  .story-prop-cutin.show::after {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.reduce-effects .story-prop-cutin,
+.reduce-effects .story-prop-cutin::after,
+.reduce-effects .story-prop-cutin img {
+  animation: none;
+  transition: none;
+}
+
+.reduce-effects .story-prop-cutin.show::after {
+  opacity: 1;
+  transform: translate(-50%, -50%);
+}

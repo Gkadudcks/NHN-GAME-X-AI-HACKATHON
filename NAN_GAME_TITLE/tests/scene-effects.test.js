@@ -32,7 +32,9 @@ test("슬픈 감정 연출이 끝나면 캐릭터가 원위치로 부드럽게 �
   assert.match(motion, /stage\.dataset\.sceneMotion === "sad"/);
   assert.match(motion, /"emotion-recover"/);
   assert.match(css, /\.character\.emotion-recover\{animation:emotion-sad-recover/);
-  assert.match(css, /@keyframes emotion-sad-recover\{from\{[^}]*translateY\(7px\)[^}]*\}to\{[^}]*translateY\(0\)/);
+  assert.match(css, /@keyframes emotion-sad-recover\{0%,100%\{[^}]*translateY\(0\)[^}]*\}45%\{[^}]*translateY\(-2px\)/);
+  assert.match(motion, /function clearTransientCharacterMotion\(stage\)/);
+  assert.match(motion, /classList\.remove\("speaker-beat", "emotion-beat", "emotion-recover"\)/);
 });
 
 test("같은 캐릭터 구성이 이어지는 대사에서는 입장 애니메이션을 반복하지 않는다", () => {
@@ -63,4 +65,8 @@ test("시간·변경자·파일명 같은 단서 구절만 지정해 한 번 강
   assert.match(day4, /id: "day4EvidencePreview".*emphasis: \["18\.4%", "retention_7d_verified"\]/);
   assert.doesNotMatch(day2, /emphasis: "결과는 좋지 않았고요"/);
   assert.doesNotMatch(day3, /emphasis: "무엇을 기준으로 판단해야 할까\?"/);
+});
+test("choice screens hide character motion until the dialogue resumes", () => {
+  assert.match(css, /\.stage\.choice-mode \.character-layer\{opacity:0;visibility:hidden\}/);
+  assert.match(css, /\.stage\.choice-mode \.character\{animation:none!important\}/);
 });

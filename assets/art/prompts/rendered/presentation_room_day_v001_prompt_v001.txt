@@ -1,0 +1,27 @@
+[PROJECT VISUAL STYLE | v001]
+Modern Korean office romance visual novel with light mystery elements.
+Polished commercial anime visual novel illustration.
+Clean, thin, consistent line art.
+Soft 2-to-3-step cel shading with minimal painterly texture.
+Natural anatomy and realistic adult body proportions.
+Warm, low-contrast, low-to-medium-saturation palette using navy, beige, cream, muted brown, and pale blue.
+Soft indoor diffused key light with subtle cool ambient shadows.
+Clean game-ready edges and a consistent finish across all assets.
+
+[ASSET]
+Use case: stylized-concept
+Asset type: 1920x1080 DAY 5 visual-novel background
+Stable ID: background.presentation_room.day
+Create a spacious professional presentation hall inside a large Korean game company headquarters, clearly distinct from a small meeting room.
+
+[SCENE]
+Audience-side view toward a large blank widescreen display centered on a dark navy feature wall, a low presentation platform, a slim lectern placed off to one side, a ceiling projector, recessed linear lights, acoustic wood panels, and a glass side wall with daytime city light. Evaluator desks and chairs appear only at the lower far edges. No people.
+
+[COMPOSITION]
+Wide 16:9 frame at eye level with a natural 35mm perspective. Keep the central lower foreground and the 30%, 50%, and 70% character positions clear. Keep the bottom 20% visually simple for dialogue UI. Leave the front display unobstructed and blank.
+
+[LIGHTING]
+Bright late-morning diffused daylight mixed with warm neutral ceiling light. Focused, slightly tense final-presentation atmosphere.
+
+[CONSTRAINTS]
+Background only. No characters, readable text, logos, brand marks, watermark, presentation content, or transparent areas. Stable architectural perspective and clean furniture geometry. No photorealism, 3D CGI look, fisheye lens, extreme perspective, cyberpunk lighting, stage curtains, classroom mood, clutter, duplicated chairs, malformed furniture, or prominent foreground table blocking sprites.

@@ -1,0 +1,27 @@
+[PROJECT VISUAL STYLE | v001]
+Modern Korean office romance visual novel with light mystery elements.
+Polished commercial anime visual novel illustration.
+Clean, thin, consistent line art.
+Soft 2-to-3-step cel shading with minimal painterly texture.
+Natural anatomy and realistic adult body proportions.
+Warm, low-contrast, low-to-medium-saturation palette using navy, beige, cream, muted brown, and pale blue.
+Soft indoor diffused key light with subtle cool ambient shadows.
+Clean game-ready edges and a consistent finish across all assets.
+
+[ASSET]
+Use case: illustration-story
+Asset type: 16:9 visual novel background
+Stable ID: background.bistro.evening
+Create a distinctly new, small contemporary Korean casual bistro near an office district in the early evening. It should feel appropriate for two office coworkers with mutual romantic interest to eat together after work: understated, believable, gently intimate, and not an obvious formal date venue.
+
+[SCENE]
+Warm walnut wood, cream plaster walls, muted navy upholstery, a few tasteful plants, simple ceramic tableware, subtle brass details, and a large side window showing soft blue-hour city lights and faint building silhouettes.
+
+[COMPOSITION]
+Wide 16:9 frame at eye level with a natural 35mm perspective. A comfortable two-person booth and table anchor the left-to-center middle ground. Keep the center-right foreground visually calm and open for character sprites and dialogue UI. Maintain clear depth and uncluttered paths. Do not reuse the architecture, furniture arrangement, menu displays, or daylight mood of the restaurant_lunch reference.
+
+[LIGHTING]
+Warm diffused pendant lighting balanced with cool blue evening window light. Low contrast and a quiet after-work atmosphere. Suggest romantic warmth without candles, hearts, flowers, or overt date symbolism.
+
+[CONSTRAINTS]
+Background only. No characters, readable text, menu boards, logos, watermark, company branding, visible alcohol bottles, or malformed furniture. No photorealism, 3D CGI, watercolor, thick outlines, Korean webtoon semi-realism, neon palette, excessive bloom, dramatic depth of field, bar atmosphere, nightclub atmosphere, luxury fine dining, or cafeteria mood.

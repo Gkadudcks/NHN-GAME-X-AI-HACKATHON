@@ -11,6 +11,7 @@
     "background.cafeteria.day": "../assets/art/backgrounds/approved/cafeteria_day_v001.png",
     "background.elevator_lobby.night": "../assets/art/backgrounds/approved/elevator_lobby_night_v001.png",
     "background.meeting_room.afternoon": "../assets/art/backgrounds/approved/meeting_room_afternoon_v001.png",
+    "background.presentation_room.day": "../assets/art/backgrounds/approved/presentation_room_day_v001.png",
     "background.office.day": "../assets/art/backgrounds/approved/office_day_v001.png",
     "background.office.secret_chat": "assets/backgrounds/office-secret-chat-pixel.png",
     "background.office.evening": "../assets/art/backgrounds/approved/office_evening_v001.png",
@@ -18,6 +19,7 @@
     "background.recording_booth.day": "../assets/art/backgrounds/approved/recording_booth_day_v001.png",
     "background.qa_test_space.incident": "../assets/art/backgrounds/approved/qa_test_space_incident_v001.png",
     "background.restaurant.lunch": "../assets/art/backgrounds/approved/restaurant_lunch_v001.png",
+    "background.bistro.evening": "../assets/art/backgrounds/approved/bistro_evening_v001.png",
     "background.subway.morning": "../assets/art/backgrounds/approved/subway_morning_v003.png",
     "character.boss.holding_cup.concerned": "../assets/art/characters/boss/approved/boss_holding_cup_concerned_v002.png",
     "character.harin.arms_folded.concerned": "../assets/art/characters/harin/approved/harin_arms_folded_concerned_v001.png",
@@ -30,6 +32,8 @@
     "character.sea.neutral_standing.gentle_smile": "../assets/art/characters/sea/approved/sea_neutral_standing_gentle_smile_v002.png",
     "event_cg.day3.elevator_waiting": "../assets/art/event_cg/approved/cg_day3_elevator_waiting_v001.png",
     "event_cg.day4.harin_headphone_handoff": "../assets/art/event_cg/approved/cg_day4_harin_headphone_handoff_v001.png",
+    "event_cg.day5.weekend_invitation": "../assets/art/event_cg/approved/cg_day5_weekend_invitation_v001.png",
+    "prop.day5.warm_tea": "../assets/art/minigames/day4-office-escape/props/approved/prop_day5_warm_tea_v001.png",
   });
 
   // Editable, code-owned SVG sources for the DAY 2 secret-chat minigame.
