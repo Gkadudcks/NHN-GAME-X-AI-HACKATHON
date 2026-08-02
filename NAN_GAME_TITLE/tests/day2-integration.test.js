@@ -14,7 +14,7 @@ test("DAY 2는 개인 메시지 미니게임을 사용한다", () => {
   assert.doesNotMatch(script, /WorkAlertMinigame/);
     assert.match(html, /secret-chat-minigame\.css\?v=10/);
     assert.match(html, /ui-sfx\.js\?v=5/);
-    assert.match(html, /secret-chat-minigame\.js\?v=13/);
+    assert.match(html, /secret-chat-minigame\.js\?v=14/);
   assert.match(html, /day2\.js\?v=53/);
 });
 

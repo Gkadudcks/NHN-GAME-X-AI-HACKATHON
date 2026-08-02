@@ -63,22 +63,40 @@ test("전용 사무실 배경 에셋은 나중에 사용할 수 있도록 안정
   assert.doesNotMatch(source, /background\.office\.secret_chat/);
 });
 
-test("현재 플레이 화면은 통창 도트 사무실과 확정된 답장 UI를 함께 렌더링한다", () => {
+test("현재 플레이 화면은 외부 SVG 맵·캐릭터와 확정된 답장 UI를 함께 렌더링한다", () => {
   const source = fs.readFileSync(path.join(__dirname, "..", "js", "secret-chat-minigame.js"), "utf8");
+  const runtime = require("../js/art-assets.js");
+  const mapPath = runtime.resolve("minigame.day2_secret_chat.map.office");
+  const characterIds = [
+    "minigame.day2_secret_chat.character.boss.back",
+    "minigame.day2_secret_chat.character.boss.front",
+    "minigame.day2_secret_chat.character.doyun.idle",
+    "minigame.day2_secret_chat.character.harin.idle",
+    "minigame.day2_secret_chat.character.minjae.idle",
+  ];
+  const map = fs.readFileSync(path.join(__dirname, "..", mapPath), "utf8");
+
   assert.doesNotMatch(source, /id="sc-office-background"/);
   assert.doesNotMatch(source, /class="sc-phone"/);
   assert.doesNotMatch(source, /class="sc-thread"/);
   assert.match(source, /class="sc-office-scene"/);
-  assert.match(source, /class="sc-office-window"/);
+  assert.match(source, /class="sc-office-map"/);
+  assert.match(source, /sceneAsset\("map"\)/);
+  assert.match(source, /sceneAsset\("bossBack"\)/);
+  assert.match(source, /sceneAsset\("doyun"\)/);
+  assert.doesNotMatch(source, /<svg class="sc-boss-back"/);
   assert.match(source, /class="sc-mission"/);
   assert.match(source, /class="sc-message-preview"/);
   assert.match(source, /sc-pixel-actor sc-actor-boss/);
   assert.match(source, /sc-pixel-actor sc-actor-doyun/);
   assert.match(source, /sc-pixel-actor sc-actor-harin/);
   assert.match(source, /sc-pixel-actor sc-actor-minjae/);
-  assert.match(source, /class="sc-boss-back"/);
-  assert.match(source, /class="sc-boss-front"/);
-  assert.match(source, /shape-rendering="crispEdges"/);
+  assert.match(source, /class="sc-character-art sc-boss-back"/);
+  assert.match(source, /class="sc-character-art sc-boss-front"/);
+  assert.match(map, /id="office-window"/);
+  assert.match(map, /id="office-boss-desk"/);
+  assert.match(map, /id="office-team-desks"/);
+  assert.equal(characterIds.every((id) => fs.existsSync(path.join(__dirname, "..", runtime.resolve(id)))), true);
   assert.match(source, /id="sc-scene-reply"/);
   assert.match(source, /id="sc-scene-result"/);
   assert.match(source, /id="sc-scene-warning"/);
@@ -92,11 +110,27 @@ test("미니게임 상황 변화는 전용 주의·발각·성공 효과음을 �
   assert.match(source, /lastPhase: "safe"/);
 });
 
-test("부장 도트 캐릭터는 부장 책상보다 높은 레이어에서 보인다", () => {
+test("외부 맵 위에 부장 도트 캐릭터가 보인다", () => {
   const css = fs.readFileSync(path.join(__dirname, "..", "css", "secret-chat-minigame.css"), "utf8");
-  const deskLayer = Number(css.match(/\.sc-boss-desk\s*\{[\s\S]*?z-index:\s*(\d+)/)?.[1]);
+  const mapLayer = Number(css.match(/\.sc-office-map\s*\{[\s\S]*?z-index:\s*(\d+)/)?.[1]);
   const bossLayer = Number(css.match(/\.sc-actor-boss\s*\{[^}]*z-index:\s*(\d+)/)?.[1]);
-  assert.ok(Number.isFinite(deskLayer));
+  assert.ok(Number.isFinite(mapLayer));
   assert.ok(Number.isFinite(bossLayer));
-  assert.ok(bossLayer > deskLayer, `${bossLayer} > ${deskLayer}`);
+  assert.ok(bossLayer > mapLayer, `${bossLayer} > ${mapLayer}`);
+});
+
+test("DAY 2 개발 Lab은 공용 메신저 모듈을 독립적으로 반복 실행한다", () => {
+  const html = fs.readFileSync(path.join(__dirname, "..", "dev", "day2-secret-chat-minigame.html"), "utf8");
+  const dev = fs.readFileSync(path.join(__dirname, "..", "js", "day2-secret-chat-minigame-dev.js"), "utf8");
+  const devCss = fs.readFileSync(path.join(__dirname, "..", "css", "day2-secret-chat-minigame-dev.css"), "utf8");
+
+  assert.match(html, /secret-chat-minigame\.css\?v=10/);
+  assert.match(html, /art-assets\.js\?v=18/);
+  assert.match(html, /secret-chat-minigame\.js\?v=14/);
+  assert.match(html, /day2-secret-chat-minigame-dev\.css\?v=1/);
+  assert.match(html, /day2-secret-chat-minigame-dev\.js\?v=1/);
+  assert.match(dev, /SecretChatMinigame\.start\(\{\s*onComplete\(result\)/s);
+  assert.match(dev, /JSON\.stringify\(result, null, 2\)/);
+  assert.match(devCss, /\.minigame-dev \.secret-chat-minigame\s*\{[\s\S]*?top:\s*64px;/);
+  assert.match(devCss, /\.minigame-dev \.sc-shell\s*\{[\s\S]*?calc\(100dvh - 64px\)/);
 });

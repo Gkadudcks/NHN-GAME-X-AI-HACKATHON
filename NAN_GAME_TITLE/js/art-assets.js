@@ -32,10 +32,22 @@
     "event_cg.day4.harin_headphone_handoff": "../assets/art/event_cg/approved/cg_day4_harin_headphone_handoff_v001.png",
   });
 
+  // Editable, code-owned SVG sources for the DAY 2 secret-chat minigame.
+  // These are intentionally separate from approved generated-art manifest entries.
+  const RUNTIME_SCENE = Object.freeze({
+    "minigame.day2_secret_chat.map.office": "assets/minigames/day2-secret-chat/scene/office-map.svg",
+    "minigame.day2_secret_chat.character.boss.back": "assets/minigames/day2-secret-chat/characters/boss-back.svg",
+    "minigame.day2_secret_chat.character.boss.front": "assets/minigames/day2-secret-chat/characters/boss-front.svg",
+    "minigame.day2_secret_chat.character.doyun.idle": "assets/minigames/day2-secret-chat/characters/doyun-idle.svg",
+    "minigame.day2_secret_chat.character.harin.idle": "assets/minigames/day2-secret-chat/characters/harin-idle.svg",
+    "minigame.day2_secret_chat.character.minjae.idle": "assets/minigames/day2-secret-chat/characters/minjae-idle.svg",
+  });
+
   function resolve(id) {
-    if (!Object.prototype.hasOwnProperty.call(ACTIVE, id)) throw new Error(`Unknown art asset id: ${id}`);
-    return ACTIVE[id];
+    if (Object.prototype.hasOwnProperty.call(ACTIVE, id)) return ACTIVE[id];
+    if (Object.prototype.hasOwnProperty.call(RUNTIME_SCENE, id)) return RUNTIME_SCENE[id];
+    throw new Error(`Unknown art asset id: ${id}`);
   }
 
-  return Object.freeze({ ACTIVE, resolve });
+  return Object.freeze({ ACTIVE, RUNTIME_SCENE, resolve });
 });

@@ -76,6 +76,20 @@
   let root;
   let refs;
   let state;
+  const SCENE_ASSETS = Object.freeze({
+    map: "minigame.day2_secret_chat.map.office",
+    bossBack: "minigame.day2_secret_chat.character.boss.back",
+    bossFront: "minigame.day2_secret_chat.character.boss.front",
+    doyun: "minigame.day2_secret_chat.character.doyun.idle",
+    harin: "minigame.day2_secret_chat.character.harin.idle",
+    minjae: "minigame.day2_secret_chat.character.minjae.idle",
+  });
+
+  function sceneAsset(name) {
+    const id = SCENE_ASSETS[name];
+    if (!id || !global.ArtAssets?.resolve) throw new Error(`Secret-chat scene asset unavailable: ${name}`);
+    return global.ArtAssets.resolve(id);
+  }
 
   function ensureRoot() {
     if (root?.isConnected) return;
@@ -93,61 +107,19 @@
         </section>
         <section id="sc-play" class="sc-screen sc-play" hidden>
           <div class="sc-office-scene" aria-label="통창이 있는 도트 사무실">
-            <div class="sc-office-wall"><div class="sc-office-window"></div></div>
-            <div class="sc-boss-desk"><i></i></div>
-            <div class="sc-team-pod" aria-hidden="true">
-              <div class="sc-pixel-desk sc-desk-doyun"></div>
-              <div class="sc-pixel-desk sc-desk-harin"></div>
-              <div class="sc-pixel-desk sc-desk-minjae"></div>
-            </div>
+            <img class="sc-office-map" src="${sceneAsset("map")}" alt="" draggable="false">
             <div class="sc-pixel-actor sc-actor-boss" id="sc-office-boss" aria-label="박태식 부장">
-              <svg class="sc-boss-back" viewBox="0 0 56 80" shape-rendering="crispEdges" aria-hidden="true">
-                <rect x="18" y="4" width="20" height="4" fill="#403739"/><rect x="12" y="8" width="32" height="5" fill="#403739"/>
-                <rect x="9" y="13" width="38" height="25" fill="#d7a888"/><rect x="11" y="9" width="34" height="16" fill="#463b3a"/>
-                <rect x="8" y="24" width="8" height="14" fill="#463b3a"/><rect x="40" y="24" width="8" height="14" fill="#463b3a"/>
-                <rect x="18" y="37" width="20" height="6" fill="#d7a888"/><rect x="8" y="43" width="40" height="25" fill="#eee8df"/>
-                <rect x="3" y="46" width="8" height="20" fill="#eee8df"/><rect x="45" y="46" width="8" height="20" fill="#eee8df"/>
-                <rect x="12" y="68" width="14" height="10" fill="#34343c"/><rect x="31" y="68" width="14" height="10" fill="#34343c"/>
-              </svg>
-              <svg class="sc-boss-front" viewBox="0 0 56 80" shape-rendering="crispEdges" aria-hidden="true">
-                <rect x="18" y="4" width="20" height="4" fill="#403739"/><rect x="12" y="8" width="32" height="5" fill="#403739"/>
-                <rect x="9" y="13" width="38" height="24" fill="#d7a888"/><rect x="12" y="11" width="32" height="7" fill="#463b3a"/>
-                <rect x="15" y="24" width="6" height="3" fill="#30292b"/><rect x="35" y="24" width="6" height="3" fill="#30292b"/>
-                <rect x="19" y="31" width="18" height="4" fill="#8f604f"/><rect x="18" y="37" width="20" height="6" fill="#d7a888"/>
-                <rect x="8" y="43" width="40" height="25" fill="#eee8df"/><rect x="25" y="43" width="7" height="24" fill="#34333a"/>
-                <rect x="3" y="46" width="8" height="20" fill="#eee8df"/><rect x="45" y="46" width="8" height="20" fill="#eee8df"/>
-                <rect x="12" y="68" width="14" height="10" fill="#34343c"/><rect x="31" y="68" width="14" height="10" fill="#34343c"/>
-              </svg><span>박태식 부장</span>
+              <img class="sc-character-art sc-boss-back" src="${sceneAsset("bossBack")}" alt="" draggable="false">
+              <img class="sc-character-art sc-boss-front" src="${sceneAsset("bossFront")}" alt="" draggable="false"><span>박태식 부장</span>
             </div>
             <div class="sc-pixel-actor sc-actor-doyun" aria-label="한도윤">
-              <svg viewBox="0 0 56 80" shape-rendering="crispEdges" aria-hidden="true">
-                <rect x="17" y="3" width="22" height="4" fill="#252b38"/><rect x="11" y="7" width="35" height="13" fill="#252b38"/>
-                <rect x="15" y="12" width="27" height="25" fill="#edbf9f"/><rect x="10" y="11" width="9" height="20" fill="#252b38"/><rect x="39" y="9" width="7" height="20" fill="#252b38"/>
-                <rect x="20" y="24" width="4" height="3" fill="#303039"/><rect x="34" y="24" width="4" height="3" fill="#303039"/>
-                <rect x="21" y="37" width="16" height="6" fill="#edbf9f"/><rect x="11" y="43" width="35" height="25" fill="#364b63"/>
-                <rect x="24" y="43" width="9" height="22" fill="#e9edef"/><rect x="5" y="46" width="8" height="20" fill="#364b63"/><rect x="44" y="46" width="8" height="20" fill="#364b63"/>
-                <rect x="13" y="68" width="14" height="10" fill="#252c3a"/><rect x="31" y="68" width="14" height="10" fill="#252c3a"/>
-              </svg><span>한도윤</span>
+              <img class="sc-character-art" src="${sceneAsset("doyun")}" alt="" draggable="false"><span>한도윤</span>
             </div>
             <div class="sc-pixel-actor sc-actor-harin" aria-label="서하린">
-              <svg viewBox="0 0 56 80" shape-rendering="crispEdges" aria-hidden="true">
-                <rect x="17" y="3" width="22" height="4" fill="#5a3535"/><rect x="10" y="7" width="36" height="19" fill="#5a3535"/>
-                <rect x="15" y="11" width="27" height="27" fill="#f0c2a5"/><rect x="9" y="12" width="9" height="29" fill="#5a3535"/><rect x="39" y="11" width="8" height="30" fill="#5a3535"/>
-                <rect x="20" y="24" width="4" height="3" fill="#493134"/><rect x="34" y="24" width="4" height="3" fill="#493134"/><rect x="25" y="32" width="8" height="3" fill="#c16d72"/>
-                <rect x="21" y="39" width="16" height="5" fill="#f0c2a5"/><rect x="11" y="44" width="35" height="24" fill="#202937"/>
-                <rect x="23" y="44" width="12" height="22" fill="#edf0ef"/><rect x="5" y="47" width="8" height="19" fill="#202937"/><rect x="44" y="47" width="8" height="19" fill="#202937"/>
-                <rect x="14" y="68" width="13" height="10" fill="#20232e"/><rect x="31" y="68" width="13" height="10" fill="#20232e"/>
-              </svg><span>서하린</span>
+              <img class="sc-character-art" src="${sceneAsset("harin")}" alt="" draggable="false"><span>서하린</span>
             </div>
             <div class="sc-pixel-actor sc-actor-minjae" aria-label="강민재">
-              <svg viewBox="0 0 56 80" shape-rendering="crispEdges" aria-hidden="true">
-                <rect x="15" y="3" width="25" height="4" fill="#252a34"/><rect x="9" y="7" width="38" height="14" fill="#252a34"/>
-                <rect x="15" y="12" width="27" height="26" fill="#e9bb9d"/><rect x="9" y="10" width="10" height="21" fill="#252a34"/><rect x="39" y="9" width="8" height="19" fill="#252a34"/>
-                <rect x="19" y="23" width="7" height="5" fill="none" stroke="#39414c" stroke-width="2"/><rect x="32" y="23" width="7" height="5" fill="none" stroke="#39414c" stroke-width="2"/><rect x="26" y="25" width="6" height="2" fill="#39414c"/>
-                <rect x="21" y="38" width="16" height="6" fill="#e9bb9d"/><rect x="11" y="44" width="35" height="24" fill="#68798b"/>
-                <rect x="23" y="44" width="12" height="22" fill="#e9edef"/><rect x="5" y="47" width="8" height="19" fill="#68798b"/><rect x="44" y="47" width="8" height="19" fill="#68798b"/>
-                <rect x="14" y="68" width="13" height="10" fill="#303746"/><rect x="31" y="68" width="13" height="10" fill="#303746"/>
-              </svg><span>강민재</span>
+              <img class="sc-character-art" src="${sceneAsset("minjae")}" alt="" draggable="false"><span>강민재</span>
             </div>
             <div class="sc-watch sc-patrol" id="sc-watch" data-phase="safe">
               <span class="sc-boss">박태식 부장</span><strong id="sc-status">서류 확인 중 · 안전</strong>

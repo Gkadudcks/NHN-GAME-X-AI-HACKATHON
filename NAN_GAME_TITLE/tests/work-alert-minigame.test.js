@@ -226,10 +226,10 @@ test("완료 결과에 점수 비율, 신뢰도, 처리 집계와 기존 상세 
   assert.deepEqual(final.results, results);
 });
 
-test("dev launcher only supplies formal Day 3 inputs and permitted test overrides", () => {
-  const dev = read("js/day2-minigame-dev.js");
-  const html = read("dev/day2-minigame.html");
-  const devCss = read("css/day2-minigame-dev.css");
+test("DAY 3 dev launcher only supplies formal inputs and permitted test overrides", () => {
+  const dev = read("js/day3-work-alert-minigame-dev.js");
+  const html = read("dev/day3-work-alert-minigame.html");
+  const devCss = read("css/day3-work-alert-minigame-dev.css");
 
   assert.match(dev, /WorkAlertMinigame\.startDay3\(\{/);
   assert.match(dev, /testOverrides:\s*\{\s*duration:\s*runDuration,\s*seed:\s*runSeed,/s);
@@ -238,8 +238,8 @@ test("dev launcher only supplies formal Day 3 inputs and permitted test override
   assert.doesNotMatch(dev, /subtask|requestsFor|SUBTASK_REQUESTS|REQUESTS\.slice/);
   assert.match(html, /work-alert-minigame\.css\?v=9/);
   assert.match(html, /work-alert-minigame\.js\?v=9/);
-  assert.match(html, /day2-minigame-dev\.css\?v=2/);
-  assert.match(html, /day2-minigame-dev\.js\?v=4/);
+  assert.match(html, /day3-work-alert-minigame-dev\.css\?v=2/);
+  assert.match(html, /day3-work-alert-minigame-dev\.js\?v=4/);
   assert.match(html, /id="dev-seed"[^>]*value="20260720"/);
   assert.match(devCss, /\.minigame-dev \.work-alert-minigame\s*\{[\s\S]*?padding:\s*0 16px;/);
   assert.match(devCss, /\.minigame-dev \.wa-shell\s*\{[\s\S]*?calc\(100dvh - 64px\)/);
@@ -270,7 +270,7 @@ test("motion and reduced-effect feedback CSS contracts remain visible", () => {
 test("콤보 표시는 업무 메시지를 가리지 않도록 플레이 헤더 쪽에 배치된다", () => {
   const css = read("css/work-alert-minigame.css");
   assert.match(css, /\.wa-combo\s*\{[\s\S]*?top:\s*-56px;[\s\S]*?left:\s*50%;/);
-  for (const file of ["day3.html", "dev/day2-minigame.html"]) {
+  for (const file of ["day3.html", "dev/day3-work-alert-minigame.html"]) {
     assert.match(read(file), /work-alert-minigame\.css\?v=9/);
   }
 });
