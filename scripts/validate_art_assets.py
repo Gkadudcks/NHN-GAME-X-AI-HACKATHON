@@ -201,6 +201,8 @@ class ArtValidator:
             return f"prop_{asset.get('category')}_{asset.get('name')}_{version}.png"
         if kind == "background":
             return f"{asset.get('location')}_{asset.get('variant')}_{version}"
+        if kind == "minigame_background":
+            return f"mg_{asset.get('minigame_id')}_{asset.get('scene')}_{version}.png"
         if kind == "event_cg":
             return f"cg_{asset.get('scene')}_{asset.get('beat')}_{version}"
         return None
@@ -247,7 +249,14 @@ class ArtValidator:
         if not isinstance(asset_id, str) or not ASSET_ID_RE.fullmatch(asset_id):
             self.error(f"{location}.id", "must be a lowercase dotted stable ID")
             return None
-        if kind not in {"character", "background", "event_cg", "minigame_character", "prop"}:
+        if kind not in {
+            "character",
+            "background",
+            "event_cg",
+            "minigame_background",
+            "minigame_character",
+            "prop",
+        }:
             self.error(location, f"invalid kind {kind!r}")
         profile = profiles.get(profile_name)
         if profile is None:
@@ -256,6 +265,7 @@ class ArtValidator:
             "character": "character_sprite",
             "background": "background_16_9",
             "event_cg": "event_cg_16_9",
+            "minigame_background": "background_16_9",
             "minigame_character": "minigame_sprite",
             "prop": "minigame_prop",
         }.get(kind)
@@ -300,6 +310,13 @@ class ArtValidator:
             expected_id = f"prop.{category}.{name}"
         elif kind == "background":
             expected_id = f"background.{asset.get('location')}.{asset.get('variant')}"
+        elif kind == "minigame_background":
+            minigame_id, scene = asset.get("minigame_id"), asset.get("scene")
+            if not isinstance(minigame_id, str) or not SLUG_RE.fullmatch(minigame_id):
+                self.error(location, f"invalid minigame_id {minigame_id!r}")
+            if not isinstance(scene, str) or not SLUG_RE.fullmatch(scene):
+                self.error(location, f"invalid minigame scene {scene!r}")
+            expected_id = f"minigame_background.{minigame_id}.{scene}"
         else:
             expected_id = f"event_cg.{asset.get('scene')}.{asset.get('beat')}"
         if asset_id != expected_id:
@@ -352,7 +369,14 @@ class ArtValidator:
             self.referenced_images.add(normalized)
             path_parts = PurePosixPath(path_value).parts
             status_directory = STATUS_DIRECTORY.get(status)
-            if kind in {"character", "minigame_character"}:
+            minigame_root = ("assets", "art", "minigames", "day4-office-escape")
+            if kind == "minigame_character":
+                expected_prefix = (*minigame_root, "characters", str(asset.get("character_id")))
+            elif kind == "minigame_background":
+                expected_prefix = (*minigame_root, "backgrounds")
+            elif kind == "prop" and profile_name == "minigame_prop":
+                expected_prefix = (*minigame_root, "props")
+            elif kind == "character":
                 expected_prefix = ("assets", "art", "characters", str(asset.get("character_id")))
             elif kind == "background":
                 expected_prefix = ("assets", "art", "backgrounds")
@@ -375,9 +399,9 @@ class ArtValidator:
                 self.error(version_location, f"invalid image file name {file_name!r}")
             expected_name = self.expected_file_name(asset, version)
             if expected_name is not None:
-                if kind in {"character", "minigame_character", "prop"} and file_name != expected_name:
+                if kind in {"character", "minigame_background", "minigame_character", "prop"} and file_name != expected_name:
                     self.error(version_location, f"expected file name {expected_name!r}")
-                elif kind not in {"character", "minigame_character", "prop"} and Path(file_name).stem != expected_name:
+                elif kind not in {"character", "minigame_background", "minigame_character", "prop"} and Path(file_name).stem != expected_name:
                     self.error(version_location, f"expected file stem {expected_name!r}")
             if status == "approved":
                 if not version_data.get("sha256"):
@@ -406,6 +430,21 @@ class ArtValidator:
             base = art_root / category
             if not base.exists():
                 self.error(category, "required asset directory is missing")
+                continue
+            for path in base.rglob("*"):
+                if not path.is_file() or path.suffix.lower() not in IMAGE_EXTENSIONS:
+                    continue
+                relative = path.relative_to(self.root).as_posix()
+                if "references" in path.relative_to(base).parts:
+                    continue
+                if relative not in self.referenced_images:
+                    self.error(relative, "image is not registered in the manifest")
+
+        minigame_root = art_root / "minigames/day4-office-escape"
+        for category in ("characters", "backgrounds", "props"):
+            base = minigame_root / category
+            if not base.exists():
+                self.error(f"minigames/day4-office-escape/{category}", "required asset directory is missing")
                 continue
             for path in base.rglob("*"):
                 if not path.is_file() or path.suffix.lower() not in IMAGE_EXTENSIONS:

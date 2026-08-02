@@ -514,9 +514,11 @@ test("퇴근 미니게임은 자동 달리기·점프·슬라이드와 피격 �
   assert.match(core, /hitCount <= 2/);
   assert.match(core, /type: "chair"/);
   assert.match(core, /type: "backup-usb"/);
-  assert.match(script, /background\.office\.evening/);
-  assert.match(script, /background\.office\.night/);
-  assert.match(script, /background\.elevator_lobby\.night/);
+  assert.match(script, /minigame_background\.office_escape\.office/);
+  assert.match(script, /minigame_background\.office_escape\.corridor/);
+  assert.match(script, /minigame_background\.office_escape\.elevator/);
+  assert.match(script, /OfficeEscapeArtAssets\?\.resolve/);
+  assert.doesNotMatch(script, /global\.ArtAssets/);
   assert.match(script, /"prop\.office\.chair"/);
   assert.match(script, /"prop\.office\.sign"/);
   assert.match(script, /"minigame_character\.doyun\.run\.right"/);
@@ -794,8 +796,11 @@ test("퇴근 미니게임은 자동 달리기·점프·슬라이드와 피격 �
 
 test("퇴근 미니게임의 승인 아트는 manifest 활성 버전과 런타임 resolver가 일치한다", () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(root, "..", "assets", "art", "manifests", "art-assets.json"), "utf8"));
-  const runtime = require("../js/art-assets.js");
+  const runtime = require("../js/office-escape-art-assets.js");
   const expectedVersions = new Map([
+    ["minigame_background.office_escape.office", "v001"],
+    ["minigame_background.office_escape.corridor", "v001"],
+    ["minigame_background.office_escape.elevator", "v001"],
     ["minigame_character.doyun.run.right", "v003"],
     ["minigame_character.doyun.run_alt.right", "v003"],
     ["minigame_character.doyun.jump.right", "v001"],
@@ -830,7 +835,7 @@ test("퇴근 미니게임의 승인 아트는 manifest 활성 버전과 런타�
 
 test("DAY 4 최종 보행 6종은 승인 메타데이터와 추적 파일을 갖춘 활성 자산이다", () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(root, "..", "assets", "art", "manifests", "art-assets.json"), "utf8"));
-  const runtime = require("../js/art-assets.js");
+  const runtime = require("../js/office-escape-art-assets.js");
   const candidates = [
     ["minigame_character.doyun.run.right", "v003", "mg_doyun_run_right_v003"],
     ["minigame_character.doyun.run_alt.right", "v003", "mg_doyun_run_alt_right_v003"],
@@ -863,9 +868,10 @@ test("DAY 4 퇴근 미니게임은 독립 개발 화면에서 반복 실행할 �
   const devCss = read("css/minigame-dev.css");
   assert.match(html, /DAY 4 OFFICE ESCAPE LAB/);
   assert.match(html, /<base href="\.\.\/">/);
+  assert.match(html, /office-escape-art-assets\.js\?v=1/);
   assert.match(html, /office-escape-minigame-core\.js\?v=19/);
   assert.match(html, /office-escape-minigame\.css\?v=46/);
-  assert.match(html, /office-escape-minigame\.js\?v=57/);
+  assert.match(html, /office-escape-minigame\.js\?v=59/);
   assert.match(html, /day4-office-escape-minigame-dev\.js\?v=9/);
   assert.match(html, /minigame-dev\.css\?v=2/);
   assert.doesNotMatch(html, /<style>/);

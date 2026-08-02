@@ -57,19 +57,19 @@
       run: "minigame_character.harin.run.right",
       runAlt: "minigame_character.harin.run_alt.right",
       assist: "minigame_character.harin.assist.right",
-      fallback: "character.harin.relaxed_standing.gentle_smile",
+      fallback: "minigame_character.harin.run.right",
     }),
     boss: Object.freeze({
       chase: "minigame_character.boss.chase.right",
       chaseAlt: "minigame_character.boss.chase_alt.right",
       call: "minigame_character.boss.call.right",
-      fallback: "character.boss.holding_cup.concerned",
+      fallback: "minigame_character.boss.chase.right",
     }),
   });
   const BACKDROP_ART_IDS = Object.freeze({
-    office: "background.office.evening",
-    corridor: "background.office.night",
-    elevator: "background.elevator_lobby.night",
+    office: "minigame_background.office_escape.office",
+    corridor: "minigame_background.office_escape.corridor",
+    elevator: "minigame_background.office_escape.elevator",
   });
   const OBJECT_DRAW_AHEAD = 1900;
   const LANDMARK_DRAW_AHEAD = 2200;
@@ -95,7 +95,7 @@
 
   function safeArt(id) {
     try {
-      return global.ArtAssets?.resolve(id) || "";
+      return global.OfficeEscapeArtAssets?.resolve(id) || "";
     } catch {
       return "";
     }

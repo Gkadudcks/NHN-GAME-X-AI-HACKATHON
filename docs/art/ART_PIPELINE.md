@@ -11,6 +11,7 @@ assets/art/
   characters/<character_id>/{references,drafts,review,approved,archive}/
   backgrounds/{references,drafts,review,approved,archive}/
   event_cg/{references,drafts,review,approved,archive}/
+  minigames/<minigame_id>/{backgrounds,characters,props}/...
   prompts/{templates,rendered}/
   generation_logs/
   manifests/
@@ -21,6 +22,7 @@ assets/art/
 - `review`: 규격 보정이 끝나 검수 대기 중인 후보.
 - `approved`: 게임에서 사용 가능한 불변 파일.
 - `archive`: 더 이상 활성은 아니지만 재현성과 이력 때문에 보존하는 버전.
+- `minigames`: 본게임 대화형 이미지와 독립된 미니게임 전용 이미지. 각 미니게임의 `README.md`를 진입점으로 사용한다.
 - `prompts/rendered`: 실제 생성에 투입한 완성 프롬프트. 템플릿만 기록하지 말고 렌더링 결과도 저장한다.
 
 ## 작업 순서

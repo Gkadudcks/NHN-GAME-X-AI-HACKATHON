@@ -4,3 +4,5 @@ Store one JSON object per line in files ending in `.jsonl`. Copy the shape from 
 
 Required reproducibility fields are: `log_id`, `asset_id`, `asset_version`, model name/version, prompt version and rendered prompt path, reference paths and strengths, seed, width/height, tool-specific settings, generation timestamp, and source output path. The validator checks log IDs linked by non-planned manifest versions.
 
+Generation logs are historical records. When an approved file is reorganized without pixel changes, an old log may retain the path that was valid when generation occurred. Use `assets/art/manifests/art-assets.json` for the current file location; do not rewrite an approved generation record merely to follow a later directory move.
+

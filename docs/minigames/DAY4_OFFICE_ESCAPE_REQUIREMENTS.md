@@ -85,10 +85,10 @@
 
 ## 3. 화면과 아트
 
-- 기존 승인 배경 안정 ID를 세 구간의 원경·색감 기준으로 재사용하되, 한 장의 고정 배경만으로 코스를 구성하지 않는다.
-  - `background.office.evening`
-  - `background.meeting_room.afternoon`
-  - `background.elevator_lobby.night`
+- 기존 승인 배경을 픽셀 변경 없이 복제한 미니게임 전용 안정 ID를 세 구간의 원경·색감 기준으로 사용하되, 한 장의 고정 배경만으로 코스를 구성하지 않는다.
+  - `minigame_background.office_escape.office`
+  - `minigame_background.office_escape.corridor`
+  - `minigame_background.office_escape.elevator`
 - 도윤은 측후면 중심으로 얼굴 노출을 줄이고 자연스러운 성인 비율을 유지한다.
 - 캐릭터, 배경, 소품을 각각 별도 에셋으로 관리한다.
 - `distance`에 연결된 최소 3층 패럴랙스를 사용한다. 권장 속도 계수는 원경 0.15, 중경 0.4, 바닥·장애물 1.0이다.
@@ -105,6 +105,8 @@
 - 보조 보폭이 없거나 이미지 로드가 실패하거나 `prefers-reduced-motion`이 켜져 있으면 승인된 기본 프레임 하나로 안전하게 폴백한다.
 - 승인 전 draft/review 파일은 본편 런타임의 `active_version`으로 지정하지 않는다.
 - 이미지 생성·수정은 `docs/art/` 규칙과 `assets/art/manifests/art-assets.json`을 따른다.
+- DAY 4 전용 이미지는 `assets/art/minigames/day4-office-escape/` 아래에서만 관리하고, 본게임 대화형 `characters/`, `backgrounds/`, `event_cg/`에 섞지 않는다.
+- 런타임은 `OfficeEscapeArtAssets.resolve(id)`를 사용하며 본게임용 `ArtAssets`에 의존하지 않는다.
 
 ## 4. 구조와 호환성
 
@@ -146,6 +148,8 @@
 - 하린·부장님의 자세 강조는 하단 중앙 원점을 유지하며 최대 1.05배에서 70ms 안에 1배로 복귀해야 한다. 도윤의 보폭 교대는 확대 없이 골반·발 기준선이 안정적으로 이어져야 한다.
 
 ## 7. 결정 로그
+
+- 2026-08-02: DAY 4 미니게임 이미지를 `assets/art/minigames/day4-office-escape/`로 물리 분리했다. 캐릭터·소품의 승인/검수 이력을 그대로 이동하고, 기존 승인 배경 3장은 SHA-256이 같은 전용 사본과 `minigame_background.office_escape.*` ID로 격리했다. 런타임도 `OfficeEscapeArtAssets` 전용 리졸버를 사용해 본게임 대화형 아트 맵 의존을 제거했다.
 
 - 2026-08-02: 프로젝트 전체 지원 환경을 PC 데스크톱 브라우저로 확정했다. DAY 4 완료 기준은 1280×720·1440×900·1920×1080, 키보드 기본·마우스 보조로 전환하며 과거 모바일 검증 기록은 역사 기록으로만 보존한다.
 

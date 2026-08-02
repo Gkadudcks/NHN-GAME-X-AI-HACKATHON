@@ -25,7 +25,7 @@
         "required": ["id", "kind", "profile", "active_version", "versions"],
         "properties": {
           "id": { "type": "string", "pattern": "^[a-z0-9]+(?:[._][a-z0-9]+)*$" },
-          "kind": { "enum": ["character", "background", "event_cg", "minigame_character", "prop"] },
+          "kind": { "enum": ["character", "background", "event_cg", "minigame_background", "minigame_character", "prop"] },
           "profile": { "type": "string" },
           "active_version": { "type": ["string", "null"], "pattern": "^v[0-9]{3}$" },
           "versions": {
