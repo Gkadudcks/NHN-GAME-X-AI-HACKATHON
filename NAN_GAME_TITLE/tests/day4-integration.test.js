@@ -246,7 +246,7 @@ test("DAY 4 페이지는 스토리와 추격 미니게임을 엔진 전에 불�
   const minigameIndex = html.indexOf('src="js/office-escape-minigame.js');
   const engineIndex = html.indexOf('src="js/day4.js');
   assert.ok(storyIndex >= 0 && storyIndex < minigameIndex && minigameIndex < engineIndex);
-  assert.match(html, /office-escape-minigame\.css\?v=45/);
+  assert.match(html, /office-escape-minigame\.css\?v=46/);
 });
 
 test("모든 DAY 자료 화면은 공용 PPT형 슬라이드 스타일을 사용한다", () => {
@@ -755,19 +755,19 @@ test("DAY 4 최종 보행 6종은 승인 메타데이터와 추적 파일을 갖
 test("DAY 4 퇴근 미니게임은 독립 개발 화면에서 반복 실행할 수 있다", () => {
   const html = read("dev/day4-office-escape-minigame.html");
   const dev = read("js/day4-office-escape-minigame-dev.js");
+  const devCss = read("css/minigame-dev.css");
   assert.match(html, /DAY 4 OFFICE ESCAPE LAB/);
   assert.match(html, /<base href="\.\.\/">/);
   assert.match(html, /office-escape-minigame-core\.js\?v=19/);
-  assert.match(html, /office-escape-minigame\.css\?v=45/);
-  assert.match(html, /office-escape-minigame\.js\?v=56/);
+  assert.match(html, /office-escape-minigame\.css\?v=46/);
+  assert.match(html, /office-escape-minigame\.js\?v=57/);
   assert.match(html, /day4-office-escape-minigame-dev\.js\?v=9/);
-  assert.match(html, /minigame-dev\.css\?v=1/);
-  assert.match(html, /@media \(min-width: 901px\) and \(max-height: 760px\)/);
-  assert.match(html, /body\.minigame-dev \.minigame-dev-result\s*\{[^}]*height:\s*100dvh[^}]*min-height:\s*0[^}]*overflow:\s*auto/s);
-  assert.match(html, /grid-template-rows: 64px minmax\(0, 1fr\)/);
-  assert.match(html, /grid-template-rows: 48px minmax\(0, 1fr\) 64px/);
-  assert.match(html, /height: calc\(100dvh - 84px\)/);
-  assert.match(html, /\.minigame-dev \.oe-play-footer \{\s*min-height: 0;/);
+  assert.match(html, /minigame-dev\.css\?v=2/);
+  assert.doesNotMatch(html, /<style>/);
+  assert.match(devCss, /html\[data-office-escape-dev\] body\.minigame-dev \.office-escape/);
+  assert.match(devCss, /width:\s*min\(1600px, 99vw\)/);
+  assert.match(devCss, /height:\s*min\(900px, calc\(100dvh - 84px\)\)/);
+  assert.match(devCss, /grid-template-rows:\s*64px minmax\(0, 1fr\)/);
   assert.match(html, /id="dev-intro"/);
   assert.match(html, /id="dev-hitboxes"/);
   assert.match(dev, /autoStart: !intro\.checked/);

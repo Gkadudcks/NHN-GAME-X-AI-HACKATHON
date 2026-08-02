@@ -170,3 +170,32 @@ body {
     justify-content: flex-start;
   }
 }
+
+/* DAY 4 office escape lab · PC desktop only */
+html[data-office-escape-dev] body.minigame-dev .office-escape {
+  top: 64px;
+  padding: 10px;
+  overflow: hidden;
+}
+
+html[data-office-escape-dev] body.minigame-dev .oe-shell,
+html[data-office-escape-dev] body.minigame-dev .oe-play,
+html[data-office-escape-dev] body.minigame-dev .oe-intro,
+html[data-office-escape-dev] body.minigame-dev .oe-result {
+  height: min(900px, calc(100dvh - 84px));
+  min-height: 0;
+}
+
+html[data-office-escape-dev] body.minigame-dev .oe-shell {
+  width: min(1600px, 99vw);
+}
+
+html[data-office-escape-dev] body.minigame-dev .oe-play {
+  display: grid;
+  grid-template-rows: 64px minmax(0, 1fr);
+}
+
+html[data-office-escape-dev] body.minigame-dev .oe-course {
+  height: auto;
+  min-height: 0;
+}

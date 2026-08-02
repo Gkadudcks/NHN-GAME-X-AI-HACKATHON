@@ -1,5 +1,9 @@
 # Repository Instructions
 
+## Platform scope
+
+- 이 프로젝트의 모든 게임 화면은 PC 데스크톱 브라우저만 지원한다. 사용자가 별도로 요청하지 않는 한 모바일·터치·세로 화면 대응은 설계·구현·검증 범위에서 제외한다.
+
 ## Image asset work
 
 - Read `docs/art/ART_PIPELINE.md` before adding or changing an image asset.

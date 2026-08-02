@@ -1127,7 +1127,7 @@
     const finishDrawAhead = Math.max(720, FINISH_DRAW_AHEAD * courseDrawScale);
     const landmarkDrawBehind = Math.max(200, 1200 * courseDrawScale);
     const dangerLevel = Math.min(3, snapshot.hitCount);
-    const harinX = phonePortrait ? width * 0.143 : playerX - (compact ? 102 : 152);
+    const harinX = phonePortrait ? width * 0.143 : playerX - (compact ? 102 : 138);
     const dangerThreePhone = phonePortrait && dangerLevel === 3;
     const bossX = phonePortrait
       ? dangerThreePhone
@@ -1135,7 +1135,7 @@
         : Math.min(width * 0.154, width * 0.065 + dangerLevel * 11)
       : compact
       ? Math.max(-42, playerX - 178 + dangerLevel * 28)
-      : Math.max(-26, playerX - 246 + dangerLevel * 38);
+      : Math.max(-26, playerX - 252 + dangerLevel * 38);
 
     root.dataset.zone = snapshot.zone.id;
     const airborne = snapshot.y > 1;
@@ -1146,9 +1146,10 @@
     refs.player.classList.toggle("invulnerable", snapshot.invulnerable > 0);
     syncCharacterArt(snapshot);
     const tinyPhone = phonePortrait && width < 360;
-    const playerScale = shortLandscape ? worldScale : phonePortrait ? (tinyPhone ? 0.68 : 0.74) : compact ? 0.84 : 1;
-    const harinScale = shortLandscape ? worldScale : phonePortrait ? (tinyPhone ? 0.42 : 0.46) : compact ? 0.72 : 1;
-    const bossScale = shortLandscape ? worldScale : phonePortrait ? (tinyPhone ? 0.34 : 0.38) : compact ? 0.74 : 1;
+    const desktopCharacterScale = clamp(refs.course.clientHeight / 560, 1.18, 1.42);
+    const playerScale = shortLandscape ? worldScale : phonePortrait ? (tinyPhone ? 0.68 : 0.74) : compact ? 0.84 : desktopCharacterScale;
+    const harinScale = shortLandscape ? worldScale : phonePortrait ? (tinyPhone ? 0.42 : 0.46) : compact ? 0.72 : desktopCharacterScale * 0.97;
+    const bossScale = shortLandscape ? worldScale : phonePortrait ? (tinyPhone ? 0.34 : 0.38) : compact ? 0.74 : desktopCharacterScale * 1.02;
     refs.player.style.transform = `translate3d(${playerX}px, ${-snapshot.y * worldScale}px, 0) scale(${playerScale})`;
     refs.harin.style.transform = `translate3d(${harinX}px, 0, 0) scale(${harinScale})`;
     refs.boss.style.transform = `translate3d(${bossX}px, 0, 0) scale(${bossScale})`;
@@ -1172,10 +1173,11 @@
     refs.currentZone.setAttribute("aria-label", `현재 장소: ${fullPlaceLabel}`);
     refs.zones.forEach((zone) => zone.classList.toggle("active", zone.dataset.zone === snapshot.zone.id));
     refs.backdrops.forEach((backdrop) => backdrop.classList.toggle("active", backdrop.dataset.zone === snapshot.zone.id));
-    refs.course.style.setProperty("--oe-far-x", `${-((snapshot.distance * 0.15) % 1600)}px`);
-    refs.course.style.setProperty("--oe-mid-x", `${-((snapshot.distance * 0.4) % 720)}px`);
-    refs.course.style.setProperty("--oe-near-x", `${-(snapshot.distance % 176)}px`);
-    refs.course.style.setProperty("--oe-backdrop-x", `${-((snapshot.distance * 0.025) % 90)}px`);
+    refs.course.style.setProperty("--oe-far-x", `${-((snapshot.distance * 0.18) % 1800)}px`);
+    refs.course.style.setProperty("--oe-mid-x", `${-((snapshot.distance * 0.5) % 860)}px`);
+    refs.course.style.setProperty("--oe-near-x", `${-((snapshot.distance * 1.08) % 220)}px`);
+    refs.course.style.setProperty("--oe-foreground-x", `${-((snapshot.distance * 1.42) % 520)}px`);
+    refs.course.style.setProperty("--oe-backdrop-x", `${-((snapshot.distance * 0.04) % 120)}px`);
 
     let visibleLandmarkCount = 0;
     state.landmarks.forEach((landmark) => {
