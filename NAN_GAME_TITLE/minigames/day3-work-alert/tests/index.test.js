@@ -236,7 +236,7 @@ test("DAY 3 dev launcher only supplies formal inputs and permitted test override
   assert.doesNotMatch(dev, /WorkAlertMinigame\.start\(/);
   assert.doesNotMatch(dev, /lifeMs\s*:/);
   assert.doesNotMatch(dev, /subtask|requestsFor|SUBTASK_REQUESTS|REQUESTS\.slice/);
-  assert.match(html, /day3-work-alert\/style\.css\?v=9/);
+  assert.match(html, /day3-work-alert\/style\.css\?v=10/);
   assert.match(html, /day3-work-alert\/index\.js\?v=9/);
   assert.match(html, /day3-work-alert\/dev\/style\.css\?v=2/);
   assert.match(html, /day3-work-alert\/dev\/dev\.js\?v=4/);
@@ -267,11 +267,11 @@ test("motion and reduced-effect feedback CSS contracts remain visible", () => {
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?\.work-alert-minigame \.wa-shell\.wrong-feedback::after\s*\{[\s\S]*?animation:\s*none !important;[\s\S]*?border-width:\s*3px;[\s\S]*?opacity:\s*1;/);
 });
 
-test("콤보 표시는 업무 메시지를 가리지 않도록 플레이 헤더 쪽에 배치된다", () => {
+test("구 DAY 2 원본의 콤보 위치를 유지한다", () => {
   const css = read("minigames/day3-work-alert/style.css");
-  assert.match(css, /\.wa-combo\s*\{[\s\S]*?top:\s*-56px;[\s\S]*?left:\s*50%;/);
+  assert.match(css, /\.wa-combo\s*\{[\s\S]*?top:\s*92px;[\s\S]*?left:\s*58%;/);
   for (const file of ["day3.html", "minigames/day3-work-alert/dev/index.html"]) {
-    assert.match(read(file), /minigames\/day3-work-alert\/style\.css\?v=9/);
+    assert.match(read(file), /minigames\/day3-work-alert\/style\.css\?v=10/);
   }
 });
 
