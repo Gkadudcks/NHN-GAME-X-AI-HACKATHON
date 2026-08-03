@@ -278,7 +278,7 @@
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.dataset.workAlertStyle = "true";
-    link.href = browserScriptSrc ? new URL("../css/work-alert-minigame.css", browserScriptSrc).href : "css/work-alert-minigame.css";
+    link.href = browserScriptSrc ? new URL("./style.css", browserScriptSrc).href : "minigames/day3-work-alert/style.css";
     document.head.appendChild(link);
   }
 

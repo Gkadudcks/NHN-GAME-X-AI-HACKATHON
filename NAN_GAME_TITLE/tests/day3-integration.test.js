@@ -29,7 +29,7 @@ test("DAY 3 shows prior-day messages immediately and gates DAY 3 messages", () =
 test("DAY 3 페이지는 스토리와 업무 알림 미니게임을 순서대로 불러온다", () => {
   const records = html.indexOf('src="js/clue-records.js');
   const story = html.indexOf('src="js/day3-story.js');
-  const minigame = html.indexOf('src="js/work-alert-minigame.js');
+  const minigame = html.indexOf('src="minigames/day3-work-alert/index.js');
   const game = html.indexOf('src="js/day3.js');
   assert.ok(records >= 0 && records < story && story < minigame && minigame < game);
 });

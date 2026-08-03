@@ -27,12 +27,12 @@ const {
   successFeedback,
   gradeForPerformance,
   finalizeResults,
-} = require("../js/work-alert-minigame.js");
+} = require("../index.js");
 
-const root = path.join(__dirname, "..");
+const root = path.join(__dirname, "..", "..", "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
-const source = fs.readFileSync(path.join(__dirname, "../js/work-alert-minigame.js"), "utf8");
+const source = read("minigames/day3-work-alert/index.js");
 
 test("DAY 2 정식 프리셋은 고정 시드·45초·6.5초 수명과 16개 요청을 사용한다", () => {
   const options = buildDay2Options({ subtask: "competitor" });
@@ -227,26 +227,26 @@ test("완료 결과에 점수 비율, 신뢰도, 처리 집계와 기존 상세 
 });
 
 test("DAY 3 dev launcher only supplies formal inputs and permitted test overrides", () => {
-  const dev = read("js/day3-work-alert-minigame-dev.js");
-  const html = read("dev/day3-work-alert-minigame.html");
-  const devCss = read("css/day3-work-alert-minigame-dev.css");
+  const dev = read("minigames/day3-work-alert/dev/dev.js");
+  const html = read("minigames/day3-work-alert/dev/index.html");
+  const devCss = read("minigames/day3-work-alert/dev/style.css");
 
   assert.match(dev, /WorkAlertMinigame\.startDay3\(\{/);
   assert.match(dev, /testOverrides:\s*\{\s*duration:\s*runDuration,\s*seed:\s*runSeed,/s);
   assert.doesNotMatch(dev, /WorkAlertMinigame\.start\(/);
   assert.doesNotMatch(dev, /lifeMs\s*:/);
   assert.doesNotMatch(dev, /subtask|requestsFor|SUBTASK_REQUESTS|REQUESTS\.slice/);
-  assert.match(html, /work-alert-minigame\.css\?v=9/);
-  assert.match(html, /work-alert-minigame\.js\?v=9/);
-  assert.match(html, /day3-work-alert-minigame-dev\.css\?v=2/);
-  assert.match(html, /day3-work-alert-minigame-dev\.js\?v=4/);
+  assert.match(html, /day3-work-alert\/style\.css\?v=9/);
+  assert.match(html, /day3-work-alert\/index\.js\?v=9/);
+  assert.match(html, /day3-work-alert\/dev\/style\.css\?v=2/);
+  assert.match(html, /day3-work-alert\/dev\/dev\.js\?v=4/);
   assert.match(html, /id="dev-seed"[^>]*value="20260720"/);
   assert.match(devCss, /\.minigame-dev \.work-alert-minigame\s*\{[\s\S]*?padding:\s*0 16px;/);
   assert.match(devCss, /\.minigame-dev \.wa-shell\s*\{[\s\S]*?calc\(100dvh - 64px\)/);
 });
 
 test("motion and reduced-effect feedback CSS contracts remain visible", () => {
-  const css = read("css/work-alert-minigame.css");
+  const css = read("minigames/day3-work-alert/style.css");
 
   assert.match(css, /\.wa-card\s*\{[\s\S]*?animation:\s*wa-pop/);
   assert.match(css, /\.wa-floating-feedback\.show\s*\{\s*animation:\s*wa-feedback-rise 1s ease-out forwards;/);
@@ -268,15 +268,15 @@ test("motion and reduced-effect feedback CSS contracts remain visible", () => {
 });
 
 test("콤보 표시는 업무 메시지를 가리지 않도록 플레이 헤더 쪽에 배치된다", () => {
-  const css = read("css/work-alert-minigame.css");
+  const css = read("minigames/day3-work-alert/style.css");
   assert.match(css, /\.wa-combo\s*\{[\s\S]*?top:\s*-56px;[\s\S]*?left:\s*50%;/);
-  for (const file of ["day3.html", "dev/day3-work-alert-minigame.html"]) {
-    assert.match(read(file), /work-alert-minigame\.css\?v=9/);
+  for (const file of ["day3.html", "minigames/day3-work-alert/dev/index.html"]) {
+    assert.match(read(file), /minigames\/day3-work-alert\/style\.css\?v=9/);
   }
 });
 
 test("결과 화면은 Figma 03 Result의 중앙 세로 정산 배치와 요청별 스크롤 처리 내역을 사용한다", () => {
-  const css = read("css/work-alert-minigame.css");
+  const css = read("minigames/day3-work-alert/style.css");
 
   assert.match(source, /id="wa-result-grade"[\s\S]*?class="wa-result-score-raw"[\s\S]*?class="wa-result-stats"[\s\S]*?class="wa-result-history"/);
   assert.match(source, /item\.outcome === "missed" \? "지연"/);
@@ -307,7 +307,7 @@ test("처리 내역은 결과 진입 시 1.5초 동안 점점 빠르게 내려�
 });
 
 test("네 등급은 지정한 fallback 색과 글자 그라데이션을 사용한다", () => {
-  const css = read("css/work-alert-minigame.css");
+  const css = read("minigames/day3-work-alert/style.css");
 
   assert.match(css, /\.wa-result-grade\[data-grade="perfect"\]\s*\{\s*color:\s*#7046c8;/);
   assert.match(css, /\.wa-result-grade\s*\{[\s\S]*?color:\s*#28b95f;/);

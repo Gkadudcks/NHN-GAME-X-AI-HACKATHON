@@ -35,12 +35,12 @@
   // Editable, code-owned SVG sources for the DAY 2 secret-chat minigame.
   // These are intentionally separate from approved generated-art manifest entries.
   const RUNTIME_SCENE = Object.freeze({
-    "minigame.day2_secret_chat.map.office": "assets/minigames/day2-secret-chat/scene/office-map.svg",
-    "minigame.day2_secret_chat.character.boss.back": "assets/minigames/day2-secret-chat/characters/boss-back.svg",
-    "minigame.day2_secret_chat.character.boss.front": "assets/minigames/day2-secret-chat/characters/boss-front.svg",
-    "minigame.day2_secret_chat.character.doyun.idle": "assets/minigames/day2-secret-chat/characters/doyun-idle.svg",
-    "minigame.day2_secret_chat.character.harin.idle": "assets/minigames/day2-secret-chat/characters/harin-idle.svg",
-    "minigame.day2_secret_chat.character.minjae.idle": "assets/minigames/day2-secret-chat/characters/minjae-idle.svg",
+    "minigame.day2_secret_chat.map.office": "minigames/day2-secret-chat/assets/scene/office-map.svg",
+    "minigame.day2_secret_chat.character.boss.back": "minigames/day2-secret-chat/assets/characters/boss-back.svg",
+    "minigame.day2_secret_chat.character.boss.front": "minigames/day2-secret-chat/assets/characters/boss-front.svg",
+    "minigame.day2_secret_chat.character.doyun.idle": "minigames/day2-secret-chat/assets/characters/doyun-idle.svg",
+    "minigame.day2_secret_chat.character.harin.idle": "minigames/day2-secret-chat/assets/characters/harin-idle.svg",
+    "minigame.day2_secret_chat.character.minjae.idle": "minigames/day2-secret-chat/assets/characters/minjae-idle.svg",
   });
 
   function resolve(id) {

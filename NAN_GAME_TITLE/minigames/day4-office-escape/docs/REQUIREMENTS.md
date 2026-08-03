@@ -111,10 +111,10 @@
 ## 4. 구조와 호환성
 
 - 본편 공개 API `OfficeEscapeMinigame.start({ onComplete })`, `pause()`, `resume()`을 유지한다.
-- 순수 규칙은 `office-escape-minigame-core.js`, DOM·입력·연출은 `office-escape-minigame.js`에 둔다.
+- 순수 규칙은 `core.js`, DOM·입력·연출과 공개 API는 `index.js`에 둔다.
 - DAY 4 본편의 저장 필드 `minigameResult`와 기존 `grade`, `caught` 의미를 유지하며 결과 필드를 확장한다.
-- 개발 화면은 `NAN_GAME_TITLE/dev/day4-office-escape-minigame.html`로 만든다.
-- 공용 개발 도구 스타일은 `css/minigame-dev.css`로 분리해 DAY 3 개발 화면도 재사용한다.
+- 개발 화면은 `NAN_GAME_TITLE/minigames/day4-office-escape/dev/index.html`로 만든다.
+- 공용 개발 도구 스타일은 `NAN_GAME_TITLE/minigames/shared/dev.css`로 분리해 다른 미니게임 개발 화면도 재사용한다.
 - 테스트 전용 옵션은 공개 결과 계약을 바꾸지 않으며 dev 화면에서만 주입한다.
 
 ## 5. 루프 지침
@@ -124,7 +124,7 @@
 3. 한 루프에서 게임 감각 또는 시각 요소의 큰 축 하나만 바꾼다.
 4. 규칙 변경은 core 테스트, 통합 변경은 DAY 4 테스트를 먼저 갱신한다.
 5. 이미지 변경 시 manifest 계획 → 생성 로그 → draft/review → 검증 → 사용자 승인 → approved/active 순서를 지킨다.
-6. `python scripts/validate_art_assets.py`와 `node --test tests/*.test.js`를 실행한다.
+6. `python scripts/validate_art_assets.py`와 `node --test tests/*.test.js minigames/*/tests/*.test.js`를 실행한다.
 7. 1280×720·1440×900·1920×1080 PC 화면에서 플레이하고 시작, 입력, 피격, 구간 전환, 결과, 재시작, 일시정지를 확인한다.
 8. 변경 이유, 관찰 결과, 남은 문제를 이 문서의 결정 로그에 짧게 기록한다.
 9. 테스트·아트 검증·브라우저 확인 중 하나라도 실패하면 완료로 선언하지 않는다.
@@ -148,6 +148,8 @@
 - 하린·부장님의 자세 강조는 하단 중앙 원점을 유지하며 최대 1.05배에서 70ms 안에 1배로 복귀해야 한다. 도윤의 보폭 교대는 확대 없이 골반·발 기준선이 안정적으로 이어져야 한다.
 
 ## 7. 결정 로그
+
+- 2026-08-03: 런타임·결정론 코어·전용 resolver·CSS·단위 테스트·dev 화면·설계 문서를 `NAN_GAME_TITLE/minigames/day4-office-escape/`에 응집했다. 본편 공개 API와 결과 계약은 유지하고, 승인 이미지는 중앙 `assets/art` 파이프라인에 그대로 두었다. 이 폴더의 `docs/`는 DAY 4 미니게임에만 적용되며 본게임 전체 설계 기준이 아니다.
 
 - 2026-08-02: DAY 4 미니게임 이미지를 `assets/art/minigames/day4-office-escape/`로 물리 분리했다. 캐릭터·소품의 승인/검수 이력을 그대로 이동하고, 기존 승인 배경 3장은 SHA-256이 같은 전용 사본과 `minigame_background.office_escape.*` ID로 격리했다. 런타임도 `OfficeEscapeArtAssets` 전용 리졸버를 사용해 본게임 대화형 아트 맵 의존을 제거했다.
 
@@ -270,7 +272,7 @@
 - Windows 기본 로캘에서 스킬 검증기가 UTF-8 한글·기호를 읽지 못하면 `python -X utf8 .../quick_validate.py <skill>`로 실행한다.
 - `skill-installer`로 빠졌던 sprite-pipeline의 상위 `scripts/`와 `references/`는 `.agents/UPSTREAM.md`에 기록한 공식 버전으로 프로젝트에 고정했다. 세 보조 스크립트의 `--help` 실행까지 검증했다.
 - 크로마 제거 중 `C:\tmp` 쓰기가 거부되면 저장소 내부 `.impeccable/work/day4-gait/`을 중간 캔버스·strip 작업 경로로 사용한다. 정규화가 끝난 최종 후보만 review 경로로 복사하고 승인 파일은 절대 덮어쓰지 않는다.
-- DAY 4 dev 화면의 review manifest를 보려면 저장소 루트에서 HTTP 서버를 열고 `/NAN_GAME_TITLE/dev/day4-office-escape-minigame.html`로 접속한다. `NAN_GAME_TITLE`만 서버 루트로 열면 상위 `assets/art/`가 404가 되어 review 아트가 비활성화된다.
+- DAY 4 dev 화면의 review manifest를 보려면 저장소 루트에서 HTTP 서버를 열고 `/NAN_GAME_TITLE/minigames/day4-office-escape/dev/index.html`로 접속한다. `NAN_GAME_TITLE`만 서버 루트로 열면 상위 `assets/art/`가 404가 되어 review 아트가 비활성화된다.
 - dev 플레이 시간 입력의 최소값은 15초다. 브라우저 검수에서 15 미만을 입력하면 HTML 폼 검증 때문에 `다시 실행` submit이 발생하지 않는다.
 - dev 15초 압축 코스는 배경·랜드마크·오브젝트 순서와 결과 화면을 빠르게 훑는 용도다. 위험 간 거리와 회복 시간도 압축되므로 입력 공정성·무피격 sign-off에는 사용하지 않고, 반드시 기본 64초 코스와 결정론 테스트를 사용한다.
 - 보호된 `.agents/scripts/` 아래에는 Python이 `__pycache__`를 만들지 못할 수 있다. 보조 스크립트 검증은 `python -B ...`로 실행하거나 작업 전용 쓰기 가능 캐시 경로를 사용한다.

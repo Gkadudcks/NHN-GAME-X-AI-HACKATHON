@@ -2,7 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const { ORDERS, timingScore, gradeForScore, isRecipeStepCorrect } = require("../js/coffee-minigame.js");
+const { ORDERS, timingScore, gradeForScore, isRecipeStepCorrect } = require("../index.js");
 
 test("레시피는 현재 단계에 필요한 재료만 허용한다", () => {
   const mixRecipe = ORDERS.find((order) => order.key === "minjae").recipe;
@@ -24,7 +24,7 @@ test("총점에 따라 기존 스탯 보상 단계로 변환한다", () => {
 });
 
 test("재료는 통일된 SVG 아이콘을 사용하고 컵 아래에 투입 목록을 노출하지 않는다", () => {
-  const source = fs.readFileSync(path.join(__dirname, "..", "js", "coffee-minigame.js"), "utf8");
+  const source = fs.readFileSync(path.join(__dirname, "..", "index.js"), "utf8");
   assert.match(source, /const ICONS = Object\.freeze/);
   assert.match(source, /coffee-ingredient-icon/);
   assert.doesNotMatch(source, /coffee-cup-steps/);
@@ -32,4 +32,16 @@ test("재료는 통일된 SVG 아이콘을 사용하고 컵 아래에 투입 목
   assert.doesNotMatch(source, /cup\.name\[0\]/);
   assert.match(source, /coffee-recipe-label/);
   assert.doesNotMatch(source, /aria-hidden="true">→/);
+});
+
+test("DAY 1 개발 Lab은 공개 API를 독립적으로 반복 실행한다", () => {
+  const html = fs.readFileSync(path.join(__dirname, "..", "dev", "index.html"), "utf8");
+  const dev = fs.readFileSync(path.join(__dirname, "..", "dev", "dev.js"), "utf8");
+  assert.match(html, /minigames\/day1-coffee\/index\.js\?v=9/);
+  assert.match(html, /minigames\/day1-coffee\/style\.css\?v=7/);
+  assert.match(html, /id="minigame"/);
+  assert.match(html, /id="coffee-start"/);
+  assert.match(html, /id="coffee-result-continue"/);
+  assert.match(dev, /CoffeeMinigame\.start\(\{/);
+  assert.match(dev, /JSON\.stringify\(value, null, 2\)/);
 });

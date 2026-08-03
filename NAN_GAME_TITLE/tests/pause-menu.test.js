@@ -36,11 +36,11 @@ test("pause dialog traps keyboard focus while it is open", () => {
 test("pause menu is layered above every minigame overlay", () => {
   const pauseCss = fs.readFileSync(path.join(root, "css", "pause-menu.css"), "utf8");
   const minigameCss = [
-    "coffee-minigame.css",
-    "work-alert-minigame.css",
-    "secret-chat-minigame.css",
-    "office-escape-minigame.css",
-  ].map((file) => fs.readFileSync(path.join(root, "css", file), "utf8")).join("\n");
+    "minigames/day1-coffee/style.css",
+    "minigames/day2-secret-chat/style.css",
+    "minigames/day3-work-alert/style.css",
+    "minigames/day4-office-escape/style.css",
+  ].map((file) => fs.readFileSync(path.join(root, file), "utf8")).join("\n");
   const pauseLayer = Number(pauseCss.match(/\.pause-menu\{[^}]*z-index:(\d+)/)?.[1]);
   const minigameLayers = [...minigameCss.matchAll(/z-index:\s*(\d+)/g)].map((match) => Number(match[1]));
   assert.ok(pauseLayer > Math.max(...minigameLayers));

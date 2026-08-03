@@ -101,15 +101,15 @@
 
 ## 예상 수정 파일
 
-- `NAN_GAME_TITLE/js/secret-chat-minigame.js`
+- `NAN_GAME_TITLE/minigames/day2-secret-chat/index.js`
   - 직접 경고 DOM과 상태 문구 제거
   - 행동 패턴 데이터와 상태 진행 추가
   - 부장 포즈·말풍선·접근성 상태 렌더링
-- `NAN_GAME_TITLE/css/secret-chat-minigame.css`
+- `NAN_GAME_TITLE/minigames/day2-secret-chat/style.css`
   - 직접 경고 UI 스타일 제거
   - 행동별 부장 포즈와 말풍선 스타일 추가
   - 모션 감소 대응
-- `NAN_GAME_TITLE/tests/secret-chat-minigame.test.js`
+- `NAN_GAME_TITLE/minigames/day2-secret-chat/tests/index.test.js`
   - 행동 패턴, 훼이크, 반응 시간, DOM 계약 검증
 
 본편 `day2.js`, DAY 2 스토리 파일, 진행 저장소, 독립 Lab 런처는 수정하지 않는다.

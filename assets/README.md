@@ -7,4 +7,4 @@
 
 DAY 4 퇴근 미니게임 이미지는 `assets/art/minigames/day4-office-escape/`만 확인하세요. 본게임 대화형 캐릭터·배경 폴더에는 미니게임 스프라이트와 소품을 두지 않습니다.
 
-이미지 작업 규칙은 `docs/art/ART_PIPELINE.md`, DAY 4 작업 규칙은 `docs/minigames/DAY4_OFFICE_ESCAPE_REQUIREMENTS.md`가 기준입니다.
+이미지 작업 규칙은 `docs/art/ART_PIPELINE.md`, DAY 4 작업 규칙은 `NAN_GAME_TITLE/minigames/day4-office-escape/docs/REQUIREMENTS.md`가 기준입니다.

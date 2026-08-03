@@ -4,7 +4,10 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const core = require("../js/secret-chat-minigame.js");
+const featureRoot = path.join(__dirname, "..");
+const gameRoot = path.join(featureRoot, "..", "..");
+const core = require("../index.js");
+const runtime = require(path.join(gameRoot, "js", "art-assets.js"));
 
 test("개인 연락은 낮은 호감도에 맞는 가벼운 잡담 세 개로 구성된다", () => {
   assert.equal(core.QUESTIONS.length, 3);
@@ -47,7 +50,7 @@ test("들킨 경우에도 호감도가 높아도 직진하는 퇴근 약속은 �
 });
 
 test("몰래 연락 화면은 게임 공용 크림·코랄 미니게임 테마를 사용한다", () => {
-  const css = fs.readFileSync(path.join(__dirname, "..", "css", "secret-chat-minigame.css"), "utf8");
+  const css = fs.readFileSync(path.join(featureRoot, "style.css"), "utf8");
   assert.match(css, /var\(--coral/);
   assert.match(css, /var\(--ink/);
   assert.match(css, /#fff9f2f7/);
@@ -56,16 +59,14 @@ test("몰래 연락 화면은 게임 공용 크림·코랄 미니게임 테마�
 });
 
 test("전용 사무실 배경 에셋은 나중에 사용할 수 있도록 안정 ID로 등록되어 있다", () => {
-  const source = fs.readFileSync(path.join(__dirname, "..", "js", "secret-chat-minigame.js"), "utf8");
-  const runtime = require("../js/art-assets.js");
+  const source = fs.readFileSync(path.join(featureRoot, "index.js"), "utf8");
   assert.equal(runtime.resolve("background.office.secret_chat"), "assets/backgrounds/office-secret-chat-pixel.png");
-  assert.equal(fs.existsSync(path.join(__dirname, "..", runtime.resolve("background.office.secret_chat"))), true);
+  assert.equal(fs.existsSync(path.join(gameRoot, runtime.resolve("background.office.secret_chat"))), true);
   assert.doesNotMatch(source, /background\.office\.secret_chat/);
 });
 
 test("현재 플레이 화면은 외부 SVG 맵·캐릭터와 확정된 답장 UI를 함께 렌더링한다", () => {
-  const source = fs.readFileSync(path.join(__dirname, "..", "js", "secret-chat-minigame.js"), "utf8");
-  const runtime = require("../js/art-assets.js");
+  const source = fs.readFileSync(path.join(featureRoot, "index.js"), "utf8");
   const mapPath = runtime.resolve("minigame.day2_secret_chat.map.office");
   const characterIds = [
     "minigame.day2_secret_chat.character.boss.back",
@@ -74,7 +75,7 @@ test("현재 플레이 화면은 외부 SVG 맵·캐릭터와 확정된 답장 U
     "minigame.day2_secret_chat.character.harin.idle",
     "minigame.day2_secret_chat.character.minjae.idle",
   ];
-  const map = fs.readFileSync(path.join(__dirname, "..", mapPath), "utf8");
+  const map = fs.readFileSync(path.join(gameRoot, mapPath), "utf8");
 
   assert.doesNotMatch(source, /id="sc-office-background"/);
   assert.doesNotMatch(source, /class="sc-phone"/);
@@ -96,14 +97,14 @@ test("현재 플레이 화면은 외부 SVG 맵·캐릭터와 확정된 답장 U
   assert.match(map, /id="office-window"/);
   assert.match(map, /id="office-boss-desk"/);
   assert.match(map, /id="office-team-desks"/);
-  assert.equal(characterIds.every((id) => fs.existsSync(path.join(__dirname, "..", runtime.resolve(id)))), true);
+  assert.equal(characterIds.every((id) => fs.existsSync(path.join(gameRoot, runtime.resolve(id)))), true);
   assert.match(source, /id="sc-scene-reply"/);
   assert.match(source, /id="sc-scene-result"/);
   assert.match(source, /id="sc-scene-warning"/);
 });
 
 test("미니게임 상황 변화는 전용 주의·발각·성공 효과음을 호출한다", () => {
-  const source = fs.readFileSync(path.join(__dirname, "..", "js", "secret-chat-minigame.js"), "utf8");
+  const source = fs.readFileSync(path.join(featureRoot, "index.js"), "utf8");
   assert.match(source, /playMinigameCue\?\.\("warning"\)/);
   assert.match(source, /playMinigameCue\?\.\("caught"\)/);
   assert.match(source, /playMinigameCue\?\.\("success"\)/);
@@ -111,7 +112,7 @@ test("미니게임 상황 변화는 전용 주의·발각·성공 효과음을 �
 });
 
 test("외부 맵 위에 부장 도트 캐릭터가 보인다", () => {
-  const css = fs.readFileSync(path.join(__dirname, "..", "css", "secret-chat-minigame.css"), "utf8");
+  const css = fs.readFileSync(path.join(featureRoot, "style.css"), "utf8");
   const mapLayer = Number(css.match(/\.sc-office-map\s*\{[\s\S]*?z-index:\s*(\d+)/)?.[1]);
   const bossLayer = Number(css.match(/\.sc-actor-boss\s*\{[^}]*z-index:\s*(\d+)/)?.[1]);
   assert.ok(Number.isFinite(mapLayer));
@@ -120,15 +121,15 @@ test("외부 맵 위에 부장 도트 캐릭터가 보인다", () => {
 });
 
 test("DAY 2 개발 Lab은 공용 메신저 모듈을 독립적으로 반복 실행한다", () => {
-  const html = fs.readFileSync(path.join(__dirname, "..", "dev", "day2-secret-chat-minigame.html"), "utf8");
-  const dev = fs.readFileSync(path.join(__dirname, "..", "js", "day2-secret-chat-minigame-dev.js"), "utf8");
-  const devCss = fs.readFileSync(path.join(__dirname, "..", "css", "day2-secret-chat-minigame-dev.css"), "utf8");
+  const html = fs.readFileSync(path.join(featureRoot, "dev", "index.html"), "utf8");
+  const dev = fs.readFileSync(path.join(featureRoot, "dev", "dev.js"), "utf8");
+  const devCss = fs.readFileSync(path.join(featureRoot, "dev", "style.css"), "utf8");
 
-  assert.match(html, /secret-chat-minigame\.css\?v=10/);
+  assert.match(html, /day2-secret-chat\/style\.css\?v=10/);
   assert.match(html, /art-assets\.js\?v=18/);
-  assert.match(html, /secret-chat-minigame\.js\?v=14/);
-  assert.match(html, /day2-secret-chat-minigame-dev\.css\?v=1/);
-  assert.match(html, /day2-secret-chat-minigame-dev\.js\?v=1/);
+  assert.match(html, /day2-secret-chat\/index\.js\?v=14/);
+  assert.match(html, /day2-secret-chat\/dev\/style\.css\?v=1/);
+  assert.match(html, /day2-secret-chat\/dev\/dev\.js\?v=1/);
   assert.match(dev, /SecretChatMinigame\.start\(\{\s*onComplete\(result\)/s);
   assert.match(dev, /JSON\.stringify\(result, null, 2\)/);
   assert.match(devCss, /\.minigame-dev \.secret-chat-minigame\s*\{[\s\S]*?top:\s*64px;/);

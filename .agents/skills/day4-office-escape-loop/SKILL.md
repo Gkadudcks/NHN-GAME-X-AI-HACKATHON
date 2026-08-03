@@ -8,7 +8,7 @@ description: Continue, tune, test, or review the NAN DAY 4 “부장님 피해�
 ## Start
 
 1. Read `AGENTS.md`.
-2. Read `docs/minigames/DAY4_OFFICE_ESCAPE_REQUIREMENTS.md` completely.
+2. Read `NAN_GAME_TITLE/minigames/day4-office-escape/docs/REQUIREMENTS.md` completely.
 3. For image work, read every required file under `docs/art/` before touching assets.
 4. Inspect the existing core, runtime, dev page, tests, and manifest entries before editing.
 
@@ -26,7 +26,7 @@ If an installed skill references a missing helper, stop that asset step and repo
 ## Implement
 
 - Preserve `OfficeEscapeMinigame.start({ onComplete })`, `pause()`, and `resume()`.
-- Keep deterministic rules in `office-escape-minigame-core.js`; keep DOM, input, audio, and animation in `office-escape-minigame.js`.
+- Keep deterministic rules in `NAN_GAME_TITLE/minigames/day4-office-escape/core.js`; keep DOM, input, audio, and animation in `NAN_GAME_TITLE/minigames/day4-office-escape/index.js`.
 - Preserve `grade` and `caught`; add result fields without breaking saved DAY 4 data.
 - Reuse `ArtAssets.resolve(id)` and approved active versions. Never hard-code a production art path.
 - Keep test overrides confined to the dev harness.
@@ -43,7 +43,7 @@ Run:
 ```powershell
 python scripts/validate_art_assets.py
 Set-Location NAN_GAME_TITLE
-node --test tests/*.test.js
+node --test tests/*.test.js minigames/*/tests/*.test.js
 ```
 
 Then playtest desktop and mobile. Check intro, jump, slide, telegraphing, hit recovery, all three zones, pause/resume, result, callback, and restart. Do not call the loop complete while a required validation is failing.

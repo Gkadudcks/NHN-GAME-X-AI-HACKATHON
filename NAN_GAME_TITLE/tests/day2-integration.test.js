@@ -12,9 +12,9 @@ test("DAY 2는 개인 메시지 미니게임을 사용한다", () => {
 
   assert.match(script, /SecretChatMinigame\.start\(\{ onComplete: finishSecretChat, affection: state\.affection \}\)/);
   assert.doesNotMatch(script, /WorkAlertMinigame/);
-    assert.match(html, /secret-chat-minigame\.css\?v=10/);
+    assert.match(html, /minigames\/day2-secret-chat\/style\.css\?v=10/);
     assert.match(html, /ui-sfx\.js\?v=5/);
-    assert.match(html, /secret-chat-minigame\.js\?v=14/);
+    assert.match(html, /minigames\/day2-secret-chat\/index\.js\?v=14/);
   assert.match(html, /day2\.js\?v=53/);
 });
 
@@ -73,7 +73,7 @@ test("DAY 2 페이지는 필요한 스크립트를 올바른 순서로 불러온
   const art = html.indexOf('src="js/art-assets.js');
   const story = html.indexOf('src="js/day2-story.js');
   const bgm = html.indexOf('src="js/bgm-manager.js');
-  const minigame = html.indexOf('src="js/secret-chat-minigame.js');
+  const minigame = html.indexOf('src="minigames/day2-secret-chat/index.js');
   const engine = html.indexOf('src="js/day2.js');
   assert.equal([records, progress, clues, art, story, bgm, minigame, engine].every((index) => index >= 0), true);
   assert.equal(records < progress && progress < art && art < story && story < clues && clues < bgm && bgm < minigame && minigame < engine, true);
@@ -242,8 +242,8 @@ test("중간 슬롯을 불러와도 직전 장면의 배경과 BGM을 복원한�
 
 test("개인 메시지 미니게임은 현재 호감도를 전달하고 하린의 실시간 답장을 표시한다", () => {
   const script = read("js/day2.js");
-  const minigame = read("js/secret-chat-minigame.js");
-  const style = read("css/secret-chat-minigame.css");
+  const minigame = read("minigames/day2-secret-chat/index.js");
+  const style = read("minigames/day2-secret-chat/style.css");
   assert.match(script, /SecretChatMinigame\.start\(\{ onComplete: finishSecretChat, affection: state\.affection \}\)/);
   assert.match(minigame, /messageReply\(index, state\.affection\)/);
   assert.match(minigame, /서하린의 답장이 도착했습니다/);

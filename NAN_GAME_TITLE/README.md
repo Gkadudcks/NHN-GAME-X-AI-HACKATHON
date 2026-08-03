@@ -127,7 +127,7 @@ DAY 1은 아직 파일 이상이 발생하기 전 단계다. 플레이어가 만
 
 ### 테스트
 
-전체 테스트는 `node --test tests/*.test.js`로 실행합니다. Node 24에서는 `node --test tests`가 테스트 디렉터리를 모듈로 해석해 실패하므로 사용하지 않습니다.
+전체 테스트는 `node --test tests/*.test.js minigames/*/tests/*.test.js`로 실행합니다. Node 24에서는 `node --test tests`가 테스트 디렉터리를 모듈로 해석해 실패하므로 사용하지 않습니다.
 
 ### 개발자용 미니게임 스킵
 

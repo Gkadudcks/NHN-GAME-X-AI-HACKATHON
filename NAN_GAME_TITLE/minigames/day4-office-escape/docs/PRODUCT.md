@@ -23,7 +23,7 @@ web
 - 정적 HTML/CSS/JavaScript로 실행하며 `file://` 환경에서도 동작해야 한다.
 - DAY별 스토리 화면, 공용 저장·설정·일시정지·오디오·아트 manifest 구조를 유지한다.
 - DAY 4 퇴근 미니게임은 본편의 `OfficeEscapeMinigame.start({ onComplete })` 계약으로 실행된다.
-- 개발 전용 화면은 `NAN_GAME_TITLE/dev/` 아래에서 본편과 독립적으로 반복 실행할 수 있어야 한다.
+- 개발 전용 화면은 `NAN_GAME_TITLE/minigames/day4-office-escape/dev/` 아래에서 본편과 독립적으로 반복 실행할 수 있어야 한다.
 
 ## Capabilities and Constraints
 
@@ -46,7 +46,7 @@ web
 - DAY 4 서사 초안: `docs/story/DAY4_STORY_DRAFT.md`
 - 아트 파이프라인과 스타일 제약: `docs/art/`
 - 승인된 사무실·회의실·엘리베이터 배경과 서하린·부장 캐릭터 에셋
-- 기존 DAY 4 본편 통합과 프로토타입: `NAN_GAME_TITLE/day4.html`, `NAN_GAME_TITLE/js/office-escape-minigame.js`
+- 기존 DAY 4 본편 통합과 프로토타입: `NAN_GAME_TITLE/day4.html`, `NAN_GAME_TITLE/minigames/day4-office-escape/index.js`
 
 ## Product Principles
 

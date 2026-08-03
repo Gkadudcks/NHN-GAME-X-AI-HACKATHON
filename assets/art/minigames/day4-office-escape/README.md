@@ -17,8 +17,8 @@ day4-office-escape/
 ## 참조 흐름
 
 1. `assets/art/manifests/art-assets.json`이 안정 ID와 `active_version`을 결정합니다.
-2. `NAN_GAME_TITLE/js/office-escape-art-assets.js`가 활성 승인 파일만 브라우저 경로로 해석합니다.
-3. `NAN_GAME_TITLE/js/office-escape-minigame.js`는 경로를 직접 쓰지 않고 전용 리졸버만 호출합니다.
+2. `NAN_GAME_TITLE/minigames/day4-office-escape/art-assets.js`가 활성 승인 파일만 브라우저 경로로 해석합니다.
+3. `NAN_GAME_TITLE/minigames/day4-office-escape/index.js`는 경로를 직접 쓰지 않고 전용 리졸버만 호출합니다.
 
 생성 로그와 렌더 프롬프트는 프로젝트 공용 이력 저장소인 `assets/art/generation_logs/`, `assets/art/prompts/rendered/`에 유지합니다. 과거 로그 안의 경로는 생성 당시 위치를 보존할 수 있으므로, 현재 파일 위치는 항상 매니페스트를 기준으로 확인합니다.
 

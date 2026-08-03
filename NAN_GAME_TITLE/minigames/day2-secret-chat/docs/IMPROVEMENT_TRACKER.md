@@ -7,10 +7,10 @@
 적용 대상은 다음과 같다.
 
 - 본편 진입점: `NAN_GAME_TITLE/day2.html`
-- 공용 미니게임: `NAN_GAME_TITLE/js/secret-chat-minigame.js`
-- 공용 스타일: `NAN_GAME_TITLE/css/secret-chat-minigame.css`
-- 독립 Lab: `NAN_GAME_TITLE/dev/day2-secret-chat-minigame.html`
-- 관련 테스트: `NAN_GAME_TITLE/tests/secret-chat-minigame.test.js`
+- 공개 진입점: `NAN_GAME_TITLE/minigames/day2-secret-chat/index.js`
+- 전용 스타일: `NAN_GAME_TITLE/minigames/day2-secret-chat/style.css`
+- 독립 Lab: `NAN_GAME_TITLE/minigames/day2-secret-chat/dev/index.html`
+- 관련 테스트: `NAN_GAME_TITLE/minigames/day2-secret-chat/tests/index.test.js`
 
 DAY 2 스토리, 진행 저장, 호감도 보상 계약은 개별 작업에서 명시적으로 포함하지 않는 한 변경하지 않는다.
 
@@ -66,4 +66,4 @@ DAY 2 스토리, 진행 저장, 호감도 보상 계약은 개별 작업에서 �
 - 2026-08-02: 최초 플레이 피드백을 기준으로 문제 목록, 수정 방향, 작업 순서를 작성했다.
 - 2026-08-02: 화면 구조와 실제 타이핑을 먼저 확정하고 전용 도트 제작 후 경고 행동을 구현하도록 작업 순서를 재정렬했다.
 - 2026-08-02: 현재 도트가 외부 이미지가 아닌 인라인 SVG 사각형으로 구성됨을 명시하고, 도트 작업을 SVG 포즈 수정·추가로 정정했다.
-- 2026-08-02: 현재 오피스 맵과 캐릭터를 `NAN_GAME_TITLE/assets/minigames/day2-secret-chat/`의 외부 SVG 편집 소스로 분리했다.
+- 2026-08-02: 현재 오피스 맵과 캐릭터를 `NAN_GAME_TITLE/minigames/day2-secret-chat/assets/`의 외부 SVG 편집 소스로 분리했다.

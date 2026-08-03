@@ -57,8 +57,12 @@ test("공용 설정과 세 미니게임은 같은 pause/resume 이벤트 계약�
     CLOSE: "nan:settings-close",
     CHANGE: "nan:settings-change",
   });
-  ["coffee-minigame.js", "work-alert-minigame.js", "secret-chat-minigame.js"].forEach((file) => {
-    const source = fs.readFileSync(path.join(__dirname, "..", "js", file), "utf8");
+  [
+    "minigames/day1-coffee/index.js",
+    "minigames/day2-secret-chat/index.js",
+    "minigames/day3-work-alert/index.js",
+  ].forEach((file) => {
+    const source = fs.readFileSync(path.join(__dirname, "..", file), "utf8");
     assert.match(source, /function pause\(\)/);
     assert.match(source, /function resume\(\)/);
     assert.match(source, /nan:settings-open/);

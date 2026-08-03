@@ -2,7 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const Core = require("../js/office-escape-minigame-core.js");
+const Core = require("../core.js");
 
 function advance(game, seconds, step = 1 / 60) {
   for (let elapsed = 0; elapsed < seconds && !game.snapshot().finished; elapsed += step) game.step(step);
