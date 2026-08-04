@@ -69,6 +69,7 @@
     showHitboxes: false,
     actorArt: new Map(),
     feedbackUntil: 0,
+    assistUntil: 0,
   };
 
   function resolve(id, fallbackId = "") {
@@ -124,22 +125,18 @@
       </header>
       <div class="oe2-world" aria-label="부장님을 피해 엘리베이터로 달리는 사무실" role="application">
         <div class="oe2-background-track" id="oe2-background-track" aria-hidden="true">${backgroundPanels()}</div>
-        <div class="oe2-far-layer" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-        <div class="oe2-mid-layer" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-        <div class="oe2-thresholds" aria-hidden="true"><i></i><i></i><i></i></div>
-        <aside class="oe2-elevator" aria-label="도착 지점: 엘리베이터"><img src="${resolve("minigame_background.office_escape.elevator")}" alt="열린 엘리베이터"><span>${icon("exit")}</span></aside>
         <div class="oe2-ground" aria-hidden="true"><i class="oe2-floor-guide"></i><i class="oe2-speed-line"></i><i class="oe2-speed-line"></i><i class="oe2-speed-line"></i></div>
         <ol class="oe2-zone-markers" aria-hidden="true"><li class="is-active"><span>1</span><b>사무실</b></li><li><span>2</span><b>복도</b></li><li><span>3</span><b>로비</b></li></ol>
         <div class="oe2-objects" id="oe2-objects" aria-live="polite"></div>
         <div class="oe2-actors" aria-label="부장님, 서하린, 도윤의 추격 대형">
           <figure class="oe2-actor oe2-boss"><img id="oe2-boss" src="${resolve(CHARACTER_IDS.bossRun)}" alt="뒤에서 쫓아오는 부장님"></figure>
-          <figure class="oe2-actor oe2-harin"><img id="oe2-harin" src="${resolve(CHARACTER_IDS.harinRun)}" alt="도윤과 함께 달리는 서하린"></figure>
+          <figure class="oe2-actor oe2-harin"><img id="oe2-harin" src="${resolve(CHARACTER_IDS.harinRun)}" alt="도윤과 함께 달리는 서하린"><div class="oe2-assist-badge" id="oe2-assist-badge" aria-hidden="true">${icon("shield")}<span>하린이 막아줬다!</span></div></figure>
           <figure class="oe2-actor oe2-doyun"><img id="oe2-doyun" src="${resolve(CHARACTER_IDS.doyunRun)}" alt="오른쪽으로 달리는 도윤"></figure>
         </div>
         <div class="oe2-telegraph" id="oe2-telegraph" hidden><strong id="oe2-telegraph-action">JUMP</strong><span id="oe2-telegraph-label"></span></div>
         <div class="oe2-feedback" id="oe2-feedback" role="status" aria-live="polite"></div>
-        <button class="oe2-action oe2-jump" type="button" aria-label="점프, Space 또는 위 화살표">${icon("up")}<span>JUMP</span><kbd>SPACE</kbd></button>
-        <button class="oe2-action oe2-slide" type="button" aria-label="슬라이드, 아래 화살표">${icon("down")}<span>SLIDE</span><kbd>↓</kbd></button>
+        <button class="oe2-ring-action oe2-action oe2-jump" type="button" aria-label="점프, Space 또는 위 화살표">${icon("up")}<span>JUMP</span></button>
+        <button class="oe2-ring-action oe2-action oe2-slide" type="button" aria-label="슬라이드, 아래 화살표">${icon("down")}<span>SLIDE</span></button>
         <div class="oe2-pause-screen" aria-live="polite"><strong>일시정지</strong><span>ESC 또는 일시정지 버튼으로 계속합니다</span></div>
         <section class="oe2-result" id="oe2-result" hidden aria-live="polite"><strong id="oe2-result-grade">PERFECT</strong><p id="oe2-result-copy"></p><button type="button" id="oe2-result-continue">스토리 계속하기</button></section>
       </div>`;
@@ -158,11 +155,12 @@
       world: root.querySelector(".oe2-world"),
       clock: root.querySelector("#oe2-clock"), progress: root.querySelector("#oe2-route-progress"),
       routeNodes: [...root.querySelectorAll(".oe2-route li")], zoneNodes: [...root.querySelectorAll(".oe2-zone-markers li")],
-      backgroundTrack: root.querySelector("#oe2-background-track"), backgroundPanels: [...root.querySelectorAll(".oe2-background-panel img")],
+      backgroundPanels: [...root.querySelectorAll(".oe2-background-panel")],
+      backgroundImages: [...root.querySelectorAll(".oe2-background-panel img")],
       objects: root.querySelector("#oe2-objects"), boss: root.querySelector(".oe2-boss"), harin: root.querySelector(".oe2-harin"), doyun: root.querySelector(".oe2-doyun"),
       actors: { boss: root.querySelector("#oe2-boss"), harin: root.querySelector("#oe2-harin"), doyun: root.querySelector("#oe2-doyun") },
       telegraph: root.querySelector("#oe2-telegraph"), telegraphAction: root.querySelector("#oe2-telegraph-action"), telegraphLabel: root.querySelector("#oe2-telegraph-label"),
-      feedback: root.querySelector("#oe2-feedback"), jump: root.querySelector(".oe2-jump"), slide: root.querySelector(".oe2-slide"), pause: root.querySelector(".oe2-pause"),
+      feedback: root.querySelector("#oe2-feedback"), assistBadge: root.querySelector("#oe2-assist-badge"), jump: root.querySelector(".oe2-jump"), slide: root.querySelector(".oe2-slide"), pause: root.querySelector(".oe2-pause"),
       result: root.querySelector("#oe2-result"), resultGrade: root.querySelector("#oe2-result-grade"), resultCopy: root.querySelector("#oe2-result-copy"),
       items: new Map([...root.querySelectorAll("[data-item]")].map((node) => [node.dataset.item, node])), objectNodes: new Map(),
     };
@@ -192,7 +190,16 @@
     Core.BACKGROUND_ROUTE.forEach((segment, index) => {
       const id = BACKGROUND_IDS[segment.scene];
       const fallback = BACKGROUND_FALLBACKS[segment.scene];
-      refs.backgroundPanels[index].src = resolve(id, fallback);
+      const image = refs.backgroundImages[index];
+      const source = resolve(id, fallback);
+      const fallbackSource = Art.resolve(fallback);
+      image.onerror = () => {
+        if (image.dataset.fallbackApplied === "true") { image.onerror = null; return; }
+        image.dataset.fallbackApplied = "true";
+        image.src = fallbackSource;
+      };
+      image.dataset.fallbackApplied = "false";
+      image.src = source;
     });
   }
 
@@ -216,33 +223,54 @@
     snapshot.activeObjects.forEach((object) => {
       const node = objectNode(object);
       const visible = object.visibleRect;
-      const left = playerX + (visible.x - snapshot.playerRect.x) * scale;
+      const art = object.artRect || visible;
+      const left = playerX + (art.x + art.width / 2 - snapshot.playerRect.x) * scale;
       node.hidden = left < -220 || left > width + 240;
-      node.style.width = `${Math.max(20, visible.width * scale)}px`;
-      node.style.height = `${Math.max(16, visible.height * scale)}px`;
+      node.style.width = `${Math.max(20, art.width * scale)}px`;
+      node.style.height = `${Math.max(16, art.height * scale)}px`;
       node.style.left = `${left}px`;
-      node.style.bottom = `${ground + visible.y * scale}px`;
+      node.style.bottom = `${ground + art.y * scale}px`;
       node.classList.toggle("telegraphed", snapshot.upcomingHazard?.id === object.id);
       node.classList.toggle("overhead", object.avoid === "slide");
       node.dataset.motion = object.motion || "still";
       if (state.showHitboxes) {
         const collision = object.collisionRect;
-        node.style.setProperty("--oe2-hit-left", `${(collision.x - visible.x) * scale}px`);
-        node.style.setProperty("--oe2-hit-bottom", `${(collision.y - visible.y) * scale}px`);
+        node.style.setProperty("--oe2-hit-left", `${(collision.x - art.x) * scale}px`);
+        node.style.setProperty("--oe2-hit-bottom", `${(collision.y - art.y) * scale}px`);
         node.style.setProperty("--oe2-hit-width", `${collision.width * scale}px`);
         node.style.setProperty("--oe2-hit-height", `${collision.height * scale}px`);
       }
     });
   }
 
-  function formatClock(snapshot) {
-    const remaining = Math.max(0, Math.ceil(snapshot.duration - snapshot.elapsed));
-    return `17:${String(Math.max(0, 58 - Math.floor(snapshot.elapsed))).padStart(2, "0")} · ${remaining}s`;
+  function formatClock() { return "17:58"; }
+
+  function renderBackgrounds(snapshot, width) {
+    const reducedMotion = global.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    const presentation = Core.backgroundPresentationAt(snapshot.elapsed, { reducedMotion });
+    refs.backgroundPanels.forEach((panel, index) => {
+      const current = index === presentation.currentIndex;
+      const next = index === presentation.nextIndex;
+      const opacity = current ? presentation.currentOpacity : next ? presentation.nextOpacity : 0;
+      panel.style.opacity = String(opacity);
+      panel.style.zIndex = next ? "1" : current ? "0" : "-1";
+      refs.backgroundImages[index].style.setProperty("--oe2-background-pan", `${current ? presentation.panPercent : 0}%`);
+    });
+    const floorCycle = width * 0.36;
+    const floorOffset = floorCycle ? -((snapshot.distance * (width / 780)) % floorCycle) : 0;
+    refs.world.style.setProperty("--oe2-floor-x", `${floorOffset}px`);
   }
 
   function showFeedback(text, kind = "") {
     refs.feedback.textContent = text;
     refs.feedback.dataset.kind = kind;
+    if (kind === "assist") {
+      refs.feedback.classList.remove("show");
+      refs.assistBadge.classList.add("show");
+      state.assistUntil = performance.now() + 1000;
+      return;
+    }
+    refs.assistBadge.classList.remove("show");
     refs.feedback.classList.add("show");
     state.feedbackUntil = performance.now() + 1100;
   }
@@ -258,6 +286,7 @@
       if (event.type === "finish") finishRun(event);
     });
     if (performance.now() > state.feedbackUntil) refs.feedback.classList.remove("show");
+    if (performance.now() > state.assistUntil) refs.assistBadge.classList.remove("show");
   }
 
   function render(snapshot) {
@@ -269,13 +298,9 @@
     root.dataset.zone = snapshot.zone.id;
     root.classList.toggle("is-hurt", snapshot.invulnerable > 0);
     root.classList.toggle("show-hitboxes", state.showHitboxes);
-    refs.clock.textContent = formatClock(snapshot);
+    refs.clock.textContent = formatClock();
     refs.progress.style.setProperty("--oe2-progress", String(progress));
-    refs.backgroundTrack.style.transform = `translate3d(${-progress * 10 * width}px, 0, 0)`;
-    // Preserve the 0.18 / 0.42 / 1.0 far-mid-near parallax contract.
-    refs.world.style.setProperty("--oe2-far-x", `${-snapshot.distance * scale * 0.18}px`);
-    refs.world.style.setProperty("--oe2-mid-x", `${-snapshot.distance * scale * 0.42}px`);
-    refs.world.style.setProperty("--oe2-near-x", `${-snapshot.distance * scale}px`);
+    renderBackgrounds(snapshot, width);
     const zoneIndex = snapshot.zone.id === "office" ? 0 : snapshot.zone.id === "corridor" ? 1 : 2;
     refs.routeNodes.forEach((node, index) => node.classList.toggle("is-active", index === zoneIndex));
     refs.zoneNodes.forEach((node, index) => node.classList.toggle("is-active", index === zoneIndex));
@@ -333,9 +358,13 @@
     state.completed = false;
     state.paused = false;
     state.actorArt.clear();
+    state.feedbackUntil = 0;
+    state.assistUntil = 0;
     root.hidden = false;
     root.dataset.composition = state.composition;
     root.classList.remove("is-paused");
+    refs.feedback.classList.remove("show");
+    refs.assistBadge.classList.remove("show");
     refs.result.hidden = true;
     updateBackgroundSources();
     state.game = Core.create(options.testOverrides || {});
@@ -374,6 +403,7 @@
     state.paused = true;
     root.classList.add("is-paused");
     refs.pause.setAttribute("aria-pressed", "true");
+    refs.pause.setAttribute("aria-label", "계속하기");
     refs.pause.innerHTML = icon("play");
   }
   function resume() {
@@ -382,6 +412,7 @@
     state.lastFrame = performance.now();
     root.classList.remove("is-paused");
     refs.pause.setAttribute("aria-pressed", "false");
+    refs.pause.setAttribute("aria-label", "일시정지");
     refs.pause.innerHTML = icon("pause");
   }
   function finishRun(event) {

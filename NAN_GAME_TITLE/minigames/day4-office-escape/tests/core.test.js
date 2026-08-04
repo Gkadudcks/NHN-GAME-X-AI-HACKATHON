@@ -77,6 +77,32 @@ test("64초 코스는 18개 행동과 3개 수집물을 갖고 배경 순서를 
   assert.equal(hazards[1].time, 9);
 });
 
+test("배경은 마지막 0.7초에만 다음 구간으로 교차 전환하고 미세 이동한다", () => {
+  const stable = Core.backgroundPresentationAt(5.29);
+  assert.equal(stable.segment.id, "office-a");
+  assert.equal(stable.nextSegment.id, "office-b");
+  assert.equal(stable.mix, 0);
+  assert.equal(stable.currentOpacity, 1);
+  assert.equal(stable.nextOpacity, 0);
+
+  const halfway = Core.backgroundPresentationAt(5.65);
+  assert.equal(halfway.segment.id, "office-a");
+  assert.ok(Math.abs(halfway.mix - 0.5) < 0.02);
+  assert.ok(Math.abs(halfway.currentOpacity + halfway.nextOpacity - 1) < 0.000001);
+  assert.ok(halfway.panPercent <= 0 && halfway.panPercent >= -3);
+
+  const next = Core.backgroundPresentationAt(6);
+  assert.equal(next.segment.id, "office-b");
+  assert.equal(next.mix, 0);
+  assert.equal(next.currentOpacity, 1);
+
+  const last = Core.backgroundPresentationAt(63.9);
+  assert.equal(last.segment.id, "lobby-a-repeat");
+  assert.equal(last.nextSegment, null);
+  assert.equal(last.mix, 0);
+  assert.equal(Core.backgroundPresentationAt(5.65, { reducedMotion: true }).panPercent, 0);
+});
+
 test("행동 신호를 따르는 자동 플레이는 모든 프레임율에서 perfect, 무입력은 caught다", () => {
   for (const frame of [1 / 60, 1 / 120, 1 / 144]) {
     const game = scriptedPerfect(frame);
@@ -102,6 +128,29 @@ test("swept AABB는 큰 프레임에서도 빠른 장애물을 관통하지 않�
   advance(game, 1, 0.2);
   assert.equal(game.snapshot().hitCount, 1);
   assert.equal(game.snapshot().activeObjects.length, 0);
+});
+
+test("장애물은 불투명 경계로 확대되고 충돌 상자는 보이는 영역 안에 남는다", () => {
+  const game = Core.create();
+  const hazards = game.snapshot().activeObjects.filter((object) => object.kind === "hazard");
+  const chair = hazards.find((object) => object.type === "chair");
+  const cart = hazards.find((object) => object.type === "cart");
+  const cable = hazards.find((object) => object.type === "cable");
+
+  assert.ok(chair.visibleRect.height > chair.logicalRect.height * 2);
+  assert.ok(cart.visibleRect.height > cart.logicalRect.height * 1.8);
+  assert.ok(cable.visibleRect.height >= cable.logicalRect.height);
+  assert.equal(chair.visibleRect.width, chair.logicalRect.width);
+  assert.ok(chair.artRect.width > chair.visibleRect.width);
+  assert.equal(chair.artRect.width, chair.artRect.height);
+
+  for (const object of hazards) {
+    const { visibleRect, collisionRect } = object;
+    assert.ok(collisionRect.x >= visibleRect.x);
+    assert.ok(collisionRect.y >= visibleRect.y);
+    assert.ok(collisionRect.x + collisionRect.width <= visibleRect.x + visibleRect.width);
+    assert.ok(collisionRect.y + collisionRect.height <= visibleRect.y + visibleRect.height);
+  }
 });
 
 test("하린의 첫 방어 뒤 세 번 피격하면 caught이며 결과 이벤트는 한 번만 발생한다", () => {

@@ -58,6 +58,7 @@
     Object.freeze({ id: "lobby-b", scene: "lobby-b", start: 53.333, end: 58.667 }),
     Object.freeze({ id: "lobby-a-repeat", scene: "lobby-a", start: 58.667, end: DEFAULT_DURATION }),
   ]);
+  const BACKGROUND_TRANSITION_DURATION = 0.7;
 
   const COURSE_BEATS = Object.freeze([
     Object.freeze({ time: 5, avoid: "jump", type: "chair", label: "회전 의자", width: 76, height: 42, motion: "roll" }),
@@ -99,6 +100,30 @@
   function routeSegmentFor(progress) {
     const seconds = clamp(Number(progress) || 0, 0, 1) * DEFAULT_DURATION;
     return BACKGROUND_ROUTE.find((segment) => seconds >= segment.start && seconds < segment.end) || BACKGROUND_ROUTE.at(-1);
+  }
+  function backgroundPresentationAt(elapsedSeconds, options = {}) {
+    const elapsed = clamp(Number(elapsedSeconds) || 0, 0, DEFAULT_DURATION);
+    const segmentIndex = BACKGROUND_ROUTE.findIndex((segment) => elapsed >= segment.start && elapsed < segment.end);
+    const currentIndex = segmentIndex < 0 ? BACKGROUND_ROUTE.length - 1 : segmentIndex;
+    const segment = BACKGROUND_ROUTE[currentIndex];
+    const nextIndex = currentIndex < BACKGROUND_ROUTE.length - 1 ? currentIndex + 1 : -1;
+    const nextSegment = nextIndex < 0 ? null : BACKGROUND_ROUTE[nextIndex];
+    const segmentDuration = Math.max(FIXED_STEP, segment.end - segment.start);
+    const segmentProgress = clamp((elapsed - segment.start) / segmentDuration, 0, 1);
+    const transitionStart = Math.max(0, 1 - BACKGROUND_TRANSITION_DURATION / segmentDuration);
+    const rawMix = nextSegment ? clamp((segmentProgress - transitionStart) / Math.max(FIXED_STEP, 1 - transitionStart), 0, 1) : 0;
+    const mix = rawMix * rawMix * (3 - 2 * rawMix);
+    return Object.freeze({
+      currentIndex,
+      segment,
+      nextIndex,
+      nextSegment,
+      segmentProgress,
+      mix,
+      currentOpacity: 1 - mix,
+      nextOpacity: mix,
+      panPercent: options.reducedMotion ? 0 : -3 * segmentProgress,
+    });
   }
   function distanceAt(elapsed, duration, length) {
     const p = clamp(elapsed / duration, 0, 1);
@@ -171,14 +196,31 @@
       };
     }
     function objectRects(object) {
-      const visibleRect = { x: object.x, y: object.y || 0, width: object.width, height: object.height };
-      if (object.kind === "item") return { logicalRect: visibleRect, visibleRect, collisionRect: { ...visibleRect } };
+      const logicalRect = { x: object.x, y: object.y || 0, width: object.width, height: object.height };
+      if (object.kind === "item") {
+        return { logicalRect, visibleRect: logicalRect, artRect: logicalRect, collisionRect: { ...logicalRect } };
+      }
+      const framing = PROP_ART_FRAMING[object.type];
+      const artSize = framing ? logicalRect.width / framing.alphaWidth : Math.max(logicalRect.width, logicalRect.height);
+      const visibleRect = framing ? {
+        x: logicalRect.x,
+        y: logicalRect.y,
+        width: logicalRect.width,
+        height: artSize * framing.alphaHeight,
+      } : logicalRect;
+      const artRect = framing ? {
+        x: visibleRect.x - (artSize - visibleRect.width) / 2,
+        y: visibleRect.y - artSize * framing.bottomPadding,
+        width: artSize,
+        height: artSize,
+      } : logicalRect;
       const insetX = visibleRect.width * COLLISION_INSET.horizontal;
       const insetY = visibleRect.height * COLLISION_INSET.vertical;
       const groundForgiveness = object.avoid === "jump" ? visibleRect.height * 0.04 : 0;
       return {
-        logicalRect: visibleRect,
+        logicalRect,
         visibleRect,
+        artRect,
         collisionRect: {
           x: visibleRect.x + insetX,
           y: visibleRect.y + insetY - groundForgiveness,
@@ -358,10 +400,10 @@
 
   const COURSE = Object.freeze(buildCourse(DEFAULT_DURATION, DEFAULT_LENGTH));
   return Object.freeze({
-    create, gradeForHits, gaitFrameIndex, zoneFor, routeSegmentFor, distanceAt, speedAt,
+    create, gradeForHits, gaitFrameIndex, zoneFor, routeSegmentFor, backgroundPresentationAt, distanceAt, speedAt,
     COURSE, ZONES, BACKGROUND_ROUTE, DEFAULT_DURATION, DEFAULT_LENGTH, FIXED_STEP,
     PLAYER_X_OFFSET, PLAYER_BOTTOM_FORGIVENESS, PLAYER_WIDTH, STANDING_HEIGHT, SLIDING_WIDTH, SLIDING_HEIGHT,
     GRAVITY, JUMP_VELOCITY, JUMP_BUFFER, SLIDE_DURATION, SLIDE_RECOVERY,
-    INVULNERABLE_TIME, GAIT_FRAME_MS, GAIT_PHASE_DELAY_MS, COLLISION_INSET, PROP_ART_FRAMING,
+    INVULNERABLE_TIME, GAIT_FRAME_MS, GAIT_PHASE_DELAY_MS, COLLISION_INSET, PROP_ART_FRAMING, BACKGROUND_TRANSITION_DURATION,
   });
 });

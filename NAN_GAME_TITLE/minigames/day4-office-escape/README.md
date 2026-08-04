@@ -12,6 +12,7 @@ DAY 4 미니게임의 코드, 문서, 생산 에셋, 시안과 생성 이력을 
 - 검수 보드와 가공 원본: `assets/art/reviews/`, `assets/art/work/`
 - 공개 API: `OfficeEscapeMinigame.start({ onComplete })`, `pause()`, `resume()`, `debugSnapshot()`
 - 이전 V044 구현: `legacy/v044/`
+- 확정 수정 계획: `docs/V2_BACKGROUND_TRANSITION_UI_REFINEMENT_PLAN.md`
 
 V2는 64초 고정 자동 러너다. 1/120초 고정 스텝, 고정 점프, 0.7초 슬라이드, swept AABB 판정으로 18개 장애물과 3개 수집물을 처리한다. 배경 순서는 사무실 A-B-C-A-B-C → 복도 A-B → 로비 A-B-A이며, 마지막에는 기존 승인 엘리베이터 아트가 도착 장면으로 남는다.
 

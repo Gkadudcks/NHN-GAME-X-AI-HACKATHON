@@ -943,6 +943,8 @@ test("V2 퇴근 미니게임은 공개 진입점·결과·저장 연동을 유�
   assert.match(core, /const INVULNERABLE_TIME = 0\.75/);
   assert.match(core, /function gradeForHits\(hitCount\).*perfect.*close.*caught/s);
   assert.match(core, /BACKGROUND_ROUTE/);
+  assert.match(core, /function backgroundPresentationAt\(elapsedSeconds, options = \{\}\)/);
+  assert.match(core, /const BACKGROUND_TRANSITION_DURATION = 0\.7/);
   assert.match(runtime, /global\.OfficeEscapeMinigame = Object\.freeze\(\{ start, pause, resume, preview, setComposition, debugSnapshot \}\)/);
   assert.match(runtime, /onComplete/);
   assert.match(runtime, /result\.grade/);
@@ -952,6 +954,28 @@ test("V2 퇴근 미니게임은 공개 진입점·결과·저장 연동을 유�
   assert.match(art, /function metrics\(id\)/);
   assert.match(dev, /reviewAssetsEnabled: reviewArt\.checked/);
   assert.match(dev, /backgroundBoard/);
+});
+
+test("V2 배경 전환과 조작 UI는 가짜 유리 없이 진행 정보와 버튼 규격을 통일한다", () => {
+  const runtime = read("minigames/day4-office-escape/index.js");
+  const style = read("minigames/day4-office-escape/style.css");
+  const dev = read("minigames/day4-office-escape/dev/index.html");
+  assert.match(runtime, /function renderBackgrounds\(snapshot, width\)/);
+  assert.match(runtime, /Core\.backgroundPresentationAt\(snapshot\.elapsed/);
+  assert.match(runtime, /function formatClock\(\) \{ return "17:58"; \}/);
+  assert.doesNotMatch(runtime, /oe2-far-layer|oe2-mid-layer|oe2-thresholds|--oe2-far-x|--oe2-mid-x|--oe2-near-x/);
+  assert.match(style, /grid-template-rows: clamp\(79px, 9\.6vh, 98px\)/);
+  assert.match(style, /\.oe2-route\s*\{[^}]*height: 48px/s);
+  assert.match(style, /\.oe2-route li svg\s*\{[^}]*width: 42px;[^}]*height: 42px;[^}]*box-sizing: border-box/s);
+  assert.match(style, /\.oe2-ring-action\s*\{[^}]*width: 104px;[^}]*height: 104px;[^}]*border-radius: 50%/s);
+  assert.match(style, /\.oe2-ring-action svg\s*\{[^}]*fill: none;[^}]*stroke: currentColor/s);
+  assert.match(runtime, /class="oe2-ring-action oe2-action oe2-jump"/);
+  assert.match(dev, /class="oe2-ring-action oe2-review-ring oe2-jump"/);
+  assert.doesNotMatch(runtime, /<kbd>|oe2-elevator/);
+  assert.match(runtime, /class="oe2-assist-badge"/);
+  assert.match(style, /\.oe2-pause\s*\{[^}]*width: 48px;[^}]*height: 48px/s);
+  assert.doesNotMatch(style, /\.oe2-far-layer|\.oe2-mid-layer|\.oe2-thresholds|--oe2-far-x|--oe2-mid-x|--oe2-near-x/);
+  assert.match(style, /\.oe2-background-panel\s*\{[^}]*position: absolute[^}]*opacity: 0/s);
 });
 
 test("DAY 3 완료 화면에서 DAY 4를 시작할 수 있다", () => {
