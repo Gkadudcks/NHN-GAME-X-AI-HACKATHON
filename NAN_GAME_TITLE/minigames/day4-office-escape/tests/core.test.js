@@ -23,6 +23,23 @@ function scriptedPerfect(frame) {
   return game;
 }
 
+function scriptedNormalReaction(frame, reactionSeconds = 0.35) {
+  const game = Core.create({ assist: false });
+  let pending = null;
+  while (!game.snapshot().finished) {
+    const snapshot = game.snapshot();
+    const next = snapshot.upcomingHazard;
+    if (next?.inputReady && pending?.id !== next.id) pending = { id: next.id, action: next.avoid, readyAt: snapshot.elapsed, acted: false };
+    if (pending && !pending.acted && snapshot.elapsed - pending.readyAt >= reactionSeconds) {
+      if (pending.action === "jump") game.pressJump();
+      else game.commitSlide();
+      pending.acted = true;
+    }
+    game.step(frame);
+  }
+  return game;
+}
+
 test("고정 스텝 점프는 60·120·144Hz에서 같은 정점과 체공 시간을 낸다", () => {
   const samples = [1 / 60, 1 / 120, 1 / 144].map((frame) => {
     const game = Core.create({ duration: 8, length: 1800, course: [] });
@@ -72,9 +89,13 @@ test("64초 코스는 18개 행동과 3개 수집물을 갖고 배경 순서를 
   assert.equal(hazards.filter((object) => object.avoid === "slide").length, 9);
   assert.equal(Core.COURSE.filter((object) => object.kind === "item").length, 3);
   assert.deepEqual(Core.BACKGROUND_ROUTE.map((segment) => segment.scene), ["office", "office-b", "office-c", "office", "office-b", "office-c", "corridor", "corridor-b", "lobby-a", "lobby-b", "lobby-a"]);
-  assert.ok(hazards.slice(1).every((object, index) => object.time - hazards[index].time >= 0.95));
+  assert.ok(hazards.slice(1).every((object, index) => object.time - hazards[index].time >= Core.MIN_HAZARD_GAP_SECONDS));
   assert.equal(hazards[0].time, 5);
   assert.equal(hazards[1].time, 9);
+  assert.equal(hazards.map((object) => object.avoid).join(","), "jump,slide,jump,slide,jump,jump,slide,slide,jump,slide,slide,jump,jump,slide,slide,jump,jump,slide");
+  assert.deepEqual(Core.COURSE_STAGES.map((stage) => stage.id), ["learning", "mixed", "finale"]);
+  assert.deepEqual(hazards.filter((object) => object.stage === "learning").map((object) => object.pattern), ["introduce", "introduce", "reinforce", "reinforce"]);
+  assert.ok(hazards.some((object, index) => index > 0 && object.avoid === hazards[index - 1].avoid), "mixed/finale contains repeated actions");
 });
 
 test("배경은 마지막 0.7초에만 다음 구간으로 교차 전환하고 미세 이동한다", () => {
@@ -108,6 +129,9 @@ test("행동 신호를 따르는 자동 플레이는 모든 프레임율에서 p
     const game = scriptedPerfect(frame);
     assert.equal(game.result().grade, "perfect");
     assert.equal(game.snapshot().hitCount, 0);
+    const normal = scriptedNormalReaction(frame);
+    assert.equal(normal.result().grade, "perfect", `normal reaction @ ${frame}`);
+    assert.equal(normal.snapshot().hitCount, 0, `normal reaction hits @ ${frame}`);
   }
   const idle = Core.create();
   advance(idle, 65);
@@ -128,6 +152,73 @@ test("swept AABB는 큰 프레임에서도 빠른 장애물을 관통하지 않�
   advance(game, 1, 0.2);
   assert.equal(game.snapshot().hitCount, 1);
   assert.equal(game.snapshot().activeObjects.length, 0);
+});
+
+test("추격 압박은 구간·assist·피격에 따라 가까워지고 회복하며 결과 계약을 바꾸지 않는다", () => {
+  assert.equal(Core.chasePressureFor("learning"), 0.18);
+  assert.equal(Core.chasePressureFor("mixed"), 0.28);
+  assert.equal(Core.chasePressureFor("finale"), 0.38);
+  assert.equal(Core.chasePressureFor("finale", 1), Core.CHASE_PRESSURE.maximum);
+
+  const game = Core.create({
+    duration: 8,
+    length: 1800,
+    course: [{ id: "pressure-hit", kind: "hazard", type: "chair", avoid: "jump", x: 200, y: 0, width: 72, height: 42 }],
+  });
+  const before = game.snapshot();
+  let assistSnapshot = null;
+  while (!assistSnapshot) {
+    game.step(1 / 120);
+    if (game.drainEvents().some((event) => event.type === "assist")) assistSnapshot = game.snapshot();
+  }
+  assert.equal(assistSnapshot.chaseState, "closing");
+  assert.ok(assistSnapshot.chasePressure > before.chasePressure);
+  advance(game, 0.55);
+  assert.equal(game.snapshot().chaseState, "steady");
+  assert.equal(game.result().grade, "perfect");
+  assert.deepEqual(Object.keys(game.result()).sort(), ["caught", "collectedItems", "elapsed", "grade", "hitCount", "maxCombo"]);
+});
+
+test("첫 점프·슬라이드는 PREP를 읽고 650ms 뒤 입력해도 세 프레임율에서 예약 실행된다", () => {
+  for (const frame of [1 / 60, 1 / 120, 1 / 144]) {
+    const game = Core.create({ assist: false });
+    for (const tutorial of [
+      { id: "hazard-01", action: "jump" },
+      { id: "hazard-02", action: "slide" },
+    ]) {
+      let telegraph = null;
+      while (!telegraph) {
+        game.step(frame);
+        telegraph = game.drainEvents().find((event) => event.type === "telegraph" && event.object.id === tutorial.id) || null;
+      }
+      assert.equal(game.snapshot().upcomingHazard.telegraphPhase, "prepare", `${tutorial.id} PREP @ ${frame}`);
+      advance(game, 0.65, frame);
+      const ready = game.snapshot().upcomingHazard;
+      assert.equal(ready.id, tutorial.id);
+      assert.equal(ready.telegraphPhase, "input-ready", `${tutorial.id} input-ready @ ${frame}`);
+      assert.ok(ready.leadTime <= 1.3 && ready.leadTime > ready.actionLeadTime);
+
+      if (tutorial.action === "jump") game.pressJump();
+      else game.commitSlide();
+      const accepted = game.drainEvents().find((event) => event.type === "inputQueued");
+      assert.equal(accepted?.object.id, tutorial.id, `${tutorial.id} queued @ ${frame}`);
+      assert.equal(game.snapshot().upcomingHazard.inputQueued, true);
+
+      let executed = null;
+      let avoided = null;
+      while (!avoided) {
+        game.step(frame);
+        for (const event of game.drainEvents()) {
+          if (event.type === "inputExecuted" && event.object.id === tutorial.id) executed = event;
+          if (event.type === "avoid" && event.object.id === tutorial.id) avoided = event;
+          assert.notEqual(event.type, "hit", `${tutorial.id} hit @ ${frame}`);
+        }
+      }
+      assert.equal(executed?.object.telegraphPhase, "act", `${tutorial.id} ACT @ ${frame}`);
+      assert.ok(executed.queuedFor >= 0.8, `${tutorial.id} reservation ${executed.queuedFor}`);
+    }
+    assert.equal(game.snapshot().hitCount, 0, `tutorial hits @ ${frame}`);
+  }
 });
 
 test("hit·avoid·collect로 해결된 오브젝트는 active 목록에서 빠지고 결과 이벤트를 반복하지 않는다", () => {

@@ -1,5 +1,9 @@
 # 최종본이 바뀌었습니다
 
+> **[PROJECT OVERVIEW · 구현 결정 기준 아님]** 이 README는 게임 전체 소개용이다.
+>
+> DAY 4 오피스 이스케이프 작업은 [기능 README](NAN_GAME_TITLE/minigames/day4-office-escape/README.md)를 거쳐, 그곳에서 `[AUTHORITATIVE]`로 표시한 단일 문서만 따른다. Git 이력과 legacy 문서는 현재 결정을 정의하지 않는다.
+
 NHN GAME X AI HACKATHON을 위해 제작 중인 오피스 로맨틱 코미디 추리 게임입니다.
 
 플레이어는 정직원 전환을 앞둔 계약직 신입사원 **한도윤**이 되어, 5일 동안 최종 PT를 준비합니다. 발표 자료가 알 수 없는 이유로 뒤엉키기 시작하고, 플레이어는 사수 **서하린**과 함께 사건의 원인을 추리하면서 업무 성과와 관계를 모두 지켜야 합니다.

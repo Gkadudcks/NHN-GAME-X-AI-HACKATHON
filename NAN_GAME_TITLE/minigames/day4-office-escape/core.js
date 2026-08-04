@@ -22,7 +22,18 @@
   const JUMP_BUFFER = 0.12;
   const SLIDE_DURATION = 0.7;
   const SLIDE_RECOVERY = 0.15;
+  const ACTION_LEAD_TIME = Object.freeze({ jump: 0.16, slide: 0.15 });
+  const INPUT_READY_LEAD_TIME = Object.freeze({ tutorial: 1.3, standard: 0.9 });
+  const TUTORIAL_PREPARE_LEAD_TIME = 1.8;
   const INVULNERABLE_TIME = 0.75;
+  const MIN_HAZARD_GAP_SECONDS = 2.8;
+  const CHASE_PRESSURE = Object.freeze({
+    stageBase: Object.freeze({ learning: 0.18, mixed: 0.28, finale: 0.38 }),
+    assistBoost: 0.16,
+    hitBoost: 0.28,
+    recoveryPerSecond: 0.32,
+    maximum: 0.82,
+  });
   const GAIT_FRAME_MS = 500;
   const GAIT_PHASE_DELAY_MS = Object.freeze({ doyun: 0, harin: 150, boss: 300 });
   const COLLISION_INSET = Object.freeze({ horizontal: 0.11, vertical: 0.15 });
@@ -63,25 +74,31 @@
   ]);
   const BACKGROUND_TRANSITION_DURATION = 0.7;
 
+  const COURSE_STAGES = Object.freeze([
+    Object.freeze({ id: "learning", label: "초반 학습", start: 0, end: 20, intent: "첫 점프·슬라이드와 한 번의 교대 반복으로 조작을 익힌다." }),
+    Object.freeze({ id: "mixed", label: "중반 혼합", start: 20, end: 48, intent: "같은 행동 2회와 행동 전환을 섞어 단순 교대 암기를 깬다." }),
+    Object.freeze({ id: "finale", label: "후반 압박", start: 48, end: DEFAULT_DURATION, intent: "슬라이드 반복과 점프 반복을 짧게 교차해 마지막 변주를 만든다." }),
+  ]);
+
   const COURSE_BEATS = Object.freeze([
-    Object.freeze({ time: 5, avoid: "jump", type: "chair", label: "회전 의자", width: 76, height: 42, motion: "roll" }),
-    Object.freeze({ time: 9, avoid: "slide", type: "drawer", label: "낮은 서랍", width: 76, height: 36, y: 56 }),
-    Object.freeze({ time: 13, avoid: "jump", type: "cable", label: "전원 케이블", width: 122, height: 24 }),
-    Object.freeze({ time: 16.7, avoid: "slide", type: "sign", label: "낮은 안내 표지", width: 70, height: 36, y: 56, motion: "sway" }),
-    Object.freeze({ time: 20, avoid: "jump", type: "papers", label: "쏟아진 서류", width: 112, height: 34, motion: "scatter" }),
-    Object.freeze({ time: 23, avoid: "slide", type: "drawer", label: "열린 급지함", width: 80, height: 36, y: 56 }),
-    Object.freeze({ time: 26.4, avoid: "jump", type: "chair", label: "회전 의자", width: 78, height: 42, motion: "roll" }),
-    Object.freeze({ time: 29.6, avoid: "slide", type: "sign", label: "낮은 표지판", width: 72, height: 36, y: 56, motion: "sway" }),
-    Object.freeze({ time: 32.8, avoid: "jump", type: "cart", label: "서류 카트", width: 112, height: 44, motion: "rattle" }),
-    Object.freeze({ time: 36.2, avoid: "slide", type: "drawer", label: "복도 서랍", width: 80, height: 36, y: 56 }),
-    Object.freeze({ time: 39.1, avoid: "jump", type: "cable", label: "복합기 케이블", width: 124, height: 24 }),
-    Object.freeze({ time: 42, avoid: "slide", type: "sign", label: "유리 복도 표지", width: 74, height: 36, y: 56, motion: "sway" }),
-    Object.freeze({ time: 44.9, avoid: "jump", type: "papers", label: "흩어진 서류", width: 114, height: 34, motion: "scatter" }),
-    Object.freeze({ time: 47.8, avoid: "slide", type: "drawer", label: "열린 캐비닛", width: 82, height: 36, y: 56 }),
-    Object.freeze({ time: 50.8, avoid: "jump", type: "cart", label: "택배 카트", width: 114, height: 44, motion: "rattle" }),
-    Object.freeze({ time: 53.8, avoid: "slide", type: "sign", label: "로비 표지", width: 74, height: 36, y: 56, motion: "sway" }),
-    Object.freeze({ time: 56.7, avoid: "jump", type: "chair", label: "마지막 의자", width: 80, height: 42, motion: "roll" }),
-    Object.freeze({ time: 59.6, avoid: "slide", type: "drawer", label: "마지막 서랍", width: 84, height: 36, y: 56 }),
+    Object.freeze({ time: 5, stage: "learning", pattern: "introduce", avoid: "jump", type: "chair", label: "회전 의자", width: 76, height: 42, motion: "roll" }),
+    Object.freeze({ time: 9, stage: "learning", pattern: "introduce", avoid: "slide", type: "drawer", label: "낮은 서랍", width: 76, height: 36, y: 56 }),
+    Object.freeze({ time: 13, stage: "learning", pattern: "reinforce", avoid: "jump", type: "cable", label: "전원 케이블", width: 122, height: 24 }),
+    Object.freeze({ time: 16.7, stage: "learning", pattern: "reinforce", avoid: "slide", type: "sign", label: "낮은 안내 표지", width: 70, height: 36, y: 56, motion: "sway" }),
+    Object.freeze({ time: 20, stage: "mixed", pattern: "repeat-jump", avoid: "jump", type: "papers", label: "쏟아진 서류", width: 112, height: 34, motion: "scatter" }),
+    Object.freeze({ time: 23, stage: "mixed", pattern: "repeat-jump", avoid: "jump", type: "chair", label: "밀려난 의자", width: 78, height: 42, motion: "roll" }),
+    Object.freeze({ time: 26.4, stage: "mixed", pattern: "repeat-slide", avoid: "slide", type: "drawer", label: "열린 급지함", width: 80, height: 36, y: 56 }),
+    Object.freeze({ time: 29.6, stage: "mixed", pattern: "repeat-slide", avoid: "slide", type: "sign", label: "낮은 표지판", width: 72, height: 36, y: 56, motion: "sway" }),
+    Object.freeze({ time: 32.8, stage: "mixed", pattern: "switch", avoid: "jump", type: "cart", label: "서류 카트", width: 112, height: 44, motion: "rattle" }),
+    Object.freeze({ time: 36.2, stage: "mixed", pattern: "switch", avoid: "slide", type: "drawer", label: "복도 서랍", width: 80, height: 36, y: 56 }),
+    Object.freeze({ time: 39.1, stage: "mixed", pattern: "repeat-slide", avoid: "slide", type: "sign", label: "유리 복도 표지", width: 74, height: 36, y: 56, motion: "sway" }),
+    Object.freeze({ time: 42, stage: "mixed", pattern: "repeat-jump", avoid: "jump", type: "cable", label: "복합기 케이블", width: 124, height: 24 }),
+    Object.freeze({ time: 44.9, stage: "mixed", pattern: "repeat-jump", avoid: "jump", type: "papers", label: "흩어진 서류", width: 114, height: 34, motion: "scatter" }),
+    Object.freeze({ time: 47.8, stage: "mixed", pattern: "handoff", avoid: "slide", type: "drawer", label: "열린 캐비닛", width: 82, height: 36, y: 56 }),
+    Object.freeze({ time: 50.8, stage: "finale", pattern: "repeat-slide", avoid: "slide", type: "sign", label: "로비 표지", width: 74, height: 36, y: 56, motion: "sway" }),
+    Object.freeze({ time: 53.8, stage: "finale", pattern: "repeat-jump", avoid: "jump", type: "cart", label: "택배 카트", width: 114, height: 44, motion: "rattle" }),
+    Object.freeze({ time: 56.7, stage: "finale", pattern: "repeat-jump", avoid: "jump", type: "chair", label: "마지막 의자", width: 80, height: 42, motion: "roll" }),
+    Object.freeze({ time: 59.6, stage: "finale", pattern: "finish", avoid: "slide", type: "drawer", label: "마지막 서랍", width: 84, height: 36, y: 56 }),
   ]);
 
   const COLLECTIBLE_BEATS = Object.freeze([
@@ -100,6 +117,14 @@
     return Math.floor(Math.max(0, (Number(elapsedSeconds) || 0) * 1000 - delayMs) / GAIT_FRAME_MS) % 2;
   }
   function zoneFor(progress) { return ZONES.find((zone) => progress >= zone.start && progress < zone.end) || ZONES.at(-1); }
+  function courseStageFor(elapsed) {
+    const seconds = clamp(Number(elapsed) || 0, 0, DEFAULT_DURATION);
+    return COURSE_STAGES.find((stage) => seconds >= stage.start && seconds < stage.end) || COURSE_STAGES.at(-1);
+  }
+  function chasePressureFor(stageId, boost = 0) {
+    const base = CHASE_PRESSURE.stageBase[stageId] ?? CHASE_PRESSURE.stageBase.learning;
+    return clamp(base + Math.max(0, Number(boost) || 0), 0, CHASE_PRESSURE.maximum);
+  }
   function routeSegmentFor(progress) {
     const seconds = clamp(Number(progress) || 0, 0, 1) * DEFAULT_DURATION;
     return BACKGROUND_ROUTE.find((segment) => seconds >= segment.start && seconds < segment.end) || BACKGROUND_ROUTE.at(-1);
@@ -177,10 +202,20 @@
       bottom: projection.ground + point.y * projection.scale,
     };
   }
-  function prepareLeadFor(elapsed) { return elapsed < 24 ? 1.35 : elapsed < 48 ? 1.15 : 1; }
-  // The long prepare phase explains the required verb; the filled ACT cue
-  // appears close enough to contact that a fixed action covers the far edge.
-  function actionLeadFor(avoid) { return avoid === "jump" ? 0.16 : 0.15; }
+  function isTutorialHazard(object) { return object?.id === "hazard-01" || object?.id === "hazard-02"; }
+  function prepareLeadFor(elapsed, object) {
+    if (isTutorialHazard(object)) return TUTORIAL_PREPARE_LEAD_TIME;
+    return elapsed < 24 ? 1.35 : elapsed < 48 ? 1.15 : 1;
+  }
+  function inputReadyLeadFor(object) {
+    return isTutorialHazard(object) ? INPUT_READY_LEAD_TIME.tutorial : INPUT_READY_LEAD_TIME.standard;
+  }
+  function actionLeadFor(avoid) { return ACTION_LEAD_TIME[avoid] || ACTION_LEAD_TIME.jump; }
+  function cuePhaseFor(object, leadTime) {
+    if (leadTime <= actionLeadFor(object.avoid)) return "act";
+    if (leadTime <= inputReadyLeadFor(object)) return "input-ready";
+    return "prepare";
+  }
 
   function buildCourse(duration, length, customCourse) {
     if (Array.isArray(customCourse)) return customCourse.map((entry) => ({ ...entry }));
@@ -213,6 +248,7 @@
     let jumpBuffer = 0;
     let slideUntil = 0;
     let slideCooldownUntil = 0;
+    let reservedInput = null;
     let accumulator = 0;
     const state = {
       elapsed: 0,
@@ -225,6 +261,7 @@
       invulnerable: 0,
       assistAvailable: options.assist !== false,
       assistUsed: false,
+      chasePressureBoost: 0,
       finished: false,
     };
 
@@ -293,12 +330,27 @@
       emit("slide");
       return true;
     }
-    function pressJump() { jumpBuffer = JUMP_BUFFER; }
+    function reserveInput(action) {
+      const upcoming = upcomingHazard();
+      if (!upcoming || upcoming.avoid !== action || upcoming.telegraphPhase !== "input-ready") return false;
+      if (!reservedInput || reservedInput.objectId !== upcoming.id || reservedInput.action !== action) {
+        reservedInput = { objectId: upcoming.id, action, acceptedAt: state.elapsed };
+        emit("inputQueued", { object: upcoming, action, leadTime: upcoming.leadTime });
+      }
+      return true;
+    }
+    function pressJump() {
+      if (reserveInput("jump")) return;
+      jumpBuffer = JUMP_BUFFER;
+    }
     function releaseJump() { /* compatibility: fixed jump ignores release duration. */ }
     function commitJump() { pressJump(); }
     function cancelJump() { jumpBuffer = 0; }
-    function setSlide(active) { if (active) activateSlide(); }
-    function commitSlide() { activateSlide(); }
+    function setSlide(active) { if (active) commitSlide(); }
+    function commitSlide() {
+      if (reserveInput("slide")) return;
+      activateSlide();
+    }
     function cancelSlide() { /* fixed slide completes its committed duration. */ }
     function applyHazard(object) {
       resolved.add(object.id);
@@ -306,12 +358,14 @@
       if (state.assistAvailable) {
         state.assistAvailable = false;
         state.assistUsed = true;
+        state.chasePressureBoost = Math.min(CHASE_PRESSURE.maximum, state.chasePressureBoost + CHASE_PRESSURE.assistBoost);
         emit("assist", { object });
         return;
       }
       state.hitCount += 1;
       state.combo = 0;
       state.invulnerable = INVULNERABLE_TIME;
+      state.chasePressureBoost = Math.min(CHASE_PRESSURE.maximum, state.chasePressureBoost + CHASE_PRESSURE.hitBoost);
       emit("hit", { object, hitCount: state.hitCount });
     }
     function resolveObject(object, previousPlayer, currentPlayer) {
@@ -325,6 +379,7 @@
       const verticalOverlap = currentPlayer.y < collisionRect.y + collisionRect.height
         && currentPlayer.y + currentPlayer.height > collisionRect.y;
       if (overlaps(currentPlayer, collisionRect) || (crossedEntry && verticalOverlap)) {
+        if (reservedInput?.objectId === object.id) reservedInput = null;
         if (object.kind === "item") {
           resolved.add(object.id);
           collected.add(object.type);
@@ -337,6 +392,7 @@
         return;
       }
       if (collisionRect.x + collisionRect.width < currentPlayer.x) {
+        if (reservedInput?.objectId === object.id) reservedInput = null;
         resolved.add(object.id);
         if (object.kind === "hazard") emit("avoid", { object });
       }
@@ -348,9 +404,22 @@
       const wasSliding = isSliding();
       state.elapsed = Math.min(duration, state.elapsed + dt);
       state.invulnerable = Math.max(0, state.invulnerable - dt);
+      state.chasePressureBoost = Math.max(0, state.chasePressureBoost - CHASE_PRESSURE.recoveryPerSecond * dt);
       jumpBuffer = Math.max(0, jumpBuffer - dt);
       if (wasSliding && !isSliding()) {
         slideCooldownUntil = Math.max(slideCooldownUntil, state.elapsed + SLIDE_RECOVERY);
+      }
+      if (reservedInput) {
+        const upcoming = upcomingHazard();
+        if (!upcoming || upcoming.id !== reservedInput.objectId) {
+          reservedInput = null;
+        } else if (upcoming.telegraphPhase === "act") {
+          const queued = reservedInput;
+          reservedInput = null;
+          if (queued.action === "jump") jumpBuffer = JUMP_BUFFER;
+          else activateSlide();
+          emit("inputExecuted", { object: upcoming, action: queued.action, queuedFor: state.elapsed - queued.acceptedAt });
+        }
       }
       if (jumpBuffer > 0 && isGrounded() && !isSliding()) {
         state.velocityY = JUMP_VELOCITY;
@@ -370,7 +439,7 @@
       for (const object of course) {
         if (object.kind !== "hazard" || resolved.has(object.id) || warned.has(object.id)) continue;
         const metrics = collisionCueMetrics(object, speed);
-        if (metrics.exitGap < 0 || metrics.leadTime > prepareLeadFor(previousElapsed)) continue;
+        if (metrics.exitGap < 0 || metrics.leadTime > prepareLeadFor(previousElapsed, object)) continue;
         warned.add(object.id);
         emit("telegraph", { object, leadTime: metrics.leadTime });
       }
@@ -392,15 +461,21 @@
         if (object.kind !== "hazard" || resolved.has(object.id)) continue;
         const metrics = collisionCueMetrics(object, speed);
         if (metrics.exitGap < 0) continue;
+        const prepareLeadTime = prepareLeadFor(state.elapsed, object);
+        if (metrics.leadTime > prepareLeadTime) return null;
+        const telegraphPhase = cuePhaseFor(object, metrics.leadTime);
         return {
           ...object,
           gap: object.x - state.distance,
           collisionGap: metrics.entryGap,
           leadTime: metrics.leadTime,
           clearLeadTime: metrics.clearLeadTime,
-          prepareLeadTime: prepareLeadFor(state.elapsed),
-          telegraphPhase: metrics.leadTime <= actionLeadFor(object.avoid) ? "act" : "prepare",
-          inputReady: metrics.leadTime <= actionLeadFor(object.avoid),
+          prepareLeadTime,
+          inputReadyLeadTime: inputReadyLeadFor(object),
+          actionLeadTime: actionLeadFor(object.avoid),
+          telegraphPhase,
+          inputReady: telegraphPhase === "input-ready" || telegraphPhase === "act",
+          inputQueued: reservedInput?.objectId === object.id,
         };
       }
       return null;
@@ -424,6 +499,8 @@
     function drainEvents() { return events.splice(0, events.length); }
     function snapshot() {
       const progress = clamp(state.elapsed / duration, 0, 1);
+      const courseStage = courseStageFor(progress * DEFAULT_DURATION);
+      const chasePressure = chasePressureFor(courseStage.id, state.chasePressureBoost);
       return {
         ...state,
         progress,
@@ -431,9 +508,13 @@
         duration,
         length,
         zone: zoneFor(progress),
+        courseStage,
+        chasePressure,
+        chaseState: state.chasePressureBoost > 0.08 ? "closing" : state.chasePressureBoost > 0.001 ? "recovering" : "steady",
         backgroundSegment: routeSegmentFor(progress),
         sliding: isSliding(),
         jumpHeld: jumpBuffer > 0,
+        reservedInput: reservedInput ? { ...reservedInput } : null,
         course,
         collectedItems: [...collected],
         playerAnchor: playerAnchorAt(state.distance, state.y),
@@ -447,12 +528,13 @@
 
   const COURSE = Object.freeze(buildCourse(DEFAULT_DURATION, DEFAULT_LENGTH));
   return Object.freeze({
-    create, gradeForHits, gaitFrameIndex, zoneFor, routeSegmentFor, backgroundPresentationAt, distanceAt, speedAt,
+    create, gradeForHits, gaitFrameIndex, zoneFor, courseStageFor, chasePressureFor, routeSegmentFor, backgroundPresentationAt, distanceAt, speedAt,
     playerAnchorAt, screenProjection, projectWorldRect, projectWorldPoint,
-    COURSE, ZONES, BACKGROUND_ROUTE, DEFAULT_DURATION, DEFAULT_LENGTH, FIXED_STEP,
+    COURSE, ZONES, COURSE_STAGES, BACKGROUND_ROUTE, DEFAULT_DURATION, DEFAULT_LENGTH, FIXED_STEP,
     PLAYER_X_OFFSET, PLAYER_BOTTOM_FORGIVENESS, PLAYER_WIDTH, STANDING_HEIGHT, SLIDING_WIDTH, SLIDING_HEIGHT,
     GRAVITY, JUMP_VELOCITY, JUMP_BUFFER, SLIDE_DURATION, SLIDE_RECOVERY,
     INVULNERABLE_TIME, GAIT_FRAME_MS, GAIT_PHASE_DELAY_MS, COLLISION_INSET, PROP_ART_FRAMING, BACKGROUND_TRANSITION_DURATION,
+    ACTION_LEAD_TIME, INPUT_READY_LEAD_TIME, TUTORIAL_PREPARE_LEAD_TIME, MIN_HAZARD_GAP_SECONDS, CHASE_PRESSURE,
     VIEW_REFERENCE_WIDTH, VIEW_PLAYER_ANCHOR_X_RATIO, VIEW_GROUND_RATIO,
   });
 });

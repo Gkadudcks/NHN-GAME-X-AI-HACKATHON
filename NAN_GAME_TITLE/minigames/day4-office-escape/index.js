@@ -68,8 +68,16 @@
     reviewAssetsEnabled: false,
     showHitboxes: false,
     actorArt: new Map(),
+    uiElapsed: 0,
     feedbackUntil: 0,
     assistUntil: 0,
+    pressedUntil: { jump: 0, slide: 0 },
+    hitStopUntil: 0,
+    impactUntil: 0,
+    exitingObjects: new Map(),
+    wasInvulnerable: false,
+    restartOnResult: false,
+    restartOptions: null,
   };
 
   function resolve(id, fallbackId = "") {
@@ -105,8 +113,8 @@
   function markup() {
     return `
       <header class="oe2-hud" aria-label="퇴근 경로 상태">
-        <div class="oe2-clock"><strong id="oe2-clock">17:58</strong><span>퇴근까지</span></div>
-        <div class="oe2-route" aria-label="사무실에서 엘리베이터까지의 진행 경로">
+        <div class="oe2-clock"><span>현재 시각</span><strong id="oe2-clock">17:58</strong></div>
+        <div class="oe2-route" role="progressbar" aria-label="엘리베이터까지 진행" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="사무실 · 0%">
           <div class="oe2-route-line"><i id="oe2-route-progress"></i></div>
           <ol>
             <li class="is-active">${icon("building")}<span>사무실</span></li>
@@ -136,10 +144,10 @@
         <div class="oe2-player-body" id="oe2-player-body" aria-hidden="true"></div>
         <div class="oe2-telegraph" id="oe2-telegraph" hidden><strong id="oe2-telegraph-action">JUMP</strong><span id="oe2-telegraph-label"></span></div>
         <div class="oe2-feedback" id="oe2-feedback" role="status" aria-live="polite"></div>
-        <button class="oe2-ring-action oe2-action oe2-jump" type="button" aria-label="점프, Space 또는 위 화살표">${icon("up")}<span>JUMP</span></button>
-        <button class="oe2-ring-action oe2-action oe2-slide" type="button" aria-label="슬라이드, 아래 화살표">${icon("down")}<span>SLIDE</span></button>
+        <button class="oe2-ring-action oe2-action oe2-jump" type="button" aria-label="점프, Space 또는 위 화살표">${icon("up")}<span>점프</span><kbd>Space · ↑</kbd></button>
+        <button class="oe2-ring-action oe2-action oe2-slide" type="button" aria-label="슬라이드, 아래 화살표">${icon("down")}<span>슬라이드</span><kbd>↓</kbd></button>
         <div class="oe2-pause-screen" aria-live="polite"><strong>일시정지</strong><span>ESC 또는 일시정지 버튼으로 계속합니다</span></div>
-        <section class="oe2-result" id="oe2-result" hidden aria-live="polite"><strong id="oe2-result-grade">PERFECT</strong><p id="oe2-result-copy"></p><button type="button" id="oe2-result-continue">스토리 계속하기</button></section>
+        <section class="oe2-result" id="oe2-result" hidden role="dialog" aria-modal="true" aria-labelledby="oe2-result-grade" aria-describedby="oe2-result-copy"><strong id="oe2-result-grade">PERFECT</strong><p id="oe2-result-copy"></p><button type="button" id="oe2-result-continue">스토리 계속하기</button></section>
       </div>`;
   }
 
@@ -154,7 +162,7 @@
     document.body.append(root);
     refs = {
       world: root.querySelector(".oe2-world"),
-      clock: root.querySelector("#oe2-clock"), progress: root.querySelector("#oe2-route-progress"),
+      clock: root.querySelector("#oe2-clock"), route: root.querySelector(".oe2-route"), progress: root.querySelector("#oe2-route-progress"),
       routeNodes: [...root.querySelectorAll(".oe2-route li")], zoneNodes: [...root.querySelectorAll(".oe2-zone-markers li")],
       backgroundPanels: [...root.querySelectorAll(".oe2-background-panel")],
       backgroundImages: [...root.querySelectorAll(".oe2-background-panel img")],
@@ -162,13 +170,13 @@
       actors: { boss: root.querySelector("#oe2-boss"), harin: root.querySelector("#oe2-harin"), doyun: root.querySelector("#oe2-doyun") },
       telegraph: root.querySelector("#oe2-telegraph"), telegraphAction: root.querySelector("#oe2-telegraph-action"), telegraphLabel: root.querySelector("#oe2-telegraph-label"),
       feedback: root.querySelector("#oe2-feedback"), assistBadge: root.querySelector("#oe2-assist-badge"), jump: root.querySelector(".oe2-jump"), slide: root.querySelector(".oe2-slide"), pause: root.querySelector(".oe2-pause"),
-      result: root.querySelector("#oe2-result"), resultGrade: root.querySelector("#oe2-result-grade"), resultCopy: root.querySelector("#oe2-result-copy"),
+      result: root.querySelector("#oe2-result"), resultGrade: root.querySelector("#oe2-result-grade"), resultCopy: root.querySelector("#oe2-result-copy"), resultAction: root.querySelector("#oe2-result-continue"),
       items: new Map([...root.querySelectorAll("[data-item]")].map((node) => [node.dataset.item, node])), objectNodes: new Map(),
     };
     refs.jump.addEventListener("click", triggerJump);
     refs.slide.addEventListener("click", triggerSlide);
     refs.pause.addEventListener("click", () => state.paused ? resume() : pause());
-    root.querySelector("#oe2-result-continue").addEventListener("click", completeToStory);
+    refs.resultAction.addEventListener("click", handleResultAction);
     return root;
   }
 
@@ -220,7 +228,14 @@
   function renderObjects(snapshot, projection) {
     const { width, scale } = projection;
     const active = new Set(snapshot.activeObjects.map((object) => object.id));
-    refs.objectNodes.forEach((node, id) => { node.hidden = !active.has(id); });
+    state.exitingObjects.forEach((until, id) => {
+      if (state.uiElapsed >= until) state.exitingObjects.delete(id);
+    });
+    refs.objectNodes.forEach((node, id) => {
+      const exiting = state.exitingObjects.has(id);
+      node.hidden = !active.has(id) && !exiting;
+      node.classList.toggle("is-hit-exiting", exiting);
+    });
     snapshot.activeObjects.forEach((object) => {
       const node = objectNode(object);
       const visible = object.visibleRect;
@@ -269,26 +284,39 @@
     if (kind === "assist") {
       refs.feedback.classList.remove("show");
       refs.assistBadge.classList.add("show");
-      state.assistUntil = performance.now() + 1000;
+      state.assistUntil = state.uiElapsed + 1;
       return;
     }
     refs.assistBadge.classList.remove("show");
     refs.feedback.classList.add("show");
-    state.feedbackUntil = performance.now() + 1100;
+    state.feedbackUntil = state.uiElapsed + 1.1;
   }
 
   function consumeEvents(snapshot) {
     state.game.drainEvents().forEach((event) => {
-      if (event.type === "jump") { refs.jump.classList.add("pressed"); showFeedback("점프!", "action"); }
-      if (event.type === "slide") { refs.slide.classList.add("pressed"); showFeedback("슬라이드!", "action"); }
+      if (event.type === "inputQueued") showFeedback(`${event.action === "jump" ? "점프" : "슬라이드"} 입력 완료 · 알맞을 때 실행`, "action");
+      if (event.type === "jump") { state.pressedUntil.jump = state.uiElapsed + 0.16; showFeedback("점프!", "action"); }
+      if (event.type === "slide") { state.pressedUntil.slide = state.uiElapsed + 0.16; showFeedback("슬라이드!", "action"); }
       if (event.type === "avoid") showFeedback(`${event.object.avoid === "jump" ? "점프" : "슬라이드"} 통과!`, "safe");
       if (event.type === "collect") showFeedback(`${event.object.label} 획득`, "collect");
       if (event.type === "assist") showFeedback("하린이 막아줬다!", "assist");
-      if (event.type === "hit") showFeedback(`부딪혔습니다 · ${event.hitCount}/3`, "hit");
+      if (event.type === "hit") {
+        const remaining = Math.max(0, 3 - event.hitCount);
+        const label = event.object?.label || "장애물";
+        showFeedback(remaining > 0 ? `${label}에 부딪힘 · 남은 여유 ${remaining}회` : `${label}에 부딪힘 · 붙잡힘 확정`, "hit");
+        state.exitingObjects.set(event.object.id, state.uiElapsed + 0.3);
+        state.hitStopUntil = state.uiElapsed + 0.09;
+        state.impactUntil = state.uiElapsed + 0.3;
+      }
       if (event.type === "finish") finishRun(event);
     });
-    if (performance.now() > state.feedbackUntil) refs.feedback.classList.remove("show");
-    if (performance.now() > state.assistUntil) refs.assistBadge.classList.remove("show");
+    if (state.uiElapsed > state.feedbackUntil) refs.feedback.classList.remove("show");
+    if (state.uiElapsed > state.assistUntil) refs.assistBadge.classList.remove("show");
+    refs.jump.classList.toggle("pressed", state.uiElapsed < state.pressedUntil.jump);
+    refs.slide.classList.toggle("pressed", state.uiElapsed < state.pressedUntil.slide);
+    root.classList.toggle("is-impact", state.uiElapsed < state.impactUntil);
+    if (state.wasInvulnerable && snapshot.invulnerable <= 0) showFeedback("회복 완료 · 다시 움직일 수 있습니다", "safe");
+    state.wasInvulnerable = snapshot.invulnerable > 0;
   }
 
   function render(snapshot) {
@@ -298,14 +326,19 @@
     const projection = Core.screenProjection(snapshot, width, height);
     const scale = projection.scale;
     const progress = snapshot.progress;
+    if (state.playing) consumeEvents(snapshot);
     root.dataset.scene = snapshot.finished ? "arrival" : snapshot.sliding ? "slide" : snapshot.y > 1 ? "jump" : "run";
     root.dataset.zone = snapshot.zone.id;
+    root.dataset.courseStage = snapshot.courseStage.id;
     root.classList.toggle("is-hurt", snapshot.invulnerable > 0);
     root.classList.toggle("show-hitboxes", state.showHitboxes);
     refs.clock.textContent = formatClock();
     refs.progress.style.setProperty("--oe2-progress", String(progress));
     renderBackgrounds(snapshot, width);
     const zoneIndex = snapshot.zone.id === "office" ? 0 : snapshot.zone.id === "corridor" ? 1 : 2;
+    const progressValue = Math.round(progress * 100);
+    refs.route.setAttribute("aria-valuenow", String(progressValue));
+    refs.route.setAttribute("aria-valuetext", `${snapshot.zone.label} · ${progressValue}%`);
     refs.routeNodes.forEach((node, index) => node.classList.toggle("is-active", index === zoneIndex));
     refs.zoneNodes.forEach((node, index) => node.classList.toggle("is-active", index === zoneIndex));
     refs.items.forEach((node, id) => node.classList.toggle("is-collected", snapshot.collectedItems.includes(id)));
@@ -317,6 +350,9 @@
     setActorArt("doyun", doyunId, snapshot.sliding ? 27.5 : 50);
     setActorArt("harin", harinId, 48);
     setActorArt("boss", bossId, 52);
+    refs.boss.dataset.chaseState = snapshot.chaseState;
+    refs.boss.style.setProperty("--oe2-chase-pressure", String(snapshot.chasePressure));
+    refs.boss.style.setProperty("--oe2-chase-shift", `${(snapshot.chasePressure * 8).toFixed(2)}cqw`);
     refs.doyun.style.left = `${projection.playerAnchorX}px`;
     refs.doyun.style.bottom = `${projection.ground}px`;
     refs.doyun.style.translate = `0 ${-snapshot.playerAnchor.y * scale}px`;
@@ -335,12 +371,18 @@
       refs.telegraph.style.left = `${Math.max(24, Math.min(width - 180, cuePoint.x))}px`;
       refs.telegraph.style.bottom = `${Math.max(projection.ground + 12, Math.min(height - 84, cuePoint.bottom + 12))}px`;
       refs.telegraph.dataset.phase = upcoming.telegraphPhase;
-      refs.telegraphAction.textContent = upcoming.telegraphPhase === "act" ? `${upcoming.avoid.toUpperCase()} NOW` : upcoming.avoid.toUpperCase();
-      refs.telegraphLabel.textContent = upcoming.telegraphPhase === "act" ? "지금!" : upcoming.label;
+      const action = upcoming.avoid.toUpperCase();
+      refs.telegraphAction.textContent = upcoming.inputQueued ? `${action} ✓` : upcoming.telegraphPhase === "act" ? `${action} NOW` : action;
+      refs.telegraphLabel.textContent = upcoming.inputQueued
+        ? "입력 완료 · 자동 실행 대기"
+        : upcoming.telegraphPhase === "input-ready"
+          ? "지금 누르면 알맞을 때 실행"
+          : upcoming.telegraphPhase === "act" ? "지금!" : `${upcoming.label} · 준비`;
     }
+    refs.jump.classList.toggle("queued", Boolean(upcoming?.inputQueued && upcoming.avoid === "jump"));
+    refs.slide.classList.toggle("queued", Boolean(upcoming?.inputQueued && upcoming.avoid === "slide"));
     refs.jump.classList.toggle("active", root.dataset.scene === "jump");
     refs.slide.classList.toggle("active", snapshot.sliding);
-    if (state.playing) consumeEvents(snapshot);
   }
 
   function preview(scene = "run") {
@@ -367,17 +409,33 @@
     state.reviewAssetsEnabled = Boolean(options.reviewAssetsEnabled);
     state.showHitboxes = Boolean(options.showHitboxes);
     state.onComplete = typeof options.onComplete === "function" ? options.onComplete : null;
+    state.restartOnResult = options.resultAction === "restart";
+    state.restartOptions = state.restartOnResult ? { ...options } : null;
     state.completed = false;
     state.paused = false;
     state.actorArt.clear();
+    state.uiElapsed = 0;
     state.feedbackUntil = 0;
     state.assistUntil = 0;
+    state.pressedUntil = { jump: 0, slide: 0 };
+    state.hitStopUntil = 0;
+    state.impactUntil = 0;
+    state.exitingObjects.clear();
+    state.wasInvulnerable = false;
     root.hidden = false;
     root.dataset.composition = state.composition;
-    root.classList.remove("is-paused");
+    root.classList.remove("is-paused", "is-complete", "is-impact");
+    refs.jump.disabled = false;
+    refs.slide.disabled = false;
+    refs.pause.disabled = false;
+    refs.jump.classList.remove("pressed", "queued");
+    refs.slide.classList.remove("pressed", "queued");
     refs.feedback.classList.remove("show");
+    refs.feedback.textContent = "";
+    refs.feedback.removeAttribute("data-kind");
     refs.assistBadge.classList.remove("show");
     refs.result.hidden = true;
+    refs.resultAction.textContent = state.restartOnResult ? "다시 달리기" : "스토리 계속하기";
     updateBackgroundSources();
     state.game = Core.create(options.testOverrides || {});
     if (options.autoStart === false) {
@@ -395,7 +453,10 @@
     if (!state.playing) return;
     const delta = Math.min(0.1, Math.max(0, (now - state.lastFrame) / 1000));
     state.lastFrame = now;
-    if (!state.paused) state.game.step(delta);
+    if (!state.paused) {
+      state.uiElapsed += delta;
+      if (state.uiElapsed >= state.hitStopUntil) state.game.step(delta);
+    }
     render(state.game.snapshot());
     if (state.playing) frame = requestAnimationFrame(tick);
   }
@@ -403,12 +464,12 @@
   function triggerJump() {
     if (!state.playing || state.paused || state.completed) return;
     state.game.pressJump();
-    refs.jump.classList.add("pressed");
+    state.pressedUntil.jump = state.uiElapsed + 0.16;
   }
   function triggerSlide() {
     if (!state.playing || state.paused || state.completed) return;
     state.game.commitSlide();
-    refs.slide.classList.add("pressed");
+    state.pressedUntil.slide = state.uiElapsed + 0.16;
   }
   function pause() {
     if (!root || state.paused || state.completed) return;
@@ -433,10 +494,26 @@
     state.playing = false;
     cancelAnimationFrame(frame);
     const result = event.result || state.game.result();
+    root.classList.add("is-complete");
+    root.classList.remove("is-impact");
+    refs.jump.disabled = true;
+    refs.slide.disabled = true;
+    refs.pause.disabled = true;
+    refs.jump.classList.remove("pressed", "queued");
+    refs.slide.classList.remove("pressed", "queued");
     refs.result.hidden = false;
     refs.resultGrade.textContent = result.grade.toUpperCase();
     refs.resultCopy.textContent = result.caught ? "부장님에게 붙잡혔습니다. 확인 업무 후 퇴근합니다." : `피격 ${result.hitCount}회 · 수집 ${result.collectedItems.length}/3`;
     state.finalResult = result;
+    refs.resultAction.focus({ preventScroll: true });
+  }
+  function handleResultAction() {
+    if (!state.completed) return;
+    if (state.restartOnResult && state.restartOptions) {
+      start(state.restartOptions);
+      return;
+    }
+    completeToStory();
   }
   function completeToStory() {
     if (!state.completed) return;

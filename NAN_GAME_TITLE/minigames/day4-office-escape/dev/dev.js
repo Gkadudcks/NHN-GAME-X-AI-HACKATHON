@@ -11,6 +11,13 @@
   const reviewArt = document.querySelector("#oe2-dev-review-art");
   const hitboxes = document.querySelector("#oe2-dev-hitboxes");
   const backgroundBoard = document.querySelector("#oe2-background-board");
+  const toolsToggle = document.querySelector("#oe2-dev-tools-toggle");
+
+  function setToolsCollapsed(collapsed) {
+    document.body.classList.toggle("dev-tools-collapsed", collapsed);
+    toolsToggle.setAttribute("aria-expanded", String(!collapsed));
+    toolsToggle.textContent = collapsed ? "검수 도구 열기" : "검수 도구 접기";
+  }
 
   function renderBackgroundBoard() {
     document.querySelectorAll("[data-review-background]").forEach((host) => {
@@ -53,7 +60,8 @@
     setQuery("scene", scene);
   }
   function startPlay() {
-    OfficeEscapeMinigame.start({ composition: currentComposition, reviewAssetMap, reviewAssetsEnabled: reviewArt.checked, showHitboxes: hitboxes.checked, onComplete(result) { status.textContent = `완료 · ${result.grade.toUpperCase()} · 피격 ${result.hitCount}`; } });
+    setToolsCollapsed(true);
+    OfficeEscapeMinigame.start({ composition: currentComposition, reviewAssetMap, reviewAssetsEnabled: reviewArt.checked, showHitboxes: hitboxes.checked, resultAction: "restart", onComplete(result) { status.textContent = `완료 · ${result.grade.toUpperCase()} · 피격 ${result.hitCount}`; } });
     status.textContent = `플레이 · ${currentComposition.toUpperCase()} · 64초`;
   }
   function selectComposition(value) {
@@ -65,7 +73,8 @@
   document.querySelectorAll("[data-composition]").forEach((button) => button.addEventListener("click", () => selectComposition(button.dataset.composition)));
   document.querySelectorAll("[data-preview]").forEach((button) => button.addEventListener("click", () => staticPreview(button.dataset.preview)));
   document.querySelector("#oe2-dev-play").addEventListener("click", startPlay);
-  document.querySelector("#oe2-clean").addEventListener("click", () => document.body.classList.add("clean-preview"));
+  document.querySelector("#oe2-clean").addEventListener("click", () => setToolsCollapsed(true));
+  toolsToggle.addEventListener("click", () => setToolsCollapsed(false));
   document.querySelector("#oe2-dev-buttons").addEventListener("click", () => document.body.classList.add("show-button-review"));
   document.querySelector("#oe2-dev-backgrounds").addEventListener("click", () => { renderBackgroundBoard(); backgroundBoard.setAttribute("aria-hidden", "false"); });
   document.querySelector("#oe2-review-close").addEventListener("click", () => document.body.classList.remove("show-button-review"));
@@ -76,6 +85,6 @@
     status.textContent = `버튼 후보 선택 · ${selectedCandidate} · 사용자 승인 대기`;
   }));
   [reviewArt, hitboxes].forEach((input) => input.addEventListener("change", () => staticPreview(defaultScene[currentComposition])));
-  globalThis.addEventListener("keydown", (event) => { if (event.code === "KeyH") document.body.classList.toggle("clean-preview"); if (event.code === "Escape") { document.body.classList.remove("show-button-review"); backgroundBoard.setAttribute("aria-hidden", "true"); } });
+  globalThis.addEventListener("keydown", (event) => { if (event.code === "KeyH") setToolsCollapsed(!document.body.classList.contains("dev-tools-collapsed")); if (event.code === "Escape") { document.body.classList.remove("show-button-review"); backgroundBoard.setAttribute("aria-hidden", "true"); } });
   loadReviewAssets().finally(() => { renderBackgroundBoard(); selectComposition(composition); });
 })();

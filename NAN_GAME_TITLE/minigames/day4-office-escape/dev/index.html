@@ -6,10 +6,10 @@
   <base href="../../../">
   <title>DAY 4 오피스 이스케이프 · V2 플레이 검수</title>
   <link rel="stylesheet" href="css/fonts.css?v=1">
-  <link rel="stylesheet" href="minigames/day4-office-escape/style.css?v=8">
+  <link rel="stylesheet" href="minigames/day4-office-escape/style.css?v=10">
   <style>
     html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #07111d; }
-    .oe2-dev-tools { position: fixed; z-index: 10000; top: 94px; left: 50%; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 7px; max-width: min(1180px, calc(100vw - 32px)); padding: 7px; translate: -50% 0; color: #f5ead0; background: rgba(4,13,23,.94); border: 1px solid rgba(245,234,208,.28); box-shadow: 0 10px 30px rgba(0,0,0,.38); font: 700 13px Pretendard, sans-serif; }
+    .oe2-dev-tools { position: fixed; z-index: 10000; top: 82px; left: 50%; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 7px; max-width: min(1180px, calc(100vw - 32px)); padding: 7px; translate: -50% 0; color: #f5ead0; background: rgba(4,13,23,.94); border: 1px solid rgba(245,234,208,.28); box-shadow: 0 10px 30px rgba(0,0,0,.38); font: 700 13px Pretendard, sans-serif; transition: opacity 140ms ease, translate 180ms cubic-bezier(.22,.8,.3,1); }
     .oe2-dev-tools button, .oe2-dev-tools label { flex: 0 0 auto; min-height: 34px; box-sizing: border-box; padding: 0 12px; color: inherit; white-space: nowrap; background: transparent; border: 1px solid rgba(245,234,208,.28); font: inherit; cursor: pointer; }
     .oe2-dev-tools label { display: flex; align-items: center; gap: 6px; cursor: default; }.oe2-dev-tools input { accent-color: #35db88; }
     .oe2-dev-tools button:hover, .oe2-dev-tools button[aria-pressed="true"] { color: #07111d; background: #ff8a1f; border-color: #ff8a1f; }.oe2-dev-tools button:focus-visible { outline: 3px solid #35db88; outline-offset: 2px; }
@@ -21,11 +21,15 @@
     .oe2-candidate { display: grid; place-items: center; color: #f5ead0; background: #101a25; border: 2px solid rgba(245,234,208,.68); font: 850 13px Pretendard, sans-serif; cursor: default; }.oe2-candidate svg { width: 29px; height: 29px; fill: none; stroke: currentColor; stroke-width: 2; }.oe2-candidate:focus-visible { outline: 3px solid #35db88; outline-offset: 3px; }.oe2-candidate:hover { color: #fff; border-color: #ff8a1f; }
     .oe2-candidate.ring { width: 104px; height: 104px; border-radius: 50%; }.oe2-candidate.keycap { grid-template-columns: 33px 1fr; gap: 8px; width: 112px; height: 84px; padding: 0 12px; border-radius: 16px; text-align: left; }.oe2-candidate.keycap small,.oe2-candidate.tile small { grid-column: 2; color: rgba(245,234,208,.62); font-size: 9px; }.oe2-candidate.tile { grid-template-columns: 38px 1fr; gap: 8px; width: 120px; height: 72px; padding: 0 11px; border-radius: 12px; text-align: left; }.oe2-candidate.slide { border-color: #8ccfe1; }.oe2-candidate.jump { border-color: #ffb14d; }
     .oe2-background-board { position: fixed; z-index: 10020; inset: 0; display: none; overflow: auto; box-sizing: border-box; padding: 28px; background: rgba(3,9,15,.88); }.oe2-background-board[aria-hidden="false"] { display: block; }.oe2-background-panel-review { box-sizing: border-box; width: min(1240px, calc(100vw - 56px)); margin: 0 auto; padding: 28px; background: #0a1623; border: 1px solid rgba(245,234,208,.32); box-shadow: 0 24px 64px rgba(0,0,0,.55); }.oe2-background-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }.oe2-background-grid figure { margin: 0; overflow: hidden; background: #101d2a; border: 1px solid rgba(245,234,208,.2); }.oe2-review-background { aspect-ratio: 16/9; background: #07111d; }.oe2-review-background img { display: block; width: 100%; height: 100%; object-fit: cover; }.oe2-background-grid figcaption { display: flex; justify-content: space-between; gap: 12px; padding: 11px 12px; color: #f5ead0; font: 700 13px Pretendard, sans-serif; }.oe2-background-grid figcaption span { color: #35db88; font-size: 11px; letter-spacing: .08em; }.oe2-background-note { margin: 16px 0 0; color: rgba(245,234,208,.7); font: 500 13px/1.5 Pretendard, sans-serif; }
-    body.clean-preview .oe2-dev-tools { display: none; }
+    .oe2-dev-tools-toggle { position: fixed; z-index: 10001; top: 16px; left: 104px; display: none; min-height: 36px; padding: 0 13px; color: #f5ead0; background: rgba(4,13,23,.92); border: 1px solid rgba(245,234,208,.46); border-radius: 12px; font: 750 12px Pretendard, sans-serif; cursor: pointer; }
+    .oe2-dev-tools-toggle:focus-visible { outline: 3px solid #35db88; outline-offset: 2px; }
+    body.dev-tools-collapsed .oe2-dev-tools { visibility: hidden; opacity: 0; translate: -50% -140%; pointer-events: none; }
+    body.dev-tools-collapsed .oe2-dev-tools-toggle { display: block; }
   </style>
 </head>
 <body>
-  <nav class="oe2-dev-tools" aria-label="DAY 4 미니게임 검수 도구">
+  <button class="oe2-dev-tools-toggle" id="oe2-dev-tools-toggle" type="button" aria-controls="oe2-dev-tools" aria-expanded="false">검수 도구 열기</button>
+  <nav class="oe2-dev-tools" id="oe2-dev-tools" aria-label="DAY 4 미니게임 검수 도구">
     <button type="button" data-composition="a">A</button><button type="button" data-composition="b">B</button><button type="button" data-composition="c" aria-pressed="true">C</button>
     <span class="oe2-dev-divider" aria-hidden="true"></span>
     <button type="button" id="oe2-dev-play">실제 플레이</button><button type="button" data-preview="run">달리기</button><button type="button" data-preview="jump">점프</button><button type="button" data-preview="slide">슬라이드</button><button type="button" data-preview="arrival">도착</button>
@@ -57,8 +61,8 @@
     </div>
   </section>
   <script src="minigames/day4-office-escape/art-assets.js?v=2"></script>
-  <script src="minigames/day4-office-escape/core.js?v=21"></script>
-  <script src="minigames/day4-office-escape/index.js?v=8"></script>
-  <script src="minigames/day4-office-escape/dev/dev.js?v=6"></script>
+  <script src="minigames/day4-office-escape/core.js?v=23"></script>
+  <script src="minigames/day4-office-escape/index.js?v=12"></script>
+  <script src="minigames/day4-office-escape/dev/dev.js?v=7"></script>
 </body>
 </html>

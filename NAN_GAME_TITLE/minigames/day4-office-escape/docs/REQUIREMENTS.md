@@ -1,271 +1,414 @@
-# DAY 4 오피스 이스케이프 V2 수정 요구사항·진행 추적
+# [AUTHORITATIVE] DAY 4 오피스 이스케이프 구조 재작업 계획·진행 추적
 
-작성일: 2026-08-04  
-상태: Phase 1·2 검증 완료 · Phase 3 결정 대기  
-현재 사용자 관점 평가: 19/40
+- 문서 ID: `DAY4-OFFICE-ESCAPE-STRUCTURAL-RESET-2026-08-05`
+- 승인일: 2026-08-05
+- 상태: 계획 승인 완료 · 구현 시작 전
+- 지원 환경: PC 데스크톱 브라우저 전용
+- 현재 사용자 승인: 문서 하드 리셋과 Phase 1~6 추천안 전체 확정
 
-이 문서는 V2 `부장님 피해서 퇴근하기`의 현재 요구사항, 수정 순서, 결정, 검증 증거를 함께 관리하는 영속 기준 문서다. 모든 수정 에이전트는 작업 시작 전 이 문서를 읽고, 담당 이슈 상태와 검증 결과를 작업 직후 갱신한다.
+이 문서는 `부장님 피해서 퇴근하기`의 유일한 구현 요구사항, 실행 계획, 상태 추적 문서다. 구현 에이전트는 작업 전에 이 문서를 처음부터 끝까지 읽고, 현재 담당 Phase만 수정한다.
 
-완료된 과거 배경·UI 작업 기록은 `V2_BACKGROUND_TRANSITION_UI_REFINEMENT_PLAN.md`, 이전 V044 구현 기준은 `../legacy/v044/docs/REQUIREMENTS.md`에 보존한다. 과거 문서를 현재 작업 상태로 되돌리거나 덮어쓰지 않는다.
+## 0. 문서 권위와 과거 결정 차단
 
-## 1. 운영 규칙
+1. 현재 작업에서 규범적 효력을 갖는 문서는 이 파일 하나뿐이다.
+2. Git 이력, 삭제된 계획서, 이전 Phase 기록, `legacy/v044/` 문서, 현재 테스트의 기대값은 제품 결정을 정의하지 않는다.
+3. 과거 코드와 테스트는 재사용 후보 또는 현재 동작의 증거일 뿐이다. 이 문서와 충돌하면 이 문서가 우선한다.
+4. 이 문서에 없는 제품 결정을 Git 이력이나 legacy 문서에서 복원하지 않는다. 결정이 필요하면 구현을 멈추고 사용자에게 묻는다.
+5. 이전 테스트가 예약 입력, 작은 버튼, 작은 시계처럼 폐기된 동작을 요구하면 테스트를 보존하지 않고 현재 계약에 맞게 교체한다.
+6. README의 문서 태그는 탐색용이다. 세부 요구사항과 완료 판정은 항상 이 문서에서 확인한다.
 
-### 상태 흐름
+### 작업 전 읽기 순서
 
-각 이슈는 다음 상태만 사용한다.
+1. 저장소 `AGENTS.md`
+2. `NAN_GAME_TITLE/minigames/day4-office-escape/README.md`
+3. 이 문서 전체
+4. 담당 Phase의 현재 코드와 직접 관련된 테스트
+5. 이미지 작업이 실제로 시작되는 Phase 5에서만 저장소 아트 파이프라인 문서
 
-`backlog → in_progress → code_complete → verified → user_accepted`
+## 1. 확정 제품 계약
 
-- `backlog`: 원인과 합격 기준이 기록됐지만 작업하지 않음.
-- `in_progress`: 현재 단일 구현 에이전트가 담당 중.
-- `code_complete`: 코드와 자동 테스트가 완료됐지만 브라우저 검증 전.
-- `verified`: 자동 테스트와 지정 데스크톱 브라우저 검증을 모두 통과함.
-- `user_accepted`: 사용자가 실제 화면을 확인하고 완료를 승인함.
+### 1.1 유지할 외부 계약
 
-실패하거나 회귀가 발견되면 이전 상태로 되돌리고 원인과 증거를 검증 기록에 남긴다.
-
-### 에이전트 운영
-
-- 구현 에이전트는 `gpt-5.6-sol`, reasoning `medium`을 기본으로 한다.
-- 구현 에이전트는 한 번에 하나만 실행한다. 이 저장소의 에이전트는 같은 작업공간을 공유하므로 `core.js`, `index.js`, `style.css`를 병렬 수정하지 않는다.
-- 한 에이전트가 작은 이슈 하나만 고치는 대신, 같은 원인과 파일을 공유하는 한 단계의 이슈 묶음을 담당한다.
-- 좌표계 리팩터링이 medium에서 두 번 이상 실패하거나 요구사항 해석이 갈리면 해당 단계만 high로 재검토한다.
-- 병렬 작업은 읽기 전용 UX 평가, 접근성 감사, 테스트 누락 조사에만 허용한다.
-- 에이전트 프롬프트에는 담당 이슈 ID, 허용 파일, 금지 범위, 합격 기준, 실행할 테스트, 이 문서 업데이트 의무를 반드시 넣는다.
-- 담당 범위를 벗어난 새 문제는 즉석에서 함께 고치지 않고 이슈 표에 `backlog`로 추가한다.
-
-### 문서 업데이트 시점
-
-1. 작업 시작 직전 담당 이슈를 `in_progress`로 바꾼다.
-2. 코드와 자동 테스트가 끝나면 변경 파일과 테스트 결과를 기록하고 `code_complete`로 바꾼다.
-3. 1280×720, 1440×900, 1920×1080 브라우저 검증 후에만 `verified`로 바꾼다.
-4. 실제 제품·구현 결정이 달라진 경우에만 결정 로그를 추가한다.
-5. 사용자가 결과를 승인하면 `user_accepted`로 바꾼다.
-
-## 2. 변경 불가 계약
-
-- 지원 환경은 PC 데스크톱 브라우저 전용이다. 모바일·터치·세로 화면 대응은 범위 밖이다.
-- 기본 플레이 시간은 64초이며, 시간 변경은 별도 제품 결정 없이는 하지 않는다.
+- 게임은 PC 데스크톱 브라우저만 지원한다. 모바일·터치·세로 화면은 범위 밖이다.
+- 기본 플레이 시간은 64초다.
+- 위험 오브젝트 18개, 수집물 3개, 현재 코스의 초반 학습·중반 혼합·후반 변주 구조를 유지한다.
 - 공개 API `OfficeEscapeMinigame.start({ onComplete })`, `pause()`, `resume()`, `debugSnapshot()`을 유지한다.
-- 결과의 `grade`, `caught`, `elapsed`, `hitCount`, `collectedItems`, `maxCombo` 의미를 깨지 않는다.
-- `caught`도 정상 완료이며 DAY 4 저장·스토리 복귀 계약을 유지한다.
-- 순수 규칙과 결정론은 `core.js`, DOM·입력·오디오·렌더링은 `index.js`, 시각 표현은 `style.css`에 둔다.
-- 테스트 전용 옵션은 dev harness 밖의 본편 계약에 노출하지 않는다.
-- 이미지와 manifest는 이번 코드 수정 파이프라인의 기본 범위가 아니다. 필요하면 아트 파이프라인과 사용자 승인 단계를 별도로 연다.
-- review 이미지를 사용자 승인 없이 `approved` 또는 `active_version`으로 승격하지 않는다.
+- 결과 객체의 `grade`, `caught`, `elapsed`, `hitCount`, `collectedItems`, `maxCombo` 필드를 유지한다.
+- `caught`도 정상적인 DAY 4 완료이며 저장·스토리 복귀 계약을 깨지 않는다.
+- 하린의 기계적 보조는 호감도와 결합하지 않는다.
+- 순수 규칙과 결정론은 `core.js`, DOM·입력·렌더링은 `index.js`, 시각 표현은 `style.css`에 둔다.
+- 승인 이미지 경로를 직접 하드코딩하지 않고 `ArtAssets.resolve(id)`를 사용한다.
 
-## 3. 사용자 경험 목표
+### 1.2 직접 입력 계약
 
-- 처음 플레이하는 사용자가 첫 점프·슬라이드 안내를 보고 반응해도 성공할 수 있어야 한다.
-- 보이는 도윤 몸체, 개발자 판정 표시, 실제 코어 판정이 같은 화면 좌표에서 설명돼야 한다.
-- 해결된 장애물과 수집물은 다음 위험 판단을 방해하지 않아야 한다.
-- 피격 원인, 하린 보조, 무적·회복, 붙잡힘 상태가 서로 다른 시각·문구로 분명해야 한다.
-- 지속 UI는 플레이필드보다 낮은 위계를 가져야 하며 도윤의 진행 방향과 다음 장애물을 가리지 않아야 한다.
-- 결과 화면은 명확한 종료 상태여야 하고, 이전 게임 조작이 실행되거나 포커스되지 않아야 한다.
-- 64초 동안 초반 학습, 중반 변주, 후반 압박이 구분돼야 하며 단순 점프·슬라이드 교대 암기로 끝나지 않아야 한다.
+- 점프·슬라이드는 사용자가 누른 프레임에 시작한다.
+- 장애물 ID 기반 입력 예약, 자동 실행, 정답 행동 보정은 사용하지 않는다.
+- cue는 행동을 설명하고 위험을 예고할 뿐 입력 시점을 통제하지 않는다.
+- 너무 이르거나 늦은 입력은 실제 충돌 결과로 이어질 수 있다.
+- 기존 120ms 점프 버퍼처럼 장애물과 무관한 일반 조작 보정만 허용한다.
+- 공정성은 자동 실행이 아니라 가시거리, cue 시작 시점, 장애물 간격, 행동 지속시간으로 확보한다.
 
-## 4. 확인된 이슈
+### 1.3 좌표·판정 계약
 
-| ID | 우선순위 | 증상·근거 | 확인된 원인 | 의존성 | 주요 파일 | 합격 기준 | 상태 |
-|---|---|---|---|---|---|---|---|
-| OBJ-01 | P1 | hit/avoid/collect된 오브젝트가 화면에 얼어붙음. 1440×900에서 14개, 1920×1080에서 18개 잔류 | `hidden=true`를 `.oe2-object { display:block }`이 덮어씀 | 없음 | `index.js`, `style.css`, 테스트 | 해결·화면 이탈 노드의 계산 스타일이 `display:none`; 64초 종료 시 stale visible object 0개 | verified |
-| COL-01 | P1 | 판정 보기와 실제 판정 크기·위치가 다름 | 플레이어 디버그 상자를 스프라이트 host 비율로 그림 | 없음 | `core.js`, `index.js`, `style.css`, 테스트 | 디버그 player body가 `snapshot.playerRect`의 동일 변환을 직접 사용하고 오차 1px 이하 | verified |
-| COL-02 | P1 | 달리기→슬라이드에서 도윤 화면 X가 이동하고 접촉 시점이 어긋남 | 포즈별 정사각 canvas의 왼쪽을 `left`로 고정하고 bottom-center anchor를 쓰지 않음 | COL-01 | `index.js`, `style.css` | 모든 포즈·세 해상도에서 발바닥 중심 X 변화 1px 이하 | verified |
-| COL-03 | P1 | A/B 시안의 도윤·바닥과 장애물 기준이 불일치 | 장애물은 항상 화면 31%·바닥 8.5%, composition은 다른 도윤 X·ground 사용 | COL-01 | `index.js`, `style.css`, dev | composition을 유지한다면 모두 동일한 물리 기준을 사용; 아니면 비생산 시안으로 명시·차단 | verified |
-| COL-04 | P1 | 배경 의자·책상이 실제 장애물처럼 보임 | 배경 가구와 충돌 오브젝트의 깊이·강조 언어가 유사함 | COL-01 | 렌더링·CSS, 필요 시 별도 아트 이슈 | 5초 첫인상 테스트에서 비충돌 배경 소품을 위험으로 오인하지 않음 | verified |
-| CUE-01 | P1 | `NOW`를 보고 입력하면 늦고 PREP에서 입력하면 행동이 먼저 끝남 | ACT가 충돌 150~160ms 전에만 열리고 예약 입력이 없음 | COL 단계 완료 | `core.js`, `index.js`, 테스트 | 문서에서 확정한 창 안의 사람 반응 입력이 성공; 입력 수락을 다음 프레임에 표시 | backlog |
-| HUD-01 | P1 | dev 상단 UI가 플레이필드를 87~91px 덮음 | 툴바를 live play 중에도 상단 overlay로 유지 | OBJ/COL 검증 후 | `dev/index.html`, `dev/dev.js`, CSS | 실제 플레이 중 자동 접힘; 한 동작으로 다시 열 수 있음; 진행 방향 비가림 | backlog |
-| HUD-02 | P2 | 게임 HUD의 정적 `17:58`이 가장 강하고 정보성이 낮음 | 고정 세계관 시각과 진행 정보가 같은 위계 | UI 결정 필요 | `index.js`, `style.css` | 확정된 HUD 정보만 남고 세 해상도에서 플레이필드 우선 위계 유지 | backlog |
-| HUD-03 | P2 | 104px 행동 버튼이 PC 보조 입력치고 강하고 W/S 힌트가 없음 | 터치형 버튼 위계와 키 안내 부재 | HUD-02 | `index.js`, `style.css` | 키보드 기본·마우스 보조 관계가 5초 내 이해되고 위험·캐릭터 비가림 0 | backlog |
-| FEED-01 | P2 | `7/3`, `17/3`처럼 잘못된 피격 문구 | caught 임계치와 누적 피격 횟수를 같은 분수로 표시 | 없음 | `index.js`, 테스트 | 3회 전·후 문구가 각각 남은 여유와 붙잡힘 상태를 정확히 설명 | backlog |
-| FEED-02 | P2 | 행동 버튼의 눌림 상태가 계속 남음 | `pressed` 추가 후 해제 없음 | 없음 | `index.js`, `style.css`, 테스트 | 입력 피드백이 지정 시간 후 종료되고 재시작 시 잔류 class 0 | backlog |
-| FEED-03 | P2 | 피격 원인·회복 시점이 약함 | 접촉점, 짧은 hit-stop, 무적 표시가 충분히 연결되지 않음 | COL, OBJ | `core.js`, `index.js`, `style.css` | 한 번의 피격당 접촉·결과·회복이 하나의 연속 연출로 읽힘 | backlog |
-| PAUSE-01 | P2 | 일시정지 직후 진행 바와 CSS 애니메이션이 잠깐 계속됨 | core 시간은 멈추지만 transition·animation·실시간 피드백 타이머가 별도 동작 | UI 단계 | `index.js`, `style.css`, 테스트 | pause 500ms 관찰에서 모든 게임성 시각 좌표·상태 변화 0 | backlog |
-| RESULT-01 | P2 | 결과가 떠도 포커스가 JUMP에 남고 게임 조작이 활성 | 결과 진입 시 focus/inert 상태 전환 없음 | UI 단계 | `index.js`, `style.css`, 테스트 | 결과 CTA로 포커스 이동; 배경 조작 실행·탭 진입 불가; dev 재도전 가능 | backlog |
-| A11Y-01 | P2 | 진행 바에 수치 접근성 값이 없음 | CSS 시각 진행만 갱신 | UI 단계 | `index.js`, 테스트 | progressbar role/value 또는 동등한 현재 진행 상태 제공 | backlog |
-| A11Y-02 | P2 | 오브젝트 live region이 미래·잔류 이미지를 과도하게 노출할 수 있음 | 시각 오브젝트와 상태 알림 채널이 분리되지 않음 | OBJ-01 | `index.js`, 테스트 | 시각 오브젝트는 낭독 제외; 행동·피격·수집 상태만 적절히 발표 | verified |
-| GAME-01 | P2 | 18개 장애물이 점프→슬라이드를 끝까지 엄격히 반복 | `COURSE_BEATS`가 단일 교대 패턴 | CUE 단계 이후 | `core.js`, 테스트 | 초반 학습→중반 혼합→후반 변주가 존재하고 불공정 연속 입력 없음 | backlog |
-| GAME-02 | P2 | 부장님이 피격·회복과 무관한 장식처럼 보임 | 추격 거리와 위험 상태의 시각 연결 없음 | FEED 단계 이후 | `core.js` 또는 snapshot, `index.js`, `style.css` | 피격·회복이 추격 압박 변화로 읽히되 결과 계약은 유지 | backlog |
-| BG-01 | P2 | review OFF에서는 Office A/B/C가 같은 배경으로 보여 공간 진행이 약함 | 미승인 장면이 같은 approved 배경으로 폴백 | 사용자 아트 승인과 분리 | 배경 resolver·렌더링 | 승인 전 코드에서 가짜 차이를 만들지 않고, 보류 상태를 명확히 기록 | backlog |
-| TEST-01 | P1 | 자동 테스트 49개가 통과해도 위 런타임 결함이 남음 | 코어·문자열 검증 중심이며 브라우저 geometry/cascade 검증 부재 | 모든 단계 | 테스트·dev | `hidden`, player anchor, collision overlay, focus, pause를 실제 계산값으로 회귀 검증 | in_progress |
+- 캐릭터, 캐릭터 판정, 장애물 art rect, 장애물 collision rect, cue는 하나의 world-to-screen projection을 사용한다.
+- 캐릭터 크기를 `cqh`로 따로 확대하지 않는다.
+- 도윤·하린·부장님은 모두 bottom-center 앵커를 사용한다. `left`가 어떤 actor에서는 중심이고 다른 actor에서는 왼쪽 모서리가 되는 혼합 규칙을 금지한다.
+- 달리기 판정은 불투명 몸체의 약 70~80%, 슬라이드 판정은 실제 몸통·다리 영역의 약 65~75%를 초기 보정 범위로 사용한다.
+- 머리카락, 넥타이, 뻗은 손발, 투명 여백 전체를 판정으로 사용하지 않는다.
+- 디버그 판정은 코어 판정과 같아야 할 뿐 아니라 보이는 몸체와의 비율도 설명 가능해야 한다.
 
-## 5. 결정 대기 목록
+### 1.4 캐릭터 대형 계약
 
-| ID | 결정 | 추천안 | 상태 | 차단 단계 |
-|---|---|---|---|---|
-| DEC-01 | 피격 장애물의 화면 처리 | 판정 즉시 해제 후 250~350ms 뒤로 튕기며 제거 | 사용자 확인 대기 | FEED-03 |
-| DEC-02 | A/B/C composition 유지 범위 | 본편은 C로 고정. A/B는 dev 비교로 유지하되 플레이 시 C와 동일한 bottom-center 물리 앵커·바닥선·player body·장애물·cue 투영을 사용 | selected | COL-03 |
-| DEC-03 | 상단 `17:58`의 역할 | 정보에서 제외하고 작은 `현재 시각` 분위기 표식으로 축소 | 사용자 확인 대기 | HUD-02 |
-| DEC-04 | 기본 난도 철학 | 첫 플레이도 안내를 따르면 공정하게 완주 가능 | 사용자 확인 대기 | CUE-01, GAME-01 |
-| DEC-05 | dev 결과의 재도전 | `다시 달리기` 제공, 본편은 기존 스토리 계속 계약 유지 | 사용자 확인 대기 | RESULT-01 |
+- 화면 진행 방향은 오른쪽이며 대형은 `부장님 → 하린 → 도윤` 순서다.
+- 평상시 세 캐릭터의 불투명 실루엣은 서로 겹치지 않는다.
+- 추격 압박이 커져도 부장님과 하린의 실루엣은 닿지 않는다.
+- 추격 압박은 간격을 줄일 수 있지만 동료처럼 나란히 붙어 달리는 인상을 만들면 안 된다.
+- 도윤의 논리 앵커는 현재 진행축의 기준으로 유지하되, 정확한 화면 비율은 Phase 2에서 단일 projection에 맞춰 확정한다.
 
-결정되지 않은 항목은 추천안을 구현된 사실처럼 문서화하지 않는다. 해당 결정을 필요로 하지 않는 선행 버그 수정은 계속 진행할 수 있다.
+### 1.5 장애물 계약
 
-## 6. 순차 수정 파이프라인
+- 기존 승인 에셋을 먼저 재사용하고 크기·위치·판정을 단일 projection 안에서 조정한다.
+- 점프 장애물의 보이는 윗면과 충돌 상단은 같은 위치로 읽혀야 한다.
+- 슬라이드 장애물은 서 있는 캐릭터의 머리·상체와 충돌하고 슬라이딩 몸체는 명확히 통과해야 한다.
+- 슬라이드 장애물은 캐릭터에 비해 충분한 폭과 높이를 가져야 하며, 작은 물체가 공중에 떠 있는 인상을 허용하지 않는다.
+- 기존 에셋의 의미가 동작과 맞지 않으면 억지로 확대하지 않고 별도 아트 후보로 분리한다.
+- 충돌한 장애물은 판정 즉시 화면에서 제거한다. 피격 강조는 장애물 잔류가 아니라 별도의 충격·문구 효과로 표시한다.
 
-### Phase 0 · 기준선 동결
+### 1.6 UI 계약
 
-담당: 주 에이전트  
-범위: 이 문서, 기존 증거, 현재 테스트 상태  
-상태: `completed`
+- 점프·슬라이드 조작은 `104×104px`, 원형, 2px 링, 약 34px 아이콘의 좌우 대칭 버튼으로 복원한다.
+- 버튼 내부는 `JUMP`, `SLIDE` 행동 라벨을 사용하고 키보드 정보는 접근성 라벨 또는 방해되지 않는 보조 정보로 제공한다.
+- 좌상단 `17:58`은 큰 시각 정보로 복원한다. 기본 크기 범위는 `30~46px`이며 `현재 시각`처럼 실제 동작과 맞지 않는 문구를 붙이지 않는다.
+- 진행 경로의 아이콘·지명과 진행 bar는 서로 다른 행 또는 명확히 분리된 레이어를 사용한다. bar가 글자를 통과하면 실패다.
+- 화면 하단 주황색 `.oe2-floor-guide`는 제거한다. 의미 없는 가로선을 다른 진행 정보로 오인하게 만들지 않는다.
+- dev 도구 복구 버튼은 게임 HUD와 겹치지 않는 dev 전용 안전 영역에 둔다.
+- 결과 화면은 배경 조작보다 높은 위계를 가지며 종료 후 점프·슬라이드·pause가 실행되지 않아야 한다.
 
-- 현재 이슈·결정·합격 기준을 이 문서에 고정한다.
-- 기존 사용자 관점 평가와 자동 테스트 결과를 검증 기록에 연결한다.
-- 제품 코드는 수정하지 않는다.
+### 1.7 결과 의미 계약
 
-완료 게이트:
+- `grade`는 기존 호환성을 위해 피격 횟수 기반으로 유지한다.
+- 화면에서는 `무피격 PERFECT`처럼 등급 근거를 함께 표시한다.
+- 수집물은 `수집 0/3 · 선택 목표`처럼 등급과 별도의 선택 목표로 표시한다.
+- `PERFECT`와 `수집 0/3`이 설명 없이 병치되어 모순처럼 보이면 실패다.
 
-- 모든 P1 이슈에 재현 근거와 정량 합격 기준이 있다.
-- 수정 에이전트의 상태 업데이트 규칙이 정의돼 있다.
+### 1.8 애니메이션 계약
 
-### Phase 1 · 장애물 생명주기 정상화
+- 4프레임 달리기는 구조 수정과 사용자 플레이 승인이 끝난 뒤 별도 이미지 Phase로 진행한다.
+- 프레임 수를 늘리기 전에 발바닥 중심, 몸 중심, 캔버스 여백, 불투명 bounds를 정규화한다.
+- 도윤·하린·부장님은 각각 독립된 gait phase를 사용할 수 있어야 하며 완전히 동기화된 단체 동작을 피한다.
+- 신규 또는 재가공 이미지는 `planned → draft → review → approved`를 따르며 사용자 승인 전 production에 적용하지 않는다.
 
-담당 에이전트: `day4_object_lifecycle` · sol medium · 단일 실행  
-담당 이슈: OBJ-01, A11Y-02, TEST-01의 lifecycle 부분  
-주요 파일: `index.js`, `style.css`, 관련 테스트  
-금지: 좌표계, cue 수치, HUD 재설계, 아트 변경
+## 2. 현재 문제 목록
 
-상태: `completed` · OBJ-01/A11Y-02 및 TEST-01 lifecycle 부분 `verified`
+상태 흐름은 `planned → in_progress → code_complete → smoke_checked → user_accepted`만 사용한다. 개별 Phase에서 `verified`라는 표현을 사용하지 않는다. 최종 통합 게이트 이전의 자동 테스트 통과는 사용자 경험 완료를 의미하지 않는다.
 
-변경 파일:
+| ID | 우선순위 | 현재 증상 | 구조 원인 | 담당 Phase | 상태 |
+|---|---|---|---|---|---|
+| INP-01 | P0 | 입력한 순간이 아니라 장애물 시점에 점프·슬라이드 실행 | 장애물별 예약 입력과 ACT 자동 실행 | 1 | planned |
+| INP-02 | P1 | 같은 키가 cue 단계에 따라 즉시 실행되거나 예약됨 | 입력 API가 게임 상태에 따라 다른 의미를 가짐 | 1 | planned |
+| GEO-01 | P0 | 캐릭터에 비해 도윤 판정이 지나치게 작음 | 캐릭터는 높이 기준, 판정은 너비 기준으로 확대 | 2 | planned |
+| GEO-02 | P0 | 도윤과 하린이 거의 같은 위치에 겹침 | 도윤은 center, 하린은 left-edge 앵커 | 2·3 | planned |
+| GEO-03 | P1 | 슬라이드 그림과 슬라이드 판정 폭·높이가 크게 다름 | 포즈 art와 물리 profile이 독립적으로 조정됨 | 2 | planned |
+| FORM-01 | P1 | 부장님과 하린이 함께 달리는 것처럼 가까움 | left-edge 배치와 추격 이동이 실루엣 간격을 보장하지 않음 | 3 | planned |
+| HAZ-01 | P1 | 슬라이드 장애물이 사람에 비해 작고 공중에 뜬 것처럼 보임 | 고정 world 크기와 actor 전용 스케일 분리 | 3 | planned |
+| HAZ-02 | P1 | 보이는 물체와 실제 접촉 시점이 다르게 느껴짐 | visual rect, collision rect, player silhouette 관계 미검증 | 3 | planned |
+| OBJ-01 | P1 | 피격 장애물이 버그처럼 잠시 남아 보임 | 해결 후 별도 exiting 상태로 재표시 | 3 | planned |
+| UI-01 | P1 | 조작 버튼이 작고 사각형으로 회귀 | 보조 입력 위계를 이유로 승인된 원형 형태를 교체 | 4 | planned |
+| UI-02 | P1 | `17:58`이 지나치게 작고 의미도 불분명 | HUD 축소 과정에서 정보 위계를 과도하게 낮춤 | 4 | planned |
+| UI-03 | P1 | 진행 bar가 지명 글자를 통과 | bar와 milestone 텍스트가 같은 중앙 행을 공유 | 4 | planned |
+| UI-04 | P2 | 화면 하단 주황선이 진행 정보처럼 보임 | 의미 없는 바닥 장식선 | 4 | planned |
+| DEV-01 | P2 | `검수 도구 열기`가 좌상단 HUD를 침범 | dev toggle이 게임 HUD 좌표에 fixed 배치 | 4 | planned |
+| RESULT-01 | P2 | `PERFECT`와 `수집 0/3`의 의미가 충돌 | 등급 근거와 선택 목표의 설명 부재 | 4 | planned |
+| ANIM-01 | P2 | 달리기가 느린 두 장 교체처럼 보임 | 500ms 간격 2프레임과 프레임 anchor 부족 | 5 | planned |
+| ANIM-02 | P2 | 세 캐릭터가 같은 박자로 움직임 | 캐릭터별 gait phase가 렌더링에 적용되지 않음 | 5 | planned |
+| TEST-01 | P0 | 테스트가 잘못된 동작을 성공 조건으로 보호 | 내부 일치·문자열·overflow 중심 검증 | 1~6 | planned |
 
-- `minigames/day4-office-escape/index.js`: 시각 오브젝트 트리를 접근성 트리에서 제외하고 상태 알림 채널과 분리.
-- `minigames/day4-office-escape/style.css`: 작성자 CSS 우선순위에서도 `[hidden]`이 `display:none`을 유지하도록 수명주기 규칙 추가.
-- `minigames/day4-office-escape/tests/core.test.js`, `tests/day4-integration.test.js`: hit/avoid/collect 1회성 해결과 hidden cascade·알림 분리 회귀 검사 추가.
-- `day4.html`, `minigames/day4-office-escape/dev/index.html`: 수정된 런타임·스타일 캐시 버전 갱신.
+## 3. 최소 검증 원칙
 
-완료 게이트:
+사용자 경험을 코드 수정 전에 테스트로 과도하게 고정하지 않는다.
 
-- hit, avoid, collect, offscreen 네 경로의 resolved 노드가 보이지 않는다.
-- 한 오브젝트가 두 번 결과 이벤트를 발생시키지 않는다.
-- 실제 브라우저 계산 스타일과 화면 교차 개수가 기준을 통과한다.
+- 각 구현 Phase는 담당 문제에 직접 관련된 테스트만 실행한다.
+- 각 Phase의 브라우저 확인은 기본적으로 1440×900 한 해상도의 핵심 장면만 본다.
+- 1280×720, 1440×900, 1920×1080 전체 검증은 Phase 6에서 한 번만 한다.
+- 이미지 또는 manifest를 변경하지 않은 Phase에서는 아트 검증을 실행하지 않는다.
+- 같은 증거를 부모 에이전트가 반복 재검증하지 않는다. 구현자가 기록한 명령·결과와 한 번의 smoke check를 사용한다.
+- 자동 테스트는 구현 계약을 보호하되 캐릭터 겹침, 체감 크기, 조작감의 사용자 승인을 대신하지 않는다.
+- `smoke_checked`는 핵심 장면이 열리고 목표 동작이 관찰됐다는 의미다. 완료 또는 사용자 승인과 동의어가 아니다.
 
-### Phase 2 · 좌표·판정·앵커 단일화
+## 4. 순차 구현 계획
 
-담당 에이전트: `day4_collision_coordinates` · sol medium · 단일 실행  
-담당 이슈: COL-01, COL-02, COL-03, COL-04, TEST-01의 geometry 부분  
-주요 파일: `core.js`, `index.js`, `style.css`, dev, 관련 테스트  
-금지: cue 타이밍, 코스 순서, HUD 문구, 아트 원본 변경
+### Phase 0 · 문서 하드 리셋
 
-상태: `completed` · COL-01~04 및 TEST-01 geometry 부분 `verified`
+- 담당: 주 에이전트
+- 상태: `completed`
+- 제품 코드 변경: 금지
 
-변경 파일:
+작업:
 
-- `core.js`: 31% bottom-center 앵커, 9% 바닥선, 780px 기준 scale을 하나의 순수 projection 계약으로 정의하고 run/jump/slide player body의 중심을 일치시킴.
-- `index.js`: 도윤 host, `snapshot.playerRect` 디버그 박스, 장애물 art/collision rect, cue를 공통 projection으로 렌더링하고 preview의 강제 snapshot 변조를 제거함.
-- `style.css`: 도윤 canvas를 bottom-center로 고정하고 A/B/C의 별도 바닥선·도윤 X 규칙을 제거. 실제 장애물에만 최소한의 색·외곽 강조를 적용함.
-- `tests/core.test.js`, `tests/day4-integration.test.js`: 포즈 X drift, player overlay 투영, composition 바닥·앵커 불일치 회귀 검증을 추가함.
-- `day4.html`, `dev/index.html`: 변경된 core/runtime/style 캐시 버전을 갱신함.
+1. 과거 계획서를 활성 문서 트리에서 제거한다.
+2. 이 파일을 유일한 권위 문서로 다시 작성한다.
+3. README에 `[AUTHORITATIVE]`, `[FEATURE ENTRYPOINT]`, `[LEGACY — DO NOT USE]` 태그를 추가한다.
+4. 과거 결정은 Git 이력에만 남기고 현재 구현 판단에 사용하지 않도록 명시한다.
 
-자동 수치 증거:
+완료 기준:
 
-- run/jump/slide의 투영된 발 중심 X 편차는 1280×720, 1440×900, 1920×1080 대응 월드 크기에서 모두 `0px`.
-- player body와 앵커 중심 오차는 부동소수점 허용치 `0.000001px` 이하였고, 합격 기준 1px보다 작음.
-- 대응 world 높이 641/814/982px에서 바닥선은 57.69/73.26/88.38px로 모두 동일한 9% 계약을 사용함.
-- 투영 player body(run 기준)는 각각 72.21×144.41px, 81.23×162.46px, 108.31×216.62px이며 dev overlay가 동일 rect를 직접 사용하므로 크기·위치 산술 오차는 0px.
+- DAY 4 README에서 구현 기준으로 연결되는 문서는 이 파일 하나다.
+- 삭제된 계획서 이름을 활성 README와 현재 `docs/`에서 찾을 수 없다.
+- legacy 링크에는 구현·결정 참고 금지 표기가 있다.
 
-완료 게이트:
+### Phase 1 · 입력 예약 제거와 직접 조작 복구
 
-- 도윤 발바닥 중심, 실제 player body, 디버그 player body가 같은 world-to-screen 변환을 사용한다.
-- run/jump/slide와 A/B/C 대상 범위에서 앵커 오차가 기준 이하다.
-- 장애물 visible/collision rect와 화면 표시가 세 해상도에서 일치한다.
+- 담당 하위 모델: `gpt-5.6-sol`, reasoning `medium`, 단일 실행
+- 의존성: Phase 0
+- 담당 이슈: INP-01, INP-02, TEST-01 timing
+- 허용 파일: `core.js`, `index.js`, 직접 관련 테스트, 캐시 버전이 있는 `day4.html`·`dev/index.html`
+- 금지: 캐릭터 크기, 장애물 크기, HUD, 코스 순서, 이미지
 
-### Phase 3 · 행동 예고와 입력 공정성
+구현 작업:
 
-담당 에이전트: `day4_cue_fairness` · sol medium · 단일 실행  
-담당 이슈: CUE-01, GAME-01의 학습·입력 창 부분  
-주요 파일: `core.js`, `index.js`, 관련 테스트  
-선행: DEC-04 확정, Phase 2 verified  
-금지: HUD 레이아웃, 결과 화면, 아트 변경
+1. `reservedInput`, `reserveInput()`, `inputQueued`, `inputExecuted`와 장애물 ID 기반 자동 실행을 제거한다.
+2. `pressJump()`와 `commitSlide()`가 호출된 fixed step에서 즉시 행동 상태를 시작하도록 복원한다.
+3. queued 버튼 class와 `자동 실행 대기`, `알맞을 때 실행` 문구를 제거한다.
+4. cue는 `준비`와 `지금`의 시각 안내만 제공하고 입력을 저장하지 않는다.
+5. 기존 120ms 점프 버퍼, 고정 점프, 0.7초 슬라이드와 회복 규칙은 유지한다.
+6. 예약 입력을 정답으로 요구하는 테스트를 삭제하고 즉시 반응 계약으로 교체한다.
 
-완료 게이트:
+합격 기준:
 
-- PREP, input-ready, ACT, resolved 상태와 시간이 문서 수치에 일치한다.
-- 사람 반응을 모사한 지연 입력 테스트가 세 프레임률에서 통과한다.
-- 첫 점프·슬라이드는 설명을 읽고 반응해도 성공한다.
+- 점프·슬라이드 입력 후 행동 이벤트가 최대 fixed step 1회 이내에 발생한다.
+- 입력 직후 snapshot에서 점프 Y/velocity 또는 sliding 상태 변화가 관찰된다.
+- snapshot과 DOM에 `reservedInput`, queued 상태, 자동 실행 문구가 없다.
+- cue 단계가 달라도 동일한 입력 API의 의미가 바뀌지 않는다.
+- 첫 점프·슬라이드는 1440×900 smoke play에서 키를 누른 순간 움직인다.
 
-### Phase 4 · 피격·회복·HUD·결과 접근성
+최소 검증:
 
-담당 에이전트: `day4_status_ui` · sol medium · 단일 실행  
-담당 이슈: HUD-01~03, FEED-01~03, PAUSE-01, RESULT-01, A11Y-01  
-주요 파일: `index.js`, `style.css`, dev 파일, 관련 테스트  
-선행: DEC-01, DEC-03, DEC-05 확정, Phase 3 verified  
-금지: 코스 순서, 캐릭터·배경 에셋 변경
+- 입력·점프·슬라이드 관련 코어 테스트
+- 예약 문자열과 상태가 production 코드에 남지 않았는지 정적 검사
+- 1440×900에서 첫 점프와 첫 슬라이드 각 1회
 
-완료 게이트:
+중단 기준:
 
-- live play에서 dev 도구가 플레이필드를 가리지 않는다.
-- 피격·보호·회복·붙잡힘 문구와 연출이 상태와 일치한다.
-- pause가 CSS 움직임과 실시간 피드백까지 동결한다.
-- 결과 진입 시 이전 조작이 inert이고 결과 CTA로 포커스가 이동한다.
+- 직접 입력을 살리기 위해 코스 순서나 장애물 크기를 함께 바꿔야 하면 Phase 1을 멈추고 Phase 3 backlog로 기록한다.
 
-### Phase 5 · 64초 리듬과 추격 압박
+### Phase 2 · 캐릭터·판정 단일 스케일과 앵커
 
-담당 에이전트: `day4_course_rhythm` · sol medium · 단일 실행  
-담당 이슈: GAME-01, GAME-02  
-주요 파일: `core.js`, `index.js`, `style.css`, 관련 테스트  
-선행: Phase 4 verified, 사용자 중간 플레이테스트  
-금지: 결과 계약, 아트 원본·manifest 변경
+- 담당 하위 모델: `gpt-5.6-sol`, reasoning `medium`, 단일 실행
+- 의존성: Phase 1 `smoke_checked`
+- 담당 이슈: GEO-01, GEO-02의 앵커 부분, GEO-03, TEST-01 geometry
+- 허용 파일: `core.js`, `index.js`, `style.css`, `art-assets.js`의 비이미지 메트릭, dev 판정 보기, 직접 관련 테스트
+- 금지: actor 간 최종 간격, 장애물 코스 데이터, HUD, 이미지·manifest
 
-완료 게이트:
+구현 작업:
 
-- 초반 학습, 중반 혼합, 후반 변주의 차이가 기록된다.
-- 모든 연속 위험이 확정된 회복·반응 하한을 지킨다.
-- 무입력, 정상 반응, perfect 스크립트가 결정론적으로 같은 결과를 낸다.
+1. 1440×900에서 현재 승인 캐릭터의 목표 불투명 높이를 측정하고 world unit으로 한 번 변환해 canonical visual height를 정한다.
+2. actor의 `cqh` 크기 규칙을 제거하고 canonical world 크기를 공통 projection으로 화면에 투영한다.
+3. 도윤·하린·부장님 host를 모두 bottom-center 앵커로 통일한다.
+4. run, jump, slide별 불투명 bounds와 발바닥 중심을 기록한다. 필요한 경우 기존 `Art.metrics()`를 수평 anchor 메타데이터까지 확장한다.
+5. 코어 player profile과 보이는 도윤 몸체의 관계를 명시하고 run 판정을 불투명 몸체의 70~80% 범위로 보정한다.
+6. slide 판정은 긴 투명 캔버스 전체가 아니라 실제 몸통·다리의 65~75% 범위로 보정한다.
+7. dev 판정 보기에 opaque body 기준 가이드와 실제 collision rect를 동시에 표시한다.
 
-### Phase 6 · 통합 회귀와 사용자 승인
+합격 기준:
 
-담당 에이전트: `day4_final_verification` · sol medium · 단일 실행  
-범위: 수정이 아닌 통합 검증 우선, 발견된 회귀만 최소 수정  
-선행: Phase 1~5 code_complete 이상
+- 세 actor가 같은 projection과 같은 anchor 의미를 사용한다.
+- run/jump/slide 전환 시 도윤 발바닥 중심 X 오차가 1px 이하이다.
+- 1440×900에서 run 판정 높이는 불투명 몸체의 70~80%, slide 판정은 실제 몸통·다리 영역의 65~75%다.
+- 캐릭터 크기 계산에 `cqh`가 사용되지 않는다.
+- 디버그 판정과 실제 코어 판정의 오차가 1px 이하이며, 보이는 몸체와의 비율도 위 범위에 들어온다.
 
-완료 게이트:
+최소 검증:
 
-- 아트 검증과 전체 DAY 4·미니게임 테스트를 통과한다.
-- 1280×720, 1440×900, 1920×1080에서 intro/first input/hit/assist/pause/resume/three zones/result/restart/callback을 확인한다.
-- 브라우저 console error, overflow, ghost object, coordinate mismatch가 0이다.
-- 이슈 표의 범위 항목이 모두 `verified` 이상이다.
-- 사용자 확인 후 관련 항목을 `user_accepted`로 바꾼다.
+- projection·pose anchor·player rect 관련 테스트
+- 1440×900 판정 보기에서 run/jump/slide 각 1장
 
-## 7. 공통 검증 명령
+중단 기준:
 
-단계별 대상 테스트를 먼저 실행한 뒤 최종 단계에서 다음을 실행한다.
+- 승인 이미지의 프레임 여백 차이 때문에 코드 메트릭만으로 anchor를 맞출 수 없으면 이미지를 임의 편집하지 않고 Phase 5 입력으로 기록한다.
 
-```powershell
-python scripts/validate_art_assets.py
-Set-Location NAN_GAME_TITLE
-node --test tests/*.test.js minigames/*/tests/*.test.js
+### Phase 3 · 캐릭터 간격, 장애물 물리 크기, 피격 수명주기
+
+- 담당 하위 모델: `gpt-5.6-sol`, reasoning `medium`, 단일 실행
+- 의존성: Phase 2 `smoke_checked`
+- 담당 이슈: GEO-02의 대형 부분, FORM-01, HAZ-01, HAZ-02, OBJ-01
+- 허용 파일: `core.js`, `index.js`, `style.css`, dev 장면·판정 보기, 직접 관련 테스트
+- 금지: HUD, 결과 등급 계약, 이미지 생성·manifest, 4프레임
+
+구현 작업:
+
+1. actor 위치를 host left가 아니라 불투명 silhouette의 bottom-center 기준으로 배치한다.
+2. steady 상태에서 도윤–하린, 하린–부장님 silhouette intersection이 0이 되도록 기준 대형을 정한다.
+3. chase pressure는 부장님–하린 최소 가시 간격을 침범하지 않는 범위로 clamp한다.
+4. 점프·슬라이드 장애물의 art rect와 collision rect를 Phase 2 projection으로 다시 계산한다.
+5. 슬라이드 장애물은 서 있는 몸체와 겹치고 slide rect 위에 최소 8 world unit의 통과 여유가 생기도록 세로 위치를 맞춘다.
+6. 슬라이드 장애물의 보이는 폭은 도윤 불투명 몸체 폭의 0.9배 이상을 시작 기준으로 삼고, 보이는 높이는 도윤 키의 18~32% 범위에서 조정한다.
+7. 장애물의 보이는 하단·상단과 collision rect 경계가 1440×900에서 4px 이내로 설명되게 한다.
+8. 충돌 시 해당 장애물을 즉시 hidden 처리하고 `exitingObjects` 재표시 경로를 제거한다.
+9. hit-stop, 문구, 화면 플래시 등 별도 피격 피드백은 유지할 수 있으나 장애물 DOM을 잔류시키지 않는다.
+10. 기존 에셋으로 의미가 성립하지 않는 슬라이드 장애물은 코드에서 억지 보정하지 않고 `ART-BACKLOG`로 기록한다.
+
+합격 기준:
+
+- 1440×900 steady 상태에서 세 actor silhouette 교차 면적이 0이다.
+- 최대 chase pressure에서도 부장님과 하린 사이에 최소 16px 또는 플레이필드 폭 1% 중 큰 값 이상의 가시 간격이 있다.
+- 서 있는 도윤은 slide 장애물과 충돌하고, slide rect는 같은 장애물을 명확히 통과한다.
+- 장애물이 캐릭터 대비 식별 가능한 크기이며 작은 물체가 공중에 떠 있는 인상을 주지 않는다.
+- hit/avoid/collect된 오브젝트는 다음 렌더에서 보이지 않으며 결과 이벤트가 중복되지 않는다.
+
+최소 검증:
+
+- actor bounds, hazard vertical overlap, resolved lifecycle 관련 대상 테스트
+- 1440×900에서 steady, maximum chase, jump hazard, slide hazard, hit 직후 각 1장
+
+중단 기준:
+
+- 기존 승인 에셋으로 슬라이드 동작의 의미가 성립하지 않으면 Phase 3 코드는 완료하고 해당 장애물만 Phase 5 이전 별도 사용자 아트 결정으로 남긴다.
+
+### Phase 4 · 조작 버튼·상단 HUD·진행도·결과 복원
+
+- 담당 하위 모델: `gpt-5.6-sol`, reasoning `medium`, 단일 실행
+- 의존성: Phase 3 `smoke_checked`
+- 담당 이슈: UI-01~04, DEV-01, RESULT-01
+- 허용 파일: `index.js`, `style.css`, `dev/index.html`, `dev/dev.js`, 직접 관련 통합 테스트, 캐시 버전 파일
+- 금지: 코어 물리, 코스 순서, actor·장애물 크기, 이미지
+
+구현 작업:
+
+1. 점프·슬라이드를 104px 원형 링, 2px 테두리, 약 34px 아이콘의 대칭 컴포넌트로 복원한다.
+2. 버튼 내부의 작은 사각 keycap 레이아웃을 제거하고 `JUMP`, `SLIDE` 행동 위계를 회복한다.
+3. `17:58`을 `clamp(30px, 2.75vw, 46px)` 범위로 복원하고 고정 값과 모순되는 `현재 시각` 문구를 제거한다.
+4. 진행 bar는 milestone 아이콘 행을 통과할 수 있지만 지명 텍스트 행과는 분리한다.
+5. 상단 HUD는 플레이필드를 불필요하게 압박하지 않되 글자·bar·도구가 겹치지 않는 높이를 사용한다. 68px 강제 목표를 사용하지 않는다.
+6. `.oe2-floor-guide` DOM과 CSS를 제거한다. 실제 속도선이 필요하면 의미가 다른 별도 요소만 유지한다.
+7. dev 도구 toggle은 게임 HUD bounding rect와 교차하지 않는 오른쪽 가장자리 안전 영역으로 옮긴다.
+8. 결과 제목을 `무피격 PERFECT`처럼 등급 근거와 결합하고 수집물을 선택 목표로 분리한다.
+9. 결과 진입 시 조작 버튼 disabled, CTA focus, pause 중단, 재시작 초기화 계약은 유지한다.
+
+합격 기준:
+
+- 두 행동 버튼의 계산 크기가 104×104px이고 `border-radius: 50%`다.
+- 1280px 이상 지원 폭에서 버튼이 도윤·첫 위험·cue와 겹치지 않는다.
+- `17:58` 계산 글자 크기가 30px 미만으로 내려가지 않는다.
+- 진행 bar와 지명 텍스트의 bounding rect 교차가 0이다.
+- 주황색 바닥선이 DOM과 계산 스타일에 존재하지 않는다.
+- dev toggle과 게임 HUD의 bounding rect 교차가 0이다.
+- 결과 화면만 보고 등급과 수집 목표의 관계를 설명할 수 있다.
+
+최소 검증:
+
+- HUD 구조·결과 상태 관련 대상 테스트
+- 1440×900에서 기본 HUD, 첫 위험, 결과, dev 접힘 상태 각 1장
+
+중단 기준:
+
+- HUD 높이를 줄이기 위해 시계 또는 조작 버튼을 다시 축소해야 하면 해당 변경을 하지 않고 레이아웃을 재구성한다.
+
+### Phase 5 · 4프레임 달리기 에셋
+
+- 담당 하위 모델: `gpt-5.6-sol`, reasoning `medium`, 단일 실행
+- 의존성: Phase 4 사용자 `user_accepted`
+- 담당 이슈: ANIM-01, ANIM-02
+- 사전 스킬: `sprite-pipeline`; 새 seed가 필요할 때만 `imagegen`
+- 허용 파일: 승인된 아트 파이프라인 범위, manifest, generation log, actor animation resolver·runtime
+- 금지: 물리·판정·HUD·코스 재수정, 승인 전 active version 교체
+
+구현 작업:
+
+1. 저장소 아트 파이프라인과 캐릭터 가이드를 모두 읽는다.
+2. 도윤·하린·부장님의 기존 승인 run 프레임을 seed로 사용할 수 있는지 먼저 확인한다.
+3. 각 캐릭터 4프레임 strip을 구성하고 모든 프레임의 bottom-center, 불투명 높이, 몸 중심, 캔버스 크기를 정규화한다.
+4. production 적용 전 별도 preview에서 속도와 연결감을 검수한다.
+5. 사용자 승인을 받은 strip만 approved·active 절차로 승격한다.
+6. runtime은 캐릭터별 phase delay를 실제로 적용하고 4프레임 인덱스를 사용한다.
+
+합격 기준:
+
+- 각 캐릭터가 정확히 4개의 승인된 run 프레임을 사용한다.
+- 프레임 전환 시 발바닥 중심 X/Y drift가 1px 이하이다.
+- 캐릭터별 gait phase가 적용되어 세 명이 같은 프레임을 동시에 반복하지 않는다.
+- 1440×900 preview에서 몸 크기 펌핑, 좌우 흔들림, 발 미끄러짐이 보이지 않는다.
+- 아트 validation이 통과하고 사용자 승인이 기록돼 있다.
+
+최소 검증:
+
+- sprite preview 1개와 1440×900 실제 run 장면 1개
+- manifest 또는 이미지가 변경되므로 이 Phase에서만 아트 validation 실행
+
+중단 기준:
+
+- 사용자 승인 전 production resolver 또는 `active_version`을 변경하지 않는다.
+
+### Phase 6 · 최종 통합과 사용자 플레이
+
+- 담당: 주 에이전트 또는 `gpt-5.6-sol` medium 단일 실행
+- 의존성: Phase 1~4 `smoke_checked`, Phase 5를 진행했다면 Phase 5 `code_complete`
+- 목적: 반복 검증이 아니라 한 번의 최종 통합 확인
+
+작업:
+
+1. 전체 DAY 4·미니게임 테스트를 한 번 실행한다.
+2. 이미지 또는 manifest가 변경된 경우에만 아트 validation 최종 1회를 실행한다.
+3. 앱 내장 브라우저에서 1280×720, 1440×900, 1920×1080을 한 번씩 확인한다.
+4. 각 해상도에서 intro, 직접 점프, 직접 슬라이드, hit, pause/resume, result만 확인한다.
+5. 1440×900에서 실제 64초 플레이 1회와 의도적 피격 플레이 1회를 수행한다.
+6. 사용자에게 동일한 두 플레이 시나리오와 체크 항목을 전달한다.
+
+최종 합격 기준:
+
+- 입력 시점과 행동 시작이 일치한다.
+- 캐릭터·판정·장애물의 크기와 접촉이 시각적으로 설명된다.
+- 세 캐릭터가 겹치지 않고 추격 대형으로 읽힌다.
+- 원형 조작 버튼, 큰 `17:58`, 분리된 진행도, 제거된 주황선이 세 해상도에서 유지된다.
+- 피격 장애물 잔류, console error, viewport overflow가 없다.
+- 사용자가 관련 항목을 승인한 뒤에만 이슈 상태를 `user_accepted`로 변경한다.
+
+## 5. 하위 모델 실행 파이프라인
+
+| 순서 | 작업명 권장 | 모델 | 입력 | 출력 | 병렬 허용 |
+|---|---|---|---|---|---|
+| 1 | `day4_direct_input` | `gpt-5.6-sol` medium | Phase 1 전체 | 코드·대상 테스트·문서 상태 | 아니오 |
+| 2 | `day4_unified_geometry` | `gpt-5.6-sol` medium | Phase 2 전체, Phase 1 결과 | 단일 projection·판정 보기 | 아니오 |
+| 3 | `day4_formation_hazards` | `gpt-5.6-sol` medium | Phase 3 전체, Phase 2 수치 | 대형·장애물·수명주기 | 아니오 |
+| 4 | `day4_ui_restore` | `gpt-5.6-sol` medium | Phase 4 전체, Phase 3 화면 | HUD·버튼·결과 | 아니오 |
+| 5 | `day4_four_frame_run` | `gpt-5.6-sol` medium | Phase 5, 사용자 아트 승인 | review strip·runtime | 아니오 |
+| 6 | `day4_final_acceptance` | `gpt-5.6-sol` medium 또는 주 에이전트 | 완료된 Phase | 최종 통합 기록 | 아니오 |
+
+### 각 하위 모델 프롬프트에 반드시 포함할 항목
+
+- 이 문서의 절대 경로와 담당 Phase
+- 담당 이슈 ID
+- 허용 파일과 금지 범위
+- 유지할 공개 API와 결과 계약
+- 실행할 최소 테스트와 단일 브라우저 장면
+- 작업 전 상태를 `in_progress`, 구현 후 `code_complete` 또는 `smoke_checked`로 갱신할 의무
+- 범위 밖 문제는 즉시 고치지 않고 이 문서 backlog에만 추가한다는 규칙
+- 과거 Git 이력·legacy 문서·삭제된 계획에서 제품 결정을 가져오지 않는다는 규칙
+
+## 6. 진행 기록
+
+| 날짜 | Phase | 상태 변화 | 변경 파일 | 최소 검증 | 사용자 확인 | 기록자 |
+|---|---|---|---|---|---|---|
+| 2026-08-05 | 0 | planned → completed | `docs/REQUIREMENTS.md`, README 문서 지도, 과거 계획 삭제 | 문서 링크·태그 확인 | 문서 구조와 전체 추천안 승인 | root |
+
+새 구현 기록은 위 표에 한 줄씩만 추가한다. 과거 검증 수치와 폐기된 결정은 다시 복사하지 않는다.
+
+## 7. 사용자 플레이 기록 양식
+
+```text
+해상도:
+회차: 자연 플레이 / 의도적 피격
+입력 즉시 반응: 좋음 / 보통 / 나쁨
+도윤 판정 납득도: 좋음 / 보통 / 나쁨
+하린·도윤 겹침: 없음 / 있음
+부장님·하린 간격: 적절 / 너무 가까움 / 너무 멂
+점프 장애물 크기·위치: 적절 / 문제 있음
+슬라이드 장애물 크기·위치: 적절 / 문제 있음
+상단 HUD 가독성: 좋음 / 보통 / 나쁨
+주황색 바닥선 잔류: 없음 / 있음
+달리기 모션: 자연스러움 / 어색함
+결과 등급·수집 의미: 명확 / 불명확
+문제가 발생한 초·장애물·누른 키:
+추가 의견:
 ```
 
-브라우저 검수는 앱 내장 브라우저를 사용하고 다음 PC 해상도만 완료 게이트로 삼는다.
-
-- 1280×720
-- 1440×900
-- 1920×1080
-
-각 단계는 시작, 담당 상태 변화, 핵심 상호작용, 완료 상태를 확인한다. 테스트·브라우저·아트 검증 중 하나라도 실패하면 `verified`로 표시하지 않는다.
-
-## 8. 검증 기록
-
-| 날짜 | 단계·이슈 | 자동 검증 | 브라우저 검증 | 결과·증거 | 기록자 |
-|---|---|---|---|---|---|
-| 2026-08-04 | 수정 전 기준선 | 관련 49개 테스트: 43 pass, 6 legacy skip, 0 fail | 1280×720, 1440×900, 1920×1080 독립 평가 | ghost object, player overlay 약 2배, X 약 93px 오프셋, 상단 UI 최대 25.7% 확인 | dual-agent critique |
-| 2026-08-04 | Phase 1 · OBJ-01/A11Y-02/TEST-01 lifecycle | 대상 47개: 41 pass, 6 legacy skip, 0 fail. 전체 329개: 323 pass, 6 legacy skip, 0 fail. 아트 83개·로그 83개 validation pass | 앱 내 브라우저 1280×720, 1440×900, 1920×1080 실제 플레이 | 세 해상도 첫 충돌 후 hidden-but-displayed 0, 해결된 `hazard-01` visible 0. 1920×1080 화면 진입 중에는 `hazard-01`만 표시·viewport 교차, 64초 CAUGHT 종료 시 DOM 21개 중 visible/intersection/stale 0. 시각 객체 트리 `aria-hidden=true`, 피드백은 별도 `role=status`. dev review manifest 404 경고 1건은 review 토글 비활성화로 이어지는 기존 별도 문제이며 Phase 1 경로에는 영향 없음 | day4_object_lifecycle |
-| 2026-08-04 | Phase 2 · COL-01~04/TEST-01 geometry | 대상 50개: 44 pass, 6 legacy skip, 0 fail. 전체 332개: 326 pass, 6 legacy skip, 0 fail. 아트 83개·로그 83개 validation pass | 미수행: 앱 내장 브라우저 선택이 `No browser is available`로 실패. 공식 troubleshooting 후 1회 목록에서 Chrome extension만 확인되어 저장소 규칙에 따라 대체 사용하지 않음 | 순수 projection 테스트에서 run/jump/slide 앵커 X drift 0px, player body/overlay 산술 오차 0px, A/B/C 공통 31% anchor·9% ground 계약 통과. 실제 DOM·스프라이트 발바닥·장애물·cue 오차는 앱 내장 브라우저가 연결되면 세 해상도에서 추가 측정해야 함. 그때까지 COL-01~04는 `code_complete` | day4_collision_coordinates |
-| 2026-08-04 | Phase 2 · 실브라우저 완료 게이트 | 위 Phase 2 자동·아트 검증 결과 재사용 | 앱 내장 브라우저 1280×720, 1440×900, 1920×1080에서 A/B/C × run/jump/slide 27개 조합 측정 | player anchor X 최대 오차 0.0084px, actor/player body 중심 X 0.0053px, actor/body 수직 앵커 0.0049px, body projection/DOM 0.0101px, run ground 0.0257px. cue 인라인 투영 좌표는 A/B/C에서 장면별 동일했고 console warning/error 0. jump 장면에서 실제 chair와 JUMP NOW 강조가 배경 가구와 구분됨. COL-01~04와 TEST-01 geometry를 `verified`로 전환 | root |
-
-## 9. 결정 로그
-
-- 2026-08-04: 완료된 배경 수정 계획과 분리해 이 문서를 V2의 현재 영속 요구사항·수정 추적 문서로 신설했다.
-- 2026-08-04: 구현 에이전트는 sol medium을 기본으로 하며, 공유 파일 충돌과 회귀 원인 분리를 위해 Phase 1~6을 순차 실행하기로 했다.
-- 2026-08-04: correctness(생명주기·좌표·판정)를 먼저 고치고 timing, UI, course rhythm 순으로 진행해 난이도 변화와 렌더링 결함을 분리한다.
-- 2026-08-04: DEC-02를 선택했다. 본편은 composition C를 유지하고 A/B는 dev 비교로만 남기되, 플레이 중에는 C와 동일한 31% bottom-center 물리 앵커, 9% 바닥선, player body, 장애물, cue 투영을 사용한다. 배우·하린 배치만 비물리적 구도 차이로 허용한다.
-
-## 10. 변경 이력
-
-| 날짜 | 변경 | 관련 이슈 |
-|---|---|---|
-| 2026-08-04 | 최초 문서 작성, baseline 이슈·결정·Phase 0~6 등록 | 전체 |
-| 2026-08-04 | Phase 1 완료: hidden cascade, 시각 객체 접근성 격리, hit/avoid/collect 수명주기 회귀 검증 및 3개 데스크톱 해상도 검증 | OBJ-01, A11Y-02, TEST-01 lifecycle |
-| 2026-08-04 | Phase 2 코드·자동 검증 완료: 공통 world-to-screen projection, bottom-center 포즈 앵커, A/B/C 물리 기준 단일화, 직접 player body overlay, 장애물 구분 처리. 앱 내장 브라우저 미연결로 verified는 보류 | COL-01, COL-02, COL-03, COL-04, DEC-02, TEST-01 geometry |
-| 2026-08-04 | Phase 2 앱 내장 브라우저 검증 완료: 3개 데스크톱 해상도·27개 조합에서 앵커/overlay 오차 1px 이하, composition별 cue 좌표 동일, console warning/error 0 확인 | COL-01, COL-02, COL-03, COL-04, TEST-01 geometry |
+이 양식의 사용자 응답이 자동 테스트보다 최종 완료 판정에 우선한다.
