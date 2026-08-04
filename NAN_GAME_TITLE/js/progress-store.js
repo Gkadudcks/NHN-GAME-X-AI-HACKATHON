@@ -237,7 +237,7 @@
       summariesSeen: objectCopy(input.summariesSeen),
       evidence: objectCopy(input.evidence),
       minigameResult: isObject(input.minigameResult) ? cloneJson(input.minigameResult) : null,
-      ending: ["bad", "middle", "nice"].includes(input.ending) ? input.ending : null,
+      ending: ["bad", "middle", "happy"].includes(input.ending) ? input.ending : null,
       complete: input.complete === true,
     };
   }

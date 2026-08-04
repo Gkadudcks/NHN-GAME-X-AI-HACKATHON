@@ -49,12 +49,12 @@ test("DAY 5는 확정된 사건과 세 통합 엔딩을 포함한다", () => {
   assert.match(source, /18\.4%/);
   assert.match(source, /12\.7%/);
   assert.match(source, /minjae_request_concealment/);
-  assert.deepEqual(new Set(story.scenes.filter((scene) => scene.ending).map((scene) => scene.ending)), new Set(["bad", "middle", "nice"]));
+  assert.deepEqual(new Set(story.scenes.filter((scene) => scene.ending).map((scene) => scene.ending)), new Set(["bad", "middle", "happy"]));
   assert.match(source, /이번 주말에/);
   assert.match(source, /시간 괜찮아요/);
-  const niceEnd = story.scenes.find((scene) => scene.id === "day5NiceEnd");
-  assert.equal(niceEnd.cgAssetId, "event_cg.day5.weekend_invitation");
-  assert.equal(niceEnd.cinematicDelay, 1600);
+  const happyEnd = story.scenes.find((scene) => scene.id === "day5HappyEnd");
+  assert.equal(happyEnd.cgAssetId, "event_cg.day5.weekend_invitation");
+  assert.equal(happyEnd.cinematicDelay, 1600);
 });
 
 test("DAY 5 페이지는 DAY 1~4 공용 UI와 기능 모듈을 재사용한다", () => {
@@ -209,7 +209,7 @@ test("오류 검증은 전체 다섯 번의 실수 기회와 세 결과 등급�
   assert.match(html, /id="day5-verification-result-solved"/);
 });
 
-test("통합 미니게임은 다섯 생명을 검증과 복구에서 공유하고 소진 시 담당자 지원으로 이동한다", () => {
+test("통합 미니게임은 생명 소진 즉시 조작을 끝내고 지원 복구 과정으로 이동한다", () => {
   const runtime = fs.readFileSync(path.join(root, "js/day5.js"), "utf8");
   const html = fs.readFileSync(path.join(root, "day5.html"), "utf8");
   const css = fs.readFileSync(path.join(root, "css/day5-presentation-cinematic.css"), "utf8");
@@ -219,8 +219,10 @@ test("통합 미니게임은 다섯 생명을 검증과 복구에서 공유하�
   assert.match(runtime, /playMinigameCue\("success"\)/);
   assert.match(runtime, /"caught"\s*:\s*"warning"/);
   assert.match(runtime, /INCIDENT_MINIGAME_SCENE_IDS/);
-  assert.match(runtime, /failedDuringRecovery \? "day5RecoveryVerify" : "day5MinjaeConfront"/);
+  assert.match(runtime, /findIndex\(\(item\) => item\.id === "day5SupportRecoveryStart"\)/);
   assert.match(runtime, /completeRecoveryWithSupport/);
+  assert.match(runtime, /scene\?\.playerRecovery && verificationGrade\(\) === "failed"/);
+  assert.match(runtime, /scene\?\.supportRecovery && verificationGrade\(\) !== "failed"/);
   assert.match(runtime, /migrateLegacyVerificationFailure/);
   assert.match(runtime, /state\.decisions\.verificationMistakes = VERIFICATION_MISTAKE_LIMIT/);
   assert.match(css, /feedback-success/);
@@ -235,12 +237,21 @@ test("오류 검증 결과는 민재의 인정 과정과 정직원·관계 통�
     assert.equal(story.scenes.some((scene) => scene.dynamic === dynamic), true, dynamic);
     assert.match(runtime, new RegExp(`scene\\.dynamic === "${dynamic}"`));
   }
-  assert.match(runtime, /grade !== "failed" && recoveryComplete\(\) && state\.trust >= 5 && state\.affection >= 5/);
+  assert.match(runtime, /if \(grade === "failed"\) return "bad"/);
+  assert.match(runtime, /recoveryComplete\(\) && state\.trust >= 5 && state\.affection >= 5/);
   assert.match(runtime, /state\.decisions\.verificationMistakes = mistakes;\s*state\.trust -= 1;/);
   assert.match(runtime, /state\.decisions\.recoveryBinding !== "fixed_source"/);
-  assert.match(runtime, /grade === "failed" && !recoveryComplete\(\)/);
   const ids = story.scenes.map((scene) => scene.id);
   assert.ok(ids.indexOf("day5Responsibility") < ids.indexOf("day5MinjaeConfront"));
+  for (const id of [
+    "day5SupportRecoveryStart",
+    "day5SupportRecoveryAudit",
+    "day5SupportRecoveryProcess",
+    "day5SupportRecoveryComplete",
+  ]) {
+    assert.equal(story.scenes.find((scene) => scene.id === id)?.supportRecovery, true, id);
+  }
+  assert.ok(ids.indexOf("day5SupportRecoveryStart") < ids.indexOf("day5RecoveryVerify"));
   assert.ok(ids.indexOf("day5RecoveryVerify") < ids.indexOf("day5VerificationResult"));
   assert.ok(ids.indexOf("day5VerificationResult") < ids.indexOf("day5Resume"));
 });
@@ -269,8 +280,8 @@ test("발표 종료 뒤에는 사건 후속 조치와 감정적 여운을 거쳐
     previous = current;
   }
   assert.ok(ids.indexOf("day5Result") > previous);
-  assert.equal(story.scenes.find((scene) => scene.id === "day5HallwayPause")?.bgAssetId, undefined);
-  assert.equal(story.scenes.find((scene) => scene.id === "day5AuditClosed")?.bgAssetId, undefined);
+  assert.equal(story.scenes.find((scene) => scene.id === "day5HallwayPause")?.bgAssetId, "background.presentation_hallway.day");
+  assert.equal(story.scenes.find((scene) => scene.id === "day5AuditClosed")?.bgAssetId, "background.office.day");
   for (const dynamic of [
     "postPresentationHarin",
     "postPresentationMinjae",

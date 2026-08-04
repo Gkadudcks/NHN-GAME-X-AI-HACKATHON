@@ -1,0 +1,34 @@
+[HARD REQUIREMENT — READ FIRST]
+This must be a hand-drawn-look 2D anime visual novel illustration, NOT a photorealistic render.
+Absolutely no photorealism, no architectural visualization render, no 3D CGI / ray-traced look, no photo-real material shading (no realistic glass reflections, no photoreal brushed-metal highlights, no realistic depth-of-field blur). Flat clean illustrated line art with soft cel shading only, matching the attached reference image's exact art style.
+
+[PROJECT VISUAL STYLE | v001]
+Modern Korean office romance visual novel with light mystery elements.
+Polished commercial anime visual novel illustration. Flat 2D illustrated look, not a 3D render.
+Clean, thin, consistent line art with visible ink outlines.
+Soft 2-to-3-step cel shading with minimal painterly texture, no photoreal gradients.
+Natural anatomy and realistic adult body proportions.
+Warm, low-contrast, low-to-medium-saturation palette using navy, beige, cream, muted brown, and pale blue.
+Soft indoor diffused key light with subtle cool ambient shadows, illustrated flat lighting rather than raytraced global illumination.
+Clean game-ready edges and a consistent finish across all assets.
+
+[ASSET]
+Use case: stylized-concept
+Asset type: 1920x1080 DAY 5 visual-novel background
+Stable ID: background.presentation_hallway.day
+Create a quiet office hallway directly outside the large presentation hall, in the same Korean game company headquarters building as background.presentation_room.day.
+
+[SCENE]
+A calm corridor just outside the presentation hall's closed double doors. Frosted glass wall panels along the corridor faintly suggest the empty hall beyond, a long window strip on one side lets in late-morning daylight, a small two-seat waiting bench against the opposite wall, a framed corporate wall sign with no readable text, and a receding hallway perspective leading toward a distant elevator lobby. No people.
+
+[COMPOSITION]
+Wide 16:9 frame at eye level with a natural 35mm perspective. Keep the central lower foreground and the 30%, 50%, and 70% character positions clear so two standing characters can lean against the wall. Keep the bottom 20% visually simple for dialogue UI.
+
+[LIGHTING]
+Soft late-morning diffused daylight through the window strip, mixed with warm neutral ceiling light. Quieter and calmer than the presentation hall — a settled, decompressed mood right after a tense event ends.
+
+[CONSTRAINTS]
+Background only. No characters, readable text, logos, brand marks, watermark, presentation content, or transparent areas. Stable architectural perspective and clean furniture geometry, materials and palette consistent with the same building as background.presentation_room.day. No photorealism, no architectural rendering, no 3D CGI look, no ray tracing, fisheye lens, extreme perspective, cyberpunk lighting, clutter, duplicated furniture, or malformed geometry.
+
+[REFERENCE]
+Upload presentation_room_day_v001.png as the primary art-style reference — match its flat illustrated anime line-art and cel shading exactly, not just its palette. It is also a material/building-continuity reference. Do not recreate the presentation hall itself — this is the hallway outside it.
