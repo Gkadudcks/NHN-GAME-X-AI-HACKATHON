@@ -1501,6 +1501,46 @@
       ]
     },
     {
+      "id": "event_cg.day5.colleague_departure",
+      "kind": "event_cg",
+      "profile": "event_cg_16_9",
+      "scene": "day5",
+      "beat": "colleague_departure",
+      "framing": "full_body",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/event_cg/approved/cg_day5_colleague_departure_v001.png",
+          "generation_log_id": "cg-day5-colleague-departure-v001-user-export",
+          "sha256": "e3d508cfdf3ca04a72c005eb400031bf8fc537f6629088a8655bcd640aedd936",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-04T21:23:42.1575642+09:00"
+        }
+      ]
+    },
+    {
+      "id": "event_cg.day5.lone_departure",
+      "kind": "event_cg",
+      "profile": "event_cg_16_9",
+      "scene": "day5",
+      "beat": "lone_departure",
+      "framing": "full_body",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/event_cg/approved/cg_day5_lone_departure_v001.png",
+          "generation_log_id": "cg-day5-lone-departure-v001-user-export",
+          "sha256": "4859c5abebd64f5c454b3b22c11fe762cce77b4a1e5822ef8171bb18f05a7640",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-04T21:32:50.4681588+09:00"
+        }
+      ]
+    },
+    {
       "id": "character.boss.holding_cup.concerned",
       "kind": "character",
       "profile": "character_sprite",
