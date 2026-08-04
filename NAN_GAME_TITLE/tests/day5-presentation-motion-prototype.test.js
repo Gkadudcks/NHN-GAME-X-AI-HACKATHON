@@ -27,7 +27,7 @@ test("prototype contains the complete playable verification loop", () => {
   assert.match(js, /playMemory/);
   assert.match(js, /typeText/);
   assert.match(js, /showEnding/);
-  assert.match(js, /VALUE MISMATCH/);
+  assert.match(js, /수치 불일치 발견/);
 });
 
 test("prototype supports keyboard escape and reduced motion", () => {

@@ -13,9 +13,9 @@ test("DAY 2는 개인 메시지 미니게임을 사용한다", () => {
   assert.match(script, /SecretChatMinigame\.start\(\{ onComplete: finishSecretChat, affection: state\.affection \}\)/);
   assert.doesNotMatch(script, /WorkAlertMinigame/);
     assert.match(html, /minigames\/day2-secret-chat\/style\.css\?v=10/);
-    assert.match(html, /ui-sfx\.js\?v=5/);
+    assert.match(html, /ui-sfx\.js\?v=13/);
     assert.match(html, /minigames\/day2-secret-chat\/index\.js\?v=14/);
-  assert.match(html, /day2\.js\?v=53/);
+  assert.match(html, /day2\.js\?v=55/);
 });
 
 test("DAY 1의 이웃 대화는 DAY 2 아침 인사로 자연스럽게 이어진다", () => {
@@ -166,6 +166,11 @@ test("타이틀 이어하기는 선택한 수동 슬롯의 진행과 날짜를 �
   assert.match(script, /GameProgress\.LEGACY_DAY1_KEY/);
   assert.match(script, /day2\.html/);
   assert.match(script, /resumeUrl/);
+  assert.match(script, /if \(!confirm\(`SLOT \$\{String\(slot\.slotId\)\.padStart\(2, "0"\)\}의 진행을 불러올까요\?\\n현재 저장하지 않은 진행은 사라집니다\.`\)\) return/);
+  assert.match(
+    script,
+    /button\.addEventListener\("click", \(\) => \{\s*if \(!confirm\([^]*?\)\) return;\s*if \(slot\.progress\) localStorage\.setItem\(GameProgress\.STORAGE_KEY/
+  );
 });
 
 test("DAY 종료 화면은 다음 날과 메인 메뉴 선택지를 제공한다", () => {

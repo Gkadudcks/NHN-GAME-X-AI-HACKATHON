@@ -30,15 +30,15 @@
   }
 
   const slides = {
-    opening: { title:"신규 사용자 경험 개선", rows:[["핵심 지표","7일 차 잔존율"],["대상","신규 가입 사용자"],["발표 상태","진행 중"],["검증","원본 연결 정상"]] },
+    opening: { title:"신규 사용자 초반 경험 개선안", rows:[["개선 결과","7일 차 잔존율"],["분석 대상","신규 가입 사용자"],["현재 순서","결과 설명"],["근거 자료","원본 연결 정상"]] },
     problem: { title:"USER JOURNEY · BEFORE", rows:[["관찰 구간","첫 플레이"],["이탈 원인","목표 인지 전 이탈"],["문제","다음 행동 불명확"],["개선 방향","초반 동선 명확화"]] },
     solution: { title:"ONBOARDING FLOW", rows:[["불필요한 안내","축소"],["핵심 행동","전면 배치"],["첫 성공 경험","앞당김"],["측정 기준","동일 조건 비교"]] },
-    metric: { title:"VERIFIED RESULT", rows:[["7일 차 잔존율","18.4%"],["대상","신규 가입 사용자"],["기간","발표 기준 주차"],["상태","교차 검증 완료"]] },
-    refresh: { title:"OFFICIAL EVIDENCE", rows:[["발표 PT","18.4%"],["공식 증빙","불러오는 중"],["출처","retention_7d_verified"],["상태","연결 갱신"]] },
-    mismatch: { title:"VALUE MISMATCH", danger:true, rows:[["발표 PT","18.4%"],["공식 증빙","12.7%"],["대상·기간","동일"],["판정","확인 필요"]] },
-    source: { title:"PRESERVED ORIGINAL", rows:[["발표 자료","18.4%"],["증빙 수치","18.4%"],["확인 시각","DAY 4 · 17:08"],["추가 수정","없음"]] },
-    alias: { title:"SOURCE ALIAS HISTORY", rows:[["09:57","retention_7d_verified"],["09:58","retention_archive_2024"],["구버전 수치","12.7%"],["현재 상태","경로 복구 완료"]] },
-    resumed: { title:"PRESENTATION RESUMED", rows:[["검증 수치","18.4%"],["변경 원인","출처 별칭 전환"],["조치","공식 연결 복구"],["발표 상태","재개"]] }
+    metric: { title:"개선 결과", rows:[["7일 차 잔존율","18.4%"],["분석 대상","신규 가입 사용자"],["분석 기준","발표 전주 가입자"],["확인 결과","원본과 계산 결과 일치"]] },
+    refresh: { title:"제출 자료 확인", rows:[["발표 자료 수치","18.4%"],["제출 근거 수치","불러오는 중"],["연결된 자료","7일 차 잔존율 검증본"],["현재 상태","원본 다시 확인 중"]] },
+    mismatch: { title:"수치 불일치 발견", danger:true, rows:[["발표 자료 수치","18.4%"],["제출 근거 수치","12.7%"],["분석 기준","같은지 확인 필요"],["현재 상태","원인 확인 중"]] },
+    source: { title:"제출 당시 보관본", rows:[["발표 자료","18.4%"],["근거 자료","18.4%"],["제출 확인","DAY 4 · 17:08"],["추가 수정","없음"]] },
+    alias: { title:"자료 연결 변경 기록", rows:[["09:57","7일 차 잔존율 검증본"],["09:58","2024년 이전 자료"],["이전 자료 수치","12.7%"],["현재 상태","원본 연결 복구 완료"]] },
+    resumed: { title:"발표 재개", rows:[["복구된 수치","18.4%"],["변경 원인","연결 자료 변경"],["조치","근거 자료 정상 복구"],["발표 상태","재개"]] }
   };
 
   const scenes = [
@@ -69,7 +69,7 @@
   function renderSlide(key) {
     const slide = slides[key]; if (!slide) return;
     ui.screenTitle.textContent = slide.title;
-    ui.screenContent.innerHTML = slide.rows.map(([label,value],i) => `<article class="${slide.danger && (i===0||i===1)?"danger":""}"><small>${label}</small><strong>${value}</strong><span>${i===3&&slide.danger?"발표 일시 정지":"SOURCE VERIFIED"}</span></article>`).join("");
+    ui.screenContent.innerHTML = slide.rows.map(([label,value],i) => `<article class="${slide.danger && (i===0||i===1)?"danger":""}"><small>${label}</small><strong>${value}</strong><span>${i===3&&slide.danger?"발표 일시 정지":"원본 확인 완료"}</span></article>`).join("");
   }
   function clearStateClasses() { [...stage.classList].filter((name)=>name.startsWith("camera-")||name==="cinematic"||name==="shake"||name==="flash"||name==="hide-screen").forEach((name)=>stage.classList.remove(name)); }
   function typeText(html, done) {
@@ -93,7 +93,7 @@
     const text=scene.dynamic?(chosenResponse==="evidence"?"먼저 확인한 사실부터 설명하겠습니다.":"원인을 단정하기 전에, 확인한 기록으로 변경 시점부터 설명하겠습니다."):scene.text;
     typeText(text,()=>{if(scene.memory)playMemory(false);if(scene.memoryAlias)playMemory(true);if(scene.auto){ui.next.disabled=true;setTimeout(()=>{ui.next.disabled=false;nextScene();},scene.auto);}});
     if(scene.pause)ui.next.disabled=true, setTimeout(()=>{ui.next.disabled=false;},1200);
-    if(scene.final)ui.next.textContent="발표 마치기　›";else ui.next.textContent="다음　›";
+    if(scene.final)ui.next.textContent="발표 마치기";else ui.next.textContent="다음";
   }
   function nextScene(){if(ui.next.disabled)return;index+=1;if(index>=scenes.length){showEnding();return;}showScene(scenes[index]);}
   function showEnding(){clearInterval(typingTimer);clearStateClasses();ui.card.hidden=true;ui.screen.hidden=true;ui.ending.hidden=false;stage.classList.add("cinematic");}

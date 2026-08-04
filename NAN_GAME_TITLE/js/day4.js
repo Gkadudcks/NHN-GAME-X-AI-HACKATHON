@@ -810,7 +810,7 @@ function render() {
     $("#dialogue").textContent = dynamicText(scene);
   }
   $("#next").disabled = cinematic;
-  $("#next").textContent = scene.end ? "DAY 4 완료　›" : "다음　›";
+  $("#next").textContent = scene.end ? "DAY 4 완료" : "다음";
   $("#system-panel").classList.toggle("show", Boolean(scene.system));
   $("#system-panel").setAttribute("aria-hidden", String(!scene.system));
   $("#stage").classList.toggle("system-panel-active", Boolean(scene.system));

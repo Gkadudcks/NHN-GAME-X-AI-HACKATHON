@@ -1,10 +1,11 @@
 /* Case board palette and controls aligned with the game's coral/cream UI. */
 .clue-canvas-shell {
-  grid-template-rows: 56px minmax(0, 1fr);
+  grid-template-rows: 72px minmax(0, 1fr);
   background: #f8f1ec;
 }
 
 .clue-canvas-toolbar {
+  min-height: 72px;
   padding: 0 12px 0 16px;
   color: #4b3b41;
   border-bottom: 1px solid #ead6d1;
@@ -18,7 +19,7 @@
 
 .clue-canvas-toolbar > span b {
   color: #d75f69;
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 900;
   letter-spacing: .19em;
 }
@@ -26,7 +27,9 @@
 .clue-canvas-toolbar > span small {
   overflow: hidden;
   color: #947e84;
-  font-size: 9px;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -88,12 +91,8 @@
 }
 
 .clue-canvas-viewport {
-  background-color: #f8f1ec;
-  background-image:
-    radial-gradient(circle at 1px 1px, #d9c9c5 1px, transparent 1.2px),
-    radial-gradient(circle at 52% 8%, #fffaf5 0, transparent 54%),
-    linear-gradient(145deg, #fbf5f0, #f2e8e5);
-  background-size: 20px 20px, 100% 100%, 100% 100%;
+  background-color: #f7f2ef;
+  background-image: none;
 }
 
 .clue-canvas-world.radial::before,
@@ -102,7 +101,7 @@
   inset: 50%;
   content: "";
   pointer-events: none;
-  border: 1px dashed #dbaeb044;
+  border: 1px solid #dbaeb03b;
   border-radius: 50%;
   transform: translate(-50%, -50%);
 }
@@ -143,6 +142,89 @@
   box-shadow: 0 0 0 8px #e9656e38, 0 20px 44px #6d334352;
 }
 
+.clue-canvas-shell.has-day-tabs {
+  grid-template-rows: 72px 64px minmax(0, 1fr);
+}
+
+.clue-day-tabs {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 12px;
+  overflow-x: auto;
+  border-bottom: 1px solid #e5d8d5;
+  background: #fffaf8f2;
+  scrollbar-width: thin;
+}
+
+.clue-day-tab {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 98px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 12px;
+  color: #76646a;
+  border: 1px solid #e4d5d2;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.clue-day-tab small {
+  flex: 0 0 auto;
+  color: #bd737a;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.clue-day-tab strong {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clue-day-tab > span {
+  flex: 0 0 auto;
+  min-width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  color: #b95862;
+  border-radius: 99px;
+  background: #fff0ed;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.clue-day-tab:hover,
+.clue-day-tab:focus-visible {
+  border-color: #df8c92;
+  outline: none;
+}
+
+.clue-day-tab.active {
+  color: #fff;
+  border-color: #d65d68;
+  background: linear-gradient(135deg, #df6c75, #c84f5d);
+}
+
+.clue-day-tab.active small,
+.clue-day-tab.active > span {
+  color: #fff;
+}
+
+.clue-day-tab.active > span {
+  background: #ffffff2b;
+}
+
 .clue-day-orbit span { color: #ffc8c2; }
 .clue-day-orbit strong { text-shadow: 0 2px 10px #25161d; }
 
@@ -156,28 +238,42 @@
 
 .clue-detail-orbit {
   color: #4c3b42;
-  border-color: transparent;
-  background: transparent;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  transition: transform .18s;
+  border: 2px solid #e7bfc0;
+  background: rgba(255, 251, 248, .94);
+  box-shadow: 0 0 0 6px rgba(233, 101, 110, .07), 0 12px 28px rgba(92, 43, 55, .12);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: transform .18s, border-color .18s, box-shadow .18s;
 }
 
-.clue-detail-orbit::before { display: none; }
+.clue-detail-orbit::before {
+  display: block;
+  border-color: #e46f7852;
+}
 .clue-detail-orbit small {
   color: #cf5964;
-  text-shadow: 0 1px #fffaf5, 0 0 8px #fffaf5;
+  text-shadow: none;
 }
 .clue-detail-orbit p {
   color: #44363b;
-  text-shadow: 0 1px #fffaf5, 0 0 9px #fffaf5, 0 0 14px #fffaf5;
+  max-height: 92px;
+  font-size: 16px;
+  line-height: 1.4;
+  text-shadow: none;
 }
-.clue-detail-orbit:hover {
+.clue-detail-orbit > span {
+  margin-top: 7px;
+  color: #bd626c;
+  font-size: 10px;
+  font-weight: 900;
+}
+.clue-detail-orbit:hover,
+.clue-detail-orbit:focus-visible {
   z-index: 4;
-  border-color: transparent;
-  background: transparent;
-  box-shadow: none;
+  border-color: #d85f69;
+  background: #fffaf8;
+  box-shadow: 0 0 0 8px rgba(233, 101, 110, .17), 0 18px 34px rgba(92, 43, 55, .2);
+  outline: none;
   transform: scale(1.06);
 }
 .theme-link { stroke: #df6871; }

@@ -75,7 +75,7 @@ test("DAY 4는 녹음실 내부 대화를 거친 뒤 헤드폰 CG를 보여준�
   assert.match(question.text, /오신 적 있으세요/);
   assert.match(answer.text, /이벤트 대사 검수/);
   assert.equal(story.scenes.find((scene) => scene.id === "day4MoveStudio").cgAssetId, "event_cg.day4.harin_headphone_handoff");
-  assert.match(read("day4.html"), /src="js\/day4-story\.js\?v=27"/);
+  assert.match(read("day4.html"), /src="js\/day4-story\.js\?v=28"/);
 });
 
 test("DAY 4는 녹음 부스 내부의 헤드폰 CG에서 장소 이동을 반복하지 않는다", () => {
@@ -247,7 +247,7 @@ test("DAY 4 캐릭터는 이전 DAY와 같은 실제 키 비율로 크기를 보
   assert.match(engine, /boss: Object\.freeze\(\{ name: "박태식", heightCm: 176 \}\)/);
   assert.match(engine, /DAY4_CHARACTER_STAGE_HEIGHT \* \(profile\.heightCm \/ DAY4_CHARACTER_BASE_HEIGHT\)/);
   assert.match(engine, /image\.style\.setProperty\("--sprite-height", `\$\{spriteHeight\}cqh`\)/);
-  assert.match(html, /src="js\/day4\.js\?v=34"/);
+  assert.match(html, /src="js\/day4\.js\?v=36"/);
 });
 
 test("DAY 4는 캐릭터 ID가 생략돼도 현재 화자인 서하린을 불투명하게 표시한다", () => {
@@ -386,7 +386,7 @@ test("DAY 4는 모든 장면에 승인된 배경·캐릭터·CG를 적용한다"
   assert.match(html, /class="messenger-appbar"/);
   assert.match(html, /data-tab="messages-view"/);
   assert.match(html, /data-tab="clues-view"/);
-  assert.match(html, /href="css\/game\.css\?v=46"/);
+  assert.match(html, /href="css\/game\.css\?v=47"/);
   assert.match(html, /src="js\/art-assets\.js\?v=18"/);
   assert.match(engine, /ArtAssets\.resolve\(scene\.bgAssetId\)/);
   assert.match(engine, /ArtAssets\.resolve\(entry\.assetId\)/);
@@ -450,7 +450,7 @@ test("DAY 4 저장 모달은 미니게임 일시정지를 소유하고 키보드
   const engine = read("js/day4.js");
   const gameStyle = read("css/game.css");
   const minigameStyle = read("minigames/day4-office-escape/style.css");
-  assert.match(html, /css\/game\.css\?v=46/);
+  assert.match(html, /css\/game\.css\?v=47/);
   assert.match(engine, /gameSavePauseHeld = true/);
   assert.match(engine, /document\.dispatchEvent\(new CustomEvent\("nan:pause-open"\)\)/);
   assert.match(engine, /document\.dispatchEvent\(new CustomEvent\("nan:pause-close"\)\)/);

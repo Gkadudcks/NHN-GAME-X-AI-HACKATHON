@@ -5,36 +5,36 @@
     {
       label: "01 · 자동 갱신",
       prompt: "복구 중 출처가 다시 바뀌지 않도록 먼저 무엇을 할까?",
-      signal: ["LIVE REFRESH", "retention_7d_verified", "12.7% · SYNCING"],
+      signal: ["원본 다시 불러오는 중", "7일 차 잔존율 검증본", "12.7% · 연결 중"],
       options: [
         { id: "pause_refresh", text: "자동 갱신을 일시 중지한다.", correct: true },
         { id: "keep_refresh", text: "최신 값이 들어오도록 자동 갱신을 유지한다." },
       ],
     },
     {
-      label: "02 · 정상 원본",
+      label: "02 · 제출 당시 원본",
       prompt: "18.4%를 검증한 복구 원본을 선택하세요.",
-      signal: ["DAY 4 · 17:08", "18.4% · VERIFIED", "12.7% · ARCHIVE"],
+      signal: ["DAY 4 · 17:08", "18.4% · 제출 당시", "12.7% · 2024년 보관본"],
       options: [
-        { id: "current_week", text: "현재 주차 고정 원본 · retention_week_current", correct: true },
-        { id: "archive", text: "구버전 보관본 · retention_archive_2024" },
+        { id: "current_week", text: "현재 분석 원본 · 신규유저 7일 차 잔존율", correct: true },
+        { id: "archive", text: "2024년 이전 자료 · 신규유저 7일 차 잔존율" },
         { id: "preview", text: "임시 미리보기 파일" },
       ],
     },
     {
-      label: "03 · 산정 기준",
-      prompt: "발표 자료와 같은 산정 기준을 선택하세요.",
+      label: "03 · 분석 기준",
+      prompt: "발표 자료와 같은 분석 대상과 기간을 선택하세요.",
       signal: ["TARGET · NEW USERS", "WINDOW · 7 DAYS", "SCOPE · CURRENT WEEK"],
       options: [
-        { id: "new_users_current_week", text: "신규 가입 사용자 · 발표 기준 주차", correct: true },
-        { id: "all_users_current_week", text: "전체 사용자 · 발표 기준 주차" },
+        { id: "new_users_current_week", text: "신규 가입 사용자 · 발표 전주", correct: true },
+        { id: "all_users_current_week", text: "전체 사용자 · 발표 전주" },
         { id: "new_users_year", text: "신규 가입 사용자 · 연간 누적" },
       ],
     },
     {
       label: "04 · 출처 연결",
       prompt: "복구한 증빙을 어떤 방식으로 연결할까?",
-      signal: ["SOURCE ID · LOCK", "AUTO REFRESH · OFF", "EVIDENCE · REBIND"],
+      signal: ["원본 · 고정", "자동 갱신 · 중지", "근거 자료 · 다시 연결"],
       options: [
         { id: "fixed_source", text: "검증된 원본 ID를 고정하고 자동 갱신을 끈다.", correct: true },
         { id: "new_alias", text: "새 별칭을 만들고 자동 갱신을 유지한다." },
@@ -47,7 +47,7 @@
       claim: "제출 전부터 증빙 수치는 12.7%였을 수 있습니다.",
       prompt: "빠르게 지나가는 기록에서 이 주장을 반박할 확정 사실을 포착하세요.",
       options: [
-        { id: "verified_facts", text: "PT와 증빙 모두 18.4%", correct: true },
+        { id: "verified_facts", text: "발표 자료와 근거 자료 모두 18.4%", correct: true },
         { id: "blame_harin", text: "서하린이 실행했습니다" },
         { id: "blame_bot", text: "나나봇이 독립적으로 변경했습니다" },
       ],
@@ -57,10 +57,10 @@
       claim: "12.7%는 어떤 경로로 공식 증빙 화면에 나타났는가?",
       prompt: "로그를 발생 순서대로 연결해 직접 변경 경로를 완성하세요.",
       items: [
-        { id: "verified_alias", text: "검증 별칭", detail: "retention_7d_verified" },
+        { id: "verified_alias", text: "검증본 자동 연결", detail: "7일 차 잔존율 검증본" },
         { id: "alias_changed", text: "09:58 연결 변경", detail: "ALIAS CHANGED" },
-        { id: "archive", text: "구버전 보관본", detail: "retention_archive_2024" },
-        { id: "alias_to_archive", text: "12.7% 화면 노출", detail: "EVIDENCE REFRESH" },
+        { id: "archive", text: "2024년 이전 자료", detail: "7일 차 잔존율 보관본" },
+        { id: "alias_to_archive", text: "12.7% 화면 노출", detail: "제출 자료 다시 불러오기" },
       ],
       order: ["verified_alias", "alias_changed", "archive", "alias_to_archive"],
     },
@@ -126,7 +126,7 @@
         <p>흐르는 기록에서 검증된 항목을 포착해 정상 연결 경로를 완성하세요.</p>
         <div class="evidence-recovery-rules">
           <article><b>01</b><span><strong data-rule-title="0">포착</strong><i data-rule-detail="0">움직이는 기록에서 올바른 항목을 선택합니다.</i></span></article>
-          <article><b>02</b><span><strong data-rule-title="1">추적</strong><i data-rule-detail="1">자동 갱신 중지 → 정상 원본 → 기준 → 고정 연결 순서입니다.</i></span></article>
+          <article><b>02</b><span><strong data-rule-title="1">추적</strong><i data-rule-detail="1">자동 갱신 중지 → 제출 당시 원본 → 분석 기준 → 원본 고정 순서입니다.</i></span></article>
           <article><b>03</b><span><strong data-rule-title="2">주의</strong><i data-rule-detail="2">오류 선택 시 5초가 차감되고 평가 기록에 남습니다.</i></span></article>
         </div>
         <button type="button" data-start>증빙 복구 시작 <b>›</b></button>
@@ -336,7 +336,7 @@
     } else if (step.type === "capture") {
       const reply = document.createElement("div");
       reply.className = "court-answer-dialogue";
-      reply.innerHTML = `<strong>한도윤</strong><p>DAY 4 17시 8분 제출 직후에는 <button type="button" data-answer="verified_facts">PT와 증빙 모두 18.4%</button>였습니다. 기록만으로는 <button type="button" data-answer="blame_harin">서하린이 실행했습니다</button>거나 <button type="button" data-answer="blame_bot">나나봇이 독립적으로 변경했습니다</button>라고 단정할 수 없습니다.</p>`;
+      reply.innerHTML = `<strong>한도윤</strong><p>DAY 4 17시 8분 제출 직후에는 <button type="button" data-answer="verified_facts">발표 자료와 근거 자료 모두 18.4%</button>였습니다. 기록만으로는 <button type="button" data-answer="blame_harin">서하린이 실행했습니다</button>거나 <button type="button" data-answer="blame_bot">나나봇이 독립적으로 변경했습니다</button>라고 단정할 수 없습니다.</p>`;
       reply.querySelectorAll("button").forEach((button) => {
         const item = step.options.find((option) => option.id === button.dataset.answer);
         button.onclick = () => completeValidationStep(item.id, Boolean(item.correct));
@@ -385,7 +385,7 @@
     ];
     const recoveryRules = [
       ["포착", "움직이는 기록에서 올바른 항목을 선택합니다."],
-      ["추적", "자동 갱신 중지 → 정상 원본 → 기준 → 고정 연결 순서입니다."],
+      ["추적", "자동 갱신 중지 → 제출 당시 원본 → 분석 기준 → 원본 고정 순서입니다."],
       ["주의", "오류 선택 시 5초가 차감되고 평가 기록에 남습니다."],
     ];
     (mode === "validation" ? validationRules : recoveryRules).forEach(([title, detail], index) => {

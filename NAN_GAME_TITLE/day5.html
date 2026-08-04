@@ -4,17 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>DAY 5 | NAN</title>
-  <link rel="stylesheet" href="css/game.css?v=46">
-  <link rel="stylesheet" href="css/day5.css?v=13">
+  <link rel="stylesheet" href="css/game.css?v=47">
+  <link rel="stylesheet" href="css/day5.css?v=24">
   <link rel="stylesheet" href="css/settings-dialog.css?v=2">
   <link rel="stylesheet" href="css/pause-menu.css?v=1">
   <link rel="stylesheet" href="css/location-transition.css?v=2">
   <link rel="stylesheet" href="css/message-day-groups.css?v=1">
-  <link rel="stylesheet" href="css/clue-mindmap-theme.css?v=2">
+  <link rel="stylesheet" href="css/clue-mindmap-theme.css?v=8">
   <link rel="stylesheet" href="css/day3.css?v=1">
   <link rel="stylesheet" href="css/presentation-screen.css?v=2">
-  <link rel="stylesheet" href="css/day5-presentation-cinematic.css?v=12">
-  <link rel="stylesheet" href="css/evidence-recovery-minigame.css?v=8">
+  <link rel="stylesheet" href="css/day5-presentation-cinematic.css?v=17">
   <link rel="stylesheet" href="css/fonts.css?v=1">
 </head>
 <body>
@@ -22,7 +21,38 @@
   <section class="stage" id="stage">
     <div class="shade"></div>
     <figure class="event-cg" id="event-cg" aria-hidden="true"><img id="event-cg-image" alt=""></figure>
-    <figure class="story-prop-cutin" id="story-prop-cutin" aria-hidden="true"><img id="story-prop-cutin-image" alt=""></figure>
+    <figure class="story-prop-cutin" id="story-prop-cutin" aria-hidden="true">
+      <img id="story-prop-cutin-image" alt="">
+      <article class="security-audit-cutin" id="security-audit-cutin" aria-label="보안 감사 로그 조회 결과" hidden>
+        <header>
+          <span><small>SECURITY AUDIT LOG</small><strong>보안 감사 로그</strong></span>
+          <b><i aria-hidden="true"></i>조회 완료</b>
+        </header>
+        <div class="security-audit-meta">
+          <span>자동화 실행 및 자료 연결 변경 기록</span>
+          <code>AUD-2024-0917-0958</code>
+        </div>
+        <section class="security-audit-section">
+          <h3>실행 기록</h3>
+          <dl>
+            <div><dt>이벤트 시각</dt><dd>09:58</dd></div>
+            <div><dt>자동화 규칙 소유자</dt><dd>서하린</dd></div>
+            <div class="is-critical"><dt>재활성화 요청 계정</dt><dd>강민재</dd></div>
+            <div><dt>실행 서비스</dt><dd>나나봇</dd></div>
+          </dl>
+        </section>
+        <section class="security-audit-section">
+          <h3>자료 연결 기록</h3>
+          <dl>
+            <div><dt>표시 자료명</dt><dd>7일 차 잔존율 검증본</dd></div>
+            <div class="is-critical"><dt>변경된 연결 대상</dt><dd>2024년 이전 자료</dd></div>
+            <div class="is-technical"><dt>내부 연결 ID</dt><dd><code>retention_7d_verified</code></dd></div>
+            <div class="is-confirmed"><dt>직접 수치 입력</dt><dd>기록 없음</dd></div>
+          </dl>
+        </section>
+        <footer><span>시스템 담당자 확인 완료</span><b>기록 무결성 확인됨</b></footer>
+      </article>
+    </figure>
     <div class="scene-placeholder" id="scene-placeholder" aria-hidden="true">
       <div><small>VISUAL PLACEHOLDER</small><strong id="placeholder-title"></strong><p id="placeholder-detail"></p></div>
     </div>
@@ -31,7 +61,7 @@
         <div class="day5-cinematic-background"></div>
         <div class="day5-cinematic-beam"></div>
         <section class="day5-cinematic-screen" id="day5-cinematic-screen">
-          <small>NAN · CONVERSION PRESENTATION</small>
+          <small>NAN · 신규 사용자 초반 경험 개선안</small>
           <h2 id="day5-cinematic-title"></h2>
           <div id="day5-cinematic-rows"></div>
         </section>
@@ -48,18 +78,48 @@
     <section class="day5-presentation-ready" id="day5-presentation-ready" hidden
       role="dialog" aria-modal="true" aria-labelledby="day5-presentation-ready-title">
       <div class="day5-presentation-ready-card">
-        <small>DAY 5 · PRESENTATION MISSION</small>
-        <p class="day5-presentation-ready-kicker">발표 진행 안내</p>
+        <small id="day5-presentation-ready-eyebrow">DAY 5 · PRESENTATION MISSION</small>
+        <p class="day5-presentation-ready-kicker" id="day5-presentation-ready-kicker">발표 진행 안내</p>
         <h2 id="day5-presentation-ready-title">정직원 전환 발표</h2>
-        <p class="day5-presentation-ready-copy">발표를 진행하며 핵심 근거를 지키고, 예상하지 못한 질문에 대응하세요.</p>
-        <div class="day5-presentation-ready-rules">
+        <p class="day5-presentation-ready-copy" id="day5-presentation-ready-copy">발표를 진행하며 핵심 근거를 지키고, 예상하지 못한 질문에 대응하세요.</p>
+        <div class="day5-presentation-ready-rules" id="day5-presentation-ready-rules">
           <article><b>01</b><span><strong>발표 진행</strong>대화가 완성되면 ‘다음’ 또는 Enter로 발표를 이어갑니다.</span></article>
-          <article><b>02</b><span><strong>핵심 문구</strong>붉게 강조되는 수치와 기록은 이후 대응의 중요한 근거입니다.</span></article>
+          <article><b>02</b><span><strong>핵심 수치</strong>붉게 강조되는 수치는 이후 대응에 사용하는 중요한 근거입니다.</span></article>
           <article><b>03</b><span><strong>돌발 대응</strong>질문이 나오면 확인된 사실을 기준으로 선택하세요. 선택은 평가에 반영됩니다.</span></article>
         </div>
-        <div class="day5-presentation-ready-status"><i></i><span>발표 자료 연결 완료</span><b>READY</b></div>
-        <button type="button" id="day5-presentation-ready-start">발표 시작 <b>›</b></button>
+        <div class="day5-presentation-ready-status"><i></i><span id="day5-presentation-ready-status">발표 자료 연결 완료</span><b>READY</b></div>
+        <button type="button" id="day5-presentation-ready-start">발표 시작</button>
       </div>
+    </section>
+    <section class="day5-verification-result" id="day5-verification-result" hidden
+      role="dialog" aria-modal="true" aria-labelledby="day5-verification-result-title">
+      <article class="day5-verification-result-card">
+        <header><small>INCIDENT RECOVERY · RESULT</small><h2 id="day5-verification-result-title">검증 및 복구 완료</h2><p id="day5-verification-result-copy">사건의 변경 경로를 확인하고 정상 원본을 복구했습니다.</p></header>
+        <div class="day5-verification-grade"><span>VERIFICATION</span><strong id="day5-verification-result-grade">COMPLETE</strong></div>
+        <section class="day5-verification-stats" aria-label="오류 검증 및 원본 복구 결과">
+          <article><small>직접 검증</small><strong id="day5-verification-result-solved">5 / 5</strong></article>
+          <article><small>발생한 실수</small><strong id="day5-verification-result-mistakes">0 / 3</strong></article>
+          <article><small>원본 복구</small><strong id="day5-verification-result-route">복구 완료</strong></article>
+        </section>
+        <section class="day5-verification-route">
+          <h3>확인된 사건 경로</h3>
+          <ol>
+            <li><b>01</b><span>강민재의 재활성화 요청</span></li>
+            <li><b>02</b><span>2024년 이전 자료 연결</span></li>
+            <li><b>03</b><span>나나봇 자동 실행</span></li>
+            <li><b>04</b><span>제출 근거 화면 12.7%로 변경</span></li>
+          </ol>
+        </section>
+        <button id="day5-verification-result-confirm" type="button">결과 확인</button>
+      </article>
+    </section>
+    <section class="day5-verification-lives" id="day5-verification-lives" hidden
+      aria-label="오류 검증 및 복구 남은 기회" aria-live="polite">
+      <span><small>INCIDENT CHECK</small><b id="day5-verification-phase-label">오류 검증</b></span>
+      <div id="day5-verification-life-cells" aria-hidden="true">
+        <i>♥</i><i>♥</i><i>♥</i><i>♥</i><i>♥</i>
+      </div>
+      <strong id="day5-verification-life-label">5 / 5</strong>
     </section>
     <div class="system-panel" id="system-panel" aria-hidden="true">
       <small id="system-panel-title"></small><div id="system-panel-rows"></div>
@@ -80,7 +140,7 @@
     <section class="dialogue-card" id="dialogue-card" aria-live="polite">
       <div class="speaker-row"><b id="speaker"></b><span>STORY</span></div>
       <p id="dialogue"></p>
-      <button class="next" id="next">다음　›</button>
+      <button class="next" id="next">다음</button>
     </section>
     <div class="stage-choices" id="stage-choices" aria-live="polite"></div>
   </section>
@@ -203,25 +263,24 @@
 </main>
 <audio id="bgm" preload="auto" playsinline></audio>
 <audio id="message-sfx" src="assets/audio/message-notification.wav" preload="auto"></audio>
-<script src="js/ui-sfx.js?v=4"></script>
+  <script src="js/ui-sfx.js?v=13"></script>
 <script src="js/settings-store.js?v=3"></script>
 <script src="js/settings-dialog.js?v=2"></script>
 <script src="js/pause-menu.js?v=2"></script>
 <script src="js/location-transition.js?v=3"></script>
-<script src="js/clue-records.js?v=2"></script>
+<script src="js/clue-records.js?v=3"></script>
 <script src="js/progress-store.js?v=7"></script>
 <script src="js/art-assets.js?v=21"></script>
-<script src="js/day2-story.js?v=28"></script>
-<script src="js/day3-story.js?v=24"></script>
-<script src="js/day4-story.js?v=27"></script>
-<script src="js/clue-mindmap.js?v=11"></script>
-<script src="js/bgm-manager.js?v=18"></script>
-  <script src="js/day5-story.js?v=12"></script>
-  <script src="js/evidence-recovery-minigame.js?v=9"></script>
+<script src="js/day2-story.js?v=29"></script>
+<script src="js/day3-story.js?v=25"></script>
+<script src="js/day4-story.js?v=28"></script>
+  <script src="js/clue-mindmap.js?v=19"></script>
+<script src="js/bgm-manager.js?v=22"></script>
+  <script src="js/day5-story.js?v=26"></script>
 <script src="js/presentation-screen.js?v=1"></script>
-<script src="js/day5-presentation-cinematic.js?v=7"></script>
-<script src="js/scene-motion.js?v=12"></script>
-  <script src="js/day5.js?v=17"></script>
+<script src="js/day5-presentation-cinematic.js?v=15"></script>
+<script src="js/scene-motion.js?v=15"></script>
+  <script src="js/day5.js?v=41"></script>
 </body>
 </html>
 

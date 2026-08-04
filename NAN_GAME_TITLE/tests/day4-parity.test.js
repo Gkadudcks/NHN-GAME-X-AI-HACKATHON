@@ -96,7 +96,7 @@ test("DAY 4 설정 변경은 현재 BGM 볼륨과 음소거 UI에 즉시 반영�
   assert.match(engine, /bgmManager\.setVolume\(GameSettingsDialog\.effectiveBgmVolume\(settings\)\)/);
   assert.match(engine, /function syncBgmUi/);
   assert.match(engine, /getBgmVolume\(\) > 0/);
-  assert.match(html, /src="js\/day4\.js\?v=34"/);
+  assert.match(html, /src="js\/day4\.js\?v=36"/);
 });
 
 test("DAY 4 BGM 시작 버튼은 초기 로딩 중에도 현재 장면의 음악을 직접 재생한다", () => {

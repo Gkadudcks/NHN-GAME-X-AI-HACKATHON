@@ -26,6 +26,46 @@ function choicePromptLabel(scene) {
   return speaker && !["한도윤", "시스템", "내레이션"].includes(speaker) ? speaker : "상황";
 }
 const scenes = Day5Story.scenes;
+const PRESENTATION_EVIDENCE_PROMPTS = Object.freeze({
+  day5SpeculationCorrection: Object.freeze({ clueIds: ["d4_evidence_submission"], decision: "return_to_evidence", title: "추측보다 제출 기록을 먼저 제시하세요." }),
+  day5FactSort: Object.freeze({ clueIds: ["d4_evidence_submission"], decision: "verified_facts", title: "제출 당시 수치를 증명할 단서를 제시하세요.", showDayHint: true }),
+  day5AliasCheck: Object.freeze({ clueIds: ["d2_inactive_automation", "d3_automation_run"], decision: "alias_changed_to_archive", title: "자료 연결이 바뀐 과정을 보여 줄 단서를 연결하세요.", showDayHint: true }),
+  day5OwnerQuestion: Object.freeze({ clueIds: ["d3_direct_access_unconfirmed", "d5_security_audit_result"], decision: "distinguish_roles", title: "등록 담당자와 실제 요청자를 구분할 단서를 제시하세요.", showDayHint: true }),
+  day5CausalOrder: Object.freeze({ clueIds: ["d2_inactive_automation", "d3_automation_run", "d4_evidence_submission", "d5_security_audit_result"], decision: "correct_chain", title: "요청부터 수치 변경까지 이어지는 기록을 제시하세요.", showDayHint: true }),
+  day5Responsibility: Object.freeze({ clueIds: ["d3_direct_access_unconfirmed", "d5_security_audit_result"], decision: "minjae_request_concealment", title: "기록으로 확인되는 책임 범위를 제시하세요.", showDayHint: true }),
+  day5RecoveryRefresh: Object.freeze({ clueIds: ["d3_automation_run"], decision: "pause_refresh", title: "자동 갱신을 먼저 멈춰야 하는 근거를 제시하세요.", showDayHint: true }),
+  day5RecoverySource: Object.freeze({ clueIds: ["d2_cloud_restore_point"], decision: "current_week", title: "되돌릴 정상 원본을 증명할 단서를 제시하세요.", showDayHint: true }),
+  day5RecoveryBasis: Object.freeze({ clueIds: ["d4_verified_retention"], decision: "new_users_current_week", title: "발표와 같은 분석 기준을 제시하세요.", showDayHint: true }),
+  day5RecoveryBinding: Object.freeze({ clueIds: ["d4_evidence_submission"], decision: "fixed_source", title: "복구할 원본을 고정할 제출 기록을 제시하세요.", showDayHint: true }),
+});
+const VERIFICATION_SCENE_IDS = Object.freeze([
+  "day5FactSort",
+  "day5AliasCheck",
+  "day5OwnerQuestion",
+  "day5CausalOrder",
+  "day5Responsibility",
+]);
+const RECOVERY_SCENE_IDS = Object.freeze([
+  "day5RecoveryRefresh",
+  "day5RecoverySource",
+  "day5RecoveryBasis",
+  "day5RecoveryBinding",
+]);
+const INCIDENT_MINIGAME_SCENE_IDS = Object.freeze([
+  ...VERIFICATION_SCENE_IDS,
+  ...RECOVERY_SCENE_IDS,
+]);
+const VERIFICATION_DECISIONS = Object.freeze([
+  Object.freeze({ choiceKey: "factVerification", decision: "verified_facts" }),
+  Object.freeze({ choiceKey: "aliasVerification", decision: "alias_changed_to_archive" }),
+  Object.freeze({ choiceKey: "ownerDistinction", decision: "distinguish_roles" }),
+  Object.freeze({ choiceKey: "causalChain", decision: "correct_chain" }),
+  Object.freeze({ choiceKey: "responsibility", decision: "minjae_request_concealment" }),
+]);
+const VERIFICATION_MISTAKE_LIMIT = 5;
+function evidencePromptFor(scene) {
+  return PRESENTATION_EVIDENCE_PROMPTS[scene?.id] || null;
+}
 function locationAt(index) {
   for (let cursor = Math.min(index, scenes.length - 1); cursor >= 0; cursor -= 1) {
     if (sceneMatchesBranch(scenes[cursor]) && scenes[cursor]?.location) return scenes[cursor].location;
@@ -55,26 +95,128 @@ const state = {
   ending: saved.ending,
   unreadClues: saved.seenNotifications?.["unread:clues"] === true,
 };
+const presentationClueIds = [...new Set(Object.values(PRESENTATION_EVIDENCE_PROMPTS).flatMap((prompt) => prompt.clueIds))];
+presentationClueIds.forEach((id) => {
+  if (state.clues.some((clue) => clue.id === id)) return;
+  const archivedClue = ClueRecords.get(id);
+  if (archivedClue) state.clues.push(archivedClue);
+});
 function sceneMatchesBranch(scene) {
   if (scene?.strategy && state.decisions.responseStrategy !== scene.strategy) return false;
   if (scene?.ending && calculateEnding() !== scene.ending) return false;
   return true;
 }
 
+function verificationMistakes() {
+  return Math.min(VERIFICATION_MISTAKE_LIMIT, Math.max(0, Number(state.decisions.verificationMistakes) || 0));
+}
+
+function verificationPlayerSolved() {
+  const explicit = VERIFICATION_DECISIONS.filter(({ choiceKey }) => state.decisions[`${choiceKey}:playerSolved`] === true).length;
+  const hasAssisted = VERIFICATION_DECISIONS.some(({ choiceKey }) => state.decisions[`${choiceKey}:assisted`] === true);
+  const legacyComplete = VERIFICATION_DECISIONS.every(({ choiceKey, decision }) => state.decisions[choiceKey] === decision);
+  return explicit === 0 && !hasAssisted && legacyComplete ? VERIFICATION_DECISIONS.length : explicit;
+}
+
+function verificationGrade() {
+  if (state.decisions.verificationGrade) return state.decisions.verificationGrade;
+  const mistakes = verificationMistakes();
+  if (mistakes >= VERIFICATION_MISTAKE_LIMIT) return "failed";
+  return mistakes === 0 ? "perfect" : "partial";
+}
+
+function verificationSequenceActive(scene) {
+  const start = scenes.findIndex((item) => item.id === "day5VerificationReady");
+  const end = scenes.findIndex((item) => item.id === "day5VerificationResult");
+  const current = scenes.indexOf(scene);
+  return start >= 0 && end >= start && current >= start && current <= end;
+}
+
+function recoverySequenceActive(scene) {
+  const start = scenes.findIndex((item) => item.id === "day5RecoveryStart");
+  const end = scenes.findIndex((item) => item.id === "day5VerificationResult");
+  const current = scenes.indexOf(scene);
+  return start >= 0 && end >= start && current >= start && current <= end;
+}
+
+function migrateLegacyVerificationFailure() {
+  if (state.decisions.verificationGrade !== "failed") return;
+  const start = scenes.findIndex((item) => item.id === "day5VerificationReady");
+  const responsibility = scenes.findIndex((item) => item.id === "day5Responsibility");
+  const confrontation = scenes.findIndex((item) => item.id === "day5MinjaeConfront");
+  if (start < 0 || responsibility < 0 || confrontation < 0 || state.index < start || state.index > responsibility) return;
+  state.decisions.verificationMistakes = VERIFICATION_MISTAKE_LIMIT;
+  state.index = confrontation;
+}
+
+function migrateVerificationPrelude() {
+  const skippedPreludeIds = new Set([
+    "day5StrategyCallback",
+    "day5SpeculationCorrection",
+    "day5NormalProved",
+    "day5SubmissionProved",
+    "day5Pause",
+  ]);
+  if (!skippedPreludeIds.has(scenes[state.index]?.id)) return;
+  const verificationReady = scenes.findIndex((scene) => scene.id === "day5VerificationReady");
+  if (verificationReady >= 0) state.index = verificationReady;
+}
+
+function syncVerificationLives(scene, feedback = "") {
+  const hud = $("#day5-verification-lives");
+  const stage = $("#stage");
+  if (!hud || !stage) return;
+  const active = verificationSequenceActive(scene);
+  hud.hidden = !active;
+  if (!active) return;
+  const remaining = VERIFICATION_MISTAKE_LIMIT - verificationMistakes();
+  const phaseLabel = $("#day5-verification-phase-label");
+  if (phaseLabel) phaseLabel.textContent = recoverySequenceActive(scene) ? "원본 복구" : "오류 검증";
+  $("#day5-verification-life-label").textContent = `${remaining} / ${VERIFICATION_MISTAKE_LIMIT}`;
+  $("#day5-verification-life-cells").querySelectorAll("i").forEach((cell, index) => {
+    cell.classList.toggle("lost", index >= remaining);
+  });
+  if (!feedback) return;
+  const hudClass = feedback === "success" ? "feedback-success" : feedback === "failed" ? "feedback-failed" : "feedback-hit";
+  const stageClass = feedback === "success" ? "verification-success-flash" : feedback === "failed" ? "verification-failed-flash" : "verification-hit-flash";
+  hud.classList.remove("feedback-success", "feedback-hit", "feedback-failed");
+  stage.classList.remove("verification-success-flash", "verification-hit-flash", "verification-failed-flash");
+  void hud.offsetWidth;
+  hud.classList.add(hudClass);
+  stage.classList.add(stageClass);
+  window.clearTimeout(verificationFeedbackTimer);
+  verificationFeedbackTimer = window.setTimeout(() => {
+    hud.classList.remove("feedback-success", "feedback-hit", "feedback-failed");
+    stage.classList.remove("verification-success-flash", "verification-hit-flash", "verification-failed-flash");
+  }, feedback === "failed" ? 760 : 520);
+}
+
+function recoveryComplete() {
+  return state.decisions.recoveryRefresh === "pause_refresh"
+    && state.decisions.recoverySource === "current_week"
+    && state.decisions.recoveryBasis === "new_users_current_week"
+    && state.decisions.recoveryBinding === "fixed_source";
+}
+
 function calculateEnding() {
-  const correct = [
-    state.decisions.factVerification === "verified_facts",
-    state.decisions.ownerDistinction === "distinguish_roles",
-    state.decisions.causalChain === "correct_chain",
-    state.decisions.responsibility === "minjae_request_concealment",
-    state.decisions.recoverySource === "current_week",
-    state.decisions.recoveryBinding === "fixed_source",
-  ].filter(Boolean).length;
-  if (correct < 4 || state.trust < 0) return "bad";
-  if (correct === 6 && state.trust >= 5 && state.affection >= 3) return "nice";
+  const grade = verificationGrade();
+  const recoveryFinished = Boolean(state.decisions.recoveryBinding);
+  if (state.trust < 0) return "bad";
+  if (recoveryFinished && state.decisions.recoveryBinding !== "fixed_source") return "bad";
+  if (recoveryFinished && grade === "failed" && !recoveryComplete()) return "bad";
+  if (grade !== "failed" && recoveryComplete() && state.trust >= 5 && state.affection >= 5) return "nice";
   return "middle";
 }
 function nextSceneIndex(fromIndex) {
+  if (scenes[fromIndex]?.id === "day5RecoveryStart" && verificationGrade() === "failed") {
+    completeRecoveryWithSupport();
+    const recoveryVerify = scenes.findIndex((scene) => scene.id === "day5RecoveryVerify");
+    if (recoveryVerify >= 0) return recoveryVerify;
+  }
+  if (scenes[fromIndex]?.id === "day5HarinPrompt") {
+    const verificationReady = scenes.findIndex((scene) => scene.id === "day5VerificationReady");
+    if (verificationReady >= 0) return verificationReady;
+  }
   for (let cursor = fromIndex + 1; cursor < scenes.length; cursor += 1) {
     if (sceneMatchesBranch(scenes[cursor])) return cursor;
   }
@@ -89,13 +231,12 @@ function getBgmVolume() {
 }
 const bgmManager = new GameBgmManager($("#bgm"), getBgmVolume);
 window.BGMManager = bgmManager;
-bgmManager.preload(["daily", "harin", "mystery", "minigame", "overtime", "badEnding", "middleEnding", "happyEnding"]);
+bgmManager.preload(["daily", "harin", "mystery", "presentationCalm", "presentationUrgent", "minigame", "overtime", "badEnding", "middleEnding", "happyEnding"]);
 let pauseMenu;
 let locked = false;
 let choiceResultTimer;
 let currentRoom = "";
 let activeStatHelp = null;
-let evidenceRecoveryActive = false;
 let cinematicLocked = false;
 let cinematicTimer;
 let cinematicScene = null;
@@ -103,6 +244,7 @@ let cinematicDeadline = 0;
 let cinematicRemaining = 0;
 let cinematicPaused = false;
 let deferNextNotification = false;
+let verificationFeedbackTimer;
 const locationTransition = GameLocationTransition.install();
 const day5Start = progress.day5StartSnapshot || { work: 0, affection: 0, trust: 0, clues: [] };
 const AUTOSAVE_CHECKPOINTS = new Set(["day5PresentationStart", "day5Mismatch", "day5AuditArrives", "day5Result", "day5BadEnd", "day5MiddleEnd", "day5NiceEnd"]);
@@ -346,6 +488,11 @@ function addClue(clue) {
   state.clues.push({ ...clue });
   state.unreadClues = !$("#clues-view").classList.contains("active");
   if (clue.id === "d4_audit_request") state.evidence.auditRequested = true;
+  if (clue.id === "d5_security_audit_result") {
+    state.evidence.auditResolved = true;
+    state.evidence.requestAccount = "강민재";
+    state.evidence.executionService = "나나봇";
+  }
   if (clue.id === "d4_verified_retention") state.evidence.verifiedRetention = 18.4;
   if (clue.id === "d4_evidence_submission") {
     state.evidence.packageId = "EVD-D4-1708";
@@ -359,11 +506,113 @@ function addClue(clue) {
 function renderRecords() {
   $("#clue-count").textContent = state.clues.length;
   $("#clue-new").hidden = !state.unreadClues;
+  const scene = scenes[state.index];
+  const prompt = evidencePromptFor(scene);
+  $("#clue-list").classList.toggle("presentation-evidence-active", Boolean(prompt && !state.decisions[scene.choiceKey]));
+  if (prompt && !state.decisions[scene.choiceKey]) {
+    const selected = new Set(state.decisions[`${scene.choiceKey}:evidence`] || []);
+    const nextRequiredId = prompt.clueIds.find((id) => !selected.has(id));
+    const nextRequiredClue = state.clues.find((clue) => clue.id === nextRequiredId);
+    if (nextRequiredClue) $("#clue-list").dataset.selectedDay = String(nextRequiredClue.day);
+    ClueMindmap.render($("#clue-list"), {
+      clues: state.clues,
+      currentDay: 5,
+      selection: {
+        clueIds: prompt.clueIds,
+        selectedIds: [...selected],
+        showDayHint: Boolean(prompt.showDayHint),
+        prompt: `${prompt.title} · ${selected.size}/${prompt.clueIds.length}${INCIDENT_MINIGAME_SCENE_IDS.includes(scene.id) ? ` · 실수 ${verificationMistakes()}/${VERIFICATION_MISTAKE_LIMIT}` : ""}`,
+        onSelect: (clue) => presentEvidence(scene, prompt, clue.id),
+      },
+    });
+    return;
+  }
   if (!state.clues.length) {
     $("#clue-list").innerHTML = '<div class="clue-empty"><span>◇</span><strong>아직 기록된 단서가 없습니다</strong><p>대화와 자료를 조사하면 중요한 정보가 여기에 정리됩니다.</p></div>';
     return;
   }
   ClueMindmap.render($("#clue-list"), { clues: state.clues, currentDay: 5 });
+}
+
+function activateSideTab(tabId) {
+  document.querySelectorAll("[data-tab]").forEach((item) => item.classList.toggle("active", item.dataset.tab === tabId));
+  document.querySelectorAll(".side-view").forEach((view) => view.classList.toggle("active", view.id === tabId));
+}
+
+function presentEvidence(scene, prompt, clueId) {
+  const selected = new Set(state.decisions[`${scene.choiceKey}:evidence`] || []);
+  if (!prompt.clueIds.includes(clueId)) {
+    registerVerificationMistake(scene);
+    saveProgress();
+    return;
+  }
+  if (selected.has(clueId)) return;
+  selected.add(clueId);
+  state.decisions[`${scene.choiceKey}:evidence`] = [...selected];
+  if (prompt.clueIds.every((id) => selected.has(id))) {
+    const choice = scene.choices.find((item) => item.id === prompt.decision);
+    if (choice) selectChoice(scene, choice);
+    activateSideTab("messages-view");
+    toast("근거가 발표 자료에 제시되었습니다.");
+  } else {
+    UiSfx.playPresentationCue("evidenceMatch");
+    toast("단서가 연결되었습니다. 다음 근거를 제시하세요.");
+  }
+  renderRecords();
+  saveProgress();
+}
+
+function completeVerificationWithSupport() {
+  VERIFICATION_DECISIONS.forEach(({ choiceKey, decision }) => {
+    if (!state.decisions[choiceKey]) state.decisions[choiceKey] = decision;
+    if (!state.decisions[`${choiceKey}:playerSolved`]) state.decisions[`${choiceKey}:assisted`] = true;
+  });
+  state.decisions.verificationGrade = "failed";
+}
+
+function completeRecoveryWithSupport() {
+  const supportedRecovery = {
+    recoveryRefresh: "pause_refresh",
+    recoverySource: "current_week",
+    recoveryBasis: "new_users_current_week",
+    recoveryBinding: "fixed_source",
+  };
+  Object.entries(supportedRecovery).forEach(([choiceKey, decision]) => {
+    if (!state.decisions[choiceKey]) state.decisions[choiceKey] = decision;
+    state.decisions[`${choiceKey}:assisted`] = true;
+  });
+}
+
+function registerVerificationMistake(scene) {
+  if (!INCIDENT_MINIGAME_SCENE_IDS.includes(scene.id) || verificationMistakes() >= VERIFICATION_MISTAKE_LIMIT) return;
+  const mistakes = Math.min(VERIFICATION_MISTAKE_LIMIT, verificationMistakes() + 1);
+  state.decisions.verificationMistakes = mistakes;
+  state.trust -= 1;
+  const remaining = VERIFICATION_MISTAKE_LIMIT - mistakes;
+  let speaker = "평가위원";
+  let feedback = "그 기록만으로는 단정하기 어렵습니다. 현재 질문을 직접 증명하는 단서를 다시 확인해 주세요.";
+  if (mistakes === 2) {
+    speaker = "서하린";
+    feedback = "지금 필요한 사실이 기록된 DAY 탭부터 다시 확인해요. ‘근거 있음’ 표시가 있는 단서가 직접적인 증거예요.";
+  }
+  if (mistakes >= VERIFICATION_MISTAKE_LIMIT) {
+    speaker = "시스템 담당자";
+    feedback = "직접 처리를 중단합니다. 남은 검증과 원본 복구는 보안 감사 원문을 기준으로 담당자가 지원하겠습니다.";
+    completeVerificationWithSupport();
+    const failedDuringRecovery = RECOVERY_SCENE_IDS.includes(scene.id);
+    if (failedDuringRecovery) completeRecoveryWithSupport();
+    const targetId = failedDuringRecovery ? "day5RecoveryVerify" : "day5MinjaeConfront";
+    const targetIndex = scenes.findIndex((item) => item.id === targetId);
+    if (targetIndex >= 0) state.index = targetIndex;
+    render();
+  }
+  UiSfx.playMinigameCue(mistakes >= VERIFICATION_MISTAKE_LIMIT ? "caught" : "warning");
+  syncVerificationLives(scene, mistakes >= VERIFICATION_MISTAKE_LIMIT ? "failed" : "hit");
+  $("#speaker").textContent = speaker;
+  $("#dialogue").textContent = feedback;
+  syncStats();
+  toast(mistakes >= VERIFICATION_MISTAKE_LIMIT ? "직접 처리 실패 · 담당자 보조로 전환됩니다." : `잘못된 근거입니다. 남은 실수 기회 ${remaining}회`);
+  renderRecords();
 }
 
 const MESSAGE_DAY_NAMES = Object.freeze(["", "월요일", "화요일", "수요일", "목요일", "금요일"]);
@@ -564,9 +813,22 @@ function dynamicText(scene) {
   }
   if (scene.dynamic === "strategyCallback") {
     if (state.decisions.responseStrategy === "defend_evidence") return "정상 수치는 18.4%입니다. 지금 보존된 원본과 교차 검증 기록을 바로 제시하겠습니다.";
-    if (state.decisions.responseStrategy === "clarify_scope") return "먼저 두 자료가 같은 신규 가입 사용자와 같은 발표 기준 주차를 대상으로 하는지 확인하겠습니다.";
+    if (state.decisions.responseStrategy === "clarify_scope") return "먼저 두 자료가 같은 신규 가입 사용자와 같은 발표 전주를 대상으로 하는지 확인하겠습니다.";
     if (state.decisions.responseStrategy === "coordinate_harin") return "서하린 선배, 보존한 정상 원본을 열어 주십시오. 저는 발표 흐름을 유지하며 산정 기준을 설명하겠습니다.";
     return "자동화 과정에서 문제가 생겼을 가능성이… 잠깐, 원인을 단정하기 전에 검증된 기록부터 확인하겠습니다.";
+  }
+  if (scene.dynamic === "verificationConfront") {
+    if (verificationGrade() === "perfect") return "재실행 요청은 내가 했어. 네가 정리한 경로가 맞아. 예전 검증 자료를 빨리 다시 쓰려던 거였고, 공식 근거 자료까지 바뀔 줄은 몰랐어.";
+    if (verificationGrade() === "partial") return "재실행 요청은 내가 했어. 추가로 확인된 감사 기록까지 보니 부정할 수 없겠네. 공식 근거 자료까지 바뀔 줄은 몰랐어.";
+    return "잠깐, 재실행을 요청한 건 맞지만 내가 직접 숫자를 바꾼 건 아니잖아. 그걸 전부 내 책임이라고 할 수 있어?";
+  }
+  if (scene.dynamic === "verificationFollowup") {
+    if (verificationGrade() === "failed") return "시스템 담당자가 감사 로그 원문을 추가로 공개했습니다. 요청 직후 자료 연결이 변경된 기록과 이상 징후 이후 미보고 기록이 모두 남아 있습니다.";
+    return "DAY 3에 이상 징후를 봤다면 왜 요청 사실을 말하지 않았습니까?";
+  }
+  if (scene.dynamic === "verificationAdmission") {
+    if (verificationGrade() === "failed") return "…알겠어. 내 요청 뒤 연결이 바뀐 것도, 이상을 보고도 말하지 않은 것도 맞아. 평가에서 빠질까 봐 숨겼어. 미안하다.";
+    return "내 요청 때문일 수도 있다고 생각했어. 평가에서 빠질까 봐… 먼저 말하지 못했어. 미안하다.";
   }
   if (scene.dynamic === "recoveryResult") return state.decisions.recoverySource === "current_week" && state.decisions.recoveryBinding === "fixed_source"
     ? "복구 전후 검증을 완료했습니다. PT와 고정된 증빙이 모두 18.4%로 일치합니다."
@@ -574,11 +836,32 @@ function dynamicText(scene) {
   if (scene.dynamic === "resumeStatement") return state.decisions.recoverySource === "current_week" && state.decisions.recoveryBinding === "fixed_source"
     ? "정상 원본과 동일한 18.4% 수치로 증빙 자료를 복구했습니다. 산정 기준과 변경 경로도 함께 제출하겠습니다."
     : "정상 원본의 18.4%는 확인했습니다. 다만 증빙 연결 복구는 추가 검토가 필요해 원본과 변경 기록으로 먼저 설명드리겠습니다.";
+  if (scene.dynamic === "postPresentationHarin") {
+    if (verificationGrade() === "failed") return "끝났어요. 담당자 지원까지 받았지만 문제를 숨기지 않고 여기까지 이어 온 건 도윤 씨예요. 이제 숨 쉬어도 돼요.";
+    if (verificationGrade() === "partial") return "끝났어요. 중간에 흔들렸어도 복구까지 직접 마쳤잖아요. 이제 숨 쉬어도 돼요.";
+    return "끝났어요. 검증부터 복구까지 전부 직접 설명했어요. 이제 숨 쉬어도 돼요.";
+  }
+  if (scene.dynamic === "postPresentationMinjae") {
+    if (verificationGrade() === "failed") return "처음엔 내 요청이 원인이라고 인정하고 싶지 않았어. 감사 로그까지 다시 공개되고 나서야 더는 피할 수 없었다. 이상한 걸 봤을 때 바로 말했어야 했어. 미안하다.";
+    return "네가 기록을 순서대로 보여 주니까 더는 변명할 수 없더라. 내 요청 때문에 일이 커졌고, 이상한 걸 봤을 때 바로 말했어야 했어. 미안하다.";
+  }
+  if (scene.dynamic === "postPresentationReflection") {
+    if (state.affection >= 5) return "예전 같았으면 제가 만든 규칙이라는 이유만으로 혼자 책임지려고 했을 거예요. 이번에는 도윤 씨가 제 옆에서 기록을 끝까지 봐 줬어요. 혼자가 아니라는 게 이렇게 다른 건지 몰랐네요.";
+    return "예전 같았으면 제가 만든 규칙이라는 이유만으로 혼자 책임지려고 했을 거예요. 이번에는 도윤 씨가 기록을 끝까지 봐 줘서 그러지 않았어요.";
+  }
+  if (scene.dynamic === "postPresentationReport") {
+    if (verificationGrade() === "failed") return "제가 직접 확인한 부분과 담당자가 보완한 부분을 나눠 적었습니다. 실패한 과정도 숨기지 않고 복구 기록과 함께 남기겠습니다.";
+    return "확인된 사실과 확인되지 않은 추측을 나눠 적었습니다. 제가 직접 검증한 경로와 복구 과정, 재발 방지 조치도 같은 기록에 연결하겠습니다.";
+  }
+  if (scene.dynamic === "postPresentationBeforeResult") {
+    if (state.trust >= 5) return "결과가 어떻게 나오든 오늘 도윤 씨가 한 대응은 없어지지 않아요. 모두가 흔들릴 때 확인한 기록부터 다시 세웠고, 끝까지 정상 상태로 돌려놨으니까요.";
+    return "결과를 기다리는 건 불편하겠지만, 오늘 문제를 숨기지 않고 끝까지 남아 정리한 건 분명해요. 그 부분은 평가에서도 기록으로 남을 거예요.";
+  }
   if (scene.dynamic === "evaluationResult") {
     const ending = calculateEnding();
-    if (ending === "bad") return "검증과 복구 과정에서 핵심 근거를 충분히 확보하지 못했다. 정직원 전환은 보류다.";
-    if (ending === "nice") return "정직원 전환 승인이다. 사고의 전체 경로와 재발 방지까지 완성한 대응도 높게 평가됐다.";
-    return "정직원 전환 승인이다. 남은 기술 조사는 보안 담당이 이어 간다. 네가 확인한 사실과 대응은 충분히 인정받았어.";
+    if (ending === "bad") return "문제를 숨기지 않은 태도는 확인했다. 하지만 검증과 복구 과정에서 핵심 근거를 충분히 확보하지 못해 발표 자료의 신뢰를 회복했다고 판단하기 어렵다. 정직원 전환은 보류다.";
+    if (ending === "nice") return "정직원 전환 승인이다. 정상 원본을 찾아낸 것뿐 아니라 변경 경로와 책임 범위를 기록으로 설명했고, 복구와 재발 방지까지 직접 마무리한 대응이 높게 평가됐다.";
+    return "정직원 전환 승인이다. 일부 과정에는 지원이 필요했지만 문제를 숨기지 않고 검증 가능한 사실부터 복구한 대응은 충분히 인정받았다. 남은 기술 조사는 보안 담당이 이어 간다.";
   }
   return scene.text;
 }
@@ -588,14 +871,29 @@ function selectChoice(scene, choice) {
   Object.entries(choice.delta || {}).forEach(([key, value]) => { state[key] += value; });
   state.decisions[scene.choiceKey] = choice.id;
   state.decisions[`${scene.choiceKey}:reply`] = choice.reply;
+  if (VERIFICATION_SCENE_IDS.includes(scene.id)) {
+    state.decisions[`${scene.choiceKey}:playerSolved`] = true;
+    if (scene.id === "day5Responsibility") state.decisions.verificationGrade = verificationMistakes() === 0 ? "perfect" : "partial";
+  }
+  if (INCIDENT_MINIGAME_SCENE_IDS.includes(scene.id)) {
+    UiSfx.playMinigameCue("success");
+    syncVerificationLives(scene, "success");
+  }
   saveProgress();
   $("#dialogue-card").hidden = false;
   $("#stage-choices").innerHTML = "";
   $("#stage-choices").classList.remove("show");
   $("#stage").classList.remove("choice-mode");
+  $("#stage").classList.remove("presentation-evidence-mode");
+  const nextButton = $("#next");
+  nextButton.disabled = false;
+  nextButton.textContent = scene.end ? "DAY 5 완료" : "다음";
+  document.querySelector('[data-tab="clues-view"]')?.classList.remove("evidence-requested");
+  $("#clue-new").textContent = "NEW";
   const replySpeaker = choice.replySpeaker || scene.replySpeaker || scene.speaker;
   $("#speaker").textContent = replySpeaker;
   $("#dialogue").textContent = choice.reply;
+  Day5PresentationCinematic.playChoiceResult?.(scene, choice);
   const activeCharacter = characterIdFromSpeaker(replySpeaker);
   $("#character-layer").querySelectorAll(".character").forEach((image) => {
     const speaking = Boolean(activeCharacter) && image.classList.contains(`character-${activeCharacter}`);
@@ -710,6 +1008,13 @@ function preloadSceneImages(scene) {
   })));
 }
 
+function sceneShowsAuditCutin(scene) {
+  return Boolean(
+    scene.auditCutin
+    || (scene.id === "day5MinjaeWhy" && verificationGrade() === "failed")
+  );
+}
+
 function renderArt(scene) {
   const stage = $("#stage");
   const placeholder = $("#scene-placeholder");
@@ -746,18 +1051,28 @@ function renderArt(scene) {
   }
   const propCutin = $("#story-prop-cutin");
   const propCutinImage = $("#story-prop-cutin-image");
-  if (scene.propAssetId) {
-    propCutinImage.src = ArtAssets.resolve(scene.propAssetId);
-    propCutinImage.alt = scene.propTitle || "스토리 소품";
+  const auditCutin = $("#security-audit-cutin");
+  const showAuditCutin = sceneShowsAuditCutin(scene);
+  if (scene.propAssetId || showAuditCutin) {
+    propCutin.classList.toggle("audit", showAuditCutin);
+    propCutinImage.hidden = showAuditCutin;
+    auditCutin.hidden = !showAuditCutin;
+    if (scene.propAssetId) {
+      propCutinImage.src = ArtAssets.resolve(scene.propAssetId);
+      propCutinImage.alt = scene.propTitle || "스토리 소품";
+    }
     propCutin.classList.add("show");
     propCutin.setAttribute("aria-hidden", "false");
     stage.classList.add("prop-cutin-active");
   } else {
+    propCutin.classList.remove("audit");
     propCutin.classList.remove("show");
     propCutin.setAttribute("aria-hidden", "true");
     stage.classList.remove("prop-cutin-active");
+    propCutinImage.hidden = false;
     propCutinImage.removeAttribute("src");
     propCutinImage.alt = "";
+    auditCutin.hidden = true;
   }
   const characters = scene.characters || [];
   const visibleCharacterIds = characters.map(characterIdFromAsset);
@@ -788,50 +1103,6 @@ function renderArt(scene) {
   }));
 }
 
-function finishEvidenceRecovery(result) {
-  evidenceRecoveryActive = false;
-  $("#stage").classList.remove("evidence-recovery-active");
-  state.minigameResult = result;
-  state.decisions.recoverySource = result.source;
-  state.decisions.recoveryBinding = result.binding;
-  if (result.grade === "perfect") {
-    state.work += 4;
-    state.trust += 3;
-  } else if (result.grade === "good") {
-    state.work += 1;
-  } else {
-    state.work -= 2;
-    state.trust -= 2;
-  }
-  state.index = Math.max(0, scenes.findIndex((scene) => scene.id === "day5RecoveryVerify"));
-  saveProgress();
-  render();
-}
-
-function finishFactVerification(result) {
-  evidenceRecoveryActive = false;
-  $("#stage").classList.remove("evidence-recovery-active");
-  const selectedIds = result.selectedIds || [result.selected || "unresolved"];
-  state.decisions.factVerification = selectedIds[0];
-  state.decisions.aliasVerification = selectedIds[1] || "unresolved";
-  state.decisions.ownerDistinction = selectedIds[2] || "unresolved";
-  state.decisions.causalChain = selectedIds[3] || "unresolved";
-  state.decisions.responsibility = selectedIds[4] || "unresolved";
-  if (result.grade === "perfect") {
-    state.work += 8;
-    state.trust += 6;
-  } else if (result.correct >= 3) {
-    state.work += 2;
-    state.trust += 1;
-  } else {
-    state.work -= 3;
-    state.trust -= 4;
-  }
-  state.index = Math.max(0, scenes.findIndex((scene) => scene.id === "day5MinjaeConfront"));
-  saveProgress();
-  render();
-}
-
 function summaryRow(icon, title, detail, value = "") {
   return `<article><i>${icon}</i><div><b>${escapeHtml(title)}</b><span>${escapeHtml(detail)}</span></div>${value ? `<strong>${escapeHtml(value)}</strong>` : ""}</article>`;
 }
@@ -851,7 +1122,7 @@ function showDaySummary() {
   $("#day-summary-note").textContent = "DAY 5의 선택과 누적 신뢰·호감도를 합산한 최종 결과입니다.";
   $("#day-summary-work").innerHTML = [
     summaryRow("✓", "정상 수치 검증", "18.4% 원본과 DAY 4 제출 기록 확인"),
-    summaryRow("✓", "긴급 검증 회의", state.decisions.causalChain === "correct_chain" ? "자동화 변경 인과 완성" : "일부 변경 경로 조사 이관"),
+    summaryRow(verificationGrade() === "failed" ? "!" : "✓", "오류 검증", verificationGrade() === "perfect" ? "완전 검증 · 직접 변경 경로 완성" : verificationGrade() === "partial" ? "부분 검증 · 하린의 보조로 완성" : "검증 실패 · 담당자 확인으로 이관"),
     summaryRow("✓", "증빙 복구", state.decisions.recoveryBinding === "fixed_source" ? "고정 출처로 안정 복구" : "연결 안정성 추가 검토"),
     summaryRow("↗", "정직원 전환", ending === "bad" ? "보류" : "승인"),
   ].join("");
@@ -886,13 +1157,37 @@ function closeDaySummary() {
   $("#day-complete-menu").focus();
 }
 
+function syncVerificationResult() {
+  const card = $("#day5-verification-result .day5-verification-result-card");
+  if (!card) return;
+  const grade = verificationGrade();
+  const mistakes = verificationMistakes();
+  const recoveredDirectly = recoveryComplete() && !state.decisions["recoveryBinding:assisted"];
+  const config = {
+    perfect: { title: "완전 해결", grade: "COMPLETE", copy: "모든 사건 경로를 직접 입증하고 정상 원본 복구까지 완료했습니다." },
+    partial: { title: "복구 완료", grade: "RECOVERED", copy: "일부 실수가 있었지만 사건 경로를 확인하고 정상 원본을 직접 복구했습니다." },
+    failed: { title: "지원 복구", grade: "ASSISTED", copy: "직접 처리는 중단됐지만 시스템 담당자의 지원으로 정상 원본을 복구했습니다." },
+  }[grade];
+  card.classList.remove("grade-perfect", "grade-partial", "grade-failed");
+  card.classList.add(`grade-${grade}`);
+  $("#day5-verification-result-title").textContent = config.title;
+  $("#day5-verification-result-copy").textContent = config.copy;
+  $("#day5-verification-result-grade").textContent = config.grade;
+  $("#day5-verification-result-solved").textContent = `${verificationPlayerSolved()} / 5`;
+  $("#day5-verification-result-mistakes").textContent = `${mistakes} / ${VERIFICATION_MISTAKE_LIMIT}`;
+  $("#day5-verification-result-route").textContent = recoveredDirectly ? "직접 복구" : "지원 복구";
+}
+
 function render() {
   normalizeSceneIndex();
   const deferNotification = deferNextNotification;
   deferNextNotification = false;
   const scene = scenes[state.index] || scenes[0];
-  const pendingChoice = Boolean(scene.choices && !state.decisions[scene.choiceKey]);
+  const evidencePrompt = evidencePromptFor(scene);
+  const pendingEvidence = Boolean(evidencePrompt && !state.decisions[scene.choiceKey]);
+  const pendingChoice = Boolean(scene.choices && !state.decisions[scene.choiceKey] && !pendingEvidence);
   const cinematic = Boolean(scene.cinematicDelay);
+  syncVerificationLives(scene);
   resetCinematic();
   $("#clock").textContent = scene.time;
   $("#scene-label").textContent = scene.location || $("#scene-label").textContent;
@@ -902,7 +1197,7 @@ function render() {
     $("#dialogue").textContent = dynamicText(scene);
   }
   $("#next").disabled = cinematic;
-  $("#next").textContent = scene.end ? "DAY 5 완료　›" : (scene.nextLabel || "다음　›");
+  $("#next").textContent = scene.end ? "DAY 5 완료" : (scene.nextLabel || "다음");
   $("#system-panel").classList.toggle("show", Boolean(scene.system));
   $("#system-panel").setAttribute("aria-hidden", String(!scene.system));
   $("#stage").classList.toggle("system-panel-active", Boolean(scene.system));
@@ -914,10 +1209,24 @@ function render() {
   if (scene.system) {
     PresentationScreen.apply($("#system-panel"), scene.system);
   }
+  if (scene.verificationResult) syncVerificationResult();
   const cinematicPresentation = Day5PresentationCinematic.apply(scene);
   if (cinematicPresentation) {
     $("#system-panel").classList.remove("show");
     $("#system-panel").setAttribute("aria-hidden", "true");
+  }
+  if (scene.id === "day5Mismatch" && !state.seenNotifications["sfx:day5-mismatch"]) {
+    state.seenNotifications["sfx:day5-mismatch"] = true;
+    UiSfx.playPresentationCue("errorDiscovery");
+  }
+  if (scene.id === "day5EvaluatorHold" && !state.seenNotifications["sfx:day5-evaluator-hold"]) {
+    state.seenNotifications["sfx:day5-evaluator-hold"] = true;
+    bgmManager.stop();
+    UiSfx.playPresentationCue("evaluatorSuspicion");
+  }
+  const auditResultIndex = scenes.findIndex((item) => item.id === "day5AuditResult");
+  if (auditResultIndex >= 0 && state.index >= auditResultIndex) {
+    addClue(ClueRecords.get("d5_security_audit_result"));
   }
   addClue(scene.clue);
   renderRecords();
@@ -925,6 +1234,7 @@ function render() {
   $("#stage-choices").innerHTML = "";
   $("#stage-choices").classList.remove("show");
   $("#stage").classList.remove("choice-mode");
+  $("#stage").classList.toggle("presentation-evidence-mode", pendingEvidence);
   $("#dialogue-card").hidden = false;
   if (pendingChoice) {
     $("#dialogue-card").hidden = true;
@@ -940,7 +1250,20 @@ function render() {
     $("#stage").classList.add("choice-mode");
     $("#stage-choices").querySelectorAll("button:not(:disabled)").forEach((button) => { button.onclick = () => selectChoice(scene, scene.choices[Number(button.dataset.choice)]); });
   }
-  if (scene.bgm) bgmManager.play(scene.bgm);
+  if (pendingEvidence) {
+    $("#next").disabled = true;
+    $("#next").textContent = "단서 제시 필요";
+    const clueTab = document.querySelector('[data-tab="clues-view"]');
+    clueTab?.classList.add("evidence-requested");
+    activateSideTab("clues-view");
+    $("#clue-new").hidden = false;
+    $("#clue-new").textContent = "!";
+  } else {
+    document.querySelector('[data-tab="clues-view"]')?.classList.remove("evidence-requested");
+    $("#clue-new").textContent = "NEW";
+  }
+  if (scene.stopBgm) bgmManager.stop();
+  else if (scene.bgm) bgmManager.play(scene.bgm);
   if (scene.notification && !deferNotification) notifyMessage(scene.notification);
   renderMessages();
   if (cinematic) startCinematic(scene);
@@ -950,31 +1273,10 @@ function render() {
   }
   saveProgress();
   autoSaveAtCheckpoint(scene);
-  if (scene.startFactVerification && !state.decisions.factVerification) {
-    evidenceRecoveryActive = true;
-    $("#stage").classList.add("evidence-recovery-active");
-    EvidenceRecoveryMinigame.start({
-      mode: "validation",
-      durationMs: 65000,
-      mount: $("#stage"),
-      guideMount: $("#stage"),
-      onComplete: finishFactVerification,
-    });
-  }
-  if (scene.startEvidenceRecovery && !state.minigameResult) {
-    evidenceRecoveryActive = true;
-    $("#stage").classList.add("evidence-recovery-active");
-    EvidenceRecoveryMinigame.start({
-      durationMs: 75000,
-      mount: $("#stage"),
-      guideMount: $("#stage"),
-      onComplete: finishEvidenceRecovery,
-    });
-  }
 }
 
 function hasBlockingUi() {
-  return locked || cinematicLocked || Day5PresentationCinematic.isLocked() || evidenceRecoveryActive || GameSettingsDialog.isOpen() || pauseMenu?.isOpen() || $("#game-save-modal").classList.contains("open") || $("#day-summary").classList.contains("show") || $("#day-complete").classList.contains("show") || locationTransition?.isActive();
+  return locked || cinematicLocked || Day5PresentationCinematic.isLocked() || GameSettingsDialog.isOpen() || pauseMenu?.isOpen() || $("#game-save-modal").classList.contains("open") || $("#day-summary").classList.contains("show") || $("#day-complete").classList.contains("show") || locationTransition?.isActive();
 }
 
 async function nextScene() {
@@ -1029,19 +1331,16 @@ pauseMenu = GamePauseMenu.install({
   openLoad: () => openGameSave("load"),
   onOpen: () => {
     pauseCinematic();
-    if (evidenceRecoveryActive) EvidenceRecoveryMinigame.pause();
   },
   onClose: () => {
     resumeCinematic();
-    if (evidenceRecoveryActive) EvidenceRecoveryMinigame.resume();
   },
 });
 $("#mute").onclick = toggleBgm;
 $("#sound-prompt").onclick = unlockAudio;
 document.querySelectorAll("[data-tab]").forEach((button) => {
   button.onclick = () => {
-    document.querySelectorAll("[data-tab]").forEach((item) => item.classList.toggle("active", item === button));
-    document.querySelectorAll(".side-view").forEach((view) => view.classList.toggle("active", view.id === button.dataset.tab));
+    activateSideTab(button.dataset.tab);
     if (button.dataset.tab === "clues-view") {
       state.unreadClues = false;
       renderRecords();
@@ -1083,5 +1382,7 @@ document.addEventListener("keydown", (event) => {
     closeGameSave();
   }
 }, true);
+migrateVerificationPrelude();
+migrateLegacyVerificationFailure();
 render();
 

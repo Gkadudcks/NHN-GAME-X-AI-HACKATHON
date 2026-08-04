@@ -156,6 +156,7 @@ function renderSaveSlots() {
       ${slot.saveType === "auto" ? '<span class="autosave-badge">AUTO SAVE</span>' : ""}
       ${slot.savedAt === latestSavedAt ? '<span class="latest-badge">최근 플레이</span>' : ""}`;
     button.addEventListener("click", () => {
+      if (!confirm(`SLOT ${String(slot.slotId).padStart(2, "0")}의 진행을 불러올까요?\n현재 저장하지 않은 진행은 사라집니다.`)) return;
       if (slot.progress) localStorage.setItem(GameProgress.STORAGE_KEY, JSON.stringify(slot.progress));
       if (slot.day1Save) localStorage.setItem(GameProgress.LEGACY_DAY1_KEY, JSON.stringify(slot.day1Save));
       else localStorage.removeItem(GameProgress.LEGACY_DAY1_KEY);

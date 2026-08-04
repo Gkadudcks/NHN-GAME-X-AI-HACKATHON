@@ -30,6 +30,14 @@ test("기본 클릭음은 soft이며 후보를 런타임에서 바꿀 수 있다
   assert.match(source, /master \* sfx \* multiplier/);
 });
 
+test("dialogue emphasis uses a dedicated short cue", () => {
+  const source = fs.readFileSync(path.join(root, "js/ui-sfx.js"), "utf8");
+  assert.match(source, /function playEmphasisCue\(\)/);
+  assert.match(source, /getVolume\(0\.17\)/);
+  assert.match(source, /frequency: 440, duration: 0\.09/);
+  assert.match(source, /playEmphasisCue,/);
+});
+
 test("CG 전환용 PAGE-TURN 효과음을 설정된 효과음 음량으로 재생한다", () => {
   const source = fs.readFileSync(path.join(root, "js/ui-sfx.js"), "utf8");
   assert.match(source, /new Audio\("assets\/audio\/page-turn\.wav"\)/);

@@ -997,7 +997,7 @@ function render() {
     refs.dialogue.textContent = scene.dynamic ? resolveDynamic(scene.dynamic) : scene.text;
   }
   refs.next.disabled = cinematic;
-  refs.next.textContent = scene.end ? "타이틀로　›" : "다음　›";
+  refs.next.textContent = scene.end ? "타이틀로" : "다음";
   $("#scene-label").textContent = inheritedSceneValue(state.index, "location") || (Number(scene.time.split(":")[0]) >= 12 ? "게임사업실 · 오후" : "게임사업실 · 오전");
   renderVisuals(scene);
   renderCharacters(scene);

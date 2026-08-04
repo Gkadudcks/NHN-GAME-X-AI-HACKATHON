@@ -10,11 +10,11 @@ const html = fs.readFileSync(path.join(root, "game.html"), "utf8");
 test("오래된 프로젝트에서 이름을 발견한 다음 하린은 당황한 모습으로 반응한다", () => {
   assert.match(
     source,
-    /id:'harinOldProject'.*characters:\[\{id:'harin',assetId:'character\.harin\.hand_to_chest\.surprised'\}\].*motion:'nervous'/
+    /id:'harinOldProject'.*characters:\[\{id:'harin',assetId:'character\.harin\.hand_to_chest\.surprised'\}\][^]*?motion:'nervous'/
   );
   assert.match(source, /entry\.assetId\?ArtAssets\.resolve\(entry\.assetId\)/);
   const artAssetsIndex = html.indexOf('src="js/art-assets.js?v=15"');
-  const gameIndex = html.indexOf('src="js/game.js?v=57"');
+  const gameIndex = html.indexOf('src="js/game.js?v=60"');
   assert.ok(artAssetsIndex >= 0, "DAY 1 페이지가 아트 자산 해석기를 불러와야 한다");
   assert.ok(artAssetsIndex < gameIndex, "아트 자산 해석기는 DAY 1 엔진보다 먼저 로드되어야 한다");
 });

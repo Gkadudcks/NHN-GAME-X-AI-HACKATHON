@@ -48,6 +48,31 @@
     return usable;
   }
 
+  function emphasisCueState(stage, scene) {
+    const sceneKey = scene?.id || `${scene?.speaker || ""}:${scene?.text || ""}`;
+    if (stage._dialogueEmphasisCueScene !== sceneKey) {
+      stage._dialogueEmphasisCueScene = sceneKey;
+      stage._dialogueEmphasisCueKeys = new Set();
+    }
+    return stage._dialogueEmphasisCueKeys;
+  }
+
+  function playEmphasisCue(stage, mark, cueKey) {
+    const played = stage?._dialogueEmphasisCueKeys;
+    if (!mark || !played || played.has(cueKey)) return;
+    played.add(cueKey);
+    mark.dataset.emphasisCuePlayed = "true";
+    global.UiSfx?.playEmphasisCue?.();
+  }
+
+  function scheduleEmphasisCues(stage, scene, marks) {
+    emphasisCueState(stage, scene);
+    (stage._dialogueEmphasisTimers || []).forEach(clearTimeout);
+    stage._dialogueEmphasisTimers = marks.map((mark, index) =>
+      setTimeout(() => playEmphasisCue(stage, mark, `emphasis-${index}`), 110 + (index * 90))
+    );
+  }
+
   function applyDialogueEmphasis(stage, scene = {}) {
     const dialogue = stage.querySelector(".dialogue-card #dialogue");
     if (!dialogue || !dialogue.textContent) return;
@@ -68,11 +93,15 @@
     });
     if (cursor < source.length) fragment.append(document.createTextNode(source.slice(cursor)));
     dialogue.replaceChildren(fragment);
+    scheduleEmphasisCues(stage, scene, Array.from(dialogue.querySelectorAll(".dialogue-emphasis")));
   }
 
   function prepareProgressiveDialogue(stage, scene = {}, source = "") {
     const dialogue = stage.querySelector(".dialogue-card #dialogue");
     if (!dialogue) return null;
+    emphasisCueState(stage, scene);
+    (stage._dialogueEmphasisTimers || []).forEach(clearTimeout);
+    stage._dialogueEmphasisTimers = [];
     const matches = dialogueEmphasisMatches(source, scene);
     const segments = [];
     let cursor = 0;
@@ -80,6 +109,8 @@
       if (match.start > cursor) segments.push({ start: cursor, end: match.start, node: document.createTextNode("") });
       const mark = document.createElement("strong");
       mark.style.setProperty("--emphasis-index", index);
+      mark.style.setProperty("--emphasis-delay", "0ms");
+      mark.style.setProperty("--emphasis-line-delay", "250ms");
       segments.push({ start: match.start, end: match.end, node: mark, emphasis: true });
       cursor = match.end;
     });
@@ -91,8 +122,9 @@
       segments.forEach((segment) => {
         const revealedEnd = Math.min(segment.end, Math.max(segment.start, visibleLength));
         segment.node.textContent = source.slice(segment.start, revealedEnd);
-        if (segment.emphasis && visibleLength >= segment.end) {
+        if (segment.emphasis && visibleLength > segment.start) {
           segment.node.classList.add("dialogue-emphasis");
+          playEmphasisCue(stage, segment.node, `emphasis-${segment.start}`);
         }
       });
     };

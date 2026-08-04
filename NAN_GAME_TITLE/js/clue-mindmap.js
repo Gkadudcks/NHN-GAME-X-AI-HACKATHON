@@ -16,11 +16,11 @@
     return node;
   }
 
-  function place(node, x, y, size) {
-    node.style.left = `${x - size / 2}px`;
-    node.style.top = `${y - size / 2}px`;
-    node.style.width = `${size}px`;
-    node.style.height = `${size}px`;
+  function place(node, x, y, width, height = width) {
+    node.style.left = `${x - width / 2}px`;
+    node.style.top = `${y - height / 2}px`;
+    node.style.width = `${width}px`;
+    node.style.height = `${height}px`;
   }
 
   function curve(svg, from, to, className) {
@@ -69,6 +69,7 @@
     const zoomLabel = options.zoomLabel;
     let viewportWidth = viewport.clientWidth;
     let viewportHeight = viewport.clientHeight;
+    let autoFitTimer = 0;
     const apply = () => {
       world.style.transform = `translate3d(${x}px,${y}px,0) scale(${scale})`;
       if (zoomLabel) zoomLabel.textContent = `${Math.round(scale * 100)}%`;
@@ -147,6 +148,13 @@
         const nextWidth = viewport.clientWidth;
         const nextHeight = viewport.clientHeight;
         if (!nextWidth || !nextHeight || (nextWidth === viewportWidth && nextHeight === viewportHeight)) return;
+        if (initialScale === null) {
+          viewportWidth = nextWidth;
+          viewportHeight = nextHeight;
+          window.clearTimeout(autoFitTimer);
+          autoFitTimer = window.setTimeout(fitToView, 100);
+          return;
+        }
         const centerWorldX = (viewportWidth / 2 - x) / scale;
         const centerWorldY = (viewportHeight / 2 - y) / scale;
         x = nextWidth / 2 - centerWorldX * scale;
@@ -157,6 +165,10 @@
       });
       viewport.resizeObserver.observe(viewport);
     }
+    if (initialScale === null) {
+      window.clearTimeout(autoFitTimer);
+      autoFitTimer = window.setTimeout(fitToView, 100);
+    }
   }
 
   function render(container, options) {
@@ -164,6 +176,13 @@
       ? options.clues.filter((clue) => global.ClueRecords && global.ClueRecords.isRecord(clue)).map((clue) => ({ ...clue }))
       : [];
     const currentDay = Math.min(5, Math.max(1, Number(options.currentDay) || 1));
+    const selection = options.selection && typeof options.selection.onSelect === "function"
+      ? {
+          ...options.selection,
+          clueIds: new Set(options.selection.clueIds || []),
+          selectedIds: new Set(options.selection.selectedIds || []),
+        }
+      : null;
     let selectedDay = container.dataset.selectedDay ? Number(container.dataset.selectedDay) : 0;
     if (selectedDay > currentDay) selectedDay = 0;
     container.dataset.selectedDay = String(selectedDay);
@@ -172,7 +191,16 @@
 
     const shell = element("section", "clue-canvas-shell");
     const toolbar = element("header", "clue-canvas-toolbar");
-    toolbar.innerHTML = `<span><b>CASE BOARD</b><small>휠로 확대·축소하고 보드를 드래그하세요</small></span>`;
+    toolbar.classList.toggle("evidence-selection-toolbar", Boolean(selection));
+    toolbar.innerHTML = selection
+      ? `<span><b>발표 근거 제시</b><small>${selection.prompt || "근거가 되는 단서 노드를 선택하세요."}</small></span>`
+      : `<span><b>사건 단서 확인</b><small>DAY를 선택하고 단서를 클릭하면 상세 기록을 확인할 수 있습니다.</small></span>`;
+    if (selection) {
+      const progress = element("div", "evidence-selection-progress");
+      progress.innerHTML = `<strong>${selection.selectedIds.size}/${selection.clueIds.size}</strong><span>분홍색 DAY를 열고<br>단서 문장을 클릭하세요</span>`;
+      progress.setAttribute("aria-label", `근거 선택 진행 ${selection.selectedIds.size}/${selection.clueIds.size}`);
+      toolbar.append(progress);
+    }
     const reset = element("button", "clue-canvas-reset", "중앙으로");
     reset.type = "button";
     reset.className = "clue-canvas-fit";
@@ -191,6 +219,26 @@
     zoomIn.setAttribute("aria-label", "마인드맵 확대");
     controls.append(zoomOut, zoomLabel, zoomIn, reset);
     toolbar.append(controls);
+
+    shell.classList.add("has-day-tabs");
+    const dayTabs = element("nav", "clue-day-tabs");
+    dayTabs.setAttribute("aria-label", "DAY 단서 이동");
+    for (let day = 1; day <= currentDay; day += 1) {
+      const meta = DAY_META[day];
+      const count = clues.filter((clue) => clue.day === day).length;
+      const tab = element("button", `clue-day-tab${day === selectedDay ? " active" : ""}`);
+      tab.type = "button";
+      tab.innerHTML = `<small>DAY ${day}</small><strong>${meta.title}</strong><span>${count}</span>`;
+      if (day === selectedDay) tab.setAttribute("aria-current", "page");
+      if (selection?.showDayHint && clues.some((clue) => clue.day === day && selection.clueIds.has(clue.id) && !selection.selectedIds.has(clue.id))) {
+        tab.classList.add("has-evidence");
+      }
+      tab.addEventListener("click", () => {
+        container.dataset.selectedDay = String(day === selectedDay ? 0 : day);
+        render(container, options);
+      });
+      dayTabs.append(tab);
+    }
 
     const viewport = element("div", "clue-canvas-viewport");
     const world = element("div", "clue-canvas-world");
@@ -212,16 +260,19 @@
     const dayPositions = new Map();
     for (let day = 1; day <= currentDay; day += 1) {
       const active = day === selectedDay;
-      const inactiveIndex = day - (day > selectedDay ? 1 : 0);
-      const x = selectedDay ? (active ? centerX : 72 + inactiveIndex * 92) : 180 + (day - 1) * 185;
-      const y = selectedDay ? (active ? centerY : 66) : centerY;
-      const size = active ? 154 : (selectedDay ? 76 : 112);
+      if (selectedDay && !active) continue;
+      const x = selectedDay ? centerX : 180 + (day - 1) * 185;
+      const y = centerY;
+      const size = active ? 154 : 112;
       const meta = DAY_META[day];
       const count = clues.filter((clue) => clue.day === day).length;
       const button = element("button", `clue-orbit-node clue-day-orbit${active ? " active" : ""}`);
       button.type = "button";
       button.style.setProperty("--node-image", `url('${meta.image}')`);
       button.innerHTML = `<small>DAY ${day}</small><strong>${meta.title}</strong><span>${count} CLUES</span>`;
+      if (!selectedDay && selection?.showDayHint && clues.some((clue) => clue.day === day && selection.clueIds.has(clue.id) && !selection.selectedIds.has(clue.id))) {
+        button.classList.add("has-evidence");
+      }
       button.addEventListener("click", () => {
         if (viewport.wasDragged()) return;
         container.dataset.selectedDay = String(active ? 0 : day);
@@ -263,10 +314,22 @@
           clueNode.type = "button";
           clueNode.setAttribute("aria-expanded", "false");
           clueNode.setAttribute("aria-controls", "clue-inspector");
+          clueNode.dataset.clueId = clue.id;
           clueNode.innerHTML = `<small>CLUE ${String(clueIndex + 1).padStart(2, "0")}</small><p></p><span>클릭해 자세히</span>`;
           clueNode.querySelector("p").textContent = clue.title;
+          if (selection) {
+            const selected = selection.selectedIds.has(clue.id);
+            clueNode.classList.add("evidence-candidate");
+            clueNode.classList.toggle("evidence-selected", selected);
+            clueNode.querySelector("span").textContent = selected ? "PPT 제시 완료" : "클릭하여 PPT에 제시";
+            clueNode.disabled = selected;
+          }
           clueNode.addEventListener("click", () => {
             if (viewport.wasDragged()) return;
+            if (selection) {
+              selection.onSelect(clue);
+              return;
+            }
             const wasOpen = clueNode.classList.contains("active");
             viewport.querySelectorAll(".clue-detail-orbit.active").forEach((node) => {
               node.classList.remove("active");
@@ -283,7 +346,7 @@
             inspector.querySelector("p").textContent = clue.detail;
             inspector.hidden = false;
           });
-          place(clueNode, clueX, clueY, 166);
+          place(clueNode, clueX, clueY, selection ? 190 : 166);
           clueNode.style.animationDelay = `${themeIndex * 90 + clueIndex * 55 + 210}ms`;
           world.append(clueNode);
         });
@@ -302,7 +365,9 @@
       });
     });
     viewport.append(world, inspector);
-    shell.append(toolbar, viewport);
+    shell.append(toolbar);
+    if (dayTabs) shell.append(dayTabs);
+    shell.append(viewport);
     container.append(shell);
     const initialX = 12;
     const initialY = Math.min(10, Math.round((viewport.clientHeight - worldHeight) / 2));
@@ -310,7 +375,7 @@
       worldWidth,
       worldHeight,
       zoomLabel,
-      initialScale: 1,
+      initialScale: selectedDay ? null : 1,
     });
     container.clueResizeObserver = viewport.resizeObserver || null;
     zoomOut.addEventListener("click", () => viewport.zoomBy(0.92));

@@ -181,7 +181,7 @@ test('모든 BGM 진입 페이지는 같은 매니저 캐시 버전을 참조한
   const pages = ['index.html', 'game.html', 'day2.html', 'day3.html', 'day4.html', 'bgm-loop-review.html'];
   pages.forEach((page) => {
     const html = fs.readFileSync(path.join(root, page), 'utf8');
-    assert.match(html, /src="js\/bgm-manager\.js\?v=18"/, page);
+    assert.match(html, /src="js\/bgm-manager\.js\?v=22"/, page);
   });
 });
 

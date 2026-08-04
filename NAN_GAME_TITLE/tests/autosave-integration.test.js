@@ -72,15 +72,15 @@ test("자동저장 관련 정적 자산 캐시 버전이 모든 진입 페이지
 
   assert.match(index, /title-screen\.css\?v=11/);
   assert.match(index, /progress-store\.js\?v=7/);
-  assert.match(index, /title-screen\.js\?v=15/);
+  assert.match(index, /title-screen\.js\?v=16/);
   for (const html of [game, day2, day3]) {
-    assert.match(html, /game\.css\?v=46/);
+    assert.match(html, /game\.css\?v=47/);
     assert.match(html, /progress-store\.js\?v=7/);
     assert.match(html, /settings-dialog\.css\?v=2/);
     assert.match(html, /settings-store\.js\?v=3/);
     assert.match(html, /settings-dialog\.js\?v=2/);
   }
-  assert.match(game, /game\.js\?v=57/);
-  assert.match(day2, /day2\.js\?v=53/);
-  assert.match(day3, /day3\.js\?v=32/);
+  assert.match(game, /game\.js\?v=60/);
+  assert.match(day2, /day2\.js\?v=55/);
+  assert.match(day3, /day3\.js\?v=34/);
 });

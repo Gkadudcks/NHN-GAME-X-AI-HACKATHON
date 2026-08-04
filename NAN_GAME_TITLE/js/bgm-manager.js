@@ -4,6 +4,8 @@
     daily: { source: "assets/audio/looped/daily.ogg", loopSource: "assets/audio/looped/daily-loop.ogg", loopStart: 9.25 },
     commute: { source: "assets/audio/looped/subway-ride-pixabay-57289-rail-only-v2.wav", loopSource: "assets/audio/looped/subway-ride-pixabay-57289-rail-only-v2.wav", loopStart: 0 },
     recordingStudio: { source: "assets/audio/looped/shared-headphones-loop.wav", loopSource: "assets/audio/looped/shared-headphones-loop.wav", loopStart: 0 },
+    presentationCalm: { source: "assets/audio/looped/day5-presentation-loop.wav", loopSource: "assets/audio/looped/day5-presentation-loop.wav", loopStart: 0 },
+    presentationUrgent: { source: "assets/audio/looped/day5-error-reveal-suno-v1.mp3", loopSource: "assets/audio/looped/day5-error-reveal-suno-v1.mp3", loopStart: 0 },
     harin: { source: "assets/audio/looped/harin.ogg", loopSource: "assets/audio/looped/harin-loop.ogg", loopStart: 14.75 },
     overtime: { source: "assets/audio/looped/overtime.ogg", loopSource: "assets/audio/looped/overtime-loop.ogg", loopStart: 18.0 },
     mystery: { source: "assets/audio/looped/mystery.ogg", loopSource: "assets/audio/looped/mystery-loop.ogg", loopStart: 26.0 },

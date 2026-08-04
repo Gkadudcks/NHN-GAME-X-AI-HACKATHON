@@ -74,7 +74,7 @@
       room: "pt",
       at: "day2IntroCard",
       sender: "한도윤",
-      text: "신규유저_이탈개선_PT_v0.1 초안 공유드립니다. 중간 검토 부탁드립니다.",
+      text: "신규유저_초반이탈개선_발표자료_v0.1 공유드립니다. 중간 검토 부탁드립니다.",
       time: "DAY 1 · 16:31",
     },
     {
@@ -242,9 +242,9 @@
     { id: "day2SubtaskC4", time: "13:41", speaker: "한도윤", text: "그 말을 본인에게 알려줄 필요는 없습니다.", char: "harin", when: { decision: "day2Subtask", equals: "journey" } },
 
     { id: "day2ArchiveSearch", time: "14:32", speaker: "한도윤", text: "조사 결과를 정리할 공용 슬라이드 틀을 검색했다.", bg: "office", bgm: "mystery", skip: true },
-    { id: "day2ArchivePanel", time: "14:32", speaker: "한도윤", text: "조사 결과를 정리할 공용 슬라이드 틀을 검색하자, 낯익은 과거 폴더 하나가 함께 나타났다.", bg: "office", bgm: "mystery", systemPanel: { title: "RELATED CLOUD ITEM", rows: ["2024_온보딩개선_최종대응", "연결된 자동화 1개", "현재 비활성"] }, skip: true },
+    { id: "day2ArchivePanel", time: "14:32", speaker: "한도윤", text: "조사 결과를 정리할 공용 슬라이드 틀을 검색하자, 낯익은 과거 폴더 하나가 함께 나타났다.", bg: "office", bgm: "mystery", systemPanel: { title: "연결된 이전 자료", rows: ["폴더 · 2024_신규유저개선_이전자료", "자동 연결 기능 · 1개", "현재 상태 · 꺼짐"] }, skip: true },
     { id: "day2ArchiveRecognition", time: "14:33", speaker: "한도윤", text: "공용 슬라이드 틀을 찾다가, 어제 봤던 과거 폴더를 발견했다.", bg: "office", bgm: "mystery", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned", position: "center", framing: "waist_up" }], activeCharacter: "harin", motion: "surprised", effect: "discovery" },
-    { id: "day2ArchiveDetails", time: "14:33", speaker: "시스템", text: "자동화 소유자는 서하린, 마지막 실행 시각은 2024-11-07 23:48로 기록되어 있다.", emphasis: ["서하린", "2024-11-07 23:48"], systemPanel: { title: "AUTOMATION DETAILS", rows: ["온보딩_공용슬라이드_동기화", "상태 · 비활성", "소유자 · 서하린", "마지막 실행 · 2024-11-07 23:48"] }, clue: CLUES.inactiveAutomation },
+    { id: "day2ArchiveDetails", time: "14:33", speaker: "시스템", text: "자동 연결 기능의 등록 담당자는 서하린, 마지막 실행 시각은 2024-11-07 23:48로 기록되어 있다.", emphasis: "2024-11-07 23:48", systemPanel: { title: "자동 연결 기능 정보", rows: ["기능명 · 신규유저개선_발표자료_자동연결", "현재 상태 · 꺼짐", "등록 담당자 · 서하린", "마지막 실행 · 2024-11-07 23:48"] }, clue: CLUES.inactiveAutomation },
     { id: "day2ArchiveHarin1", time: "14:34", speaker: "서하린", text: "그건 예전에 쓰던 연결이에요. 지금은 꺼져 있어요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin", motion: "nervous", camera: "focus" },
     { id: "day2ArchiveDoyun", time: "14:34", speaker: "한도윤", text: "선배 이름이 남아 있네요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin" },
     { id: "day2ArchiveHarin2", time: "14:35", speaker: "서하린", text: "제가 만들었으니까요. 지금 필요한 틀은 그 아래 ‘공용 발표 기본형’이에요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin" },
@@ -263,7 +263,7 @@
     { id: "day2WrapHarin1", time: "16:21", speaker: "서하린", text: "발표 초안에는 결론 한 줄만 넣고, 상세 자료는 근거 링크로 연결해요.", char: "harin" },
     { id: "day2WrapDoyun2", time: "16:22", speaker: "한도윤", text: "오늘 확인한 수치도 같은 방식으로 연결했습니다.", char: "harin" },
     { id: "day2WrapHarin2", time: "16:23", speaker: "서하린", text: "좋아요. 사내 클라우드에 ‘DAY 2 검증 완료’ 복원 지점을 남길게요.", char: "harin" },
-    { id: "day2CloudPanel", time: "16:24", speaker: "시스템", text: "정상 작업 상태가 사내 클라우드에 기록되었습니다.", systemPanel: { title: "CLOUD RESTORE POINT", rows: ["DAY 1 기준본 · 잠금 유지", "DAY 2 변경 이력 · 기록 완료", "통계 원본·조사 링크 · 연결 완료", "복원 지점 · DAY 2 검증 완료", "감사 로그 · 활성"] }, clue: CLUES.cloudRestorePoint, notification: "pt-restore-point" },
+    { id: "day2CloudPanel", time: "16:24", speaker: "시스템", text: "확인이 끝난 작업 상태가 사내 클라우드에 기록되었습니다.", systemPanel: { title: "DAY 2 확인 완료 보관본", rows: ["DAY 1 초안 원본 · 잠금 유지", "DAY 2 수정 기록 · 저장 완료", "통계 원본·조사 링크 · 연결 완료", "되돌리기용 보관본 · 생성 완료", "보안 기록 · 켜짐"] }, clue: CLUES.cloudRestorePoint, notification: "pt-restore-point" },
 
     { id: "day2OvertimeLead", time: "19:25", speaker: "한도윤", text: "오후 빌드 점검 결과까지 전달하고 나니 사무실에 남은 사람은 거의 없었다.", bg: "office_night", bgm: "overtime", location: "게임사업실 · 야간" },
     { id: "day2OvertimeHarin1", time: "19:26", speaker: "서하린", text: "오늘 하위 조사 문장만 정리하면 끝나요. 한 시간 안에 끝내고 가요.", char: "harin", placeholder: "inherit" },

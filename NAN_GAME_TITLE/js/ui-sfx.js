@@ -14,6 +14,13 @@
   clickAudio.preload = "auto";
   const pageTurnAudio = new Audio("assets/audio/page-turn.wav");
   pageTurnAudio.preload = "auto";
+  const presentationAudio = Object.freeze({
+    errorDiscovery: new Audio("assets/audio/day5-error-discovery-v2.wav"),
+    flashTransition: new Audio("assets/audio/day5-flash-transition.wav"),
+    evaluatorSuspicion: new Audio("assets/audio/day5-evaluator-confused-cut-v1.mp3"),
+    evidenceMatch: new Audio("assets/audio/day5-evidence-match.wav"),
+  });
+  Object.values(presentationAudio).forEach((audio) => { audio.preload = "auto"; });
   let sfxContext = null;
 
   function getVolume(multiplier = 0.46) {
@@ -51,6 +58,17 @@
     pageTurnAudio.volume = volume;
     pageTurnAudio.currentTime = 0;
     pageTurnAudio.play().catch(() => {});
+  }
+
+  function playPresentationCue(name) {
+    const audio = presentationAudio[name];
+    if (!audio) return false;
+    const volume = getVolume(name === "errorDiscovery" ? 0.82 : name === "flashTransition" ? 0.42 : name === "evaluatorSuspicion" ? 0.68 : 0.5);
+    if (!volume) return false;
+    audio.volume = volume;
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+    return true;
   }
 
   function getSfxContext() {
@@ -114,11 +132,23 @@
     return true;
   }
 
+  function playEmphasisCue() {
+    const volume = getVolume(0.17);
+    if (!volume) return false;
+    const context = getSfxContext();
+    if (!context) return false;
+    const master = context.createGain();
+    master.gain.value = volume;
+    master.connect(context.destination);
+    playTone(context, master, { frequency: 440, duration: 0.09, type: "triangle" });
+    return true;
+  }
+
   document.addEventListener("click", (event) => {
     const control = event.target.closest("button, a[href], [role='button']");
     if (!control || control.disabled || control.getAttribute("aria-disabled") === "true") return;
     playClick();
   });
 
-  window.UiSfx = Object.freeze({ playClick, playPageTurn, playMinigameCue, setVariant, variants, get activeVariant() { return activeVariant; } });
+  window.UiSfx = Object.freeze({ playClick, playPageTurn, playMinigameCue, playPresentationCue, playEmphasisCue, setVariant, variants, get activeVariant() { return activeVariant; } });
 })();
