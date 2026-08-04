@@ -107,6 +107,57 @@
   transition: width .05s linear;
 }
 
+.location-transition--tense {
+  background:
+    radial-gradient(circle at 15% 12%, #ff8b6655, transparent 30%),
+    radial-gradient(circle at 85% 88%, #c33a4650, transparent 34%),
+    linear-gradient(145deg, #200f13f5, #4a1620f0);
+}
+.location-transition--tense .location-transition-content::before,
+.location-transition--tense .location-transition-progress i {
+  background: linear-gradient(90deg, #ff6b5e, #c33a46);
+}
+.location-transition--tense .location-transition-content small,
+.location-transition--tense .location-transition-content em {
+  color: #c33a46;
+}
+
+.location-transition--somber {
+  background:
+    radial-gradient(circle at 15% 12%, #4a4a5533, transparent 30%),
+    radial-gradient(circle at 85% 88%, #2e2a3350, transparent 34%),
+    linear-gradient(145deg, #14121af7, #262230f2);
+}
+.location-transition--somber .location-transition-content {
+  background:
+    radial-gradient(circle at 80% 18%, #d8d3e04d, transparent 31%),
+    #f4f2f7f7;
+}
+.location-transition--somber .location-transition-content::before,
+.location-transition--somber .location-transition-progress i {
+  background: linear-gradient(90deg, #8a8494, #5c5666);
+}
+.location-transition--somber .location-transition-content small,
+.location-transition--somber .location-transition-content span,
+.location-transition--somber .location-transition-content em {
+  color: #6c6676;
+}
+
+.location-transition--warm {
+  background:
+    radial-gradient(circle at 15% 12%, #ffe0a866, transparent 30%),
+    radial-gradient(circle at 85% 88%, #ffb17a50, transparent 34%),
+    linear-gradient(145deg, #2b2013f5, #6b4a2bf0);
+}
+.location-transition--warm .location-transition-content::before,
+.location-transition--warm .location-transition-progress i {
+  background: linear-gradient(90deg, #ffb15e, #f0913f);
+}
+.location-transition--warm .location-transition-content small,
+.location-transition--warm .location-transition-content em {
+  color: #d67a2e;
+}
+
 @media (max-width: 560px) {
   .location-transition {
     padding: 16px;

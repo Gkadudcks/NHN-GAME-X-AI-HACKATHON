@@ -1239,6 +1239,25 @@
       ]
     },
     {
+      "id": "background.office_lobby.night",
+      "kind": "background",
+      "profile": "background_16_9",
+      "location": "office_lobby",
+      "variant": "night",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/backgrounds/approved/office_lobby_night_v001.png",
+          "generation_log_id": "office-lobby-night-v001-chatgpt-web",
+          "sha256": "2b90df9470c208fcdc80ce267fad6f488d3caff1d896c6acb3208622f0b55900",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-05T01:43:42.9143794+09:00"
+        }
+      ]
+    },
+    {
       "id": "character.sea.neutral_standing.gentle_smile",
       "kind": "character",
       "profile": "character_sprite",
