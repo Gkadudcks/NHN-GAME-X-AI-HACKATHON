@@ -58,7 +58,10 @@ class ArtValidator:
             return None
 
     def load_generation_logs(self) -> None:
-        log_dir = self.root / "assets/art/generation_logs"
+        log_dirs = (
+            self.root / "assets/art/generation_logs",
+            self.root / "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/generation_logs",
+        )
         required = {
             "log_id",
             "asset_id",
@@ -75,7 +78,8 @@ class ArtValidator:
             "generated_at",
             "source_output",
         }
-        for path in sorted(log_dir.glob("*.jsonl")):
+        log_paths = sorted(path for log_dir in log_dirs for path in log_dir.glob("*.jsonl"))
+        for path in log_paths:
             for line_number, raw_line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
                 if not raw_line.strip():
                     continue
@@ -269,7 +273,10 @@ class ArtValidator:
             "minigame_character": "minigame_sprite",
             "prop": "minigame_prop",
         }.get(kind)
-        if expected_profile is not None and profile_name != expected_profile:
+        if kind == "prop":
+            if profile_name not in {"minigame_prop", "main_prop"}:
+                self.error(location, "prop assets must use profile 'minigame_prop' or 'main_prop'")
+        elif expected_profile is not None and profile_name != expected_profile:
             self.error(location, f"{kind} assets must use profile {expected_profile!r}")
 
         if kind == "character":
@@ -369,7 +376,13 @@ class ArtValidator:
             self.referenced_images.add(normalized)
             path_parts = PurePosixPath(path_value).parts
             status_directory = STATUS_DIRECTORY.get(status)
-            minigame_root = ("assets", "art", "minigames", "day4-office-escape")
+            minigame_root = (
+                "NAN_GAME_TITLE",
+                "minigames",
+                "day4-office-escape",
+                "assets",
+                "art",
+            )
             if kind == "minigame_character":
                 expected_prefix = (*minigame_root, "characters", str(asset.get("character_id")))
             elif kind == "minigame_background":
@@ -440,11 +453,17 @@ class ArtValidator:
                 if relative not in self.referenced_images:
                     self.error(relative, "image is not registered in the manifest")
 
-        minigame_root = art_root / "minigames/day4-office-escape"
+        minigame_root = (
+            self.root
+            / "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art"
+        )
         for category in ("characters", "backgrounds", "props"):
             base = minigame_root / category
             if not base.exists():
-                self.error(f"minigames/day4-office-escape/{category}", "required asset directory is missing")
+                self.error(
+                    f"NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/{category}",
+                    "required asset directory is missing",
+                )
                 continue
             for path in base.rglob("*"):
                 if not path.is_file() or path.suffix.lower() not in IMAGE_EXTENSIONS:

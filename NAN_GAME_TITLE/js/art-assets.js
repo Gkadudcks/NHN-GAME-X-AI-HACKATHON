@@ -33,8 +33,10 @@
     "character.sea.neutral_standing.gentle_smile": "../assets/art/characters/sea/approved/sea_neutral_standing_gentle_smile_v002.png",
     "event_cg.day3.elevator_waiting": "../assets/art/event_cg/approved/cg_day3_elevator_waiting_v001.png",
     "event_cg.day4.harin_headphone_handoff": "../assets/art/event_cg/approved/cg_day4_harin_headphone_handoff_v001.png",
+    "event_cg.day5.colleague_departure": "../assets/art/event_cg/approved/cg_day5_colleague_departure_v001.png",
+    "event_cg.day5.lone_departure": "../assets/art/event_cg/approved/cg_day5_lone_departure_v001.png",
     "event_cg.day5.weekend_invitation": "../assets/art/event_cg/approved/cg_day5_weekend_invitation_v001.png",
-    "prop.day5.warm_tea": "../assets/art/minigames/day4-office-escape/props/approved/prop_day5_warm_tea_v001.png",
+    "prop.day5.warm_tea": "../assets/art/props/approved/prop_day5_warm_tea_v001.png",
   });
 
   // Editable, code-owned SVG sources for the DAY 2 secret-chat minigame.
