@@ -28,11 +28,15 @@
     return overlay;
   }
 
+  const MOODS = Object.freeze(["tense", "somber", "warm"]);
+
   function install(options = {}) {
     const documentRef = options.document || global.document;
     if (!documentRef) return null;
     const overlay = documentRef.querySelector("#location-transition") || createOverlay(documentRef);
     const locationText = overlay.querySelector("strong");
+    const captionText = overlay.querySelector("span");
+    const defaultCaption = captionText.textContent;
     const progress = overlay.querySelector(".location-transition-progress");
     const progressBar = progress.querySelector("i");
     const progressText = overlay.querySelector("em");
@@ -46,11 +50,15 @@
       finishCurrent?.();
     }
 
-    function play(nextLocation, duration = DEFAULT_DURATION) {
+    function play(nextLocation, duration = DEFAULT_DURATION, moodOptions = {}) {
       if (!nextLocation) return Promise.resolve(false);
       finish();
+      const { mood, caption } = typeof moodOptions === "string" ? { mood: moodOptions } : moodOptions;
       const enforcedDuration = Math.max(DEFAULT_DURATION, Number(duration) || DEFAULT_DURATION);
       locationText.textContent = nextLocation;
+      captionText.textContent = caption || defaultCaption;
+      MOODS.forEach((name) => overlay.classList.remove(`location-transition--${name}`));
+      if (mood && MOODS.includes(mood)) overlay.classList.add(`location-transition--${mood}`);
       progress.setAttribute("aria-valuenow", "0");
       progressBar.style.width = "0%";
       progressText.textContent = "0%";
@@ -87,8 +95,8 @@
       });
     }
 
-    function playIfChanged(currentLocation, nextLocation, duration = DEFAULT_DURATION) {
-      return shouldPlay(currentLocation, nextLocation) ? play(nextLocation, duration) : Promise.resolve(false);
+    function playIfChanged(currentLocation, nextLocation, duration = DEFAULT_DURATION, moodOptions = {}) {
+      return shouldPlay(currentLocation, nextLocation) ? play(nextLocation, duration, moodOptions) : Promise.resolve(false);
     }
 
     overlay.addEventListener("click", (event) => {

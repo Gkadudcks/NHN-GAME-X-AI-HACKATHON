@@ -1,0 +1,26 @@
+[ASSET]
+Use case: stylized-concept
+Asset type: 1920x1080 DAY 5 visual-novel background
+Stable ID: background.office_exterior.night
+Create the exterior of the same modern Korean game-company office tower used throughout this game, viewed from ground level at night, right outside the main entrance.
+
+[SCENE]
+A glass curtain-wall office tower entrance plaza at night. Scattered office windows are still lit on various floors, most others dark. A covered entrance canopy, glass revolving or automatic doors, a small landscaped strip with low plantings, and a paved plaza wide enough for two people to stand and talk in the foreground. A quiet city skyline silhouette in the background. No people, no readable signage, logos, or building name plates.
+
+[COMPOSITION]
+Wide 16:9 frame at eye level, standing a short distance back from the entrance so the building facade and the foreground plaza are both visible. Keep the lower-center foreground open and uncluttered for two character sprites standing side by side. Keep the bottom 20% visually simple for dialogue UI.
+
+[LIGHTING]
+Late-evening/night lighting: warm interior office light glowing through the scattered lit windows, cool blue-gray night sky, soft warm entrance and plaza lighting, gentle reflections on the paved ground. Quiet, calm, slightly wistful end-of-day mood — not dramatic or moody.
+
+[STYLE]
+Match the exact rendering style already established and approved for this project's backgrounds (office_day_v001.png, elevator_lobby_night_v001.png, presentation_room_day_v001.png): detailed, polished architectural illustration with realistic materials, glass and metal reflections, and naturalistic lighting — the same finish as those approved images, not a flat 2D anime illustration. Warm-cool color contrast, clean and uncluttered composition, consistent with the same building's design language (navy/beige/warm wood accents).
+
+[CONSTRAINTS]
+Background only. No characters, readable text, logos, brand marks, watermark, or transparent areas. Keep the building's architectural style consistent with the reference images (same material palette and window grid language, just viewed from outside instead of inside). No fisheye lens, no extreme perspective distortion, no cyberpunk/neon lighting, no crowds, no vehicles blocking the entrance, no duplicated or malformed architecture.
+
+[OUTPUT]
+1920x1080 RGB image, 16:9, no alpha, no readable text, company logo, or watermark.
+
+[REFERENCE]
+Upload office_day_v001.png and elevator_lobby_night_v001.png as building-identity and material/style references — this is the same building's exterior at night, matching their established rendering finish exactly.

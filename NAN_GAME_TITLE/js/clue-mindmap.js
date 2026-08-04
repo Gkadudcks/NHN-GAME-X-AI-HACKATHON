@@ -99,7 +99,7 @@
     apply();
 
     viewport.addEventListener("pointerdown", (event) => {
-      if (event.target.closest(".clue-day-orbit, .clue-detail-orbit, .clue-inspector")) {
+      if (event.target.closest(".clue-detail-orbit, .clue-inspector")) {
         moved = false;
         return;
       }
@@ -183,10 +183,11 @@
           selectedIds: new Set(options.selection.selectedIds || []),
         }
       : null;
-    let selectedDay = container.dataset.selectedDay ? Number(container.dataset.selectedDay) : 0;
-    if (selectedDay > currentDay) selectedDay = 0;
+    let selectedDay = container.dataset.selectedDay ? Number(container.dataset.selectedDay) : currentDay;
+    if (selectedDay > currentDay || selectedDay < 1) selectedDay = currentDay;
     container.dataset.selectedDay = String(selectedDay);
     if (container.clueResizeObserver) container.clueResizeObserver.disconnect();
+    if (container.clueTooltipFrame) window.cancelAnimationFrame(container.clueTooltipFrame);
     container.replaceChildren();
 
     const shell = element("section", "clue-canvas-shell");
@@ -234,7 +235,8 @@
         tab.classList.add("has-evidence");
       }
       tab.addEventListener("click", () => {
-        container.dataset.selectedDay = String(day === selectedDay ? 0 : day);
+        if (day === selectedDay) return;
+        container.dataset.selectedDay = String(day);
         render(container, options);
       });
       dayTabs.append(tab);
@@ -243,53 +245,55 @@
     const viewport = element("div", "clue-canvas-viewport");
     const world = element("div", "clue-canvas-world");
     let inspector;
+    let tooltip;
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class", "clue-connections");
     world.append(svg);
 
-    const grouped = selectedDay ? groupClues(clues, selectedDay) : [];
-    const worldHeight = selectedDay ? 1120 : 620;
-    const worldWidth = selectedDay ? 1120 : 620;
-    if (selectedDay) world.classList.add("radial");
+    const grouped = groupClues(clues, selectedDay);
+    world.classList.add("radial");
+
+    const themeRadius = 175;
+    const nodeDiameter = selection ? 190 : 166;
+    const nodeGap = 34;
+    const minCenterDistance = nodeDiameter + nodeGap;
+    const itemsPerRing = 4;
+    const ringStep = nodeDiameter + nodeGap;
+    const baseClueRadius = 300;
+    const themeCount = Math.max(1, grouped.length);
+    const sector = (Math.PI * 2) / themeCount;
+    const spreadCap = Math.min(sector * 0.92, Math.PI * 0.98);
+
+    let maxExtent = themeRadius + 90;
+    const layout = grouped.map(([theme, items], themeIndex) => {
+      const themeAngle = -Math.PI / 2 + themeIndex * sector;
+      const ringCount = Math.max(1, Math.ceil(items.length / itemsPerRing));
+      const ringRadii = [];
+      let previousRadius = baseClueRadius;
+      for (let ring = 0; ring < ringCount; ring += 1) {
+        const startIdx = ring * itemsPerRing;
+        const count = Math.min(itemsPerRing, items.length - startIdx);
+        const step = count > 1 ? spreadCap / (count - 1) : 0;
+        const requiredRadius = step > 0 ? minCenterDistance / (2 * Math.sin(step / 2)) : baseClueRadius;
+        const radius = Math.max(ring === 0 ? baseClueRadius : previousRadius + ringStep, requiredRadius);
+        ringRadii.push(radius);
+        previousRadius = radius;
+      }
+      maxExtent = Math.max(maxExtent, (ringRadii[ringRadii.length - 1] || baseClueRadius) + nodeDiameter / 2);
+      return { theme, items, themeIndex, themeAngle, ringRadii };
+    });
+
+    const worldSize = Math.max(900, Math.ceil((maxExtent + 90) * 2));
+    const worldWidth = worldSize;
+    const worldHeight = worldSize;
     world.style.width = `${worldWidth}px`;
     world.style.height = `${worldHeight}px`;
     svg.setAttribute("viewBox", `0 0 ${worldWidth} ${worldHeight}`);
     const centerX = worldWidth / 2;
     const centerY = worldHeight / 2;
 
-    const dayPositions = new Map();
-    for (let day = 1; day <= currentDay; day += 1) {
-      const active = day === selectedDay;
-      if (selectedDay && !active) continue;
-      const x = selectedDay ? centerX : 180 + (day - 1) * 185;
-      const y = centerY;
-      const size = active ? 154 : 112;
-      const meta = DAY_META[day];
-      const count = clues.filter((clue) => clue.day === day).length;
-      const button = element("button", `clue-orbit-node clue-day-orbit${active ? " active" : ""}`);
-      button.type = "button";
-      button.style.setProperty("--node-image", `url('${meta.image}')`);
-      button.innerHTML = `<small>DAY ${day}</small><strong>${meta.title}</strong><span>${count} CLUES</span>`;
-      if (!selectedDay && selection?.showDayHint && clues.some((clue) => clue.day === day && selection.clueIds.has(clue.id) && !selection.selectedIds.has(clue.id))) {
-        button.classList.add("has-evidence");
-      }
-      button.addEventListener("click", () => {
-        if (viewport.wasDragged()) return;
-        container.dataset.selectedDay = String(active ? 0 : day);
-        render(container, options);
-      });
-      place(button, x, y, size);
-      world.append(button);
-      dayPositions.set(day, { x, y });
-    }
-
-    if (selectedDay) {
-      const root = dayPositions.get(selectedDay);
-      grouped.forEach(([theme, items], themeIndex) => {
-        const themeCount = Math.max(1, grouped.length);
-        const sector = (Math.PI * 2) / themeCount;
-        const themeAngle = -Math.PI / 2 + themeIndex * sector;
-        const themeRadius = 248;
+    const root = { x: centerX, y: centerY };
+    layout.forEach(({ theme, items, themeIndex, themeAngle, ringRadii }) => {
         const themePoint = {
           x: centerX + Math.cos(themeAngle) * themeRadius,
           y: centerY + Math.sin(themeAngle) * themeRadius,
@@ -302,10 +306,13 @@
         world.append(themeNode);
 
         items.forEach((clue, clueIndex) => {
-          const maxSpread = Math.min(sector * 0.68, Math.PI * 0.72);
-          const spread = items.length > 1 ? Math.min(maxSpread, (items.length - 1) * 0.38) : 0;
-          const clueAngle = themeAngle + (items.length > 1 ? -spread / 2 + spread * clueIndex / (items.length - 1) : 0);
-          const clueRadius = 445 + (clueIndex % 2) * 24;
+          const ring = Math.floor(clueIndex / itemsPerRing);
+          const startIdx = ring * itemsPerRing;
+          const count = Math.min(itemsPerRing, items.length - startIdx);
+          const indexInRing = clueIndex - startIdx;
+          const step = count > 1 ? spreadCap / (count - 1) : 0;
+          const clueAngle = themeAngle + (count > 1 ? -spreadCap / 2 + step * indexInRing : 0);
+          const clueRadius = ringRadii[ring];
           const clueX = centerX + Math.cos(clueAngle) * clueRadius;
           const clueY = centerY + Math.sin(clueAngle) * clueRadius;
           const cluePoint = { x: clueX, y: clueY };
@@ -315,7 +322,7 @@
           clueNode.setAttribute("aria-expanded", "false");
           clueNode.setAttribute("aria-controls", "clue-inspector");
           clueNode.dataset.clueId = clue.id;
-          clueNode.innerHTML = `<small>CLUE ${String(clueIndex + 1).padStart(2, "0")}</small><p></p><span>클릭해 자세히</span>`;
+          clueNode.innerHTML = `<small>CLUE ${String(clueIndex + 1).padStart(2, "0")}</small><p></p><span>마우스를 올려 미리보기</span>`;
           clueNode.querySelector("p").textContent = clue.title;
           if (selection) {
             const selected = selection.selectedIds.has(clue.id);
@@ -324,7 +331,37 @@
             clueNode.querySelector("span").textContent = selected ? "PPT 제시 완료" : "클릭하여 PPT에 제시";
             clueNode.disabled = selected;
           }
+          const positionTooltip = () => {
+            const nodeRect = clueNode.getBoundingClientRect();
+            const tipRect = tooltip.getBoundingClientRect();
+            let left = nodeRect.left + nodeRect.width / 2 - tipRect.width / 2;
+            left = Math.max(8, Math.min(left, window.innerWidth - tipRect.width - 8));
+            let top = nodeRect.top - tipRect.height - 12;
+            if (top < 8) top = nodeRect.bottom + 12;
+            tooltip.style.left = `${left}px`;
+            tooltip.style.top = `${top}px`;
+          };
+          const trackTooltip = () => {
+            positionTooltip();
+            container.clueTooltipFrame = window.requestAnimationFrame(trackTooltip);
+          };
+          const showTooltip = () => {
+            tooltip.querySelector("strong").textContent = clue.title;
+            tooltip.querySelector("p").textContent = clue.detail;
+            tooltip.hidden = false;
+            window.cancelAnimationFrame(container.clueTooltipFrame);
+            trackTooltip();
+          };
+          const hideTooltip = () => {
+            tooltip.hidden = true;
+            window.cancelAnimationFrame(container.clueTooltipFrame);
+          };
+          clueNode.addEventListener("mouseenter", showTooltip);
+          clueNode.addEventListener("mouseleave", hideTooltip);
+          clueNode.addEventListener("focus", showTooltip);
+          clueNode.addEventListener("blur", hideTooltip);
           clueNode.addEventListener("click", () => {
+            hideTooltip();
             if (viewport.wasDragged()) return;
             if (selection) {
               selection.onSelect(clue);
@@ -346,12 +383,11 @@
             inspector.querySelector("p").textContent = clue.detail;
             inspector.hidden = false;
           });
-          place(clueNode, clueX, clueY, selection ? 190 : 166);
+          place(clueNode, clueX, clueY, nodeDiameter);
           clueNode.style.animationDelay = `${themeIndex * 90 + clueIndex * 55 + 210}ms`;
           world.append(clueNode);
         });
       });
-    }
 
     inspector = element("aside", "clue-inspector");
     inspector.id = "clue-inspector";
@@ -364,7 +400,11 @@
         node.setAttribute("aria-expanded", "false");
       });
     });
+    tooltip = element("div", "clue-hover-tip");
+    tooltip.hidden = true;
+    tooltip.innerHTML = "<strong></strong><p></p>";
     viewport.append(world, inspector);
+    shell.append(tooltip);
     shell.append(toolbar);
     if (dayTabs) shell.append(dayTabs);
     shell.append(viewport);
@@ -375,7 +415,7 @@
       worldWidth,
       worldHeight,
       zoomLabel,
-      initialScale: selectedDay ? null : 1,
+      initialScale: null,
     });
     container.clueResizeObserver = viewport.resizeObserver || null;
     zoomOut.addEventListener("click", () => viewport.zoomBy(0.92));

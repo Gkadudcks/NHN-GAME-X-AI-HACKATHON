@@ -250,7 +250,7 @@
         this.setVolume();
         return this.resume();
       }
-      if (this.preferHtmlAudio) return this.playFallback(scene, track);
+      if (this.preferHtmlAudio) return this.playFallback(scene, track, options);
 
       const transitionId = ++this.transitionId;
       const fadeOut = this.currentScene ? (options.fadeOut ?? 800) : 0;
@@ -289,13 +289,19 @@
         return resumed;
       } catch (error) {
         console.warn("[BGM] Web Audio 재생에 실패해 기본 재생으로 전환합니다.", error);
-        return this.playFallback(scene, track);
+        return this.playFallback(scene, track, options);
       }
     }
 
-    async playFallback(scene, track) {
+    async playFallback(scene, track, options = {}) {
       if (!this.audio) return false;
-      ++this.transitionId;
+      const transitionId = ++this.transitionId;
+      const fadeOut = this.currentScene ? (options.fadeOut ?? 500) : 0;
+      const fadeIn = options.fadeIn ?? 500;
+
+      if (fadeOut > 0) await this.fade(this.currentVolume, 0, fadeOut, transitionId);
+      if (transitionId !== this.transitionId) return false;
+
       this.stopSource();
       this.stopFallback();
       this.backend = "html";
@@ -312,8 +318,7 @@
       this.audio.src = track.source;
       this.audio.currentTime = 0;
       this.audio.loop = false;
-      this.audio.volume = this.getVolume();
-      this.setInternalVolume(this.getVolume());
+      this.setInternalVolume(0);
       this.activeFallbackAudio = this.audio;
       this.audio.onended = () => this.switchToFallbackLoop(scene, track, generation);
       this.audio.load();
@@ -321,9 +326,12 @@
       this.fallbackLoopAudio = this.htmlPreloads.get(track.loopSource) || this.createHtmlAudio(track.loopSource);
       if (this.fallbackLoopAudio) {
         this.fallbackLoopAudio.loop = true;
-        this.fallbackLoopAudio.volume = this.currentVolume;
+        this.fallbackLoopAudio.volume = 0;
       }
-      return this.resumeFallback();
+      const resumed = await this.resumeFallback();
+      if (transitionId !== this.transitionId) return resumed;
+      await this.fade(0, this.getVolume(), fadeIn, transitionId);
+      return resumed;
     }
 
     stop() {

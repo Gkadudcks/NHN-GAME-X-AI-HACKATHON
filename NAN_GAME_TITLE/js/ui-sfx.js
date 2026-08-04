@@ -23,7 +23,7 @@
   Object.values(presentationAudio).forEach((audio) => { audio.preload = "auto"; });
   let sfxContext = null;
 
-  function getVolume(multiplier = 0.46) {
+  function getVolume(multiplier = 0.6) {
     try {
       const settings = JSON.parse(localStorage.getItem("nan-game-settings-v1")) || {};
       if (settings.masterMuted || settings.sfxMuted) return 0;
@@ -53,7 +53,7 @@
   }
 
   function playPageTurn() {
-    const volume = getVolume(0.8);
+    const volume = getVolume(1);
     if (!volume) return;
     pageTurnAudio.volume = volume;
     pageTurnAudio.currentTime = 0;
@@ -63,7 +63,7 @@
   function playPresentationCue(name) {
     const audio = presentationAudio[name];
     if (!audio) return false;
-    const volume = getVolume(name === "errorDiscovery" ? 0.82 : name === "flashTransition" ? 0.42 : name === "evaluatorSuspicion" ? 0.68 : 0.5);
+    const volume = getVolume(name === "errorDiscovery" ? 1 : name === "flashTransition" ? 0.55 : name === "evaluatorSuspicion" ? 0.88 : 0.65);
     if (!volume) return false;
     audio.volume = volume;
     audio.currentTime = 0;
@@ -97,21 +97,21 @@
   function playMinigameCue(name) {
     const patterns = {
       warning: {
-        multiplier: 0.16,
+        multiplier: 0.21,
         notes: [
           { frequency: 740, duration: 0.075, type: "triangle" },
           { delay: 0.105, frequency: 620, duration: 0.09, type: "triangle" },
         ],
       },
       caught: {
-        multiplier: 0.23,
+        multiplier: 0.3,
         notes: [
           { frequency: 196, duration: 0.18, type: "sawtooth" },
           { delay: 0.08, frequency: 123, duration: 0.28, type: "square", gain: 0.72 },
         ],
       },
       success: {
-        multiplier: 0.18,
+        multiplier: 0.23,
         notes: [
           { frequency: 523.25, duration: 0.1, type: "square" },
           { delay: 0.09, frequency: 659.25, duration: 0.1, type: "square" },
@@ -133,7 +133,7 @@
   }
 
   function playEmphasisCue() {
-    const volume = getVolume(0.17);
+    const volume = getVolume(0.22);
     if (!volume) return false;
     const context = getSfxContext();
     if (!context) return false;

@@ -1,0 +1,43 @@
+Use case: identity-preserve
+Asset type: full-body visual-novel character sprite
+Asset ID: character.minjae.arms_folded.concerned
+Output filename: minjae_arms_folded_concerned_v001.png
+Prompt version: prompt-v001
+
+[INPUT IMAGE]
+Use the attached minjae-source.png as the only identity, costume, anatomy, color, and rendering reference. This is a tightly constrained character variation, not a redesign.
+
+[PRIMARY REQUEST]
+Create exactly one full-body sprite of the same adult Korean man, Kang Minjae, with his arms folded naturally below the chest and a restrained, anxious expression. He is being confronted about a mistake and is defensively explaining himself, not yet fully admitting fault. His emotion must read as restrained workplace anxiety through subtly knitted brows and pressed lips. He remains a fundamentally decent, sociable coworker under pressure — never sinister, threatening, villain-coded, angry, or aggressive.
+
+[IDENTITY AND COSTUME LOCK]
+Preserve the attached reference exactly:
+- same lean oval adult face with a defined jaw, straight nose, natural lips, confident but approachable impression
+- same warm dark-brown, slightly narrow eyes with realistic adult proportions
+- same very dark brown short hair, softly parted near the center, loose curved forelocks, lightly tousled crown
+- same tall, lean, realistic adult proportions at 182 cm apparent scale
+- same tailored black suit jacket and trousers, crisp white dress shirt, plain black necktie, black leather belt, black dress shoes
+- same dark-navy lanyard and plain white employee ID card
+
+Do not change, add, remove, simplify, or reinterpret any facial feature, hairstyle detail, body proportion, garment, shoe, lanyard, or ID card.
+
+[POSE AND HANDS]
+Pose: arms_folded.
+Both forearms cross comfortably below the chest without hiding the lanyard or employee ID card. Both hands must be anatomically readable with five fingers per visible hand. Keep natural shoulder height and relaxed elbows. No prop, phone, folder, cup, bag, or tablet.
+
+[STYLE]
+Polished commercial anime visual-novel illustration for a modern Korean office-romance game with light mystery elements. Clean thin consistent line art, soft 2-to-3-step cel shading, minimal painterly texture, realistic adult anatomy, low-to-medium saturation, restrained navy/cream/muted-brown palette, soft indoor diffused key light, subtle cool ambient shadows, clean game-ready silhouette. Match the attached reference rather than inventing a new style.
+
+[COMPOSITION]
+Eye-level, front-facing three-quarter view, full body. Keep the complete hair silhouette, both folded arms, ID card, trouser hem, legs, and both shoes visible. Match the reference character's scale and eye/foot alignment. Leave generous empty transparent padding on every side so the sprite can be placed at left, center, or right in a visual-novel scene.
+
+[OUTPUT]
+Exactly 1024 x 1536 pixels, vertical 2:3, RGBA PNG with real alpha transparency.
+The background must be truly transparent — not white, gray, colored, gradient, or a baked checkerboard pattern.
+Exactly one character. No environment, floor plane, contact shadow, cast shadow, reflection, frame, text, speech balloon, logo, signature, or watermark.
+
+[REJECT IF]
+Reject and regenerate if the face or hair drifts from minjae-source.png; if the suit, tie, lanyard, ID card, or shoes change; if fingers or folded arms are malformed; if the emotion looks angry, smug, mocking, or villainous; if any background or checkerboard is baked into the pixels; or if the output is not a single full-body 1024 x 1536 transparent PNG.
+
+[AVOID]
+photorealism, semi-realistic Korean webtoon rendering, 3D CGI, watercolor, oil painting, sketch lines, thick outlines, chibi anatomy, oversized eyes, high saturation, neon, cyberpunk, bloom, strong depth of field, dramatic rim light, manga reaction symbols, smug or villainous smirk, sinister lighting, glare, extra fingers, fused fingers, missing fingers, duplicated limbs, hidden shoes, added accessories, readable text, logo, watermark

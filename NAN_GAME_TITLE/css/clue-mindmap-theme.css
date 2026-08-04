@@ -297,6 +297,23 @@
   background: #f9ecebd9;
 }
 
+.clue-hover-tip {
+  border: 1px solid #ee8da059;
+  background: linear-gradient(145deg, #fffdfbf7, #fff7f5f0);
+  box-shadow:
+    0 0 10px #ff7fa31c,
+    0 0 20px #ff8eaa12,
+    0 12px 28px #5c344317;
+}
+
+.clue-hover-tip strong {
+  color: #4c3b42;
+}
+
+.clue-hover-tip p {
+  color: #6a565d;
+}
+
 @media (max-width: 440px) {
   .clue-canvas-shell { grid-template-rows: 52px minmax(0, 1fr); }
   .clue-canvas-toolbar { padding-left: 10px; }

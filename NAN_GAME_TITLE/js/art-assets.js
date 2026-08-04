@@ -12,6 +12,8 @@
     "background.elevator_lobby.night": "../assets/art/backgrounds/approved/elevator_lobby_night_v001.png",
     "background.meeting_room.afternoon": "../assets/art/backgrounds/approved/meeting_room_afternoon_v001.png",
     "background.presentation_room.day": "../assets/art/backgrounds/approved/presentation_room_day_v001.png",
+    "background.presentation_hallway.day": "../assets/art/backgrounds/approved/presentation_hallway_day_v001.png",
+    "background.office_lobby.night": "../assets/art/backgrounds/approved/office_lobby_night_v001.png",
     "background.office.day": "../assets/art/backgrounds/approved/office_day_v001.png",
     "background.office.secret_chat": "assets/backgrounds/office-secret-chat-pixel.png",
     "background.office.evening": "../assets/art/backgrounds/approved/office_evening_v001.png",
