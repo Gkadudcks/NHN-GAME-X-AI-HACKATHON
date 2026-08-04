@@ -1,4 +1,4 @@
-.pause-menu{position:fixed;z-index:2000;inset:0;display:grid;place-items:center;padding:24px;background:#21171dcc;backdrop-filter:blur(12px);opacity:0;visibility:hidden;transition:.2s}
+.pause-menu{position:fixed;z-index:10000;inset:0;display:grid;place-items:center;padding:24px;background:#21171dcc;backdrop-filter:blur(12px);opacity:0;visibility:hidden;transition:.2s}
 .pause-menu.open{opacity:1;visibility:visible}
 .pause-menu-panel{width:min(820px,94vw);padding:34px;border:1px solid #ffffff70;border-radius:24px;background:#fffaf4;box-shadow:0 30px 90px #160b1166;text-align:center;transform:translateY(14px) scale(.985);transition:.2s}
 .pause-menu.open .pause-menu-panel{transform:none}
