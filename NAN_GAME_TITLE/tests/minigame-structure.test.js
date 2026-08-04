@@ -52,9 +52,10 @@ test("레거시 js·css·dev 폴더에는 미니게임 구현 파일을 다시 �
   assert.deepEqual(legacyFiles.filter(exists), []);
 });
 
-test("미니게임 한정 DESIGN·PRODUCT 문서는 저장소 루트가 아니라 기능 내부에만 둔다", () => {
+test("DAY 4 V044 설계 문서는 V2 런타임과 분리된 기능 내부 legacy에 보존한다", () => {
   assert.equal(exists("../DESIGN.md"), false);
   assert.equal(exists("../PRODUCT.md"), false);
-  assert.equal(exists("minigames/day4-office-escape/docs/DESIGN.md"), true);
-  assert.equal(exists("minigames/day4-office-escape/docs/PRODUCT.md"), true);
+  assert.equal(exists("minigames/day4-office-escape/docs/DESIGN.md"), false);
+  assert.equal(exists("minigames/day4-office-escape/legacy/v044/docs/DESIGN.md"), true);
+  assert.equal(exists("minigames/day4-office-escape/legacy/v044/docs/PRODUCT.md"), true);
 });

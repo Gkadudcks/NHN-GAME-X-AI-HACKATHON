@@ -33,7 +33,7 @@
     "event_cg.day3.elevator_waiting": "../assets/art/event_cg/approved/cg_day3_elevator_waiting_v001.png",
     "event_cg.day4.harin_headphone_handoff": "../assets/art/event_cg/approved/cg_day4_harin_headphone_handoff_v001.png",
     "event_cg.day5.weekend_invitation": "../assets/art/event_cg/approved/cg_day5_weekend_invitation_v001.png",
-    "prop.day5.warm_tea": "../assets/art/minigames/day4-office-escape/props/approved/prop_day5_warm_tea_v001.png",
+    "prop.day5.warm_tea": "../assets/art/props/approved/prop_day5_warm_tea_v001.png",
   });
 
   // Editable, code-owned SVG sources for the DAY 2 secret-chat minigame.

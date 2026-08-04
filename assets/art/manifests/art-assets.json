@@ -84,6 +84,14 @@
         ".png"
       ],
       "alpha": "required"
+    },
+    "main_prop": {
+      "width": 512,
+      "height": 512,
+      "extensions": [
+        ".png"
+      ],
+      "alpha": "required"
     }
   },
   "characters": {
@@ -183,7 +191,7 @@
         {
           "version": "v001",
           "status": "review",
-          "path": "assets/art/minigames/day4-office-escape/characters/doyun/review/mg_doyun_run_right_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/doyun/review/mg_doyun_run_right_v001.png",
           "generation_log_id": "mg-doyun-run-right-v001-imagegen",
           "sha256": null,
           "reviewed_by": null,
@@ -192,7 +200,7 @@
         {
           "version": "v002",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/characters/doyun/approved/mg_doyun_run_right_v002.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/doyun/approved/mg_doyun_run_right_v002.png",
           "generation_log_id": "mg-doyun-run-right-v002-normalized",
           "sha256": "09c1e2ccc82dc419fcca487456b63f888481871210ddcf123dc3e73c84432ddb",
           "reviewed_by": "user",
@@ -201,7 +209,7 @@
         {
           "version": "v003",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/characters/doyun/approved/mg_doyun_run_right_v003.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/doyun/approved/mg_doyun_run_right_v003.png",
           "generation_log_id": "mg-doyun-run-right-v003-imagegen-anatomy",
           "sha256": "762e34c493b77ac3b38fb352f90dc72ab357a2661d692a4a96e5b927345a9e0a",
           "reviewed_by": "user",
@@ -221,7 +229,7 @@
         {
           "version": "v001",
           "status": "review",
-          "path": "assets/art/minigames/day4-office-escape/characters/doyun/review/mg_doyun_run_alt_right_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/doyun/review/mg_doyun_run_alt_right_v001.png",
           "generation_log_id": "mg-doyun-run-alt-right-v001-imagegen",
           "sha256": null,
           "reviewed_by": null,
@@ -230,7 +238,7 @@
         {
           "version": "v002",
           "status": "review",
-          "path": "assets/art/minigames/day4-office-escape/characters/doyun/review/mg_doyun_run_alt_right_v002.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/doyun/review/mg_doyun_run_alt_right_v002.png",
           "generation_log_id": "mg-doyun-run-alt-right-v002-imagegen",
           "sha256": null,
           "reviewed_by": null,
@@ -239,7 +247,7 @@
         {
           "version": "v003",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/characters/doyun/approved/mg_doyun_run_alt_right_v003.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/doyun/approved/mg_doyun_run_alt_right_v003.png",
           "generation_log_id": "mg-doyun-run-alt-right-v003-imagegen-anatomy",
           "sha256": "8a0190dfea03b08e6ac1f9b392cfcf19137e0ca4345fcab1f33a008e6aac1bf5",
           "reviewed_by": "user",
@@ -259,7 +267,7 @@
         {
           "version": "v001",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/characters/doyun/approved/mg_doyun_jump_right_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/doyun/approved/mg_doyun_jump_right_v001.png",
           "generation_log_id": "mg-doyun-jump-right-v001-review",
           "sha256": "3a684e671ea231dafe716450fc93df79c68b9e3c329fb284a7a644e1ba94e402",
           "reviewed_by": "user",
@@ -279,7 +287,7 @@
         {
           "version": "v001",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/characters/doyun/approved/mg_doyun_slide_right_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/doyun/approved/mg_doyun_slide_right_v001.png",
           "generation_log_id": "mg-doyun-slide-right-v001-review",
           "sha256": "9850edebbc8fd24f137c98578fe0ec39d8068bfa301817ab54d91aaf8f471d35",
           "reviewed_by": "user",
@@ -299,7 +307,7 @@
         {
           "version": "v001",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/characters/harin/approved/mg_harin_run_right_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/harin/approved/mg_harin_run_right_v001.png",
           "generation_log_id": "mg-harin-run-right-v001-imagegen",
           "sha256": "754cb03d47be7e183fcdc4ab6b2e2ccee84dbe48a6f83e84a40e267eef8d71d9",
           "reviewed_by": "user",
@@ -308,7 +316,7 @@
         {
           "version": "v002",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/characters/harin/approved/mg_harin_run_right_v002.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/harin/approved/mg_harin_run_right_v002.png",
           "generation_log_id": "mg-harin-run-right-v002-imagegen-anatomy",
           "sha256": "11278a2454f9c2bfaed847d37c28ac8bbfa5158b43094496ecf7db9f80c66056",
           "reviewed_by": "user",
@@ -328,7 +336,7 @@
         {
           "version": "v001",
           "status": "review",
-          "path": "assets/art/minigames/day4-office-escape/characters/harin/review/mg_harin_run_alt_right_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/harin/review/mg_harin_run_alt_right_v001.png",
           "generation_log_id": "mg-harin-run-alt-right-v001-imagegen",
           "sha256": null,
           "reviewed_by": null,
@@ -337,7 +345,7 @@
         {
           "version": "v002",
           "status": "review",
-          "path": "assets/art/minigames/day4-office-escape/characters/harin/review/mg_harin_run_alt_right_v002.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/harin/review/mg_harin_run_alt_right_v002.png",
           "generation_log_id": "mg-harin-run-alt-right-v002-imagegen",
           "sha256": null,
           "reviewed_by": null,
@@ -346,7 +354,7 @@
         {
           "version": "v003",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/characters/harin/approved/mg_harin_run_alt_right_v003.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/harin/approved/mg_harin_run_alt_right_v003.png",
           "generation_log_id": "mg-harin-run-alt-right-v003-imagegen-anatomy",
           "sha256": "9838e16fe5858d8cdc7cff1c639b06cbfbc8db240fec0357b6ed9e4eca12db87",
           "reviewed_by": "user",
@@ -366,7 +374,7 @@
         {
           "version": "v001",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/characters/harin/approved/mg_harin_assist_right_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/harin/approved/mg_harin_assist_right_v001.png",
           "generation_log_id": "mg-harin-assist-right-v001-imagegen",
           "sha256": "20a78d83e7f39bd85bf05644f4d719056c32bdf3091754049ae46932814cae9a",
           "reviewed_by": "user",
@@ -386,7 +394,7 @@
         {
           "version": "v001",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/characters/boss/approved/mg_boss_chase_right_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/boss/approved/mg_boss_chase_right_v001.png",
           "generation_log_id": "mg-boss-chase-right-v001-imagegen",
           "sha256": "66abf05ccca6d1a5cbb1df2c9d37095aaeb34b7b273f4500c759b4e8645bde7a",
           "reviewed_by": "user",
@@ -395,7 +403,7 @@
         {
           "version": "v002",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/characters/boss/approved/mg_boss_chase_right_v002.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/boss/approved/mg_boss_chase_right_v002.png",
           "generation_log_id": "mg-boss-chase-right-v002-imagegen-anatomy",
           "sha256": "da6a7714618b53c8d6c78791f2c36e6cd1994bebb9ffad00fdb4161921c091ec",
           "reviewed_by": "user",
@@ -415,7 +423,7 @@
         {
           "version": "v001",
           "status": "review",
-          "path": "assets/art/minigames/day4-office-escape/characters/boss/review/mg_boss_chase_alt_right_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/boss/review/mg_boss_chase_alt_right_v001.png",
           "generation_log_id": "mg-boss-chase-alt-right-v001-imagegen",
           "sha256": null,
           "reviewed_by": null,
@@ -424,7 +432,7 @@
         {
           "version": "v002",
           "status": "review",
-          "path": "assets/art/minigames/day4-office-escape/characters/boss/review/mg_boss_chase_alt_right_v002.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/boss/review/mg_boss_chase_alt_right_v002.png",
           "generation_log_id": "mg-boss-chase-alt-right-v002-imagegen",
           "sha256": null,
           "reviewed_by": null,
@@ -433,7 +441,7 @@
         {
           "version": "v003",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/characters/boss/approved/mg_boss_chase_alt_right_v003.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/boss/approved/mg_boss_chase_alt_right_v003.png",
           "generation_log_id": "mg-boss-chase-alt-right-v003-imagegen-anatomy",
           "sha256": "ca090e87ff3696a7aa1bb938a49d2c62bd3c092ec1a7e02fd7652e912df3fed8",
           "reviewed_by": "user",
@@ -453,7 +461,7 @@
         {
           "version": "v001",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/characters/boss/approved/mg_boss_call_right_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/characters/boss/approved/mg_boss_call_right_v001.png",
           "generation_log_id": "mg-boss-call-right-v001-imagegen",
           "sha256": "fbbdcc8c23af57ca4a2a0bee3e8509adf96bcdbfb14a5d3ed04015ca64fcff6c",
           "reviewed_by": "user",
@@ -472,7 +480,7 @@
         {
           "version": "v001",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/backgrounds/approved/mg_office_escape_office_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/backgrounds/approved/mg_office_escape_office_v001.png",
           "generation_log_id": "mg-office-escape-office-v001-approved-reuse",
           "sha256": "6d15fffb2b2f3ac5d515613ab7e2e0d6017575adbed69a22fcce815d540d63f0",
           "reviewed_by": "user",
@@ -491,7 +499,7 @@
         {
           "version": "v001",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/backgrounds/approved/mg_office_escape_corridor_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/backgrounds/approved/mg_office_escape_corridor_v001.png",
           "generation_log_id": "mg-office-escape-corridor-v001-approved-reuse",
           "sha256": "64e1e30a531884eb4520a7f5ae0a8529fdec6f7358d9d4ee4052a31f5a6079d2",
           "reviewed_by": "codex",
@@ -510,11 +518,106 @@
         {
           "version": "v001",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/backgrounds/approved/mg_office_escape_elevator_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/backgrounds/approved/mg_office_escape_elevator_v001.png",
           "generation_log_id": "mg-office-escape-elevator-v001-approved-reuse",
           "sha256": "e8630fa65b2eef55949358e6af41bb01e6ddd83600a7d00e056efcd8cc14f6fc",
           "reviewed_by": "user",
           "reviewed_at": "2026-07-27T19:23:35.1261218+09:00"
+        }
+      ]
+    },
+    {
+      "id": "minigame_background.office_escape.office_b",
+      "kind": "minigame_background",
+      "profile": "background_16_9",
+      "minigame_id": "office_escape",
+      "scene": "office_b",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "review",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/backgrounds/review/mg_office_escape_office_b_v001.png",
+          "generation_log_id": "mg-office-escape-office-b-v001-imagegen-review",
+          "sha256": "8d14bf28d876750cfb052c6a832fc7bc0d67fddf55692dba0207e7ef967f8167",
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    {
+      "id": "minigame_background.office_escape.office_c",
+      "kind": "minigame_background",
+      "profile": "background_16_9",
+      "minigame_id": "office_escape",
+      "scene": "office_c",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "review",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/backgrounds/review/mg_office_escape_office_c_v001.png",
+          "generation_log_id": "mg-office-escape-office-c-v001-imagegen-review",
+          "sha256": "f1774771aad42ab14ccbb8b9226729794527642dcfd4a725f6423c6dc5961897",
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    {
+      "id": "minigame_background.office_escape.corridor_b",
+      "kind": "minigame_background",
+      "profile": "background_16_9",
+      "minigame_id": "office_escape",
+      "scene": "corridor_b",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "review",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/backgrounds/review/mg_office_escape_corridor_b_v001.png",
+          "generation_log_id": "mg-office-escape-corridor-b-v001-imagegen-review",
+          "sha256": "f5c3c76c7d0d2149f22a71fa0d6c31ad83c5002706e57f6282a1f8c4dc62843b",
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    {
+      "id": "minigame_background.office_escape.lobby_a",
+      "kind": "minigame_background",
+      "profile": "background_16_9",
+      "minigame_id": "office_escape",
+      "scene": "lobby_a",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "review",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/backgrounds/review/mg_office_escape_lobby_a_v001.png",
+          "generation_log_id": "mg-office-escape-lobby-a-v001-imagegen-review",
+          "sha256": "62a6a50a2fdf8c3047181c5b3071c670c2a159b3f75e3219a2398d27ab2061d8",
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    {
+      "id": "minigame_background.office_escape.lobby_b",
+      "kind": "minigame_background",
+      "profile": "background_16_9",
+      "minigame_id": "office_escape",
+      "scene": "lobby_b",
+      "active_version": null,
+      "versions": [
+        {
+          "version": "v001",
+          "status": "review",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/backgrounds/review/mg_office_escape_lobby_b_v001.png",
+          "generation_log_id": "mg-office-escape-lobby-b-v001-imagegen-review",
+          "sha256": "5ad0fcd29e18f4fa28593de28ad68f5680a92524a1c7fb5cb2ce52df4db9dddd",
+          "reviewed_by": null,
+          "reviewed_at": null
         }
       ]
     },
@@ -529,7 +632,7 @@
         {
           "version": "v001",
           "status": "review",
-          "path": "assets/art/minigames/day4-office-escape/props/review/prop_office_chair_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/props/review/prop_office_chair_v001.png",
           "generation_log_id": "prop-office-chair-v001-imagegen",
           "sha256": null,
           "reviewed_by": null,
@@ -538,7 +641,7 @@
         {
           "version": "v002",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/props/approved/prop_office_chair_v002.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/props/approved/prop_office_chair_v002.png",
           "generation_log_id": "prop-office-chair-v002-normalized",
           "sha256": "891c419d7806bad81cb9fdddbde4af4e65808f2e84109119838822e6a7ebbc13",
           "reviewed_by": "user",
@@ -557,7 +660,7 @@
         {
           "version": "v001",
           "status": "review",
-          "path": "assets/art/minigames/day4-office-escape/props/review/prop_office_cable_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/props/review/prop_office_cable_v001.png",
           "generation_log_id": "prop-office-cable-v001-imagegen",
           "sha256": null,
           "reviewed_by": null,
@@ -566,7 +669,7 @@
         {
           "version": "v002",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/props/approved/prop_office_cable_v002.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/props/approved/prop_office_cable_v002.png",
           "generation_log_id": "prop-office-cable-v002-normalized",
           "sha256": "6263ea71d81fe5b1c4c252b6b14f380320654e23f923fb8537637df0c92cf1e9",
           "reviewed_by": "user",
@@ -585,7 +688,7 @@
         {
           "version": "v001",
           "status": "review",
-          "path": "assets/art/minigames/day4-office-escape/props/review/prop_office_drawer_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/props/review/prop_office_drawer_v001.png",
           "generation_log_id": "prop-office-drawer-v001-imagegen",
           "sha256": null,
           "reviewed_by": null,
@@ -594,7 +697,7 @@
         {
           "version": "v002",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/props/approved/prop_office_drawer_v002.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/props/approved/prop_office_drawer_v002.png",
           "generation_log_id": "prop-office-drawer-v002-normalized",
           "sha256": "d576fa18441f6d5e380f6f908ce8ec6b8d0a6594b46637f727949728f5b79a4c",
           "reviewed_by": "user",
@@ -613,7 +716,7 @@
         {
           "version": "v001",
           "status": "review",
-          "path": "assets/art/minigames/day4-office-escape/props/review/prop_office_papers_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/props/review/prop_office_papers_v001.png",
           "generation_log_id": "prop-office-papers-v001-imagegen",
           "sha256": null,
           "reviewed_by": null,
@@ -622,7 +725,7 @@
         {
           "version": "v002",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/props/approved/prop_office_papers_v002.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/props/approved/prop_office_papers_v002.png",
           "generation_log_id": "prop-office-papers-v002-normalized",
           "sha256": "45d44224d4baf9f24611aee27849df9bcae7cbcb19186f34a6ca6102eec85d46",
           "reviewed_by": "user",
@@ -641,7 +744,7 @@
         {
           "version": "v001",
           "status": "review",
-          "path": "assets/art/minigames/day4-office-escape/props/review/prop_office_cart_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/props/review/prop_office_cart_v001.png",
           "generation_log_id": "prop-office-cart-v001-imagegen",
           "sha256": null,
           "reviewed_by": null,
@@ -650,7 +753,7 @@
         {
           "version": "v002",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/props/approved/prop_office_cart_v002.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/props/approved/prop_office_cart_v002.png",
           "generation_log_id": "prop-office-cart-v002-normalized",
           "sha256": "1752904ad4d6c87e4abb133f63c86cbb8be6530ce73639f76c4b98155fa3df00",
           "reviewed_by": "user",
@@ -669,7 +772,7 @@
         {
           "version": "v001",
           "status": "review",
-          "path": "assets/art/minigames/day4-office-escape/props/review/prop_office_sign_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/props/review/prop_office_sign_v001.png",
           "generation_log_id": "prop-office-sign-v001-imagegen",
           "sha256": null,
           "reviewed_by": null,
@@ -678,7 +781,7 @@
         {
           "version": "v002",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/props/approved/prop_office_sign_v002.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/props/approved/prop_office_sign_v002.png",
           "generation_log_id": "prop-office-sign-v002-normalized",
           "sha256": "d1133505c1246811c7b62697429a8c5b2477e0ad94566e697fb7429e4aafe133",
           "reviewed_by": "user",
@@ -697,7 +800,7 @@
         {
           "version": "v001",
           "status": "review",
-          "path": "assets/art/minigames/day4-office-escape/props/review/prop_office_access_card_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/props/review/prop_office_access_card_v001.png",
           "generation_log_id": "prop-office-access-card-v001-imagegen",
           "sha256": null,
           "reviewed_by": null,
@@ -706,7 +809,7 @@
         {
           "version": "v002",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/props/approved/prop_office_access_card_v002.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/props/approved/prop_office_access_card_v002.png",
           "generation_log_id": "prop-office-access-card-v002-normalized",
           "sha256": "b21612540824da203ef461c6f50e2364d9b5ef1810db5a262d0e93b89bfaa862",
           "reviewed_by": "user",
@@ -725,7 +828,7 @@
         {
           "version": "v001",
           "status": "review",
-          "path": "assets/art/minigames/day4-office-escape/props/review/prop_office_phone_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/props/review/prop_office_phone_v001.png",
           "generation_log_id": "prop-office-phone-v001-imagegen",
           "sha256": null,
           "reviewed_by": null,
@@ -734,7 +837,7 @@
         {
           "version": "v002",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/props/approved/prop_office_phone_v002.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/props/approved/prop_office_phone_v002.png",
           "generation_log_id": "prop-office-phone-v002-normalized",
           "sha256": "0c7c96fccbf178aef7d06e6f15bfe45935df0db8139f8fd92f76143e371b5acb",
           "reviewed_by": "user",
@@ -753,7 +856,7 @@
         {
           "version": "v001",
           "status": "review",
-          "path": "assets/art/minigames/day4-office-escape/props/review/prop_office_backup_usb_v001.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/props/review/prop_office_backup_usb_v001.png",
           "generation_log_id": "prop-office-backup-usb-v001-imagegen",
           "sha256": null,
           "reviewed_by": null,
@@ -762,7 +865,7 @@
         {
           "version": "v002",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/props/approved/prop_office_backup_usb_v002.png",
+          "path": "NAN_GAME_TITLE/minigames/day4-office-escape/assets/art/props/approved/prop_office_backup_usb_v002.png",
           "generation_log_id": "prop-office-backup-usb-v002-normalized",
           "sha256": "7ab4e803a35bf2c24e65b52c425ff170beadab409b97690ed7c1af4819698378",
           "reviewed_by": "user",
@@ -1321,7 +1424,7 @@
     {
       "id": "prop.day5.warm_tea",
       "kind": "prop",
-      "profile": "minigame_prop",
+      "profile": "main_prop",
       "category": "day5",
       "name": "warm_tea",
       "active_version": "v001",
@@ -1329,7 +1432,7 @@
         {
           "version": "v001",
           "status": "approved",
-          "path": "assets/art/minigames/day4-office-escape/props/approved/prop_day5_warm_tea_v001.png",
+          "path": "assets/art/props/approved/prop_day5_warm_tea_v001.png",
           "generation_log_id": "prop-day5-warm-tea-v001-built-in-imagegen",
           "sha256": "03c4821162a0b99853e62781985625d1640ad0c2c8633aa9c1cfa7dab21b5f8a",
           "reviewed_by": "user",
