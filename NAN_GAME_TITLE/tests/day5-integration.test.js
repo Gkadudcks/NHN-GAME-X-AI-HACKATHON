@@ -55,6 +55,12 @@ test("DAY 5는 확정된 사건과 세 통합 엔딩을 포함한다", () => {
   const niceEnd = story.scenes.find((scene) => scene.id === "day5NiceEnd");
   assert.equal(niceEnd.cgAssetId, "event_cg.day5.weekend_invitation");
   assert.equal(niceEnd.cinematicDelay, 1600);
+  const middleEnd = story.scenes.find((scene) => scene.id === "day5MiddleEnd");
+  assert.equal(middleEnd.cgAssetId, "event_cg.day5.colleague_departure");
+  assert.equal(middleEnd.cinematicDelay, 1600);
+  const badEnd = story.scenes.find((scene) => scene.id === "day5BadEnd");
+  assert.equal(badEnd.cgAssetId, "event_cg.day5.lone_departure");
+  assert.equal(badEnd.cinematicDelay, 1600);
 });
 
 test("DAY 5 페이지는 DAY 1~4 공용 UI와 기능 모듈을 재사용한다", () => {
