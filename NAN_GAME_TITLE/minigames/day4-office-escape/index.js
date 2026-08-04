@@ -127,12 +127,13 @@
         <div class="oe2-background-track" id="oe2-background-track" aria-hidden="true">${backgroundPanels()}</div>
         <div class="oe2-ground" aria-hidden="true"><i class="oe2-floor-guide"></i><i class="oe2-speed-line"></i><i class="oe2-speed-line"></i><i class="oe2-speed-line"></i></div>
         <ol class="oe2-zone-markers" aria-hidden="true"><li class="is-active"><span>1</span><b>사무실</b></li><li><span>2</span><b>복도</b></li><li><span>3</span><b>로비</b></li></ol>
-        <div class="oe2-objects" id="oe2-objects" aria-live="polite"></div>
+        <div class="oe2-objects" id="oe2-objects" aria-hidden="true"></div>
         <div class="oe2-actors" aria-label="부장님, 서하린, 도윤의 추격 대형">
           <figure class="oe2-actor oe2-boss"><img id="oe2-boss" src="${resolve(CHARACTER_IDS.bossRun)}" alt="뒤에서 쫓아오는 부장님"></figure>
           <figure class="oe2-actor oe2-harin"><img id="oe2-harin" src="${resolve(CHARACTER_IDS.harinRun)}" alt="도윤과 함께 달리는 서하린"><div class="oe2-assist-badge" id="oe2-assist-badge" aria-hidden="true">${icon("shield")}<span>하린이 막아줬다!</span></div></figure>
           <figure class="oe2-actor oe2-doyun"><img id="oe2-doyun" src="${resolve(CHARACTER_IDS.doyunRun)}" alt="오른쪽으로 달리는 도윤"></figure>
         </div>
+        <div class="oe2-player-body" id="oe2-player-body" aria-hidden="true"></div>
         <div class="oe2-telegraph" id="oe2-telegraph" hidden><strong id="oe2-telegraph-action">JUMP</strong><span id="oe2-telegraph-label"></span></div>
         <div class="oe2-feedback" id="oe2-feedback" role="status" aria-live="polite"></div>
         <button class="oe2-ring-action oe2-action oe2-jump" type="button" aria-label="점프, Space 또는 위 화살표">${icon("up")}<span>JUMP</span></button>
@@ -157,7 +158,7 @@
       routeNodes: [...root.querySelectorAll(".oe2-route li")], zoneNodes: [...root.querySelectorAll(".oe2-zone-markers li")],
       backgroundPanels: [...root.querySelectorAll(".oe2-background-panel")],
       backgroundImages: [...root.querySelectorAll(".oe2-background-panel img")],
-      objects: root.querySelector("#oe2-objects"), boss: root.querySelector(".oe2-boss"), harin: root.querySelector(".oe2-harin"), doyun: root.querySelector(".oe2-doyun"),
+      objects: root.querySelector("#oe2-objects"), boss: root.querySelector(".oe2-boss"), harin: root.querySelector(".oe2-harin"), doyun: root.querySelector(".oe2-doyun"), playerBody: root.querySelector("#oe2-player-body"),
       actors: { boss: root.querySelector("#oe2-boss"), harin: root.querySelector("#oe2-harin"), doyun: root.querySelector("#oe2-doyun") },
       telegraph: root.querySelector("#oe2-telegraph"), telegraphAction: root.querySelector("#oe2-telegraph-action"), telegraphLabel: root.querySelector("#oe2-telegraph-label"),
       feedback: root.querySelector("#oe2-feedback"), assistBadge: root.querySelector("#oe2-assist-badge"), jump: root.querySelector(".oe2-jump"), slide: root.querySelector(".oe2-slide"), pause: root.querySelector(".oe2-pause"),
@@ -209,27 +210,28 @@
     node = document.createElement("figure");
     node.className = `oe2-object oe2-${object.kind} oe2-${object.type}`;
     node.dataset.objectId = object.id;
-    node.innerHTML = `<img src="${resolve(PROP_IDS[object.type])}" alt="${object.label}"><span></span>`;
+    node.setAttribute("aria-hidden", "true");
+    node.innerHTML = `<img src="${resolve(PROP_IDS[object.type])}" alt="" aria-hidden="true"><span></span>`;
     refs.objects.append(node);
     refs.objectNodes.set(object.id, node);
     return node;
   }
 
-  function renderObjects(snapshot, width, scale) {
+  function renderObjects(snapshot, projection) {
+    const { width, scale } = projection;
     const active = new Set(snapshot.activeObjects.map((object) => object.id));
     refs.objectNodes.forEach((node, id) => { node.hidden = !active.has(id); });
-    const playerX = width * 0.31;
-    const ground = refs.world.clientHeight * 0.085;
     snapshot.activeObjects.forEach((object) => {
       const node = objectNode(object);
       const visible = object.visibleRect;
       const art = object.artRect || visible;
-      const left = playerX + (art.x + art.width / 2 - snapshot.playerRect.x) * scale;
-      node.hidden = left < -220 || left > width + 240;
-      node.style.width = `${Math.max(20, art.width * scale)}px`;
-      node.style.height = `${Math.max(16, art.height * scale)}px`;
-      node.style.left = `${left}px`;
-      node.style.bottom = `${ground + art.y * scale}px`;
+      const screen = Core.projectWorldRect(art, projection);
+      const centerX = screen.left + screen.width / 2;
+      node.hidden = centerX < -220 || centerX > width + 240;
+      node.style.width = `${Math.max(20, screen.width)}px`;
+      node.style.height = `${Math.max(16, screen.height)}px`;
+      node.style.left = `${centerX}px`;
+      node.style.bottom = `${screen.bottom}px`;
       node.classList.toggle("telegraphed", snapshot.upcomingHazard?.id === object.id);
       node.classList.toggle("overhead", object.avoid === "slide");
       node.dataset.motion = object.motion || "still";
@@ -292,7 +294,9 @@
   function render(snapshot) {
     if (!root || !snapshot) return;
     const width = refs.world.clientWidth || global.innerWidth;
-    const scale = width / 780;
+    const height = refs.world.clientHeight || global.innerHeight;
+    const projection = Core.screenProjection(snapshot, width, height);
+    const scale = projection.scale;
     const progress = snapshot.progress;
     root.dataset.scene = snapshot.finished ? "arrival" : snapshot.sliding ? "slide" : snapshot.y > 1 ? "jump" : "run";
     root.dataset.zone = snapshot.zone.id;
@@ -313,15 +317,23 @@
     setActorArt("doyun", doyunId, snapshot.sliding ? 27.5 : 50);
     setActorArt("harin", harinId, 48);
     setActorArt("boss", bossId, 52);
-    refs.doyun.style.translate = `0 ${-snapshot.y * scale}px`;
-    renderObjects(snapshot, width, scale);
+    refs.doyun.style.left = `${projection.playerAnchorX}px`;
+    refs.doyun.style.bottom = `${projection.ground}px`;
+    refs.doyun.style.translate = `0 ${-snapshot.playerAnchor.y * scale}px`;
+    const playerBody = Core.projectWorldRect(snapshot.playerRect, projection);
+    refs.playerBody.style.left = `${playerBody.left}px`;
+    refs.playerBody.style.bottom = `${playerBody.bottom}px`;
+    refs.playerBody.style.width = `${playerBody.width}px`;
+    refs.playerBody.style.height = `${playerBody.height}px`;
+    renderObjects(snapshot, projection);
     const upcoming = snapshot.upcomingHazard;
     refs.telegraph.hidden = !upcoming;
     if (upcoming) {
       const object = snapshot.activeObjects.find((candidate) => candidate.id === upcoming.id) || upcoming;
-      const cueX = width * 0.31 + (object.x - snapshot.playerRect.x) * scale;
-      refs.telegraph.style.left = `${Math.max(24, Math.min(width - 180, cueX))}px`;
-      refs.telegraph.style.bottom = `${upcoming.avoid === "slide" ? 58 : 120}px`;
+      const cueRect = object.collisionRect || object.visibleRect || object;
+      const cuePoint = Core.projectWorldPoint({ x: cueRect.x + cueRect.width / 2, y: cueRect.y + cueRect.height }, projection);
+      refs.telegraph.style.left = `${Math.max(24, Math.min(width - 180, cuePoint.x))}px`;
+      refs.telegraph.style.bottom = `${Math.max(projection.ground + 12, Math.min(height - 84, cuePoint.bottom + 12))}px`;
       refs.telegraph.dataset.phase = upcoming.telegraphPhase;
       refs.telegraphAction.textContent = upcoming.telegraphPhase === "act" ? `${upcoming.avoid.toUpperCase()} NOW` : upcoming.avoid.toUpperCase();
       refs.telegraphLabel.textContent = upcoming.telegraphPhase === "act" ? "지금!" : upcoming.label;
@@ -339,11 +351,11 @@
     state.paused = false;
     state.previewScene = scene;
     const previewCore = Core.create({ duration: Core.DEFAULT_DURATION, assist: true });
-    const seconds = scene === "arrival" ? 61.5 : scene === "slide" ? 9 : scene === "jump" ? 5 : 2;
+    const seconds = scene === "arrival" ? 61.5 : scene === "slide" ? 8.65 : scene === "jump" ? 4.65 : 2;
     for (let elapsed = 0; elapsed < seconds && !previewCore.snapshot().finished; elapsed += 0.1) previewCore.step(0.1);
+    if (scene === "jump") { previewCore.pressJump(); previewCore.step(0.36); }
+    if (scene === "slide") { previewCore.commitSlide(); previewCore.step(0.12); }
     const snapshot = previewCore.snapshot();
-    if (scene === "jump") snapshot.y = 140;
-    if (scene === "slide") snapshot.sliding = true;
     if (scene === "arrival") snapshot.finished = true;
     render(snapshot);
   }

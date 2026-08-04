@@ -26,6 +26,9 @@
   const GAIT_FRAME_MS = 500;
   const GAIT_PHASE_DELAY_MS = Object.freeze({ doyun: 0, harin: 150, boss: 300 });
   const COLLISION_INSET = Object.freeze({ horizontal: 0.11, vertical: 0.15 });
+  const VIEW_REFERENCE_WIDTH = 780;
+  const VIEW_PLAYER_ANCHOR_X_RATIO = 0.31;
+  const VIEW_GROUND_RATIO = 0.09;
 
   const PROP_ART_FRAMING = Object.freeze({
     chair: Object.freeze({ alphaWidth: 333 / 512, alphaHeight: 468 / 512, bottomPadding: 12 / 512 }),
@@ -133,6 +136,47 @@
     const p = clamp(elapsed / duration, 0, 1);
     return (length / duration) * (0.88 + 0.24 * p);
   }
+  function playerAnchorAt(distance = 0, y = 0) {
+    return {
+      x: (Number(distance) || 0) + PLAYER_X_OFFSET + PLAYER_WIDTH / 2,
+      y: Number(y) || 0,
+    };
+  }
+  function screenProjection(snapshot, viewportWidth, viewportHeight) {
+    const width = Math.max(1, Number(viewportWidth) || VIEW_REFERENCE_WIDTH);
+    const height = Math.max(1, Number(viewportHeight) || 1);
+    const scale = width / VIEW_REFERENCE_WIDTH;
+    const anchor = snapshot?.playerAnchor || {
+      x: (snapshot?.playerRect?.x || 0) + (snapshot?.playerRect?.width || PLAYER_WIDTH) / 2,
+      y: Math.max(0, (snapshot?.playerRect?.y || 0) - PLAYER_BOTTOM_FORGIVENESS),
+    };
+    const playerAnchorX = width * VIEW_PLAYER_ANCHOR_X_RATIO;
+    const ground = height * VIEW_GROUND_RATIO;
+    return Object.freeze({
+      width,
+      height,
+      scale,
+      ground,
+      playerAnchorX,
+      playerAnchorBottom: ground + anchor.y * scale,
+      worldOriginX: playerAnchorX - anchor.x * scale,
+    });
+  }
+  function projectWorldRect(rect, projection) {
+    const scale = projection.scale;
+    return {
+      left: projection.worldOriginX + rect.x * scale,
+      bottom: projection.ground + rect.y * scale,
+      width: rect.width * scale,
+      height: rect.height * scale,
+    };
+  }
+  function projectWorldPoint(point, projection) {
+    return {
+      x: projection.worldOriginX + point.x * projection.scale,
+      bottom: projection.ground + point.y * projection.scale,
+    };
+  }
   function prepareLeadFor(elapsed) { return elapsed < 24 ? 1.35 : elapsed < 48 ? 1.15 : 1; }
   // The long prepare phase explains the required verb; the filled ACT cue
   // appears close enough to contact that a fixed action covers the far edge.
@@ -188,10 +232,12 @@
     function isGrounded() { return state.y <= 0.001; }
     function isSliding() { return isGrounded() && state.elapsed < slideUntil; }
     function playerRect(y = state.y, sliding = isSliding()) {
+      const width = sliding ? SLIDING_WIDTH : PLAYER_WIDTH;
+      const anchor = playerAnchorAt(state.distance, y);
       return {
-        x: state.distance + PLAYER_X_OFFSET,
+        x: anchor.x - width / 2,
         y: y + PLAYER_BOTTOM_FORGIVENESS,
-        width: sliding ? SLIDING_WIDTH : PLAYER_WIDTH,
+        width,
         height: sliding ? SLIDING_HEIGHT : STANDING_HEIGHT,
       };
     }
@@ -390,6 +436,7 @@
         jumpHeld: jumpBuffer > 0,
         course,
         collectedItems: [...collected],
+        playerAnchor: playerAnchorAt(state.distance, state.y),
         playerRect: playerRect(),
         activeObjects: course.filter((object) => !resolved.has(object.id)).map((object) => ({ ...object, ...objectRects(object) })),
         upcomingHazard: upcomingHazard(),
@@ -401,9 +448,11 @@
   const COURSE = Object.freeze(buildCourse(DEFAULT_DURATION, DEFAULT_LENGTH));
   return Object.freeze({
     create, gradeForHits, gaitFrameIndex, zoneFor, routeSegmentFor, backgroundPresentationAt, distanceAt, speedAt,
+    playerAnchorAt, screenProjection, projectWorldRect, projectWorldPoint,
     COURSE, ZONES, BACKGROUND_ROUTE, DEFAULT_DURATION, DEFAULT_LENGTH, FIXED_STEP,
     PLAYER_X_OFFSET, PLAYER_BOTTOM_FORGIVENESS, PLAYER_WIDTH, STANDING_HEIGHT, SLIDING_WIDTH, SLIDING_HEIGHT,
     GRAVITY, JUMP_VELOCITY, JUMP_BUFFER, SLIDE_DURATION, SLIDE_RECOVERY,
     INVULNERABLE_TIME, GAIT_FRAME_MS, GAIT_PHASE_DELAY_MS, COLLISION_INSET, PROP_ART_FRAMING, BACKGROUND_TRANSITION_DURATION,
+    VIEW_REFERENCE_WIDTH, VIEW_PLAYER_ANCHOR_X_RATIO, VIEW_GROUND_RATIO,
   });
 });

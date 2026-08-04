@@ -67,7 +67,7 @@
 .oe2-actors { position: absolute; z-index: 18; inset: 0; pointer-events: none; }
 .oe2-actor { --oe2-alpha-height: 1; --oe2-bottom-padding: 0; --oe2-visual-height: 50cqh; position: absolute; bottom: var(--oe2-ground); width: auto; height: calc(var(--oe2-visual-height) / var(--oe2-alpha-height)); aspect-ratio: 1; margin: 0; transform-origin: 50% 100%; transition: translate 45ms linear; filter: drop-shadow(0 13px 9px rgba(3, 7, 13, .58)); }
 .oe2-actor img { position: absolute; bottom: calc(var(--oe2-bottom-padding) * -100%); left: 50%; display: block; width: 100%; height: 100%; object-fit: contain; transform: translateX(-50%); }
-.oe2-boss { left: 1.5%; opacity: .91; }.oe2-harin { left: 18.2%; }.oe2-doyun { left: 32%; z-index: 3; }
+.oe2-boss { left: 1.5%; opacity: .91; }.oe2-harin { left: 18.2%; }.oe2-doyun { z-index: 3; transform: translateX(-50%); }
 .oe2-assist-badge { position: absolute; z-index: 5; top: 14%; left: 63%; display: grid; grid-template-columns: 22px auto; align-items: center; gap: 7px; width: max-content; max-width: min(220px, 42cqw); box-sizing: border-box; padding: 9px 12px; color: #dffcff; background: rgba(5,24,34,.92); border: 1px solid #74d9ed; box-shadow: 0 9px 22px rgba(0,0,0,.35); opacity: 0; transform: translate(-18%, 7px) scale(.96); transition: opacity 150ms ease, transform 180ms cubic-bezier(.2,.8,.2,1); pointer-events: none; }
 .oe2-assist-badge svg { width: 22px; height: 22px; fill: none; stroke: #74d9ed; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
 .oe2-assist-badge span { font-size: 16px; font-weight: 800; line-height: 1; white-space: nowrap; }
@@ -76,10 +76,14 @@
 
 .oe2-objects { position: absolute; z-index: 22; inset: 0; pointer-events: none; }
 .oe2-object { position: absolute; display: block; margin: 0; transform: translateX(-50%); filter: drop-shadow(0 8px 6px rgba(3, 7, 13, .58)); }
+.oe2-object[hidden] { display: none; }
 .oe2-object img { display: block; width: 100%; height: 100%; object-fit: contain; }.oe2-object > span { display: none; }
+.oe2-hazard img { filter: saturate(1.08) contrast(1.04) drop-shadow(0 0 3px rgba(255,138,31,.34)); }
 .oe2-object.overhead { transform: translateX(-50%); }.oe2-object.telegraphed img { filter: saturate(1.14) contrast(1.08) drop-shadow(0 0 8px rgba(255,138,31,.42)); }
 .oe2-object[data-motion="roll"] { animation: oe2-prop-roll 750ms ease-in-out infinite alternate; }.oe2-object[data-motion="sway"] { animation: oe2-prop-sway 650ms ease-in-out infinite alternate; }
-.show-hitboxes .oe2-object > span { position: absolute; display: block; left: var(--oe2-hit-left); bottom: var(--oe2-hit-bottom); width: var(--oe2-hit-width); height: var(--oe2-hit-height); box-sizing: border-box; border: 2px solid #e65565; background: rgba(230,85,101,.13); }.show-hitboxes .oe2-doyun::after { position: absolute; inset: auto auto 0 50%; width: 44%; height: 88%; content: ""; box-sizing: border-box; border: 2px solid #49d9f1; transform: translateX(-50%); }
+.show-hitboxes .oe2-object > span { position: absolute; display: block; left: var(--oe2-hit-left); bottom: var(--oe2-hit-bottom); width: var(--oe2-hit-width); height: var(--oe2-hit-height); box-sizing: border-box; border: 2px solid #e65565; background: rgba(230,85,101,.13); }
+.oe2-player-body { position: absolute; z-index: 42; display: none; box-sizing: border-box; border: 2px solid #49d9f1; background: rgba(73,217,241,.12); pointer-events: none; }
+.show-hitboxes .oe2-player-body { display: block; }
 
 .oe2-telegraph { position: absolute; z-index: 35; display: grid; gap: 3px; min-width: 94px; padding: 7px 10px; color: #fff9e9; background: rgba(6,14,23,.82); border: 1px solid rgba(255,138,31,.78); box-shadow: 0 8px 20px rgba(0,0,0,.25); transform: translateX(-50%); pointer-events: none; }
 .oe2-telegraph strong { color: var(--oe2-amber); font-size: 19px; line-height: 1; letter-spacing: .05em; }.oe2-telegraph span { font-size: 12px; font-weight: 700; }.oe2-telegraph[data-phase="act"] { border-color: var(--oe2-amber); animation: oe2-cue 420ms ease-in-out infinite alternate; }.oe2-telegraph[data-phase="act"] strong { font-size: 23px; }
@@ -95,16 +99,16 @@
 .oe2-pause-screen { position: absolute; z-index: 70; inset: 0; display: grid; place-content: center; gap: 10px; color: var(--oe2-ivory); text-align: center; background: rgba(3,9,15,.76); opacity: 0; visibility: hidden; transition: opacity 160ms ease, visibility 160ms; }.oe2-pause-screen strong { font-size: 42px; }.oe2-pause-screen span { color: rgba(245,234,208,.78); font-size: 16px; }.office-escape-v2.is-paused .oe2-pause-screen { opacity: 1; visibility: visible; }
 .oe2-result { position: absolute; z-index: 80; inset: 50% auto auto 50%; display: grid; min-width: 310px; gap: 14px; padding: 28px 32px; color: var(--oe2-ivory); text-align: center; background: rgba(4,12,21,.94); border: 1px solid rgba(245,234,208,.42); box-shadow: 0 18px 44px rgba(0,0,0,.45); transform: translate(-50%,-50%); }.oe2-result[hidden] { display: none; }.oe2-result strong { color: var(--oe2-green); font-size: 32px; letter-spacing: .04em; }.oe2-result p { margin: 0; }.oe2-result button { min-height: 42px; color: #07111d; background: var(--oe2-ivory); border: 0; font: 800 14px Pretendard, sans-serif; cursor: pointer; }.oe2-result button:hover { background: var(--oe2-green); }
 
-.office-escape-v2[data-composition="a"] { --oe2-ground: 12%; }.office-escape-v2[data-composition="a"] .oe2-boss { left: -1%; }.office-escape-v2[data-composition="a"] .oe2-harin { left: 18%; }.office-escape-v2[data-composition="a"] .oe2-doyun { left: 37%; }
+.office-escape-v2[data-composition="a"] .oe2-boss { left: -1%; }.office-escape-v2[data-composition="a"] .oe2-harin { left: 18%; }
 
-.office-escape-v2[data-composition="b"] { --oe2-ground: 21%; }.office-escape-v2[data-composition="b"] .oe2-boss { left: 0; }.office-escape-v2[data-composition="b"] .oe2-harin { left: 58%; }.office-escape-v2[data-composition="b"] .oe2-doyun { left: 32%; }
+.office-escape-v2[data-composition="b"] .oe2-boss { left: 0; }.office-escape-v2[data-composition="b"] .oe2-harin { left: 58%; }
 
 /* C — threshold rhythm: composition changes actors, never the shared HUD. */
-.office-escape-v2[data-composition="c"] .oe2-boss { left: -1%; }.office-escape-v2[data-composition="c"] .oe2-harin { left: 17%; }.office-escape-v2[data-composition="c"] .oe2-doyun { left: 31%; }
+.office-escape-v2[data-composition="c"] .oe2-boss { left: -1%; }.office-escape-v2[data-composition="c"] .oe2-harin { left: 17%; }
 
 @keyframes oe2-prop-roll { from { rotate: -2deg; } to { rotate: 2deg; } }
 @keyframes oe2-prop-sway { from { rotate: -1.5deg; } to { rotate: 1.5deg; } }
 @keyframes oe2-cue { from { scale: 1; } to { scale: 1.07; } }
 @keyframes oe2-flash { 50% { opacity: .28; filter: brightness(1.8); } }
-@media (min-width: 1700px) { .oe2-boss { left: 3.5%; }.oe2-harin { left: 18.5%; }.oe2-doyun { left: 32%; } }
+@media (min-width: 1700px) { .oe2-boss { left: 3.5%; }.oe2-harin { left: 18.5%; } }
 @media (prefers-reduced-motion: reduce) { .office-escape-v2 *, .office-escape-v2 *::before, .office-escape-v2 *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }.oe2-background-panel img { transform: none !important; } }

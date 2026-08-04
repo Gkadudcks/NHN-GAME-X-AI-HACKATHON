@@ -349,7 +349,7 @@ test("DAY 4 페이지는 스토리와 추격 미니게임을 엔진 전에 불�
   const minigameIndex = html.indexOf('src="minigames/day4-office-escape/index.js');
   const engineIndex = html.indexOf('src="js/day4.js');
   assert.ok(storyIndex >= 0 && storyIndex < minigameIndex && minigameIndex < engineIndex);
-  assert.match(html, /day4-office-escape\/style\.css\?v=49/);
+  assert.match(html, /day4-office-escape\/style\.css\?v=51/);
 });
 
 test("모든 DAY 자료 화면은 공용 PPT형 슬라이드 스타일을 사용한다", () => {
@@ -976,6 +976,39 @@ test("V2 배경 전환과 조작 UI는 가짜 유리 없이 진행 정보와 버
   assert.match(style, /\.oe2-pause\s*\{[^}]*width: 48px;[^}]*height: 48px/s);
   assert.doesNotMatch(style, /\.oe2-far-layer|\.oe2-mid-layer|\.oe2-thresholds|--oe2-far-x|--oe2-mid-x|--oe2-near-x/);
   assert.match(style, /\.oe2-background-panel\s*\{[^}]*position: absolute[^}]*opacity: 0/s);
+});
+
+test("V2 해결·화면 이탈 오브젝트는 hidden 작성자 규칙으로 제거되고 상태 알림과 분리된다", () => {
+  const runtime = read("minigames/day4-office-escape/index.js");
+  const style = read("minigames/day4-office-escape/style.css");
+  assert.match(style, /\.oe2-object\[hidden\]\s*\{\s*display:\s*none;\s*\}/);
+  assert.match(runtime, /refs\.objectNodes\.forEach\(\(node, id\) => \{ node\.hidden = !active\.has\(id\); \}\)/);
+  assert.match(runtime, /node\.hidden = centerX < -220 \|\| centerX > width \+ 240/);
+  assert.match(runtime, /class="oe2-objects" id="oe2-objects" aria-hidden="true"/);
+  assert.doesNotMatch(runtime, /id="oe2-objects" aria-live=/);
+  assert.match(runtime, /node\.setAttribute\("aria-hidden", "true"\)/);
+  assert.match(runtime, /alt="" aria-hidden="true"/);
+  assert.match(runtime, /class="oe2-feedback" id="oe2-feedback" role="status" aria-live="polite"/);
+});
+
+test("V2 플레이어·장애물·cue·dev 판정은 31% bottom-center 단일 투영을 공유한다", () => {
+  const core = read("minigames/day4-office-escape/core.js");
+  const runtime = read("minigames/day4-office-escape/index.js");
+  const style = read("minigames/day4-office-escape/style.css");
+  assert.match(core, /const VIEW_PLAYER_ANCHOR_X_RATIO = 0\.31/);
+  assert.match(core, /const VIEW_GROUND_RATIO = 0\.09/);
+  assert.match(core, /function screenProjection\(snapshot, viewportWidth, viewportHeight\)/);
+  assert.match(core, /function projectWorldRect\(rect, projection\)/);
+  assert.match(runtime, /Core\.screenProjection\(snapshot, width, height\)/);
+  assert.match(runtime, /Core\.projectWorldRect\(snapshot\.playerRect, projection\)/);
+  assert.match(runtime, /Core\.projectWorldRect\(art, projection\)/);
+  assert.match(runtime, /Core\.projectWorldPoint\(\{ x: cueRect\.x \+ cueRect\.width \/ 2/);
+  assert.match(runtime, /id="oe2-player-body" aria-hidden="true"/);
+  assert.match(style, /\.oe2-doyun\s*\{[^}]*transform: translateX\(-50%\)/s);
+  assert.match(style, /\.show-hitboxes \.oe2-player-body\s*\{\s*display: block;/);
+  assert.doesNotMatch(style, /\[data-composition="[ab]"\][^{]*\{[^}]*--oe2-ground/);
+  assert.doesNotMatch(style, /\[data-composition="[abc]"\][^{]*\.oe2-doyun/);
+  assert.doesNotMatch(runtime, /snapshot\.y\s*=|snapshot\.sliding\s*=/);
 });
 
 test("DAY 3 완료 화면에서 DAY 4를 시작할 수 있다", () => {

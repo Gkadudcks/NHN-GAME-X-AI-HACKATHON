@@ -130,6 +130,36 @@ test("swept AABB는 큰 프레임에서도 빠른 장애물을 관통하지 않�
   assert.equal(game.snapshot().activeObjects.length, 0);
 });
 
+test("hit·avoid·collect로 해결된 오브젝트는 active 목록에서 빠지고 결과 이벤트를 반복하지 않는다", () => {
+  const cases = [
+    {
+      id: "hit-once",
+      object: { id: "hit-once", kind: "hazard", type: "chair", avoid: "jump", x: 70, y: 0, width: 72, height: 42 },
+      event: "hit",
+    },
+    {
+      id: "avoid-once",
+      object: { id: "avoid-once", kind: "hazard", type: "chair", avoid: "jump", x: 70, y: 220, width: 72, height: 42 },
+      event: "avoid",
+    },
+    {
+      id: "collect-once",
+      object: { id: "collect-once", kind: "item", type: "access-card", label: "출입카드", x: 70, y: 0, width: 38, height: 38 },
+      event: "collect",
+    },
+  ];
+
+  for (const scenario of cases) {
+    const game = Core.create({ duration: 8, length: 1800, assist: false, course: [scenario.object] });
+    advance(game, 1);
+    const firstEvents = game.drainEvents();
+    assert.equal(firstEvents.filter((event) => event.type === scenario.event).length, 1, scenario.id);
+    assert.equal(game.snapshot().activeObjects.some((object) => object.id === scenario.id), false, scenario.id);
+    advance(game, 1);
+    assert.equal(game.drainEvents().filter((event) => event.type === scenario.event).length, 0, `${scenario.id} repeated`);
+  }
+});
+
 test("장애물은 불투명 경계로 확대되고 충돌 상자는 보이는 영역 안에 남는다", () => {
   const game = Core.create();
   const hazards = game.snapshot().activeObjects.filter((object) => object.kind === "hazard");
@@ -151,6 +181,45 @@ test("장애물은 불투명 경계로 확대되고 충돌 상자는 보이는 �
     assert.ok(collisionRect.x + collisionRect.width <= visibleRect.x + visibleRect.width);
     assert.ok(collisionRect.y + collisionRect.height <= visibleRect.y + visibleRect.height);
   }
+});
+
+test("단일 화면 투영은 player body와 bottom-center 앵커를 세 해상도에서 1px 이내로 일치시킨다", () => {
+  const poses = [];
+  const running = Core.create({ duration: 8, length: 1800, course: [] });
+  poses.push(running.snapshot());
+
+  const jumping = Core.create({ duration: 8, length: 1800, course: [] });
+  jumping.pressJump();
+  jumping.step(0.2);
+  poses.push(jumping.snapshot());
+
+  const sliding = Core.create({ duration: 8, length: 1800, course: [] });
+  sliding.commitSlide();
+  sliding.step(Core.FIXED_STEP);
+  poses.push(sliding.snapshot());
+
+  for (const [width, height] of [[1280, 641], [1440, 814], [1920, 982]]) {
+    const screenCenters = poses.map((snapshot) => {
+      const projection = Core.screenProjection(snapshot, width, height);
+      const body = Core.projectWorldRect(snapshot.playerRect, projection);
+      const anchor = Core.projectWorldPoint(snapshot.playerAnchor, projection);
+      assert.ok(Math.abs(body.left + body.width / 2 - projection.playerAnchorX) <= 0.000001);
+      assert.ok(Math.abs(anchor.x - projection.playerAnchorX) <= 0.000001);
+      assert.ok(Math.abs(projection.ground - height * 0.09) <= 0.000001);
+      return anchor.x;
+    });
+    assert.ok(Math.max(...screenCenters) - Math.min(...screenCenters) <= 1, `${width}px anchor drift`);
+  }
+});
+
+test("슬라이드 player body는 달리기와 같은 물리 발 중심을 유지한다", () => {
+  const game = Core.create({ duration: 8, length: 1800, course: [] });
+  const standing = game.snapshot();
+  game.commitSlide();
+  const sliding = game.snapshot();
+  assert.equal(standing.playerAnchor.x, sliding.playerAnchor.x);
+  assert.equal(standing.playerRect.x + standing.playerRect.width / 2, standing.playerAnchor.x);
+  assert.equal(sliding.playerRect.x + sliding.playerRect.width / 2, sliding.playerAnchor.x);
 });
 
 test("하린의 첫 방어 뒤 세 번 피격하면 caught이며 결과 이벤트는 한 번만 발생한다", () => {
