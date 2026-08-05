@@ -3,8 +3,11 @@
   const params = new URLSearchParams(location.search);
   const composition = ["a", "b", "c"].includes(params.get("composition")) ? params.get("composition") : "c";
   const defaultScene = { a: "jump", b: "slide", c: "run" };
+  const previewScenes = new Set(["run", "jump", "slide", "first-risk", "maximum", "hit", "arrival", "result"]);
+  const initialScene = previewScenes.has(params.get("scene")) ? params.get("scene") : defaultScene[composition];
   let reviewAssetMap = {};
   let currentComposition = composition;
+  let currentScene = initialScene;
   let selectedCandidate = "";
   const DAY4_ASSET_PREFIX = "NAN_GAME_TITLE/minigames/day4-office-escape/";
   const status = document.querySelector("#oe2-dev-status");
@@ -55,20 +58,21 @@
   }
   function setQuery(key, value) { const next = new URL(location.href); next.searchParams.set(key, value); history.replaceState(null, "", next); }
   function staticPreview(scene = defaultScene[currentComposition]) {
-    OfficeEscapeMinigame.start({ composition: currentComposition, autoStart: false, previewScene: scene, reviewAssetMap, reviewAssetsEnabled: reviewArt.checked, showHitboxes: hitboxes.checked });
-    status.textContent = `정적 · ${currentComposition.toUpperCase()} · ${scene}`;
-    setQuery("scene", scene);
+    currentScene = previewScenes.has(scene) ? scene : defaultScene[currentComposition];
+    OfficeEscapeMinigame.start({ composition: currentComposition, autoStart: false, previewScene: currentScene, reviewAssetMap, reviewAssetsEnabled: reviewArt.checked, showHitboxes: hitboxes.checked, resultAction: currentScene === "result" ? "restart" : undefined });
+    status.textContent = `정적 · ${currentComposition.toUpperCase()} · ${currentScene}`;
+    setQuery("scene", currentScene);
   }
   function startPlay() {
     setToolsCollapsed(true);
     OfficeEscapeMinigame.start({ composition: currentComposition, reviewAssetMap, reviewAssetsEnabled: reviewArt.checked, showHitboxes: hitboxes.checked, resultAction: "restart", onComplete(result) { status.textContent = `완료 · ${result.grade.toUpperCase()} · 피격 ${result.hitCount}`; } });
     status.textContent = `플레이 · ${currentComposition.toUpperCase()} · 64초`;
   }
-  function selectComposition(value) {
+  function selectComposition(value, scene = defaultScene[value]) {
     currentComposition = value;
     setQuery("composition", value);
     document.querySelectorAll("[data-composition]").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.composition === value)));
-    staticPreview(defaultScene[value]);
+    staticPreview(scene);
   }
   document.querySelectorAll("[data-composition]").forEach((button) => button.addEventListener("click", () => selectComposition(button.dataset.composition)));
   document.querySelectorAll("[data-preview]").forEach((button) => button.addEventListener("click", () => staticPreview(button.dataset.preview)));
@@ -84,7 +88,7 @@
     document.querySelectorAll("[data-button-candidate]").forEach((candidate) => candidate.setAttribute("aria-pressed", String(candidate === button)));
     status.textContent = `버튼 후보 선택 · ${selectedCandidate} · 사용자 승인 대기`;
   }));
-  [reviewArt, hitboxes].forEach((input) => input.addEventListener("change", () => staticPreview(defaultScene[currentComposition])));
+  [reviewArt, hitboxes].forEach((input) => input.addEventListener("change", () => staticPreview(currentScene)));
   globalThis.addEventListener("keydown", (event) => { if (event.code === "KeyH") setToolsCollapsed(!document.body.classList.contains("dev-tools-collapsed")); if (event.code === "Escape") { document.body.classList.remove("show-button-review"); backgroundBoard.setAttribute("aria-hidden", "true"); } });
-  loadReviewAssets().finally(() => { renderBackgroundBoard(); selectComposition(composition); });
+  loadReviewAssets().finally(() => { renderBackgroundBoard(); selectComposition(composition, initialScene); });
 })();

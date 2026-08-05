@@ -2,7 +2,7 @@
 
 - 문서 ID: `DAY4-OFFICE-ESCAPE-STRUCTURAL-RESET-2026-08-05`
 - 승인일: 2026-08-05
-- 상태: 계획 승인 완료 · 구현 시작 전
+- 상태: Phase 1~4 `smoke_checked` · Phase 4 사용자 승인 대기
 - 지원 환경: PC 데스크톱 브라우저 전용
 - 현재 사용자 승인: 문서 하드 리셋과 Phase 1~6 추천안 전체 확정
 
@@ -104,24 +104,24 @@
 
 | ID | 우선순위 | 현재 증상 | 구조 원인 | 담당 Phase | 상태 |
 |---|---|---|---|---|---|
-| INP-01 | P0 | 입력한 순간이 아니라 장애물 시점에 점프·슬라이드 실행 | 장애물별 예약 입력과 ACT 자동 실행 | 1 | planned |
-| INP-02 | P1 | 같은 키가 cue 단계에 따라 즉시 실행되거나 예약됨 | 입력 API가 게임 상태에 따라 다른 의미를 가짐 | 1 | planned |
-| GEO-01 | P0 | 캐릭터에 비해 도윤 판정이 지나치게 작음 | 캐릭터는 높이 기준, 판정은 너비 기준으로 확대 | 2 | planned |
-| GEO-02 | P0 | 도윤과 하린이 거의 같은 위치에 겹침 | 도윤은 center, 하린은 left-edge 앵커 | 2·3 | planned |
-| GEO-03 | P1 | 슬라이드 그림과 슬라이드 판정 폭·높이가 크게 다름 | 포즈 art와 물리 profile이 독립적으로 조정됨 | 2 | planned |
-| FORM-01 | P1 | 부장님과 하린이 함께 달리는 것처럼 가까움 | left-edge 배치와 추격 이동이 실루엣 간격을 보장하지 않음 | 3 | planned |
-| HAZ-01 | P1 | 슬라이드 장애물이 사람에 비해 작고 공중에 뜬 것처럼 보임 | 고정 world 크기와 actor 전용 스케일 분리 | 3 | planned |
-| HAZ-02 | P1 | 보이는 물체와 실제 접촉 시점이 다르게 느껴짐 | visual rect, collision rect, player silhouette 관계 미검증 | 3 | planned |
-| OBJ-01 | P1 | 피격 장애물이 버그처럼 잠시 남아 보임 | 해결 후 별도 exiting 상태로 재표시 | 3 | planned |
-| UI-01 | P1 | 조작 버튼이 작고 사각형으로 회귀 | 보조 입력 위계를 이유로 승인된 원형 형태를 교체 | 4 | planned |
-| UI-02 | P1 | `17:58`이 지나치게 작고 의미도 불분명 | HUD 축소 과정에서 정보 위계를 과도하게 낮춤 | 4 | planned |
-| UI-03 | P1 | 진행 bar가 지명 글자를 통과 | bar와 milestone 텍스트가 같은 중앙 행을 공유 | 4 | planned |
-| UI-04 | P2 | 화면 하단 주황선이 진행 정보처럼 보임 | 의미 없는 바닥 장식선 | 4 | planned |
-| DEV-01 | P2 | `검수 도구 열기`가 좌상단 HUD를 침범 | dev toggle이 게임 HUD 좌표에 fixed 배치 | 4 | planned |
-| RESULT-01 | P2 | `PERFECT`와 `수집 0/3`의 의미가 충돌 | 등급 근거와 선택 목표의 설명 부재 | 4 | planned |
+| INP-01 | P0 | 입력한 순간이 아니라 장애물 시점에 점프·슬라이드 실행 | 장애물별 예약 입력과 ACT 자동 실행 | 1 | smoke_checked |
+| INP-02 | P1 | 같은 키가 cue 단계에 따라 즉시 실행되거나 예약됨 | 입력 API가 게임 상태에 따라 다른 의미를 가짐 | 1 | smoke_checked |
+| GEO-01 | P0 | 캐릭터에 비해 도윤 판정이 지나치게 작음 | 캐릭터는 높이 기준, 판정은 너비 기준으로 확대 | 2 | smoke_checked |
+| GEO-02 | P0 | 도윤과 하린이 거의 같은 위치에 겹침 | 도윤은 center, 하린은 left-edge 앵커 | 2·3 | smoke_checked |
+| GEO-03 | P1 | 슬라이드 그림과 슬라이드 판정 폭·높이가 크게 다름 | 포즈 art와 물리 profile이 독립적으로 조정됨 | 2 | smoke_checked |
+| FORM-01 | P1 | 부장님과 하린이 함께 달리는 것처럼 가까움 | left-edge 배치와 추격 이동이 실루엣 간격을 보장하지 않음 | 3 | smoke_checked |
+| HAZ-01 | P1 | 슬라이드 장애물이 사람에 비해 작고 공중에 뜬 것처럼 보임 | 고정 world 크기와 actor 전용 스케일 분리 | 3 | smoke_checked (physics) · ART-BACKLOG |
+| HAZ-02 | P1 | 보이는 물체와 실제 접촉 시점이 다르게 느껴짐 | visual rect, collision rect, player silhouette 관계 미검증 | 3 | smoke_checked |
+| OBJ-01 | P1 | 피격 장애물이 버그처럼 잠시 남아 보임 | 해결 후 별도 exiting 상태로 재표시 | 3 | smoke_checked |
+| UI-01 | P1 | 조작 버튼이 작고 사각형으로 회귀 | 보조 입력 위계를 이유로 승인된 원형 형태를 교체 | 4 | smoke_checked |
+| UI-02 | P1 | `17:58`이 지나치게 작고 의미도 불분명 | HUD 축소 과정에서 정보 위계를 과도하게 낮춤 | 4 | smoke_checked |
+| UI-03 | P1 | 진행 bar가 지명 글자를 통과 | bar와 milestone 텍스트가 같은 중앙 행을 공유 | 4 | smoke_checked |
+| UI-04 | P2 | 화면 하단 주황선이 진행 정보처럼 보임 | 의미 없는 바닥 장식선 | 4 | smoke_checked |
+| DEV-01 | P2 | `검수 도구 열기`가 좌상단 HUD를 침범 | dev toggle이 게임 HUD 좌표에 fixed 배치 | 4 | smoke_checked |
+| RESULT-01 | P2 | `PERFECT`와 `수집 0/3`의 의미가 충돌 | 등급 근거와 선택 목표의 설명 부재 | 4 | smoke_checked |
 | ANIM-01 | P2 | 달리기가 느린 두 장 교체처럼 보임 | 500ms 간격 2프레임과 프레임 anchor 부족 | 5 | planned |
 | ANIM-02 | P2 | 세 캐릭터가 같은 박자로 움직임 | 캐릭터별 gait phase가 렌더링에 적용되지 않음 | 5 | planned |
-| TEST-01 | P0 | 테스트가 잘못된 동작을 성공 조건으로 보호 | 내부 일치·문자열·overflow 중심 검증 | 1~6 | planned |
+| TEST-01 | P0 | 테스트가 잘못된 동작을 성공 조건으로 보호 | 내부 일치·문자열·overflow 중심 검증 | 1~6 | smoke_checked (Phase 1 timing · Phase 2 geometry · Phase 3 formation/hazard/lifecycle · Phase 4 HUD/result) |
 
 ## 3. 최소 검증 원칙
 
@@ -158,6 +158,7 @@
 
 ### Phase 1 · 입력 예약 제거와 직접 조작 복구
 
+- 상태: `smoke_checked`
 - 담당 하위 모델: `gpt-5.6-sol`, reasoning `medium`, 단일 실행
 - 의존성: Phase 0
 - 담당 이슈: INP-01, INP-02, TEST-01 timing
@@ -193,6 +194,7 @@
 
 ### Phase 2 · 캐릭터·판정 단일 스케일과 앵커
 
+- 상태: `smoke_checked`
 - 담당 하위 모델: `gpt-5.6-sol`, reasoning `medium`, 단일 실행
 - 의존성: Phase 1 `smoke_checked`
 - 담당 이슈: GEO-01, GEO-02의 앵커 부분, GEO-03, TEST-01 geometry
@@ -227,6 +229,8 @@
 - 승인 이미지의 프레임 여백 차이 때문에 코드 메트릭만으로 anchor를 맞출 수 없으면 이미지를 임의 편집하지 않고 Phase 5 입력으로 기록한다.
 
 ### Phase 3 · 캐릭터 간격, 장애물 물리 크기, 피격 수명주기
+
+- 상태: `smoke_checked`
 
 - 담당 하위 모델: `gpt-5.6-sol`, reasoning `medium`, 단일 실행
 - 의존성: Phase 2 `smoke_checked`
@@ -264,8 +268,13 @@
 
 - 기존 승인 에셋으로 슬라이드 동작의 의미가 성립하지 않으면 Phase 3 코드는 완료하고 해당 장애물만 Phase 5 이전 별도 사용자 아트 결정으로 남긴다.
 
+ART-BACKLOG: 승인된 `drawer`·`sign`은 바닥 가구·안내판 실루엣이라 머리·상체 높이에 배치하면 공중에 뜬 물체로 읽힌다. Phase 3 물리·판정은 완료하되, production 의미 확정 전 overhead cabinet/beam 계열 별도 사용자 아트 결정을 진행한다.
+
+구현 관계: Phase 3 최종 대형은 화면 폭 62.5%의 공유 anchor를 도윤 visual bottom-center이자 mechanical player collision 중심으로 함께 사용한다. world origin도 같은 양만큼 이동하므로 장애물 art/collision, cue, player 판정의 상대 좌표는 유지되며 대형만 별도 합성하지 않는다.
+
 ### Phase 4 · 조작 버튼·상단 HUD·진행도·결과 복원
 
+- 상태: `smoke_checked`
 - 담당 하위 모델: `gpt-5.6-sol`, reasoning `medium`, 단일 실행
 - 의존성: Phase 3 `smoke_checked`
 - 담당 이슈: UI-01~04, DEV-01, RESULT-01
@@ -389,6 +398,10 @@
 | 날짜 | Phase | 상태 변화 | 변경 파일 | 최소 검증 | 사용자 확인 | 기록자 |
 |---|---|---|---|---|---|---|
 | 2026-08-05 | 0 | planned → completed | `docs/REQUIREMENTS.md`, README 문서 지도, 과거 계획 삭제 | 문서 링크·태그 확인 | 문서 구조와 전체 추천안 승인 | root |
+| 2026-08-05 | 1 | planned → in_progress → code_complete → smoke_checked | `core.js`, `index.js`, 직접 관련 테스트, 캐시 버전, `docs/REQUIREMENTS.md` | 입력·점프·슬라이드 코어 4건, V2 입력 통합 1건, 금지 문자열 정적 검사, `git diff --check`, 1440×900 키보드 점프·슬라이드 각 1회 | Phase 1 직접 입력 smoke 확인 | day4_direct_input · root |
+| 2026-08-05 | 2 | planned → in_progress → code_complete → smoke_checked | `core.js`, `index.js`, `style.css`, `art-assets.js`, 캐시 버전, 직접 관련 테스트, `docs/REQUIREMENTS.md` | projection·pose anchor·player rect·preview geometry 6건, production `cqh` 정적 검사, `git diff --check`, 1440×900 run/jump/slide 판정 보기 | 첫 smoke 캐시 불일치 수정 후 세 포즈의 opaque/core 정렬 재확인 | day4_unified_geometry · root |
+| 2026-08-05 | 3 | planned → in_progress → code_complete → smoke_checked | `core.js`, `index.js`, `style.css`, dev·본편 캐시 버전, 직접 관련 테스트, `docs/REQUIREMENTS.md` | steady·maximum viewport actor bounds·hazard overlap·lifecycle 3건, dev 정적 장면 포함 정적 통합 5건, production 금지 경로·syntax·`git diff --check`, 1440×900 장면 5종 | 첫 steady smoke의 화면 밖 대형 수정 후 steady·maximum·jump hazard·slide hazard·hit 직후 재확인, slide prop은 ART-BACKLOG 유지 | day4_formation_hazards · root |
+| 2026-08-05 | 4 | planned → in_progress → code_complete → smoke_checked | `index.js`, `style.css`, dev·본편 캐시 버전, 직접 관련 통합 테스트, `docs/REQUIREMENTS.md` | HUD·cue·결과 정적 상태 3건, syntax 2건, production 금지 문자열·DOM 검사, `git diff --check`, Impeccable detector, 1440×900 UI 장면 4종 | ghost cue와 결과 preview 경로 수정 후 기본 HUD·첫 위험·결과/재시작·dev 접힘 재확인 | day4_ui_restore · root |
 
 새 구현 기록은 위 표에 한 줄씩만 추가한다. 과거 검증 수치와 폐기된 결정은 다시 복사하지 않는다.
 

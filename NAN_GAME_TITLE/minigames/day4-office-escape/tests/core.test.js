@@ -3,6 +3,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const Core = require("../core.js");
+const Art = require("../art-assets.js");
 
 function advance(game, seconds, frame = 1 / 120) {
   for (let elapsed = 0; elapsed < seconds && !game.snapshot().finished; elapsed += frame) game.step(frame);
@@ -13,27 +14,10 @@ function scriptedPerfect(frame) {
   let lastId = "";
   while (!game.snapshot().finished) {
     const next = game.snapshot().upcomingHazard;
-    if (next && next.id !== lastId && next.inputReady) {
+    if (next && next.id !== lastId && next.telegraphPhase === "act") {
       if (next.avoid === "jump") game.pressJump();
       else game.commitSlide();
       lastId = next.id;
-    }
-    game.step(frame);
-  }
-  return game;
-}
-
-function scriptedNormalReaction(frame, reactionSeconds = 0.35) {
-  const game = Core.create({ assist: false });
-  let pending = null;
-  while (!game.snapshot().finished) {
-    const snapshot = game.snapshot();
-    const next = snapshot.upcomingHazard;
-    if (next?.inputReady && pending?.id !== next.id) pending = { id: next.id, action: next.avoid, readyAt: snapshot.elapsed, acted: false };
-    if (pending && !pending.acted && snapshot.elapsed - pending.readyAt >= reactionSeconds) {
-      if (pending.action === "jump") game.pressJump();
-      else game.commitSlide();
-      pending.acted = true;
     }
     game.step(frame);
   }
@@ -124,14 +108,11 @@ test("배경은 마지막 0.7초에만 다음 구간으로 교차 전환하고 �
   assert.equal(Core.backgroundPresentationAt(5.65, { reducedMotion: true }).panPercent, 0);
 });
 
-test("행동 신호를 따르는 자동 플레이는 모든 프레임율에서 perfect, 무입력은 caught다", () => {
+test("ACT 신호에 직접 반응하면 모든 프레임율에서 perfect, 무입력은 caught다", () => {
   for (const frame of [1 / 60, 1 / 120, 1 / 144]) {
     const game = scriptedPerfect(frame);
     assert.equal(game.result().grade, "perfect");
     assert.equal(game.snapshot().hitCount, 0);
-    const normal = scriptedNormalReaction(frame);
-    assert.equal(normal.result().grade, "perfect", `normal reaction @ ${frame}`);
-    assert.equal(normal.snapshot().hitCount, 0, `normal reaction hits @ ${frame}`);
   }
   const idle = Core.create();
   advance(idle, 65);
@@ -179,45 +160,38 @@ test("추격 압박은 구간·assist·피격에 따라 가까워지고 회복�
   assert.deepEqual(Object.keys(game.result()).sort(), ["caught", "collectedItems", "elapsed", "grade", "hitCount", "maxCombo"]);
 });
 
-test("첫 점프·슬라이드는 PREP를 읽고 650ms 뒤 입력해도 세 프레임율에서 예약 실행된다", () => {
-  for (const frame of [1 / 60, 1 / 120, 1 / 144]) {
-    const game = Core.create({ assist: false });
-    for (const tutorial of [
-      { id: "hazard-01", action: "jump" },
-      { id: "hazard-02", action: "slide" },
-    ]) {
-      let telegraph = null;
-      while (!telegraph) {
-        game.step(frame);
-        telegraph = game.drainEvents().find((event) => event.type === "telegraph" && event.object.id === tutorial.id) || null;
-      }
-      assert.equal(game.snapshot().upcomingHazard.telegraphPhase, "prepare", `${tutorial.id} PREP @ ${frame}`);
-      advance(game, 0.65, frame);
-      const ready = game.snapshot().upcomingHazard;
-      assert.equal(ready.id, tutorial.id);
-      assert.equal(ready.telegraphPhase, "input-ready", `${tutorial.id} input-ready @ ${frame}`);
-      assert.ok(ready.leadTime <= 1.3 && ready.leadTime > ready.actionLeadTime);
+test("점프·슬라이드는 PREP와 ACT 어느 cue 단계에서도 다음 fixed step 안에 직접 시작한다", () => {
+  for (const phase of ["prepare", "act"]) {
+    for (const action of ["jump", "slide"]) {
+      const object = {
+        id: `direct-${phase}-${action}`,
+        kind: "hazard",
+        type: action === "jump" ? "chair" : "drawer",
+        avoid: action,
+        x: phase === "prepare" ? 280 : 70,
+        y: action === "slide" ? 56 : 0,
+        width: 76,
+        height: action === "slide" ? 36 : 42,
+      };
+      const game = Core.create({ duration: 8, length: 1800, assist: false, course: [object] });
+      assert.equal(game.snapshot().upcomingHazard.telegraphPhase, phase, `${phase} ${action} cue`);
 
-      if (tutorial.action === "jump") game.pressJump();
+      if (action === "jump") game.pressJump();
       else game.commitSlide();
-      const accepted = game.drainEvents().find((event) => event.type === "inputQueued");
-      assert.equal(accepted?.object.id, tutorial.id, `${tutorial.id} queued @ ${frame}`);
-      assert.equal(game.snapshot().upcomingHazard.inputQueued, true);
+      game.step(Core.FIXED_STEP);
 
-      let executed = null;
-      let avoided = null;
-      while (!avoided) {
-        game.step(frame);
-        for (const event of game.drainEvents()) {
-          if (event.type === "inputExecuted" && event.object.id === tutorial.id) executed = event;
-          if (event.type === "avoid" && event.object.id === tutorial.id) avoided = event;
-          assert.notEqual(event.type, "hit", `${tutorial.id} hit @ ${frame}`);
-        }
+      const snapshot = game.snapshot();
+      const events = game.drainEvents();
+      assert.equal(events.filter((event) => event.type === action).length, 1, `${phase} ${action} event`);
+      if (action === "jump") {
+        assert.ok(snapshot.y > 0, `${phase} jump y`);
+        assert.ok(snapshot.velocityY > 0, `${phase} jump velocity`);
+      } else {
+        assert.equal(snapshot.sliding, true, `${phase} slide state`);
       }
-      assert.equal(executed?.object.telegraphPhase, "act", `${tutorial.id} ACT @ ${frame}`);
-      assert.ok(executed.queuedFor >= 0.8, `${tutorial.id} reservation ${executed.queuedFor}`);
+      assert.equal(Object.hasOwn(snapshot, "reservedInput"), false);
+      assert.equal(Object.hasOwn(snapshot.upcomingHazard || {}, "inputQueued"), false);
     }
-    assert.equal(game.snapshot().hitCount, 0, `tutorial hits @ ${frame}`);
   }
 });
 
@@ -311,6 +285,118 @@ test("슬라이드 player body는 달리기와 같은 물리 발 중심을 유�
   assert.equal(standing.playerAnchor.x, sliding.playerAnchor.x);
   assert.equal(standing.playerRect.x + standing.playerRect.width / 2, standing.playerAnchor.x);
   assert.equal(sliding.playerRect.x + sliding.playerRect.width / 2, sliding.playerAnchor.x);
+});
+
+test("승인 pose 메트릭은 공통 projection에서 발바닥 중심을 1px 이내로 고정한다", () => {
+  const game = Core.create({ duration: 8, length: 1800, course: [] });
+  const projection = Core.screenProjection(game.snapshot(), 1440, 814);
+  const ids = [
+    "minigame_character.doyun.run.right",
+    "minigame_character.doyun.run_alt.right",
+    "minigame_character.doyun.jump.right",
+    "minigame_character.doyun.slide.right",
+  ];
+  const anchors = ids.map((id) => {
+    const metric = Art.metrics(id);
+    const geometry = Core.actorScreenGeometry(metric, { x: projection.playerAnchorX, bottom: projection.playerAnchorBottom }, projection);
+    return geometry.host.left + metric.footAnchor.x * geometry.canvasSize;
+  });
+  assert.ok(Math.max(...anchors) - Math.min(...anchors) <= 1);
+});
+
+test("1440x900 actor 대형은 steady·maximum 모두 viewport 안에서 순서·간격·비교차를 지킨다", () => {
+  const snapshot = Core.create({ duration: 8, length: 1800, course: [] }).snapshot();
+  const projection = Core.screenProjection(snapshot, 1440, 827.1);
+  const metrics = {
+    doyun: Art.metrics("minigame_character.doyun.run.right"),
+    harin: Art.metrics("minigame_character.harin.run.right"),
+    boss: Art.metrics("minigame_character.boss.chase.right"),
+  };
+  const steady = Core.actorFormationGeometry(metrics, projection, Core.CHASE_PRESSURE.stageBase.learning);
+  const maximum = Core.actorFormationGeometry(metrics, projection, Core.CHASE_PRESSURE.maximum);
+  const horizontalIntersection = (left, right) => Math.max(0, Math.min(left.left + left.width, right.left + right.width) - Math.max(left.left, right.left));
+  const safeMargin = Math.max(Core.ACTOR_FORMATION.viewportMarginMinimum, projection.width * Core.ACTOR_FORMATION.viewportMarginRatio);
+  for (const [label, formation] of [["steady", steady], ["maximum", maximum]]) {
+    const { boss, harin, doyun } = formation.actors;
+    assert.ok(boss.silhouette.left >= safeMargin, `${label} boss left ${boss.silhouette.left}`);
+    assert.ok(doyun.silhouette.left + doyun.silhouette.width <= projection.width - safeMargin, `${label} Doyun right`);
+    for (const actor of [boss, harin, doyun]) {
+      assert.ok(actor.silhouette.left >= safeMargin, `${label} actor left`);
+      assert.ok(actor.silhouette.left + actor.silhouette.width <= projection.width - safeMargin, `${label} actor right`);
+    }
+    assert.ok(boss.silhouette.left + boss.silhouette.width <= harin.silhouette.left, `${label} boss -> Harin`);
+    assert.ok(harin.silhouette.left + harin.silhouette.width <= doyun.silhouette.left, `${label} Harin -> Doyun`);
+    assert.equal(horizontalIntersection(doyun.silhouette, harin.silhouette), 0);
+    assert.equal(horizontalIntersection(harin.silhouette, boss.silhouette), 0);
+  }
+  const maximumGap = maximum.actors.harin.silhouette.left
+    - (maximum.actors.boss.silhouette.left + maximum.actors.boss.silhouette.width);
+  assert.ok(maximumGap >= Math.max(16, projection.width * 0.01), `maximum gap ${maximumGap}px`);
+  assert.ok(Math.abs(maximumGap - Core.ACTOR_FORMATION.bossHarinMinimumGap * projection.scale) < 0.000001);
+  const forwardView = projection.width - (steady.actors.doyun.silhouette.left + steady.actors.doyun.silhouette.width);
+  assert.ok(forwardView >= projection.width * Core.ACTOR_FORMATION.minimumForwardViewRatio, `forward view ${forwardView}px`);
+  const mechanicalPlayer = Core.projectWorldRect(snapshot.playerRect, projection);
+  assert.ok(Math.abs(mechanicalPlayer.left + mechanicalPlayer.width / 2 - steady.anchors.doyun.x) < 0.000001);
+});
+
+test("slide drawer는 standing body와 겹치고 sliding rect 위 8wu를 비우며 시각·판정 경계가 4px 이내다", () => {
+  const game = Core.create();
+  const drawer = game.snapshot().activeObjects.find((object) => object.kind === "hazard" && object.avoid === "slide" && object.type === "drawer");
+  const standing = game.snapshot().playerRect;
+  game.commitSlide();
+  const sliding = game.snapshot().playerRect;
+  const standingVerticalOverlap = Math.min(standing.y + standing.height, drawer.collisionRect.y + drawer.collisionRect.height)
+    - Math.max(standing.y, drawer.collisionRect.y);
+  assert.ok(standingVerticalOverlap > 0);
+  assert.ok(drawer.collisionRect.y - (sliding.y + sliding.height) >= Core.SLIDE_CLEARANCE);
+
+  const runMetric = Art.metrics("minigame_character.doyun.run.right");
+  const opaqueWidth = runMetric.canonicalOpaqueHeight / runMetric.alphaBounds.height * runMetric.alphaBounds.width;
+  assert.ok(drawer.visibleRect.width >= opaqueWidth * 0.9);
+  assert.ok(drawer.visibleRect.height / runMetric.canonicalOpaqueHeight >= 0.18);
+  assert.ok(drawer.visibleRect.height / runMetric.canonicalOpaqueHeight <= 0.32);
+
+  const projection = Core.screenProjection(game.snapshot(), 1440, 827.1);
+  const bottomDifference = (drawer.collisionRect.y - drawer.visibleRect.y) * projection.scale;
+  const topDifference = ((drawer.visibleRect.y + drawer.visibleRect.height)
+    - (drawer.collisionRect.y + drawer.collisionRect.height)) * projection.scale;
+  assert.ok(bottomDifference <= 4, `bottom edge ${bottomDifference}px`);
+  assert.ok(topDifference <= 4, `top edge ${topDifference}px`);
+});
+
+test("1440x900 run jump slide preview geometry는 actor와 두 판정 가이드를 화면 좌표로 산출한다", () => {
+  const cases = [
+    ["minigame_character.doyun.run.right", () => {}],
+    ["minigame_character.doyun.jump.right", (game) => { game.pressJump(); game.step(0.2); }],
+    ["minigame_character.doyun.slide.right", (game) => { game.commitSlide(); game.step(Core.FIXED_STEP); }],
+  ];
+  for (const [id, prepare] of cases) {
+    const game = Core.create({ duration: 8, length: 1800, course: [] });
+    prepare(game);
+    const snapshot = game.snapshot();
+    const projection = Core.screenProjection(snapshot, 1440, 827.1);
+    const geometry = Core.actorScreenGeometry(Art.metrics(id), { x: projection.playerAnchorX, bottom: projection.playerAnchorBottom }, projection);
+    const collision = Core.projectWorldRect(snapshot.playerRect, projection);
+    assert.ok(geometry.host.left > 0, `${id} actor left`);
+    assert.ok(geometry.host.width > 200 && geometry.host.height > 200, `${id} actor size`);
+    assert.ok(geometry.reference.width > 100 && geometry.reference.height > 100, `${id} reference size`);
+    assert.ok(collision.width > 100 && collision.height > 100, `${id} collision size`);
+    const overlapWidth = Math.max(0, Math.min(geometry.reference.left + geometry.reference.width, collision.left + collision.width) - Math.max(geometry.reference.left, collision.left));
+    const overlapHeight = Math.max(0, Math.min(geometry.reference.bottom + geometry.reference.height, collision.bottom + collision.height) - Math.max(geometry.reference.bottom, collision.bottom));
+    assert.ok(overlapWidth / collision.width > 0.85, `${id} horizontal guide overlap`);
+    assert.ok(overlapHeight / collision.height > 0.85, `${id} vertical guide overlap`);
+  }
+});
+
+test("player rect는 run opaque body 75%, slide torso-leg body 약 70%를 사용한다", () => {
+  const run = Core.PLAYER_PROFILES.run;
+  const slide = Core.PLAYER_PROFILES.slide;
+  for (const ratio of [run.width / run.referenceWidth, run.height / run.referenceHeight]) {
+    assert.ok(ratio >= 0.70 && ratio <= 0.80, `run ratio ${ratio}`);
+  }
+  for (const ratio of [slide.width / slide.referenceWidth, slide.height / slide.referenceHeight]) {
+    assert.ok(ratio >= 0.65 && ratio <= 0.75, `slide ratio ${ratio}`);
+  }
 });
 
 test("하린의 첫 방어 뒤 세 번 피격하면 caught이며 결과 이벤트는 한 번만 발생한다", () => {

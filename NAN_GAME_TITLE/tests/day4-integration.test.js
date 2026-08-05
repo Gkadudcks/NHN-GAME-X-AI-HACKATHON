@@ -349,7 +349,7 @@ test("DAY 4 페이지는 스토리와 추격 미니게임을 엔진 전에 불�
   const minigameIndex = html.indexOf('src="minigames/day4-office-escape/index.js');
   const engineIndex = html.indexOf('src="js/day4.js');
   assert.ok(storyIndex >= 0 && storyIndex < minigameIndex && minigameIndex < engineIndex);
-  assert.match(html, /day4-office-escape\/style\.css\?v=53/);
+  assert.match(html, /day4-office-escape\/style\.css\?v=57/);
 });
 
 test("모든 DAY 자료 화면은 공용 PPT형 슬라이드 스타일을 사용한다", () => {
@@ -956,7 +956,7 @@ test("V2 퇴근 미니게임은 공개 진입점·결과·저장 연동을 유�
   assert.match(dev, /backgroundBoard/);
 });
 
-test("V2 배경 전환과 조작 UI는 플레이필드 우선 HUD와 키보드 기본 위계를 유지한다", () => {
+test("V2 배경 전환과 조작 UI는 분리된 상단 HUD와 대칭 원형 행동 위계를 유지한다", () => {
   const runtime = read("minigames/day4-office-escape/index.js");
   const style = read("minigames/day4-office-escape/style.css");
   const dev = read("minigames/day4-office-escape/dev/index.html");
@@ -964,16 +964,35 @@ test("V2 배경 전환과 조작 UI는 플레이필드 우선 HUD와 키보드 �
   assert.match(runtime, /Core\.backgroundPresentationAt\(snapshot\.elapsed/);
   assert.match(runtime, /function formatClock\(\) \{ return "17:58"; \}/);
   assert.doesNotMatch(runtime, /oe2-far-layer|oe2-mid-layer|oe2-thresholds|--oe2-far-x|--oe2-mid-x|--oe2-near-x/);
-  assert.match(style, /grid-template-rows: clamp\(68px, 8\.1vh, 76px\)/);
-  assert.match(style, /\.oe2-route\s*\{[^}]*height: 48px/s);
+  assert.match(style, /grid-template-rows: clamp\(88px, 10vh, 96px\)/);
+  assert.match(style, /\.oe2-clock strong\s*\{[^}]*font-size: clamp\(30px, 2\.75vw, 46px\)/s);
+  assert.match(style, /\.oe2-route\s*\{[^}]*height: 68px/s);
+  assert.match(style, /\.oe2-route-line\s*\{[^}]*top: 19px/s);
+  assert.match(style, /\.oe2-route li\s*\{[^}]*grid-template-rows: 42px 18px/s);
   assert.match(style, /\.oe2-route li svg\s*\{[^}]*width: 42px;[^}]*height: 42px;[^}]*box-sizing: border-box/s);
-  assert.match(style, /\.oe2-ring-action\s*\{[^}]*min-width: 90px;[^}]*height: 66px;[^}]*border-radius: 14px/s);
-  assert.match(style, /\.oe2-ring-action svg\s*\{[^}]*fill: none;[^}]*stroke: currentColor/s);
+  assert.match(style, /\.oe2-ring-action\s*\{[^}]*width: 104px;[^}]*height: 104px;[^}]*border: 2px solid[^}]*border-radius: 50%/s);
+  assert.match(style, /\.oe2-ring-action svg\s*\{[^}]*width: 34px;[^}]*height: 34px;[^}]*fill: none;[^}]*stroke: currentColor/s);
+  assert.match(style, /\.oe2-jump\s*\{[^}]*left: clamp\(18px, 2vw, 34px\)/s);
+  assert.match(style, /\.oe2-slide\s*\{[^}]*right: clamp\(18px, 2vw, 34px\)/s);
+  assert.match(runtime, /function telegraphCenterX\(rawCenter, playfieldWidth\)/);
+  assert.match(runtime, /const cueHalfWidth = \(\(refs\.telegraph\.offsetWidth \|\| 116\) \* 1\.07\) \/ 2/);
+  assert.match(runtime, /jumpRect\.right - worldRect\.left \+ controlGap/);
+  assert.match(runtime, /worldRect\.right - slideRect\.left \+ controlGap/);
+  assert.match(runtime, /refs\.telegraph\.style\.left = `\$\{telegraphCenterX\(cuePoint\.x, width\)\}px`/);
+  assert.match(style, /\.oe2-telegraph\[hidden\]\s*\{\s*display:\s*none;\s*\}/);
+  assert.match(dev, /data-preview="run"/);
+  assert.match(dev, /data-preview="jump"/);
+  assert.match(dev, /data-preview="slide"/);
+  assert.match(dev, /data-preview="first-risk" aria-label="첫 위험 cue 정적 장면"/);
   assert.match(runtime, /class="oe2-ring-action oe2-action oe2-jump"/);
   assert.match(dev, /class="oe2-ring-action oe2-review-ring oe2-jump"/);
-  assert.match(runtime, /<kbd>Space · ↑<\/kbd>/);
-  assert.match(runtime, /<kbd>↓<\/kbd>/);
-  assert.match(runtime, /<span>현재 시각<\/span><strong id="oe2-clock">17:58<\/strong>/);
+  assert.match(runtime, /<span>JUMP<\/span>/);
+  assert.match(runtime, /<span>SLIDE<\/span>/);
+  assert.doesNotMatch(runtime, /<kbd>|현재 시각/);
+  assert.doesNotMatch(style, /\.oe2-ring-action\.queued/);
+  assert.match(runtime, /<div class="oe2-clock"><strong id="oe2-clock">17:58<\/strong><\/div>/);
+  assert.doesNotMatch(runtime, /oe2-floor-guide/);
+  assert.doesNotMatch(style, /\.oe2-floor-guide/);
   assert.match(runtime, /class="oe2-assist-badge"/);
   assert.match(style, /\.oe2-pause\s*\{[^}]*width: 48px;[^}]*height: 48px/s);
   assert.doesNotMatch(style, /\.oe2-far-layer|\.oe2-mid-layer|\.oe2-thresholds|--oe2-far-x|--oe2-mid-x|--oe2-near-x/);
@@ -984,7 +1003,8 @@ test("V2 해결·화면 이탈 오브젝트는 hidden 작성자 규칙으로 제
   const runtime = read("minigames/day4-office-escape/index.js");
   const style = read("minigames/day4-office-escape/style.css");
   assert.match(style, /\.oe2-object\[hidden\]\s*\{\s*display:\s*none;\s*\}/);
-  assert.match(runtime, /node\.hidden = !active\.has\(id\) && !exiting/);
+  assert.match(runtime, /node\.hidden = !active\.has\(id\)/);
+  assert.doesNotMatch(runtime, /exitingObjects|is-hit-exiting/);
   assert.match(runtime, /node\.hidden = centerX < -220 \|\| centerX > width \+ 240/);
   assert.match(runtime, /class="oe2-objects" id="oe2-objects" aria-hidden="true"/);
   assert.doesNotMatch(runtime, /id="oe2-objects" aria-live=/);
@@ -993,11 +1013,30 @@ test("V2 해결·화면 이탈 오브젝트는 hidden 작성자 규칙으로 제
   assert.match(runtime, /class="oe2-feedback" id="oe2-feedback" role="status" aria-live="polite"/);
 });
 
-test("V2 플레이어·장애물·cue·dev 판정은 31% bottom-center 단일 투영을 공유한다", () => {
+test("V2 Phase 3 dev preview는 jump hazard·maximum chase·hit 직후를 query로 재현한다", () => {
+  const runtime = read("minigames/day4-office-escape/index.js");
+  const devHtml = read("minigames/day4-office-escape/dev/index.html");
+  const dev = read("minigames/day4-office-escape/dev/dev.js");
+  assert.match(devHtml, /data-preview="maximum" aria-label="최대 추격 대형 정적 장면"/);
+  assert.match(devHtml, /data-preview="hit" aria-label="피격 직후 제거 정적 장면"/);
+  assert.match(dev, /const previewScenes = new Set\(\["run", "jump", "slide", "first-risk", "maximum", "hit", "arrival", "result"\]\)/);
+  assert.match(dev, /const initialScene = previewScenes\.has\(params\.get\("scene"\)\)/);
+  assert.match(dev, /setQuery\("scene", currentScene\)/);
+  assert.match(runtime, /scene === "jump" \? 4\.5/);
+  assert.match(runtime, /previewCore\.pressJump\(\); previewCore\.step\(0\.2\)/);
+  assert.match(runtime, /scene === "maximum" \? \{[\s\S]*chasePressure: Core\.CHASE_PRESSURE\.maximum/);
+  assert.match(runtime, /if \(scene === "hit"\) render\(previewCore\.snapshot\(\)\)/);
+  assert.match(runtime, /if \(scene === "hit"\) previewCore\.step\(Core\.FIXED_STEP\)/);
+  assert.match(runtime, /refs\.feedback\.textContent = "회전 의자에 부딪힘 · 남은 여유 2회"/);
+});
+
+test("V2 플레이어·장애물·cue·dev 판정은 62.5% bottom-center 단일 투영을 공유한다", () => {
+  const html = read("day4.html");
+  const dev = read("minigames/day4-office-escape/dev/index.html");
   const core = read("minigames/day4-office-escape/core.js");
   const runtime = read("minigames/day4-office-escape/index.js");
   const style = read("minigames/day4-office-escape/style.css");
-  assert.match(core, /const VIEW_PLAYER_ANCHOR_X_RATIO = 0\.31/);
+  assert.match(core, /const VIEW_PLAYER_ANCHOR_X_RATIO = 0\.625/);
   assert.match(core, /const VIEW_GROUND_RATIO = 0\.09/);
   assert.match(core, /function screenProjection\(snapshot, viewportWidth, viewportHeight\)/);
   assert.match(core, /function projectWorldRect\(rect, projection\)/);
@@ -1005,27 +1044,40 @@ test("V2 플레이어·장애물·cue·dev 판정은 31% bottom-center 단일 �
   assert.match(runtime, /Core\.projectWorldRect\(snapshot\.playerRect, projection\)/);
   assert.match(runtime, /Core\.projectWorldRect\(art, projection\)/);
   assert.match(runtime, /Core\.projectWorldPoint\(\{ x: cueRect\.x \+ cueRect\.width \/ 2/);
+  assert.match(core, /function actorScreenGeometry\(metric, anchor, projection\)/);
+  assert.match(core, /function actorFormationGeometry\(metrics, projection, chasePressure/);
+  assert.match(runtime, /Core\.actorFormationGeometry\(actorMetrics, projection, snapshot\.chasePressure\)/);
+  assert.match(runtime, /function renderPlayerReference\(metric, projection\)/);
   assert.match(runtime, /id="oe2-player-body" aria-hidden="true"/);
-  assert.match(style, /\.oe2-doyun\s*\{[^}]*transform: translateX\(-50%\)/s);
-  assert.match(style, /\.show-hitboxes \.oe2-player-body\s*\{\s*display: block;/);
+  assert.match(runtime, /id="oe2-player-reference" aria-hidden="true"/);
+  assert.match(style, /\.oe2-actor\s*\{[^}]*width: var\(--oe2-canvas-size\)[^}]*height: var\(--oe2-canvas-size\)/s);
+  assert.match(style, /\.show-hitboxes \.oe2-player-reference,\.show-hitboxes \.oe2-player-body\s*\{\s*display: block;/);
+  assert.doesNotMatch(style, /cqh/);
   assert.doesNotMatch(style, /\[data-composition="[ab]"\][^{]*\{[^}]*--oe2-ground/);
   assert.doesNotMatch(style, /\[data-composition="[abc]"\][^{]*\.oe2-doyun/);
   assert.doesNotMatch(runtime, /snapshot\.y\s*=|snapshot\.sliding\s*=/);
+  for (const source of [html, dev]) {
+    assert.match(source, /day4-office-escape\/art-assets\.js\?v=3/);
+  }
+  assert.match(html, /day4-office-escape\/style\.css\?v=57/);
+  assert.match(html, /day4-office-escape\/core\.js\?v=27/);
+  assert.match(html, /day4-office-escape\/index\.js\?v=77/);
+  assert.match(dev, /day4-office-escape\/style\.css\?v=14/);
+  assert.match(dev, /day4-office-escape\/core\.js\?v=27/);
+  assert.match(dev, /day4-office-escape\/index\.js\?v=20/);
+  assert.match(dev, /day4-office-escape\/dev\/dev\.js\?v=10/);
 });
 
-test("V2 행동 cue는 PREP·input-ready·ACT와 장애물별 예약 입력 계약을 노출한다", () => {
+test("V2 행동 cue는 PREP·ACT 정보만 제공하고 입력은 직접 실행한다", () => {
   const core = read("minigames/day4-office-escape/core.js");
   const runtime = read("minigames/day4-office-escape/index.js");
   assert.match(core, /const ACTION_LEAD_TIME = Object\.freeze\(\{ jump: 0\.16, slide: 0\.15 \}\)/);
-  assert.match(core, /const INPUT_READY_LEAD_TIME = Object\.freeze\(\{ tutorial: 1\.3, standard: 0\.9 \}\)/);
   assert.match(core, /const TUTORIAL_PREPARE_LEAD_TIME = 1\.8/);
-  assert.match(core, /if \(leadTime <= inputReadyLeadFor\(object\)\) return "input-ready"/);
-  assert.match(core, /reservedInput = \{ objectId: upcoming\.id, action, acceptedAt: state\.elapsed \}/);
-  assert.match(core, /emit\("inputQueued"/);
-  assert.match(core, /emit\("inputExecuted"/);
-  assert.match(runtime, /upcoming\.telegraphPhase === "input-ready"/);
-  assert.match(runtime, /입력 완료 · 자동 실행 대기/);
-  assert.match(runtime, /classList\.toggle\("queued"/);
+  assert.match(core, /function cuePhaseFor\(object, leadTime\) \{\s*if \(leadTime <= actionLeadFor\(object\.avoid\)\) return "act";\s*return "prepare";/);
+  assert.match(core, /function pressJump\(\) \{\s*jumpBuffer = JUMP_BUFFER;/);
+  assert.match(core, /function commitSlide\(\) \{\s*activateSlide\(\);/);
+  assert.doesNotMatch(core, /reservedInput|reserveInput|inputQueued|inputExecuted|input-ready/);
+  assert.doesNotMatch(runtime, /inputQueued|inputExecuted|input-ready|classList\.(?:toggle|add|remove)\("queued"\)|자동 실행 대기|알맞을 때 실행/);
 });
 
 test("V2 Phase 4 HUD·피격·pause·결과 접근성 계약을 유지한다", () => {
@@ -1038,7 +1090,7 @@ test("V2 Phase 4 HUD·피격·pause·결과 접근성 계약을 유지한다", (
   assert.match(runtime, /남은 여유 \$\{remaining\}회/);
   assert.match(runtime, /붙잡힘 확정/);
   assert.doesNotMatch(runtime, /\$\{event\.hitCount\}\/3/);
-  assert.match(runtime, /state\.exitingObjects\.set\(event\.object\.id, state\.uiElapsed \+ 0\.3\)/);
+  assert.doesNotMatch(runtime, /exitingObjects|is-hit-exiting/);
   assert.match(runtime, /state\.hitStopUntil = state\.uiElapsed \+ 0\.09/);
   assert.match(runtime, /회복 완료 · 다시 움직일 수 있습니다/);
   assert.match(runtime, /state\.pressedUntil = \{ jump: 0, slide: 0 \}/);
@@ -1046,10 +1098,25 @@ test("V2 Phase 4 HUD·피격·pause·결과 접근성 계약을 유지한다", (
   assert.match(runtime, /refs\.feedback\.removeAttribute\("data-kind"\)/);
   assert.match(runtime, /refs\.resultAction\.focus\(\{ preventScroll: true \}\)/);
   assert.match(runtime, /refs\.jump\.disabled = true/);
+  assert.match(runtime, /refs\.pause\.disabled = true/);
+  assert.match(runtime, /function renderResultState\(result\)/);
+  assert.match(runtime, /const PREVIEW_RESULT = Object\.freeze\(\{[\s\S]*grade: "perfect"[\s\S]*caught: false[\s\S]*hitCount: 0[\s\S]*collectedItems: Object\.freeze\(\[\]\)[\s\S]*maxCombo: 18/s);
+  assert.match(runtime, /if \(scene === "result"\) \{[\s\S]*renderResultState\(PREVIEW_RESULT\)/);
+  assert.match(runtime, /state\.restartOptions = \{ \.\.\.state\.restartOptions, previewScene: "run" \}/);
+  assert.match(runtime, /refs\.jump\.disabled = false;[\s\S]*refs\.slide\.disabled = false;[\s\S]*refs\.pause\.disabled = false;/);
+  assert.match(runtime, /refs\.result\.hidden = true;/);
+  assert.match(runtime, /if \(restartOptions\.autoStart === false\) refs\.jump\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(runtime, /result\.hitCount === 0 \? `무피격 \$\{grade\}`/);
+  assert.match(runtime, /refs\.resultGoal\.textContent = `수집 \$\{result\.collectedItems\.length\}\/3 · 선택 목표`/);
+  assert.match(runtime, /result\.caught[\s\S]*부장님에게 붙잡혔습니다\. 확인 업무 후 퇴근합니다\./);
   assert.match(runtime, /options\.resultAction === "restart"/);
-  assert.match(style, /\.oe2-object\.is-hit-exiting[^}]*animation: oe2-hit-exit 300ms/);
+  assert.doesNotMatch(style, /is-hit-exiting|oe2-hit-exit/);
   assert.match(style, /\.office-escape-v2\.is-paused \.oe2-object[\s\S]*animation-play-state: paused !important/);
   assert.match(devHtml, /id="oe2-dev-tools-toggle"[^>]*aria-expanded="false"/);
+  assert.match(devHtml, /data-preview="result" aria-label="무피격 결과 정적 장면">결과<\/button>/);
+  assert.match(devHtml, /\.oe2-dev-tools-toggle\s*\{[^}]*top: 108px;[^}]*right: 16px/s);
+  assert.doesNotMatch(devHtml, /\.oe2-dev-tools-toggle\s*\{[^}]*left:/s);
+  assert.match(dev, /resultAction: currentScene === "result" \? "restart" : undefined/);
   assert.match(dev, /setToolsCollapsed\(true\);[\s\S]*resultAction: "restart"/);
 });
 
@@ -1068,8 +1135,8 @@ test("V2 Phase 5 코스 구간과 추격 압박은 기존 결과·pause 계약 �
   assert.match(core, /stage: "finale", pattern: "finish"/);
   assert.match(runtime, /root\.dataset\.courseStage = snapshot\.courseStage\.id/);
   assert.match(runtime, /refs\.boss\.dataset\.chaseState = snapshot\.chaseState/);
-  assert.match(runtime, /snapshot\.chasePressure \* 8/);
-  assert.match(style, /\.oe2-boss\s*\{[^}]*--oe2-chase-shift:[^}]*left: calc\(var\(--oe2-boss-base\) \+ var\(--oe2-chase-shift\)\)/s);
+  assert.match(runtime, /Core\.actorFormationGeometry\(actorMetrics, projection, snapshot\.chasePressure\)/);
+  assert.match(core, /bossHarinMinimumGap: 10/);
   assert.match(style, /\.oe2-boss\[data-chase-state="closing"\]/);
   assert.match(style, /\.office-escape-v2\.is-paused \.oe2-route-line i,\.office-escape-v2\.is-paused \.oe2-actor \{ transition: none; \}/);
   assert.match(style, /@media \(prefers-reduced-motion: reduce\)/);

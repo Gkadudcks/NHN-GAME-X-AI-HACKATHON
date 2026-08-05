@@ -51,6 +51,14 @@
     bossCall: "minigame_character.boss.call.right",
   });
   const ITEM_IDS = Object.freeze(["access-card", "phone", "backup-usb"]);
+  const PREVIEW_RESULT = Object.freeze({
+    grade: "perfect",
+    caught: false,
+    elapsed: Core.DEFAULT_DURATION,
+    hitCount: 0,
+    collectedItems: Object.freeze([]),
+    maxCombo: 18,
+  });
 
   let root = null;
   let refs = null;
@@ -74,7 +82,6 @@
     pressedUntil: { jump: 0, slide: 0 },
     hitStopUntil: 0,
     impactUntil: 0,
-    exitingObjects: new Map(),
     wasInvulnerable: false,
     restartOnResult: false,
     restartOptions: null,
@@ -113,7 +120,7 @@
   function markup() {
     return `
       <header class="oe2-hud" aria-label="퇴근 경로 상태">
-        <div class="oe2-clock"><span>현재 시각</span><strong id="oe2-clock">17:58</strong></div>
+        <div class="oe2-clock"><strong id="oe2-clock">17:58</strong></div>
         <div class="oe2-route" role="progressbar" aria-label="엘리베이터까지 진행" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="사무실 · 0%">
           <div class="oe2-route-line"><i id="oe2-route-progress"></i></div>
           <ol>
@@ -133,7 +140,7 @@
       </header>
       <div class="oe2-world" aria-label="부장님을 피해 엘리베이터로 달리는 사무실" role="application">
         <div class="oe2-background-track" id="oe2-background-track" aria-hidden="true">${backgroundPanels()}</div>
-        <div class="oe2-ground" aria-hidden="true"><i class="oe2-floor-guide"></i><i class="oe2-speed-line"></i><i class="oe2-speed-line"></i><i class="oe2-speed-line"></i></div>
+        <div class="oe2-ground" aria-hidden="true"><i class="oe2-speed-line"></i><i class="oe2-speed-line"></i><i class="oe2-speed-line"></i></div>
         <ol class="oe2-zone-markers" aria-hidden="true"><li class="is-active"><span>1</span><b>사무실</b></li><li><span>2</span><b>복도</b></li><li><span>3</span><b>로비</b></li></ol>
         <div class="oe2-objects" id="oe2-objects" aria-hidden="true"></div>
         <div class="oe2-actors" aria-label="부장님, 서하린, 도윤의 추격 대형">
@@ -141,13 +148,14 @@
           <figure class="oe2-actor oe2-harin"><img id="oe2-harin" src="${resolve(CHARACTER_IDS.harinRun)}" alt="도윤과 함께 달리는 서하린"><div class="oe2-assist-badge" id="oe2-assist-badge" aria-hidden="true">${icon("shield")}<span>하린이 막아줬다!</span></div></figure>
           <figure class="oe2-actor oe2-doyun"><img id="oe2-doyun" src="${resolve(CHARACTER_IDS.doyunRun)}" alt="오른쪽으로 달리는 도윤"></figure>
         </div>
+        <div class="oe2-player-reference" id="oe2-player-reference" aria-hidden="true"></div>
         <div class="oe2-player-body" id="oe2-player-body" aria-hidden="true"></div>
         <div class="oe2-telegraph" id="oe2-telegraph" hidden><strong id="oe2-telegraph-action">JUMP</strong><span id="oe2-telegraph-label"></span></div>
         <div class="oe2-feedback" id="oe2-feedback" role="status" aria-live="polite"></div>
-        <button class="oe2-ring-action oe2-action oe2-jump" type="button" aria-label="점프, Space 또는 위 화살표">${icon("up")}<span>점프</span><kbd>Space · ↑</kbd></button>
-        <button class="oe2-ring-action oe2-action oe2-slide" type="button" aria-label="슬라이드, 아래 화살표">${icon("down")}<span>슬라이드</span><kbd>↓</kbd></button>
+        <button class="oe2-ring-action oe2-action oe2-jump" type="button" aria-label="점프, Space 또는 위 화살표">${icon("up")}<span>JUMP</span></button>
+        <button class="oe2-ring-action oe2-action oe2-slide" type="button" aria-label="슬라이드, 아래 화살표 또는 S">${icon("down")}<span>SLIDE</span></button>
         <div class="oe2-pause-screen" aria-live="polite"><strong>일시정지</strong><span>ESC 또는 일시정지 버튼으로 계속합니다</span></div>
-        <section class="oe2-result" id="oe2-result" hidden role="dialog" aria-modal="true" aria-labelledby="oe2-result-grade" aria-describedby="oe2-result-copy"><strong id="oe2-result-grade">PERFECT</strong><p id="oe2-result-copy"></p><button type="button" id="oe2-result-continue">스토리 계속하기</button></section>
+        <section class="oe2-result" id="oe2-result" hidden role="dialog" aria-modal="true" aria-labelledby="oe2-result-grade" aria-describedby="oe2-result-copy oe2-result-goal"><strong id="oe2-result-grade">무피격 PERFECT</strong><p id="oe2-result-copy"></p><p id="oe2-result-goal" class="oe2-result-goal"></p><button type="button" id="oe2-result-continue">스토리 계속하기</button></section>
       </div>`;
   }
 
@@ -166,11 +174,11 @@
       routeNodes: [...root.querySelectorAll(".oe2-route li")], zoneNodes: [...root.querySelectorAll(".oe2-zone-markers li")],
       backgroundPanels: [...root.querySelectorAll(".oe2-background-panel")],
       backgroundImages: [...root.querySelectorAll(".oe2-background-panel img")],
-      objects: root.querySelector("#oe2-objects"), boss: root.querySelector(".oe2-boss"), harin: root.querySelector(".oe2-harin"), doyun: root.querySelector(".oe2-doyun"), playerBody: root.querySelector("#oe2-player-body"),
+      objects: root.querySelector("#oe2-objects"), boss: root.querySelector(".oe2-boss"), harin: root.querySelector(".oe2-harin"), doyun: root.querySelector(".oe2-doyun"), playerReference: root.querySelector("#oe2-player-reference"), playerBody: root.querySelector("#oe2-player-body"),
       actors: { boss: root.querySelector("#oe2-boss"), harin: root.querySelector("#oe2-harin"), doyun: root.querySelector("#oe2-doyun") },
       telegraph: root.querySelector("#oe2-telegraph"), telegraphAction: root.querySelector("#oe2-telegraph-action"), telegraphLabel: root.querySelector("#oe2-telegraph-label"),
       feedback: root.querySelector("#oe2-feedback"), assistBadge: root.querySelector("#oe2-assist-badge"), jump: root.querySelector(".oe2-jump"), slide: root.querySelector(".oe2-slide"), pause: root.querySelector(".oe2-pause"),
-      result: root.querySelector("#oe2-result"), resultGrade: root.querySelector("#oe2-result-grade"), resultCopy: root.querySelector("#oe2-result-copy"), resultAction: root.querySelector("#oe2-result-continue"),
+      result: root.querySelector("#oe2-result"), resultGrade: root.querySelector("#oe2-result-grade"), resultCopy: root.querySelector("#oe2-result-copy"), resultGoal: root.querySelector("#oe2-result-goal"), resultAction: root.querySelector("#oe2-result-continue"),
       items: new Map([...root.querySelectorAll("[data-item]")].map((node) => [node.dataset.item, node])), objectNodes: new Map(),
     };
     refs.jump.addEventListener("click", triggerJump);
@@ -180,7 +188,7 @@
     return root;
   }
 
-  function setActorArt(role, id, targetVisualHeight) {
+  function setActorArt(role, id, projection, anchor) {
     const image = refs.actors[role];
     const host = refs[role];
     if (!image || !host) return;
@@ -189,9 +197,23 @@
       state.actorArt.set(role, id);
     }
     const metric = Art.metrics(id);
+    const geometry = Core.actorScreenGeometry(metric, { x: 0, bottom: projection.ground }, projection);
+    const canvasSize = geometry.canvasSize;
     host.style.setProperty("--oe2-alpha-height", String(metric.alphaHeight));
     host.style.setProperty("--oe2-bottom-padding", String(metric.bottomPadding));
-    host.style.setProperty("--oe2-visual-height", `${targetVisualHeight}cqh`);
+    host.style.setProperty("--oe2-canvas-size", `${canvasSize}px`);
+    host.style.translate = `${-metric.footAnchor.x * canvasSize}px 0`;
+    host.style.left = `${anchor.x}px`;
+    host.style.bottom = `${anchor.bottom}px`;
+    return metric;
+  }
+
+  function renderPlayerReference(metric, projection) {
+    const geometry = Core.actorScreenGeometry(metric, { x: projection.playerAnchorX, bottom: projection.playerAnchorBottom }, projection);
+    refs.playerReference.style.left = `${geometry.reference.left}px`;
+    refs.playerReference.style.bottom = `${geometry.reference.bottom}px`;
+    refs.playerReference.style.width = `${geometry.reference.width}px`;
+    refs.playerReference.style.height = `${geometry.reference.height}px`;
   }
 
   function updateBackgroundSources() {
@@ -228,13 +250,8 @@
   function renderObjects(snapshot, projection) {
     const { width, scale } = projection;
     const active = new Set(snapshot.activeObjects.map((object) => object.id));
-    state.exitingObjects.forEach((until, id) => {
-      if (state.uiElapsed >= until) state.exitingObjects.delete(id);
-    });
     refs.objectNodes.forEach((node, id) => {
-      const exiting = state.exitingObjects.has(id);
-      node.hidden = !active.has(id) && !exiting;
-      node.classList.toggle("is-hit-exiting", exiting);
+      node.hidden = !active.has(id);
     });
     snapshot.activeObjects.forEach((object) => {
       const node = objectNode(object);
@@ -292,9 +309,24 @@
     state.feedbackUntil = state.uiElapsed + 1.1;
   }
 
+  function telegraphCenterX(rawCenter, playfieldWidth) {
+    const worldRect = refs.world.getBoundingClientRect();
+    const jumpRect = refs.jump.getBoundingClientRect();
+    const slideRect = refs.slide.getBoundingClientRect();
+    const cueHalfWidth = ((refs.telegraph.offsetWidth || 116) * 1.07) / 2;
+    const controlGap = 16;
+    const edgeGap = 24;
+    const buttonSafeLeft = Math.max(edgeGap, jumpRect.right - worldRect.left + controlGap);
+    const buttonSafeRight = Math.max(edgeGap, worldRect.right - slideRect.left + controlGap);
+    const minimum = buttonSafeLeft + cueHalfWidth;
+    const maximum = playfieldWidth - buttonSafeRight - cueHalfWidth;
+    return minimum <= maximum
+      ? Math.max(minimum, Math.min(maximum, rawCenter))
+      : playfieldWidth / 2;
+  }
+
   function consumeEvents(snapshot) {
     state.game.drainEvents().forEach((event) => {
-      if (event.type === "inputQueued") showFeedback(`${event.action === "jump" ? "점프" : "슬라이드"} 입력 완료 · 알맞을 때 실행`, "action");
       if (event.type === "jump") { state.pressedUntil.jump = state.uiElapsed + 0.16; showFeedback("점프!", "action"); }
       if (event.type === "slide") { state.pressedUntil.slide = state.uiElapsed + 0.16; showFeedback("슬라이드!", "action"); }
       if (event.type === "avoid") showFeedback(`${event.object.avoid === "jump" ? "점프" : "슬라이드"} 통과!`, "safe");
@@ -304,7 +336,6 @@
         const remaining = Math.max(0, 3 - event.hitCount);
         const label = event.object?.label || "장애물";
         showFeedback(remaining > 0 ? `${label}에 부딪힘 · 남은 여유 ${remaining}회` : `${label}에 부딪힘 · 붙잡힘 확정`, "hit");
-        state.exitingObjects.set(event.object.id, state.uiElapsed + 0.3);
         state.hitStopUntil = state.uiElapsed + 0.09;
         state.impactUntil = state.uiElapsed + 0.3;
       }
@@ -347,15 +378,18 @@
     const doyunId = snapshot.sliding ? CHARACTER_IDS.doyunSlide : snapshot.y > 1 ? CHARACTER_IDS.doyunJump : gait ? CHARACTER_IDS.doyunRunAlt : CHARACTER_IDS.doyunRun;
     const harinId = snapshot.assistUsed && snapshot.invulnerable > 0 ? CHARACTER_IDS.harinAssist : gait ? CHARACTER_IDS.harinRunAlt : CHARACTER_IDS.harinRun;
     const bossId = gait ? CHARACTER_IDS.bossRunAlt : CHARACTER_IDS.bossRun;
-    setActorArt("doyun", doyunId, snapshot.sliding ? 27.5 : 50);
-    setActorArt("harin", harinId, 48);
-    setActorArt("boss", bossId, 52);
+    const actorMetrics = {
+      doyun: Art.metrics(doyunId),
+      harin: Art.metrics(harinId),
+      boss: Art.metrics(bossId),
+    };
+    const formation = Core.actorFormationGeometry(actorMetrics, projection, snapshot.chasePressure);
+    const doyunMetric = setActorArt("doyun", doyunId, projection, formation.anchors.doyun);
+    setActorArt("harin", harinId, projection, formation.anchors.harin);
+    setActorArt("boss", bossId, projection, formation.anchors.boss);
     refs.boss.dataset.chaseState = snapshot.chaseState;
     refs.boss.style.setProperty("--oe2-chase-pressure", String(snapshot.chasePressure));
-    refs.boss.style.setProperty("--oe2-chase-shift", `${(snapshot.chasePressure * 8).toFixed(2)}cqw`);
-    refs.doyun.style.left = `${projection.playerAnchorX}px`;
-    refs.doyun.style.bottom = `${projection.ground}px`;
-    refs.doyun.style.translate = `0 ${-snapshot.playerAnchor.y * scale}px`;
+    renderPlayerReference(doyunMetric, projection);
     const playerBody = Core.projectWorldRect(snapshot.playerRect, projection);
     refs.playerBody.style.left = `${playerBody.left}px`;
     refs.playerBody.style.bottom = `${playerBody.bottom}px`;
@@ -368,38 +402,56 @@
       const object = snapshot.activeObjects.find((candidate) => candidate.id === upcoming.id) || upcoming;
       const cueRect = object.collisionRect || object.visibleRect || object;
       const cuePoint = Core.projectWorldPoint({ x: cueRect.x + cueRect.width / 2, y: cueRect.y + cueRect.height }, projection);
-      refs.telegraph.style.left = `${Math.max(24, Math.min(width - 180, cuePoint.x))}px`;
-      refs.telegraph.style.bottom = `${Math.max(projection.ground + 12, Math.min(height - 84, cuePoint.bottom + 12))}px`;
       refs.telegraph.dataset.phase = upcoming.telegraphPhase;
       const action = upcoming.avoid.toUpperCase();
-      refs.telegraphAction.textContent = upcoming.inputQueued ? `${action} ✓` : upcoming.telegraphPhase === "act" ? `${action} NOW` : action;
-      refs.telegraphLabel.textContent = upcoming.inputQueued
-        ? "입력 완료 · 자동 실행 대기"
-        : upcoming.telegraphPhase === "input-ready"
-          ? "지금 누르면 알맞을 때 실행"
-          : upcoming.telegraphPhase === "act" ? "지금!" : `${upcoming.label} · 준비`;
+      refs.telegraphAction.textContent = upcoming.telegraphPhase === "act" ? `${action} NOW` : action;
+      refs.telegraphLabel.textContent = upcoming.telegraphPhase === "act" ? "지금!" : `${upcoming.label} · 준비`;
+      refs.telegraph.style.left = `${telegraphCenterX(cuePoint.x, width)}px`;
+      refs.telegraph.style.bottom = `${Math.max(projection.ground + 12, Math.min(height - 84, cuePoint.bottom + 12))}px`;
     }
-    refs.jump.classList.toggle("queued", Boolean(upcoming?.inputQueued && upcoming.avoid === "jump"));
-    refs.slide.classList.toggle("queued", Boolean(upcoming?.inputQueued && upcoming.avoid === "slide"));
     refs.jump.classList.toggle("active", root.dataset.scene === "jump");
     refs.slide.classList.toggle("active", snapshot.sliding);
   }
 
   function preview(scene = "run") {
-    if (!new Set(["run", "jump", "slide", "arrival"]).has(scene)) return;
+    if (!new Set(["run", "jump", "slide", "first-risk", "maximum", "hit", "arrival", "result"]).has(scene)) return;
     ensureRoot();
     cancelAnimationFrame(frame);
     state.playing = false;
     state.paused = false;
     state.previewScene = scene;
-    const previewCore = Core.create({ duration: Core.DEFAULT_DURATION, assist: true });
-    const seconds = scene === "arrival" ? 61.5 : scene === "slide" ? 8.65 : scene === "jump" ? 4.65 : 2;
+    root.classList.remove("is-impact");
+    refs.feedback.classList.remove("show");
+    refs.feedback.textContent = "";
+    refs.feedback.removeAttribute("data-kind");
+    const hitCourse = [{ id: "preview-hit", kind: "hazard", type: "chair", avoid: "jump", label: "회전 의자", x: 70, y: 0, width: 72, height: 42 }];
+    const previewCore = Core.create(scene === "hit"
+      ? { duration: 8, length: 1800, assist: false, course: hitCourse }
+      : { duration: Core.DEFAULT_DURATION, assist: true });
+    if (scene === "hit") render(previewCore.snapshot());
+    const seconds = scene === "arrival" || scene === "result" ? 61.5 : scene === "slide" ? 8.65 : scene === "jump" ? 4.5 : scene === "first-risk" ? 3.4 : scene === "hit" ? 0 : 2;
     for (let elapsed = 0; elapsed < seconds && !previewCore.snapshot().finished; elapsed += 0.1) previewCore.step(0.1);
-    if (scene === "jump") { previewCore.pressJump(); previewCore.step(0.36); }
+    if (scene === "jump") { previewCore.pressJump(); previewCore.step(0.2); }
     if (scene === "slide") { previewCore.commitSlide(); previewCore.step(0.12); }
-    const snapshot = previewCore.snapshot();
-    if (scene === "arrival") snapshot.finished = true;
+    if (scene === "hit") previewCore.step(Core.FIXED_STEP);
+    const sourceSnapshot = previewCore.snapshot();
+    const snapshot = scene === "maximum" ? {
+      ...sourceSnapshot,
+      chasePressure: Core.CHASE_PRESSURE.maximum,
+      chaseState: "closing",
+    } : sourceSnapshot;
+    if (scene === "arrival" || scene === "result") snapshot.finished = true;
     render(snapshot);
+    if (scene === "result") {
+      if (state.restartOnResult && state.restartOptions) state.restartOptions = { ...state.restartOptions, previewScene: "run" };
+      renderResultState(PREVIEW_RESULT);
+    }
+    if (scene === "hit") {
+      refs.feedback.textContent = "회전 의자에 부딪힘 · 남은 여유 2회";
+      refs.feedback.dataset.kind = "hit";
+      refs.feedback.classList.add("show");
+      root.classList.add("is-impact");
+    }
   }
 
   function start(options = {}) {
@@ -420,7 +472,6 @@
     state.pressedUntil = { jump: 0, slide: 0 };
     state.hitStopUntil = 0;
     state.impactUntil = 0;
-    state.exitingObjects.clear();
     state.wasInvulnerable = false;
     root.hidden = false;
     root.dataset.composition = state.composition;
@@ -428,8 +479,8 @@
     refs.jump.disabled = false;
     refs.slide.disabled = false;
     refs.pause.disabled = false;
-    refs.jump.classList.remove("pressed", "queued");
-    refs.slide.classList.remove("pressed", "queued");
+    refs.jump.classList.remove("pressed");
+    refs.slide.classList.remove("pressed");
     refs.feedback.classList.remove("show");
     refs.feedback.textContent = "";
     refs.feedback.removeAttribute("data-kind");
@@ -488,29 +539,40 @@
     refs.pause.setAttribute("aria-label", "일시정지");
     refs.pause.innerHTML = icon("pause");
   }
-  function finishRun(event) {
-    if (state.completed) return;
+  function renderResultState(result) {
     state.completed = true;
     state.playing = false;
     cancelAnimationFrame(frame);
-    const result = event.result || state.game.result();
     root.classList.add("is-complete");
-    root.classList.remove("is-impact");
+    root.classList.remove("is-impact", "is-paused");
+    state.paused = false;
     refs.jump.disabled = true;
     refs.slide.disabled = true;
     refs.pause.disabled = true;
-    refs.jump.classList.remove("pressed", "queued");
-    refs.slide.classList.remove("pressed", "queued");
+    refs.jump.classList.remove("pressed");
+    refs.slide.classList.remove("pressed");
     refs.result.hidden = false;
-    refs.resultGrade.textContent = result.grade.toUpperCase();
-    refs.resultCopy.textContent = result.caught ? "부장님에게 붙잡혔습니다. 확인 업무 후 퇴근합니다." : `피격 ${result.hitCount}회 · 수집 ${result.collectedItems.length}/3`;
+    const grade = result.grade.toUpperCase();
+    refs.resultGrade.textContent = result.caught
+      ? `붙잡힘 ${grade}`
+      : result.hitCount === 0 ? `무피격 ${grade}` : `피격 ${result.hitCount}회 ${grade}`;
+    refs.resultCopy.textContent = result.caught
+      ? "부장님에게 붙잡혔습니다. 확인 업무 후 퇴근합니다."
+      : result.hitCount === 0 ? "장애물에 부딪히지 않고 도착했습니다." : "피격 횟수를 기준으로 산정한 등급입니다.";
+    refs.resultGoal.textContent = `수집 ${result.collectedItems.length}/3 · 선택 목표`;
     state.finalResult = result;
     refs.resultAction.focus({ preventScroll: true });
+  }
+  function finishRun(event) {
+    if (state.completed) return;
+    renderResultState(event.result || state.game.result());
   }
   function handleResultAction() {
     if (!state.completed) return;
     if (state.restartOnResult && state.restartOptions) {
-      start(state.restartOptions);
+      const restartOptions = state.restartOptions;
+      start(restartOptions);
+      if (restartOptions.autoStart === false) refs.jump.focus({ preventScroll: true });
       return;
     }
     completeToStory();

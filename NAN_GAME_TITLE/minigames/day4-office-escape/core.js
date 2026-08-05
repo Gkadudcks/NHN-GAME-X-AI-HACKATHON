@@ -9,21 +9,23 @@
   const DEFAULT_LENGTH = 16000;
   const FIXED_STEP = 1 / 120;
   const PLAYER_X_OFFSET = 8;
+  const PLAYER_PATH_WIDTH = 44;
   const PLAYER_BOTTOM_FORGIVENESS = 8;
-  const PLAYER_WIDTH = 44;
-  const STANDING_HEIGHT = 88;
-  // The slide sprite is deliberately long, but its collision box stays close
-  // to Doyun's hips. This lets a 0.7s committed slide clear a desk-height
-  // obstacle without treating transparent leading pixels as a hit.
-  const SLIDING_WIDTH = 50;
-  const SLIDING_HEIGHT = 42;
+  const PLAYER_WIDTH = 127;
+  const STANDING_HEIGHT = 168;
+  const SLIDING_WIDTH = 113;
+  const SLIDING_HEIGHT = 70;
+  const PLAYER_PROFILES = Object.freeze({
+    run: Object.freeze({ width: PLAYER_WIDTH, height: STANDING_HEIGHT, referenceWidth: 224 * 386 / 512, referenceHeight: 224 }),
+    jump: Object.freeze({ width: PLAYER_WIDTH, height: STANDING_HEIGHT, referenceWidth: 224 * 365 / 480, referenceHeight: 224 }),
+    slide: Object.freeze({ width: SLIDING_WIDTH, height: SLIDING_HEIGHT, referenceWidth: 123 * 260 / 198, referenceHeight: 123 * 162 / 198 }),
+  });
   const GRAVITY = 1900;
   const JUMP_VELOCITY = 760;
   const JUMP_BUFFER = 0.12;
   const SLIDE_DURATION = 0.7;
   const SLIDE_RECOVERY = 0.15;
   const ACTION_LEAD_TIME = Object.freeze({ jump: 0.16, slide: 0.15 });
-  const INPUT_READY_LEAD_TIME = Object.freeze({ tutorial: 1.3, standard: 0.9 });
   const TUTORIAL_PREPARE_LEAD_TIME = 1.8;
   const INVULNERABLE_TIME = 0.75;
   const MIN_HAZARD_GAP_SECONDS = 2.8;
@@ -38,8 +40,19 @@
   const GAIT_PHASE_DELAY_MS = Object.freeze({ doyun: 0, harin: 150, boss: 300 });
   const COLLISION_INSET = Object.freeze({ horizontal: 0.11, vertical: 0.15 });
   const VIEW_REFERENCE_WIDTH = 780;
-  const VIEW_PLAYER_ANCHOR_X_RATIO = 0.31;
+  const VIEW_PLAYER_ANCHOR_X_RATIO = 0.625;
   const VIEW_GROUND_RATIO = 0.09;
+  const ACTOR_FORMATION = Object.freeze({
+    doyunHarinGap: 12,
+    bossHarinSteadyGap: 30,
+    bossHarinMinimumGap: 10,
+    viewportMarginRatio: 0.016,
+    viewportMarginMinimum: 16,
+    minimumForwardViewRatio: 0.25,
+  });
+  const HAZARD_EDGE_ALIGNMENT = 2;
+  const SLIDE_CLEARANCE = 8;
+  const SLIDE_DRAWER_WIDTH = 152;
 
   const PROP_ART_FRAMING = Object.freeze({
     chair: Object.freeze({ alphaWidth: 333 / 512, alphaHeight: 468 / 512, bottomPadding: 12 / 512 }),
@@ -82,23 +95,23 @@
 
   const COURSE_BEATS = Object.freeze([
     Object.freeze({ time: 5, stage: "learning", pattern: "introduce", avoid: "jump", type: "chair", label: "회전 의자", width: 76, height: 42, motion: "roll" }),
-    Object.freeze({ time: 9, stage: "learning", pattern: "introduce", avoid: "slide", type: "drawer", label: "낮은 서랍", width: 76, height: 36, y: 56 }),
+    Object.freeze({ time: 9, stage: "learning", pattern: "introduce", avoid: "slide", type: "drawer", label: "낮은 서랍", width: SLIDE_DRAWER_WIDTH, height: 36, y: 56 }),
     Object.freeze({ time: 13, stage: "learning", pattern: "reinforce", avoid: "jump", type: "cable", label: "전원 케이블", width: 122, height: 24 }),
     Object.freeze({ time: 16.7, stage: "learning", pattern: "reinforce", avoid: "slide", type: "sign", label: "낮은 안내 표지", width: 70, height: 36, y: 56, motion: "sway" }),
     Object.freeze({ time: 20, stage: "mixed", pattern: "repeat-jump", avoid: "jump", type: "papers", label: "쏟아진 서류", width: 112, height: 34, motion: "scatter" }),
     Object.freeze({ time: 23, stage: "mixed", pattern: "repeat-jump", avoid: "jump", type: "chair", label: "밀려난 의자", width: 78, height: 42, motion: "roll" }),
-    Object.freeze({ time: 26.4, stage: "mixed", pattern: "repeat-slide", avoid: "slide", type: "drawer", label: "열린 급지함", width: 80, height: 36, y: 56 }),
+    Object.freeze({ time: 26.4, stage: "mixed", pattern: "repeat-slide", avoid: "slide", type: "drawer", label: "열린 급지함", width: SLIDE_DRAWER_WIDTH, height: 36, y: 56 }),
     Object.freeze({ time: 29.6, stage: "mixed", pattern: "repeat-slide", avoid: "slide", type: "sign", label: "낮은 표지판", width: 72, height: 36, y: 56, motion: "sway" }),
     Object.freeze({ time: 32.8, stage: "mixed", pattern: "switch", avoid: "jump", type: "cart", label: "서류 카트", width: 112, height: 44, motion: "rattle" }),
-    Object.freeze({ time: 36.2, stage: "mixed", pattern: "switch", avoid: "slide", type: "drawer", label: "복도 서랍", width: 80, height: 36, y: 56 }),
+    Object.freeze({ time: 36.2, stage: "mixed", pattern: "switch", avoid: "slide", type: "drawer", label: "복도 서랍", width: SLIDE_DRAWER_WIDTH, height: 36, y: 56 }),
     Object.freeze({ time: 39.1, stage: "mixed", pattern: "repeat-slide", avoid: "slide", type: "sign", label: "유리 복도 표지", width: 74, height: 36, y: 56, motion: "sway" }),
     Object.freeze({ time: 42, stage: "mixed", pattern: "repeat-jump", avoid: "jump", type: "cable", label: "복합기 케이블", width: 124, height: 24 }),
     Object.freeze({ time: 44.9, stage: "mixed", pattern: "repeat-jump", avoid: "jump", type: "papers", label: "흩어진 서류", width: 114, height: 34, motion: "scatter" }),
-    Object.freeze({ time: 47.8, stage: "mixed", pattern: "handoff", avoid: "slide", type: "drawer", label: "열린 캐비닛", width: 82, height: 36, y: 56 }),
+    Object.freeze({ time: 47.8, stage: "mixed", pattern: "handoff", avoid: "slide", type: "drawer", label: "열린 캐비닛", width: SLIDE_DRAWER_WIDTH, height: 36, y: 56 }),
     Object.freeze({ time: 50.8, stage: "finale", pattern: "repeat-slide", avoid: "slide", type: "sign", label: "로비 표지", width: 74, height: 36, y: 56, motion: "sway" }),
     Object.freeze({ time: 53.8, stage: "finale", pattern: "repeat-jump", avoid: "jump", type: "cart", label: "택배 카트", width: 114, height: 44, motion: "rattle" }),
     Object.freeze({ time: 56.7, stage: "finale", pattern: "repeat-jump", avoid: "jump", type: "chair", label: "마지막 의자", width: 80, height: 42, motion: "roll" }),
-    Object.freeze({ time: 59.6, stage: "finale", pattern: "finish", avoid: "slide", type: "drawer", label: "마지막 서랍", width: 84, height: 36, y: 56 }),
+    Object.freeze({ time: 59.6, stage: "finale", pattern: "finish", avoid: "slide", type: "drawer", label: "마지막 서랍", width: SLIDE_DRAWER_WIDTH, height: 36, y: 56 }),
   ]);
 
   const COLLECTIBLE_BEATS = Object.freeze([
@@ -163,7 +176,7 @@
   }
   function playerAnchorAt(distance = 0, y = 0) {
     return {
-      x: (Number(distance) || 0) + PLAYER_X_OFFSET + PLAYER_WIDTH / 2,
+      x: (Number(distance) || 0) + PLAYER_X_OFFSET + PLAYER_PATH_WIDTH / 2,
       y: Number(y) || 0,
     };
   }
@@ -175,6 +188,9 @@
       x: (snapshot?.playerRect?.x || 0) + (snapshot?.playerRect?.width || PLAYER_WIDTH) / 2,
       y: Math.max(0, (snapshot?.playerRect?.y || 0) - PLAYER_BOTTOM_FORGIVENESS),
     };
+    // Phase 3 translates the whole runner formation by moving this shared
+    // anchor. It remains both Doyun's visual bottom-center and the mechanical
+    // player center, so hazards, collision guides, and cues keep one world axis.
     const playerAnchorX = width * VIEW_PLAYER_ANCHOR_X_RATIO;
     const ground = height * VIEW_GROUND_RATIO;
     return Object.freeze({
@@ -202,18 +218,72 @@
       bottom: projection.ground + point.y * projection.scale,
     };
   }
+  function actorScreenGeometry(metric, anchor, projection) {
+    const alpha = metric.alphaBounds;
+    const body = metric.bodyBounds;
+    const foot = metric.footAnchor;
+    const canvasSize = metric.canonicalOpaqueHeight / alpha.height * projection.scale;
+    const alphaBottom = alpha.top + alpha.height;
+    return Object.freeze({
+      canvasSize,
+      host: Object.freeze({
+        left: anchor.x - foot.x * canvasSize,
+        bottom: anchor.bottom,
+        width: canvasSize,
+        height: canvasSize,
+      }),
+      reference: Object.freeze({
+        left: anchor.x + (body.left - foot.x) * canvasSize,
+        bottom: anchor.bottom + (alphaBottom - body.top - body.height) * canvasSize,
+        width: body.width * canvasSize,
+        height: body.height * canvasSize,
+      }),
+      silhouette: Object.freeze({
+        left: anchor.x + (alpha.left - foot.x) * canvasSize,
+        bottom: anchor.bottom,
+        width: alpha.width * canvasSize,
+        height: alpha.height * canvasSize,
+      }),
+    });
+  }
+  function actorFormationGeometry(metrics, projection, chasePressure = CHASE_PRESSURE.stageBase.learning) {
+    const doyunAnchor = Object.freeze({ x: projection.playerAnchorX, bottom: projection.playerAnchorBottom });
+    const doyun = actorScreenGeometry(metrics.doyun, doyunAnchor, projection);
+    const harinProbe = actorScreenGeometry(metrics.harin, { x: 0, bottom: projection.ground }, projection);
+    const harinRight = doyun.silhouette.left - ACTOR_FORMATION.doyunHarinGap * projection.scale;
+    const harinAnchor = Object.freeze({
+      x: harinRight - harinProbe.silhouette.left - harinProbe.silhouette.width,
+      bottom: projection.ground,
+    });
+    const harin = actorScreenGeometry(metrics.harin, harinAnchor, projection);
+    const pressureRange = CHASE_PRESSURE.maximum - CHASE_PRESSURE.stageBase.learning;
+    const pressureRatio = clamp((chasePressure - CHASE_PRESSURE.stageBase.learning) / pressureRange, 0, 1);
+    const bossGap = ACTOR_FORMATION.bossHarinSteadyGap
+      + (ACTOR_FORMATION.bossHarinMinimumGap - ACTOR_FORMATION.bossHarinSteadyGap) * pressureRatio;
+    const bossProbe = actorScreenGeometry(metrics.boss, { x: 0, bottom: projection.ground }, projection);
+    const bossRight = harin.silhouette.left - bossGap * projection.scale;
+    const bossAnchor = Object.freeze({
+      x: bossRight - bossProbe.silhouette.left - bossProbe.silhouette.width,
+      bottom: projection.ground,
+    });
+    return Object.freeze({
+      anchors: Object.freeze({ doyun: doyunAnchor, harin: harinAnchor, boss: bossAnchor }),
+      actors: Object.freeze({
+        doyun,
+        harin,
+        boss: actorScreenGeometry(metrics.boss, bossAnchor, projection),
+      }),
+      gaps: Object.freeze({ doyunHarin: ACTOR_FORMATION.doyunHarinGap, bossHarin: bossGap }),
+    });
+  }
   function isTutorialHazard(object) { return object?.id === "hazard-01" || object?.id === "hazard-02"; }
   function prepareLeadFor(elapsed, object) {
     if (isTutorialHazard(object)) return TUTORIAL_PREPARE_LEAD_TIME;
     return elapsed < 24 ? 1.35 : elapsed < 48 ? 1.15 : 1;
   }
-  function inputReadyLeadFor(object) {
-    return isTutorialHazard(object) ? INPUT_READY_LEAD_TIME.tutorial : INPUT_READY_LEAD_TIME.standard;
-  }
   function actionLeadFor(avoid) { return ACTION_LEAD_TIME[avoid] || ACTION_LEAD_TIME.jump; }
   function cuePhaseFor(object, leadTime) {
     if (leadTime <= actionLeadFor(object.avoid)) return "act";
-    if (leadTime <= inputReadyLeadFor(object)) return "input-ready";
     return "prepare";
   }
 
@@ -223,7 +293,7 @@
       id: `hazard-${String(index + 1).padStart(2, "0")}`,
       kind: "hazard",
       ...beat,
-      x: distanceAt(beat.time / DEFAULT_DURATION * duration, duration, length) + PLAYER_X_OFFSET + PLAYER_WIDTH,
+      x: distanceAt(beat.time / DEFAULT_DURATION * duration, duration, length) + PLAYER_X_OFFSET + PLAYER_PATH_WIDTH,
     }));
     const items = COLLECTIBLE_BEATS.map((beat, index) => ({
       id: `item-${beat.type}`,
@@ -232,7 +302,7 @@
       height: 38,
       y: 112,
       ...beat,
-      x: distanceAt(beat.time / DEFAULT_DURATION * duration, duration, length) + PLAYER_X_OFFSET + PLAYER_WIDTH + 28,
+      x: distanceAt(beat.time / DEFAULT_DURATION * duration, duration, length) + PLAYER_X_OFFSET + PLAYER_PATH_WIDTH + 28,
     }));
     return [...hazard, ...items].sort((a, b) => a.x - b.x);
   }
@@ -248,7 +318,6 @@
     let jumpBuffer = 0;
     let slideUntil = 0;
     let slideCooldownUntil = 0;
-    let reservedInput = null;
     let accumulator = 0;
     const state = {
       elapsed: 0,
@@ -269,13 +338,13 @@
     function isGrounded() { return state.y <= 0.001; }
     function isSliding() { return isGrounded() && state.elapsed < slideUntil; }
     function playerRect(y = state.y, sliding = isSliding()) {
-      const width = sliding ? SLIDING_WIDTH : PLAYER_WIDTH;
+      const profile = sliding ? PLAYER_PROFILES.slide : PLAYER_PROFILES.run;
       const anchor = playerAnchorAt(state.distance, y);
       return {
-        x: anchor.x - width / 2,
+        x: anchor.x - profile.width / 2,
         y: y + PLAYER_BOTTOM_FORGIVENESS,
-        width,
-        height: sliding ? SLIDING_HEIGHT : STANDING_HEIGHT,
+        width: profile.width,
+        height: profile.height,
       };
     }
     function objectRects(object) {
@@ -285,30 +354,34 @@
       }
       const framing = PROP_ART_FRAMING[object.type];
       const artSize = framing ? logicalRect.width / framing.alphaWidth : Math.max(logicalRect.width, logicalRect.height);
+      const visibleHeight = framing ? artSize * framing.alphaHeight : logicalRect.height;
+      const edgeInset = Math.min(HAZARD_EDGE_ALIGNMENT, logicalRect.width / 2, visibleHeight / 2);
+      const visibleY = object.avoid === "slide"
+        ? PLAYER_BOTTOM_FORGIVENESS + SLIDING_HEIGHT + SLIDE_CLEARANCE - edgeInset
+        : logicalRect.y;
       const visibleRect = framing ? {
         x: logicalRect.x,
-        y: logicalRect.y,
+        y: visibleY,
         width: logicalRect.width,
-        height: artSize * framing.alphaHeight,
-      } : logicalRect;
+        height: visibleHeight,
+      } : { ...logicalRect, y: visibleY };
       const artRect = framing ? {
         x: visibleRect.x - (artSize - visibleRect.width) / 2,
         y: visibleRect.y - artSize * framing.bottomPadding,
         width: artSize,
         height: artSize,
       } : logicalRect;
-      const insetX = visibleRect.width * COLLISION_INSET.horizontal;
-      const insetY = visibleRect.height * COLLISION_INSET.vertical;
-      const groundForgiveness = object.avoid === "jump" ? visibleRect.height * 0.04 : 0;
+      const collisionBottomInset = object.avoid === "slide" ? edgeInset : 0;
+      const collisionTopInset = edgeInset;
       return {
         logicalRect,
         visibleRect,
         artRect,
         collisionRect: {
-          x: visibleRect.x + insetX,
-          y: visibleRect.y + insetY - groundForgiveness,
-          width: visibleRect.width - insetX * 2,
-          height: visibleRect.height - insetY * 2,
+          x: visibleRect.x + edgeInset,
+          y: visibleRect.y + collisionBottomInset,
+          width: visibleRect.width - edgeInset * 2,
+          height: visibleRect.height - collisionBottomInset - collisionTopInset,
         },
       };
     }
@@ -330,17 +403,7 @@
       emit("slide");
       return true;
     }
-    function reserveInput(action) {
-      const upcoming = upcomingHazard();
-      if (!upcoming || upcoming.avoid !== action || upcoming.telegraphPhase !== "input-ready") return false;
-      if (!reservedInput || reservedInput.objectId !== upcoming.id || reservedInput.action !== action) {
-        reservedInput = { objectId: upcoming.id, action, acceptedAt: state.elapsed };
-        emit("inputQueued", { object: upcoming, action, leadTime: upcoming.leadTime });
-      }
-      return true;
-    }
     function pressJump() {
-      if (reserveInput("jump")) return;
       jumpBuffer = JUMP_BUFFER;
     }
     function releaseJump() { /* compatibility: fixed jump ignores release duration. */ }
@@ -348,7 +411,6 @@
     function cancelJump() { jumpBuffer = 0; }
     function setSlide(active) { if (active) commitSlide(); }
     function commitSlide() {
-      if (reserveInput("slide")) return;
       activateSlide();
     }
     function cancelSlide() { /* fixed slide completes its committed duration. */ }
@@ -379,7 +441,6 @@
       const verticalOverlap = currentPlayer.y < collisionRect.y + collisionRect.height
         && currentPlayer.y + currentPlayer.height > collisionRect.y;
       if (overlaps(currentPlayer, collisionRect) || (crossedEntry && verticalOverlap)) {
-        if (reservedInput?.objectId === object.id) reservedInput = null;
         if (object.kind === "item") {
           resolved.add(object.id);
           collected.add(object.type);
@@ -392,7 +453,6 @@
         return;
       }
       if (collisionRect.x + collisionRect.width < currentPlayer.x) {
-        if (reservedInput?.objectId === object.id) reservedInput = null;
         resolved.add(object.id);
         if (object.kind === "hazard") emit("avoid", { object });
       }
@@ -408,18 +468,6 @@
       jumpBuffer = Math.max(0, jumpBuffer - dt);
       if (wasSliding && !isSliding()) {
         slideCooldownUntil = Math.max(slideCooldownUntil, state.elapsed + SLIDE_RECOVERY);
-      }
-      if (reservedInput) {
-        const upcoming = upcomingHazard();
-        if (!upcoming || upcoming.id !== reservedInput.objectId) {
-          reservedInput = null;
-        } else if (upcoming.telegraphPhase === "act") {
-          const queued = reservedInput;
-          reservedInput = null;
-          if (queued.action === "jump") jumpBuffer = JUMP_BUFFER;
-          else activateSlide();
-          emit("inputExecuted", { object: upcoming, action: queued.action, queuedFor: state.elapsed - queued.acceptedAt });
-        }
       }
       if (jumpBuffer > 0 && isGrounded() && !isSliding()) {
         state.velocityY = JUMP_VELOCITY;
@@ -471,11 +519,8 @@
           leadTime: metrics.leadTime,
           clearLeadTime: metrics.clearLeadTime,
           prepareLeadTime,
-          inputReadyLeadTime: inputReadyLeadFor(object),
           actionLeadTime: actionLeadFor(object.avoid),
           telegraphPhase,
-          inputReady: telegraphPhase === "input-ready" || telegraphPhase === "act",
-          inputQueued: reservedInput?.objectId === object.id,
         };
       }
       return null;
@@ -514,7 +559,6 @@
         backgroundSegment: routeSegmentFor(progress),
         sliding: isSliding(),
         jumpHeld: jumpBuffer > 0,
-        reservedInput: reservedInput ? { ...reservedInput } : null,
         course,
         collectedItems: [...collected],
         playerAnchor: playerAnchorAt(state.distance, state.y),
@@ -529,12 +573,13 @@
   const COURSE = Object.freeze(buildCourse(DEFAULT_DURATION, DEFAULT_LENGTH));
   return Object.freeze({
     create, gradeForHits, gaitFrameIndex, zoneFor, courseStageFor, chasePressureFor, routeSegmentFor, backgroundPresentationAt, distanceAt, speedAt,
-    playerAnchorAt, screenProjection, projectWorldRect, projectWorldPoint,
+    playerAnchorAt, screenProjection, projectWorldRect, projectWorldPoint, actorScreenGeometry, actorFormationGeometry,
     COURSE, ZONES, COURSE_STAGES, BACKGROUND_ROUTE, DEFAULT_DURATION, DEFAULT_LENGTH, FIXED_STEP,
-    PLAYER_X_OFFSET, PLAYER_BOTTOM_FORGIVENESS, PLAYER_WIDTH, STANDING_HEIGHT, SLIDING_WIDTH, SLIDING_HEIGHT,
+    PLAYER_X_OFFSET, PLAYER_PATH_WIDTH, PLAYER_BOTTOM_FORGIVENESS, PLAYER_WIDTH, STANDING_HEIGHT, SLIDING_WIDTH, SLIDING_HEIGHT, PLAYER_PROFILES,
     GRAVITY, JUMP_VELOCITY, JUMP_BUFFER, SLIDE_DURATION, SLIDE_RECOVERY,
     INVULNERABLE_TIME, GAIT_FRAME_MS, GAIT_PHASE_DELAY_MS, COLLISION_INSET, PROP_ART_FRAMING, BACKGROUND_TRANSITION_DURATION,
-    ACTION_LEAD_TIME, INPUT_READY_LEAD_TIME, TUTORIAL_PREPARE_LEAD_TIME, MIN_HAZARD_GAP_SECONDS, CHASE_PRESSURE,
+    ACTION_LEAD_TIME, TUTORIAL_PREPARE_LEAD_TIME, MIN_HAZARD_GAP_SECONDS, CHASE_PRESSURE,
     VIEW_REFERENCE_WIDTH, VIEW_PLAYER_ANCHOR_X_RATIO, VIEW_GROUND_RATIO,
+    ACTOR_FORMATION, HAZARD_EDGE_ALIGNMENT, SLIDE_CLEARANCE, SLIDE_DRAWER_WIDTH,
   });
 });
