@@ -100,7 +100,7 @@
 
 .oe2-objects,.oe2-passed-objects { position: absolute; inset: 0; pointer-events: none; }
 .oe2-objects { z-index: 22; }
-.oe2-passed-objects { z-index: 14; }
+.oe2-passed-objects { z-index: 14; clip-path: inset(0 0 0 var(--oe2-passed-clip-left, 0px)); }
 .oe2-object { position: absolute; display: block; margin: 0; transform: translateX(-50%); filter: drop-shadow(0 8px 6px rgba(3, 7, 13, .58)); transition: opacity 100ms linear; }
 .oe2-object[hidden] { display: none; }
 .oe2-object.is-behind-runners { opacity: .38; }

@@ -76,6 +76,7 @@
     formationMetrics: null,
     viewport: { width: 0, height: 0, dirty: true },
     floorX: "",
+    passedClipLeft: "",
     progressValue: -1,
     zoneId: "",
     routeIndex: -1,
@@ -446,9 +447,8 @@
 
   function consumeEvents(snapshot) {
     state.game.drainEvents().forEach((event) => {
-      if (event.type === "jump") { state.pressedUntil.jump = state.uiElapsed + 0.16; showFeedback("점프!", "action"); }
-      if (event.type === "slide") { state.pressedUntil.slide = state.uiElapsed + 0.16; showFeedback("슬라이드!", "action"); }
-      if (event.type === "avoid") showFeedback(`${event.object.avoid === "jump" ? "점프" : "슬라이드"} 통과!`, "safe");
+      if (event.type === "jump") state.pressedUntil.jump = state.uiElapsed + 0.16;
+      if (event.type === "slide") state.pressedUntil.slide = state.uiElapsed + 0.16;
       if (event.type === "collect") showFeedback(`${event.object.label} 획득`, "collect");
       if (event.type === "assist") showFeedback("하린이 막아줬다!", "assist");
       if (event.type === "hit") {
@@ -512,6 +512,12 @@
     const harinId = snapshot.assistUsed && snapshot.invulnerable > 0 ? CHARACTER_IDS.harinAssist : harinGait ? CHARACTER_IDS.harinRunAlt : CHARACTER_IDS.harinRun;
     const bossId = bossGait ? CHARACTER_IDS.bossRunAlt : CHARACTER_IDS.bossRun;
     const formation = Core.actorFormationGeometry(formationMetrics(), projection, snapshot.chasePressure);
+    const harinRight = formation.actors.harin.silhouette.left + formation.actors.harin.silhouette.width;
+    const passedClipLeft = `${(harinRight + formation.actors.doyun.silhouette.left) / 2}px`;
+    if (state.passedClipLeft !== passedClipLeft) {
+      refs.passedObjects.style.setProperty("--oe2-passed-clip-left", passedClipLeft);
+      state.passedClipLeft = passedClipLeft;
+    }
     const doyunMetric = setActorArt("doyun", doyunId, projection, formation.anchors.doyun);
     setActorArt("harin", harinId, projection, formation.anchors.harin);
     setActorArt("boss", bossId, projection, formation.anchors.boss);
@@ -617,6 +623,7 @@
     state.formationMetrics = null;
     state.viewport.dirty = true;
     state.floorX = "";
+    state.passedClipLeft = "";
     state.progressValue = -1;
     state.zoneId = "";
     state.routeIndex = -1;

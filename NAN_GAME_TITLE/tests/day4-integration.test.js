@@ -349,7 +349,7 @@ test("DAY 4 페이지는 스토리와 추격 미니게임을 엔진 전에 불�
   const minigameIndex = html.indexOf('src="minigames/day4-office-escape/index.js');
   const engineIndex = html.indexOf('src="js/day4.js');
   assert.ok(storyIndex >= 0 && storyIndex < minigameIndex && minigameIndex < engineIndex);
-  assert.match(html, /day4-office-escape\/style\.css\?v=64/);
+  assert.match(html, /day4-office-escape\/style\.css\?v=65/);
 });
 
 test("모든 DAY 자료 화면은 공용 PPT형 슬라이드 스타일을 사용한다", () => {
@@ -1108,12 +1108,12 @@ test("V2 플레이어·장애물·cue·dev 판정은 46% bottom-center 단일 �
   for (const source of [html, dev]) {
     assert.match(source, /day4-office-escape\/art-assets\.js\?v=5/);
   }
-  assert.match(html, /day4-office-escape\/style\.css\?v=64/);
+  assert.match(html, /day4-office-escape\/style\.css\?v=65/);
   assert.match(html, /day4-office-escape\/core\.js\?v=35/);
-  assert.match(html, /day4-office-escape\/index\.js\?v=86/);
-  assert.match(dev, /day4-office-escape\/style\.css\?v=21/);
+  assert.match(html, /day4-office-escape\/index\.js\?v=87/);
+  assert.match(dev, /day4-office-escape\/style\.css\?v=22/);
   assert.match(dev, /day4-office-escape\/core\.js\?v=35/);
-  assert.match(dev, /day4-office-escape\/index\.js\?v=29/);
+  assert.match(dev, /day4-office-escape\/index\.js\?v=30/);
   assert.match(dev, /day4-office-escape\/dev\/dev\.js\?v=11/);
 });
 
@@ -1246,6 +1246,22 @@ test("V2 배경·장애물 렌더링은 중복 합성을 피하고 통과·간�
   assert.match(style, /\.oe2-passed-objects \{ z-index: 14; \}/);
   assert.doesNotMatch(style, /\.oe2-overhead-frame b/);
   assert.doesNotMatch(style, /\.oe2-background-panel[^}]*will-change/);
+});
+
+test("V2 후방 장애물은 하린 앞에서 잘리고 일상 행동·회피 성공 문구를 만들지 않는다", () => {
+  const core = read("minigames/day4-office-escape/core.js");
+  const runtime = read("minigames/day4-office-escape/index.js");
+  const style = read("minigames/day4-office-escape/style.css");
+  assert.match(core, /if \(collisionRect\.x \+ collisionRect\.width < currentPlayer\.x\) \{\s*resolved\.add\(object\.id\);\s*if \(object\.kind === "hazard"\) emit\("avoid", \{ object \}\);/);
+  assert.match(runtime, /const harinRight = formation\.actors\.harin\.silhouette\.left \+ formation\.actors\.harin\.silhouette\.width/);
+  assert.match(runtime, /const passedClipLeft = `\$\{\(harinRight \+ formation\.actors\.doyun\.silhouette\.left\) \/ 2\}px`/);
+  assert.match(runtime, /refs\.passedObjects\.style\.setProperty\("--oe2-passed-clip-left", passedClipLeft\)/);
+  assert.match(style, /\.oe2-passed-objects \{ z-index: 14; clip-path: inset\(0 0 0 var\(--oe2-passed-clip-left, 0px\)\); \}/);
+  assert.doesNotMatch(runtime, /showFeedback\("점프!"|showFeedback\("슬라이드!"|점프" : "슬라이드"\} 통과!/);
+  assert.match(runtime, /showFeedback\(remaining > 0 \? `\$\{label\}에 부딪힘/);
+  assert.match(runtime, /showFeedback\(`\$\{event\.object\.label\} 획득`, "collect"\)/);
+  assert.match(runtime, /showFeedback\("하린이 막아줬다!", "assist"\)/);
+  assert.match(runtime, /showFeedback\("회복 완료 · 다시 움직일 수 있습니다", "safe"\)/);
 });
 
 test("DAY 3 완료 화면에서 DAY 4를 시작할 수 있다", () => {
