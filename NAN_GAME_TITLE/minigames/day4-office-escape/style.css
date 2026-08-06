@@ -17,6 +17,8 @@
   container-type: size;
 }
 
+.office-escape[hidden] { display: none !important; }
+
 .oe2-hud {
   position: relative;
   z-index: 60;

@@ -349,7 +349,7 @@ test("DAY 4 페이지는 스토리와 추격 미니게임을 엔진 전에 불�
   const minigameIndex = html.indexOf('src="minigames/day4-office-escape/index.js');
   const engineIndex = html.indexOf('src="js/day4.js');
   assert.ok(storyIndex >= 0 && storyIndex < minigameIndex && minigameIndex < engineIndex);
-  assert.match(html, /day4-office-escape\/style\.css\?v=65/);
+  assert.match(html, /day4-office-escape\/style\.css\?v=66/);
 });
 
 test("모든 DAY 자료 화면은 공용 PPT형 슬라이드 스타일을 사용한다", () => {
@@ -1108,10 +1108,10 @@ test("V2 플레이어·장애물·cue·dev 판정은 46% bottom-center 단일 �
   for (const source of [html, dev]) {
     assert.match(source, /day4-office-escape\/art-assets\.js\?v=5/);
   }
-  assert.match(html, /day4-office-escape\/style\.css\?v=65/);
+  assert.match(html, /day4-office-escape\/style\.css\?v=66/);
   assert.match(html, /day4-office-escape\/core\.js\?v=35/);
   assert.match(html, /day4-office-escape\/index\.js\?v=87/);
-  assert.match(dev, /day4-office-escape\/style\.css\?v=22/);
+  assert.match(dev, /day4-office-escape\/style\.css\?v=23/);
   assert.match(dev, /day4-office-escape\/core\.js\?v=35/);
   assert.match(dev, /day4-office-escape\/index\.js\?v=30/);
   assert.match(dev, /day4-office-escape\/dev\/dev\.js\?v=11/);
@@ -1178,6 +1178,7 @@ test("V2 Phase 4 HUD·피격·pause·결과 접근성 계약을 유지한다", (
   assert.match(runtime, /refs\.resultGoal\.textContent = `수집 \$\{result\.collectedItems\.length\}\/3 · 선택 목표`/);
   assert.match(runtime, /result\.caught[\s\S]*부장님에게 붙잡혔습니다\. 확인 업무 후 퇴근합니다\./);
   assert.match(runtime, /options\.resultAction === "restart"/);
+  assert.match(style, /\.office-escape\[hidden\]\s*\{\s*display:\s*none\s*!important;\s*\}/);
   assert.doesNotMatch(style, /is-hit-exiting|oe2-hit-exit/);
   assert.match(style, /\.office-escape-v2\.is-paused \.oe2-object[\s\S]*animation-play-state: paused !important/);
   assert.match(devHtml, /id="oe2-dev-tools-toggle"[^>]*aria-expanded="false"/);
