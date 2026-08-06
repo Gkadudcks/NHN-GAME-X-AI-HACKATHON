@@ -99,23 +99,23 @@
 
   const COURSE_BEATS = Object.freeze([
     Object.freeze({ time: 5, stage: "learning", pattern: "introduce", avoid: "jump", type: "chair", label: "회전 의자", width: 76, height: 42, motion: "roll" }),
-    Object.freeze({ time: 9, stage: "learning", pattern: "introduce", avoid: "slide", type: "overhead-cabinet", label: "열린 상부 캐비닛", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
+    Object.freeze({ time: 9, stage: "learning", pattern: "introduce", avoid: "slide", type: "sign", label: "엘리베이터 안내판", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
     Object.freeze({ time: 13, stage: "learning", pattern: "reinforce", avoid: "jump", type: "cable", label: "전원 케이블", width: 122, height: 24 }),
     Object.freeze({ time: 16.7, stage: "learning", pattern: "reinforce", avoid: "slide", type: "overhead-duct", label: "낮은 케이블 덕트", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
     Object.freeze({ time: 20, stage: "mixed", pattern: "repeat-jump", avoid: "jump", type: "papers", label: "쏟아진 서류", width: 112, height: 34, motion: "scatter" }),
     Object.freeze({ time: 23, stage: "mixed", pattern: "repeat-jump", avoid: "jump", type: "chair", label: "밀려난 의자", width: 78, height: 42, motion: "roll" }),
-    Object.freeze({ time: 26.4, stage: "mixed", pattern: "repeat-slide", avoid: "slide", type: "overhead-cabinet", label: "열린 상부 캐비닛", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
+    Object.freeze({ time: 26.4, stage: "mixed", pattern: "repeat-slide", avoid: "slide", type: "sign", label: "사무실 안내판", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
     Object.freeze({ time: 29.6, stage: "mixed", pattern: "repeat-slide", avoid: "slide", type: "overhead-duct", label: "낮은 케이블 덕트", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
     Object.freeze({ time: 32.8, stage: "mixed", pattern: "switch", avoid: "jump", type: "cart", label: "서류 카트", width: 112, height: 44, motion: "rattle" }),
-    Object.freeze({ time: 36.2, stage: "mixed", pattern: "switch", avoid: "slide", type: "overhead-cabinet", label: "복도 상부 캐비닛", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
+    Object.freeze({ time: 36.2, stage: "mixed", pattern: "switch", avoid: "slide", type: "sign", label: "복도 안내판", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
     Object.freeze({ time: 39.1, stage: "mixed", pattern: "repeat-slide", avoid: "slide", type: "overhead-duct", label: "복도 케이블 덕트", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
     Object.freeze({ time: 42, stage: "mixed", pattern: "repeat-jump", avoid: "jump", type: "cable", label: "복합기 케이블", width: 124, height: 24 }),
     Object.freeze({ time: 44.9, stage: "mixed", pattern: "repeat-jump", avoid: "jump", type: "papers", label: "흩어진 서류", width: 114, height: 34, motion: "scatter" }),
-    Object.freeze({ time: 47.8, stage: "mixed", pattern: "handoff", avoid: "slide", type: "overhead-cabinet", label: "열린 상부 캐비닛", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
+    Object.freeze({ time: 47.8, stage: "mixed", pattern: "handoff", avoid: "slide", type: "sign", label: "로비 진입 안내판", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
     Object.freeze({ time: 50.8, stage: "finale", pattern: "repeat-slide", avoid: "slide", type: "overhead-duct", label: "로비 케이블 덕트", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
     Object.freeze({ time: 53.8, stage: "finale", pattern: "repeat-jump", avoid: "jump", type: "cart", label: "택배 카트", width: 114, height: 44, motion: "rattle" }),
     Object.freeze({ time: 56.7, stage: "finale", pattern: "repeat-jump", avoid: "jump", type: "chair", label: "마지막 의자", width: 80, height: 42, motion: "roll" }),
-    Object.freeze({ time: 59.6, stage: "finale", pattern: "finish", avoid: "slide", type: "overhead-cabinet", label: "마지막 상부 캐비닛", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
+    Object.freeze({ time: 59.6, stage: "finale", pattern: "finish", avoid: "slide", type: "sign", label: "마지막 엘리베이터 안내판", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
   ]);
 
   const COLLECTIBLE_BEATS = Object.freeze([
@@ -380,16 +380,37 @@
       }
       if (object.avoid === "slide") {
         const edgeInset = Math.min(HAZARD_EDGE_ALIGNMENT, logicalRect.width / 2, logicalRect.height / 2);
+        const collisionRect = {
+          x: logicalRect.x + edgeInset,
+          y: logicalRect.y + edgeInset,
+          width: logicalRect.width - edgeInset * 2,
+          height: logicalRect.height - edgeInset * 2,
+        };
+        if (object.type === "sign") {
+          const framing = PROP_ART_FRAMING.sign;
+          const artSize = logicalRect.width / framing.alphaWidth;
+          return {
+            logicalRect,
+            visibleRect: {
+              x: logicalRect.x,
+              y: logicalRect.y,
+              width: logicalRect.width,
+              height: artSize * framing.alphaHeight,
+            },
+            artRect: {
+              x: logicalRect.x - (artSize - logicalRect.width) / 2,
+              y: logicalRect.y - artSize * framing.bottomPadding,
+              width: artSize,
+              height: artSize,
+            },
+            collisionRect,
+          };
+        }
         return {
           logicalRect,
           visibleRect: logicalRect,
           artRect: logicalRect,
-          collisionRect: {
-            x: logicalRect.x + edgeInset,
-            y: logicalRect.y + edgeInset,
-            width: logicalRect.width - edgeInset * 2,
-            height: logicalRect.height - edgeInset * 2,
-          },
+          collisionRect,
         };
       }
       const framing = PROP_ART_FRAMING[object.type];

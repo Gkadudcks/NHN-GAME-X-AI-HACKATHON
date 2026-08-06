@@ -9,29 +9,17 @@
   const JUMP_KEYS = new Set(["Space", "ArrowUp", "KeyW"]);
   const SLIDE_KEYS = new Set(["ArrowDown", "KeyS"]);
   const COMPOSITIONS = new Set(["a", "b", "c"]);
-  const BACKGROUND_IDS = Object.freeze({
-    office: "minigame_background.office_escape.office",
-    "office-b": "minigame_background.office_escape.office_b",
-    "office-c": "minigame_background.office_escape.office_c",
-    corridor: "minigame_background.office_escape.corridor",
-    "corridor-b": "minigame_background.office_escape.corridor_b",
-    "lobby-a": "minigame_background.office_escape.lobby_a",
-    "lobby-b": "minigame_background.office_escape.lobby_b",
-  });
-  const BACKGROUND_FALLBACKS = Object.freeze({
-    office: "minigame_background.office_escape.office",
-    "office-b": "minigame_background.office_escape.office",
-    "office-c": "minigame_background.office_escape.office",
-    corridor: "minigame_background.office_escape.corridor",
-    "corridor-b": "minigame_background.office_escape.corridor",
-    "lobby-a": "minigame_background.office_escape.elevator",
-    "lobby-b": "minigame_background.office_escape.elevator",
-  });
+  const BACKGROUND_GROUPS = Object.freeze([
+    Object.freeze({ key: "office", id: "minigame_background.office_escape.office", start: 0, end: 36 }),
+    Object.freeze({ key: "corridor", id: "minigame_background.office_escape.corridor", start: 36, end: 48 }),
+    Object.freeze({ key: "lobby", id: "minigame_background.office_escape.elevator", start: 48, end: Core.DEFAULT_DURATION }),
+  ]);
   const PROP_IDS = Object.freeze({
     chair: "prop.office.chair",
     cable: "prop.office.cable",
     papers: "prop.office.papers",
     cart: "prop.office.cart",
+    sign: "prop.office.sign",
     "access-card": "prop.office.access_card",
     phone: "prop.office.phone",
     "backup-usb": "prop.office.backup_usb",
@@ -84,6 +72,7 @@
     wasInvulnerable: false,
     restartOnResult: false,
     restartOptions: null,
+    cueLayout: null,
   };
 
   function resolve(id, fallbackId = "") {
@@ -109,11 +98,16 @@
   }
 
   function backgroundPanels() {
-    return Core.BACKGROUND_ROUTE.map((segment) => {
-      const id = BACKGROUND_IDS[segment.scene];
-      const fallback = BACKGROUND_FALLBACKS[segment.scene];
-      return `<figure class="oe2-background-panel" data-route="${segment.id}"><img src="${resolve(id, fallback)}" alt="" aria-hidden="true"></figure>`;
+    return BACKGROUND_GROUPS.map((group, index) => {
+      const priority = index === 0 ? ' fetchpriority="high"' : "";
+      return `<figure class="oe2-background-panel" data-background="${group.key}"><img src="${resolve(group.id)}" decoding="async"${priority} alt="" aria-hidden="true"></figure>`;
     }).join("");
+  }
+
+  function backgroundGroupForScene(scene = "") {
+    if (scene.startsWith("office")) return "office";
+    if (scene.startsWith("corridor")) return "corridor";
+    return "lobby";
   }
 
   function markup() {
@@ -156,6 +150,7 @@
         <div class="oe2-background-track" id="oe2-background-track" aria-hidden="true">${backgroundPanels()}</div>
         <div class="oe2-ground" aria-hidden="true"><i class="oe2-speed-line"></i><i class="oe2-speed-line"></i><i class="oe2-speed-line"></i></div>
         <ol class="oe2-zone-markers" aria-hidden="true"><li class="is-active"><span>1</span><b>사무실</b></li><li><span>2</span><b>복도</b></li><li><span>3</span><b>로비</b></li></ol>
+        <div class="oe2-passed-objects" id="oe2-passed-objects" aria-hidden="true"></div>
         <div class="oe2-objects" id="oe2-objects" aria-hidden="true"></div>
         <div class="oe2-actors" aria-label="부장님, 서하린, 도윤의 추격 대형">
           <figure class="oe2-actor oe2-boss"><img id="oe2-boss" src="${resolve(CHARACTER_IDS.bossRun)}" alt="뒤에서 쫓아오는 부장님"></figure>
@@ -189,7 +184,7 @@
       routeNodes: [...root.querySelectorAll(".oe2-route li")], zoneNodes: [...root.querySelectorAll(".oe2-zone-markers li")],
       backgroundPanels: [...root.querySelectorAll(".oe2-background-panel")],
       backgroundImages: [...root.querySelectorAll(".oe2-background-panel img")],
-      objects: root.querySelector("#oe2-objects"), boss: root.querySelector(".oe2-boss"), harin: root.querySelector(".oe2-harin"), doyun: root.querySelector(".oe2-doyun"), playerReference: root.querySelector("#oe2-player-reference"), playerBody: root.querySelector("#oe2-player-body"),
+      objects: root.querySelector("#oe2-objects"), passedObjects: root.querySelector("#oe2-passed-objects"), boss: root.querySelector(".oe2-boss"), harin: root.querySelector(".oe2-harin"), doyun: root.querySelector(".oe2-doyun"), playerReference: root.querySelector("#oe2-player-reference"), playerBody: root.querySelector("#oe2-player-body"),
       actors: { boss: root.querySelector("#oe2-boss"), harin: root.querySelector("#oe2-harin"), doyun: root.querySelector("#oe2-doyun") },
       telegraph: root.querySelector("#oe2-telegraph"), telegraphAction: root.querySelector("#oe2-telegraph-action"), telegraphLabel: root.querySelector("#oe2-telegraph-label"),
       feedback: root.querySelector("#oe2-feedback"), assistBadge: root.querySelector("#oe2-assist-badge"), jump: root.querySelector(".oe2-jump"), slide: root.querySelector(".oe2-slide"), pause: root.querySelector(".oe2-pause"),
@@ -201,6 +196,7 @@
     refs.introStart.addEventListener("click", beginRun);
     refs.pause.addEventListener("click", () => state.paused ? resume() : pause());
     refs.resultAction.addEventListener("click", handleResultAction);
+    global.addEventListener("resize", () => { state.cueLayout = null; }, { passive: true });
     return root;
   }
 
@@ -234,19 +230,14 @@
 
   function updateBackgroundSources() {
     if (!refs) return;
-    Core.BACKGROUND_ROUTE.forEach((segment, index) => {
-      const id = BACKGROUND_IDS[segment.scene];
-      const fallback = BACKGROUND_FALLBACKS[segment.scene];
+    BACKGROUND_GROUPS.forEach((group, index) => {
       const image = refs.backgroundImages[index];
-      const source = resolve(id, fallback);
-      const fallbackSource = Art.resolve(fallback);
+      const source = resolve(group.id);
       image.onerror = () => {
-        if (image.dataset.fallbackApplied === "true") { image.onerror = null; return; }
-        image.dataset.fallbackApplied = "true";
-        image.src = fallbackSource;
+        image.onerror = null;
+        image.closest(".oe2-background-panel")?.classList.add("is-load-error");
       };
-      image.dataset.fallbackApplied = "false";
-      image.src = source;
+      if (image.getAttribute("src") !== source) image.src = source;
     });
   }
 
@@ -257,9 +248,10 @@
     node.className = `oe2-object oe2-${object.kind} oe2-${object.type}`;
     node.dataset.objectId = object.id;
     node.setAttribute("aria-hidden", "true");
-    node.innerHTML = object.avoid === "slide"
-      ? '<span class="oe2-object-paint oe2-overhead-frame" aria-hidden="true"><i></i><i></i></span><span class="oe2-object-hitbox"></span>'
-      : `<span class="oe2-object-paint"><span class="oe2-object-aura" aria-hidden="true"></span><img src="${resolve(PROP_IDS[object.type])}" alt="" aria-hidden="true"></span><span class="oe2-object-hitbox"></span>`;
+    const usesApprovedArt = object.avoid !== "slide" || object.type === "sign";
+    node.innerHTML = usesApprovedArt
+      ? `<span class="oe2-object-paint"><span class="oe2-object-aura" aria-hidden="true"></span><img src="${resolve(PROP_IDS[object.type])}" alt="" aria-hidden="true"></span><span class="oe2-object-hitbox"></span>`
+      : '<span class="oe2-object-paint oe2-overhead-frame" aria-hidden="true"><i></i><i></i></span><span class="oe2-object-hitbox"></span>';
     refs.objects.append(node);
     refs.objectNodes.set(object.id, node);
     return node;
@@ -269,21 +261,31 @@
     const { width, scale } = projection;
     const active = new Set(snapshot.activeObjects.map((object) => object.id));
     refs.objectNodes.forEach((node, id) => {
-      node.hidden = !active.has(id);
+      if (active.has(id)) {
+        node.hidden = true;
+        return;
+      }
+      node.remove();
+      refs.objectNodes.delete(id);
     });
     snapshot.activeObjects.forEach((object) => {
-      const node = objectNode(object);
       const visible = object.visibleRect;
       const art = object.artRect || visible;
       const screen = Core.projectWorldRect(art, projection);
       const centerX = screen.left + screen.width / 2;
-      node.hidden = centerX < -220 || centerX > width + 240;
+      if (centerX < -220 || centerX > width + 240) return;
+      const node = objectNode(object);
+      node.hidden = false;
       node.style.width = `${Math.max(20, screen.width)}px`;
       node.style.height = `${Math.max(16, screen.height)}px`;
       node.style.left = `${centerX}px`;
       node.style.bottom = `${screen.bottom}px`;
+      const behindRunners = screen.left + screen.width <= projection.playerAnchorX + 8;
+      const targetLayer = behindRunners ? refs.passedObjects : refs.objects;
+      if (node.parentElement !== targetLayer) targetLayer.append(node);
       node.classList.toggle("telegraphed", snapshot.upcomingHazard?.id === object.id);
       node.classList.toggle("overhead", object.avoid === "slide");
+      node.classList.toggle("is-behind-runners", behindRunners);
       node.dataset.motion = object.motion || "still";
       if (state.showHitboxes) {
         const collision = object.collisionRect;
@@ -300,13 +302,19 @@
   function renderBackgrounds(snapshot, width) {
     const reducedMotion = global.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
     const presentation = Core.backgroundPresentationAt(snapshot.elapsed, { reducedMotion });
-    refs.backgroundPanels.forEach((panel, index) => {
-      const current = index === presentation.currentIndex;
-      const next = index === presentation.nextIndex;
-      const opacity = current ? presentation.currentOpacity : next ? presentation.nextOpacity : 0;
+    const currentKey = backgroundGroupForScene(presentation.segment.scene);
+    const nextKey = presentation.nextSegment ? backgroundGroupForScene(presentation.nextSegment.scene) : currentKey;
+    const changingGroup = currentKey !== nextKey;
+    refs.backgroundPanels.forEach((panel) => {
+      const key = panel.dataset.background;
+      const current = key === currentKey;
+      const next = changingGroup && key === nextKey;
+      const opacity = current ? (changingGroup ? presentation.currentOpacity : 1) : next ? presentation.nextOpacity : 0;
+      const group = BACKGROUND_GROUPS.find((candidate) => candidate.key === key);
+      const groupProgress = group ? Math.max(0, Math.min(1, (snapshot.elapsed - group.start) / (group.end - group.start))) : 0;
       panel.style.opacity = String(opacity);
       panel.style.zIndex = next ? "1" : current ? "0" : "-1";
-      refs.backgroundImages[index].style.setProperty("--oe2-background-pan", `${current ? presentation.panPercent : 0}%`);
+      panel.firstElementChild?.style.setProperty("--oe2-background-pan", `${reducedMotion ? 0 : -3 * groupProgress}%`);
     });
     const floorCycle = width * 0.36;
     const floorOffset = floorCycle ? -((snapshot.distance * (width / 780)) % floorCycle) : 0;
@@ -328,14 +336,18 @@
   }
 
   function telegraphCenterX(rawCenter, playfieldWidth) {
-    const worldRect = refs.world.getBoundingClientRect();
-    const jumpRect = refs.jump.getBoundingClientRect();
-    const slideRect = refs.slide.getBoundingClientRect();
-    const cueHalfWidth = ((refs.telegraph.offsetWidth || 116) * 1.07) / 2;
-    const controlGap = 16;
-    const edgeGap = 24;
-    const buttonSafeLeft = Math.max(edgeGap, jumpRect.right - worldRect.left + controlGap);
-    const buttonSafeRight = Math.max(edgeGap, worldRect.right - slideRect.left + controlGap);
+    if (!state.cueLayout || state.cueLayout.width !== playfieldWidth) {
+      const worldRect = refs.world.getBoundingClientRect();
+      const jumpRect = refs.jump.getBoundingClientRect();
+      const slideRect = refs.slide.getBoundingClientRect();
+      state.cueLayout = {
+        width: playfieldWidth,
+        buttonSafeLeft: Math.max(24, jumpRect.right - worldRect.left + 16),
+        buttonSafeRight: Math.max(24, worldRect.right - slideRect.left + 16),
+      };
+    }
+    const cueHalfWidth = 62;
+    const { buttonSafeLeft, buttonSafeRight } = state.cueLayout;
     const minimum = buttonSafeLeft + cueHalfWidth;
     const maximum = playfieldWidth - buttonSafeRight - cueHalfWidth;
     return minimum <= maximum
@@ -418,7 +430,9 @@
     refs.telegraph.hidden = !upcoming;
     if (upcoming) {
       const object = snapshot.activeObjects.find((candidate) => candidate.id === upcoming.id) || upcoming;
-      const cueRect = object.collisionRect || object.visibleRect || object;
+      const cueRect = object.type === "sign"
+        ? object.visibleRect
+        : object.collisionRect || object.visibleRect || object;
       const cuePoint = Core.projectWorldPoint({ x: cueRect.x + cueRect.width / 2, y: cueRect.y + cueRect.height }, projection);
       refs.telegraph.dataset.phase = upcoming.telegraphPhase;
       const action = upcoming.avoid.toUpperCase();
@@ -499,6 +513,7 @@
     state.hitStopUntil = 0;
     state.impactUntil = 0;
     state.wasInvulnerable = false;
+    state.cueLayout = null;
     root.hidden = false;
     root.dataset.composition = state.composition;
     root.classList.remove("is-paused", "is-complete", "is-impact");

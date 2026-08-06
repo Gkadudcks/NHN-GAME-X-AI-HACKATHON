@@ -349,7 +349,7 @@ test("DAY 4 페이지는 스토리와 추격 미니게임을 엔진 전에 불�
   const minigameIndex = html.indexOf('src="minigames/day4-office-escape/index.js');
   const engineIndex = html.indexOf('src="js/day4.js');
   assert.ok(storyIndex >= 0 && storyIndex < minigameIndex && minigameIndex < engineIndex);
-  assert.match(html, /day4-office-escape\/style\.css\?v=60/);
+  assert.match(html, /day4-office-escape\/style\.css\?v=62/);
 });
 
 test("모든 DAY 자료 화면은 공용 PPT형 슬라이드 스타일을 사용한다", () => {
@@ -975,9 +975,9 @@ test("V2 배경 전환과 조작 UI는 분리된 상단 HUD와 대칭 원형 행
   assert.match(style, /\.oe2-jump\s*\{[^}]*left: clamp\(18px, 2vw, 34px\)/s);
   assert.match(style, /\.oe2-slide\s*\{[^}]*right: clamp\(18px, 2vw, 34px\)/s);
   assert.match(runtime, /function telegraphCenterX\(rawCenter, playfieldWidth\)/);
-  assert.match(runtime, /const cueHalfWidth = \(\(refs\.telegraph\.offsetWidth \|\| 116\) \* 1\.07\) \/ 2/);
-  assert.match(runtime, /jumpRect\.right - worldRect\.left \+ controlGap/);
-  assert.match(runtime, /worldRect\.right - slideRect\.left \+ controlGap/);
+  assert.match(runtime, /if \(!state\.cueLayout \|\| state\.cueLayout\.width !== playfieldWidth\)/);
+  assert.match(runtime, /buttonSafeLeft: Math\.max\(24, jumpRect\.right - worldRect\.left \+ 16\)/);
+  assert.match(runtime, /buttonSafeRight: Math\.max\(24, worldRect\.right - slideRect\.left \+ 16\)/);
   assert.match(runtime, /refs\.telegraph\.style\.left = `\$\{telegraphCenterX\(cuePoint\.x, width\)\}px`/);
   assert.match(style, /\.oe2-telegraph\[hidden\]\s*\{\s*display:\s*none;\s*\}/);
   assert.match(dev, /data-preview="run"/);
@@ -999,13 +999,13 @@ test("V2 배경 전환과 조작 UI는 분리된 상단 HUD와 대칭 원형 행
   assert.match(style, /\.oe2-background-panel\s*\{[^}]*position: absolute[^}]*opacity: 0/s);
 });
 
-test("V2 해결·화면 이탈 오브젝트는 hidden 작성자 규칙으로 제거되고 상태 알림과 분리된다", () => {
+test("V2 해결·화면 이탈 오브젝트는 DOM 생성을 제한하고 상태 알림과 분리된다", () => {
   const runtime = read("minigames/day4-office-escape/index.js");
   const style = read("minigames/day4-office-escape/style.css");
   assert.match(style, /\.oe2-object\[hidden\]\s*\{\s*display:\s*none;\s*\}/);
-  assert.match(runtime, /node\.hidden = !active\.has\(id\)/);
+  assert.match(runtime, /node\.remove\(\);\s*refs\.objectNodes\.delete\(id\)/);
   assert.doesNotMatch(runtime, /exitingObjects|is-hit-exiting/);
-  assert.match(runtime, /node\.hidden = centerX < -220 \|\| centerX > width \+ 240/);
+  assert.match(runtime, /if \(centerX < -220 \|\| centerX > width \+ 240\) return;/);
   assert.match(runtime, /class="oe2-objects" id="oe2-objects" aria-hidden="true"/);
   assert.doesNotMatch(runtime, /id="oe2-objects" aria-live=/);
   assert.match(runtime, /node\.setAttribute\("aria-hidden", "true"\)/);
@@ -1013,16 +1013,21 @@ test("V2 해결·화면 이탈 오브젝트는 hidden 작성자 규칙으로 제
   assert.match(runtime, /class="oe2-feedback" id="oe2-feedback" role="status" aria-live="polite"/);
 });
 
-test("V2 슬라이드 장애물은 서랍·표지 이미지를 쓰지 않고 수집물에만 초록 오라를 준다", () => {
+test("V2 슬라이드 장애물은 승인 간판과 코드형 덕트를 사용하고 수집물에만 초록 오라를 준다", () => {
   const core = read("minigames/day4-office-escape/core.js");
   const runtime = read("minigames/day4-office-escape/index.js");
   const style = read("minigames/day4-office-escape/style.css");
-  assert.doesNotMatch(core, /avoid: "slide", type: "(?:drawer|sign)"/);
+  assert.doesNotMatch(core, /avoid: "slide", type: "drawer"/);
+  assert.equal((core.match(/avoid: "slide", type: "sign"/g) || []).length, 5);
+  assert.equal((core.match(/avoid: "slide", type: "overhead-duct"/g) || []).length, 4);
   assert.match(core, /const OVERHEAD_HAZARD_WIDTH = 96/);
   assert.match(core, /const OVERHEAD_HAZARD_HEIGHT = 22/);
   assert.match(core, /const OVERHEAD_HAZARD_BOTTOM = 88/);
-  assert.match(runtime, /object\.avoid === "slide"[\s\S]*oe2-overhead-frame/);
-  assert.doesNotMatch(runtime, /drawer: "prop\.office\.drawer"|sign: "prop\.office\.sign"/);
+  assert.match(runtime, /sign: "prop\.office\.sign"/);
+  assert.match(runtime, /const usesApprovedArt = object\.avoid !== "slide" \|\| object\.type === "sign"/);
+  assert.match(runtime, /usesApprovedArt[\s\S]*resolve\(PROP_IDS\[object\.type\]\)[\s\S]*oe2-overhead-frame/);
+  assert.match(runtime, /const cueRect = object\.type === "sign"\s*\? object\.visibleRect\s*: object\.collisionRect/);
+  assert.doesNotMatch(runtime, /drawer: "prop\.office\.drawer"/);
   assert.match(style, /\.oe2-overhead-frame::before,\.oe2-overhead-frame::after/);
   assert.match(style, /\.oe2-item \.oe2-object-aura/);
   assert.doesNotMatch(style, /\.oe2-hazard \.oe2-object-aura/);
@@ -1096,12 +1101,12 @@ test("V2 플레이어·장애물·cue·dev 판정은 46% bottom-center 단일 �
   for (const source of [html, dev]) {
     assert.match(source, /day4-office-escape\/art-assets\.js\?v=5/);
   }
-  assert.match(html, /day4-office-escape\/style\.css\?v=60/);
-  assert.match(html, /day4-office-escape\/core\.js\?v=31/);
-  assert.match(html, /day4-office-escape\/index\.js\?v=80/);
-  assert.match(dev, /day4-office-escape\/style\.css\?v=17/);
-  assert.match(dev, /day4-office-escape\/core\.js\?v=31/);
-  assert.match(dev, /day4-office-escape\/index\.js\?v=23/);
+  assert.match(html, /day4-office-escape\/style\.css\?v=62/);
+  assert.match(html, /day4-office-escape\/core\.js\?v=32/);
+  assert.match(html, /day4-office-escape\/index\.js\?v=82/);
+  assert.match(dev, /day4-office-escape\/style\.css\?v=19/);
+  assert.match(dev, /day4-office-escape\/core\.js\?v=32/);
+  assert.match(dev, /day4-office-escape\/index\.js\?v=25/);
   assert.match(dev, /day4-office-escape\/dev\/dev\.js\?v=11/);
 });
 
@@ -1178,6 +1183,22 @@ test("V2 Phase 5 코스 구간과 추격 압박은 기존 결과·pause 계약 �
   assert.match(style, /\.office-escape-v2\.is-paused \.oe2-route-line i,\.office-escape-v2\.is-paused \.oe2-actor \{ transition: none; \}/);
   assert.match(style, /@media \(prefers-reduced-motion: reduce\)/);
   assert.doesNotMatch(runtime, /affection|호감도/);
+});
+
+test("V2 배경·장애물 렌더링은 중복 합성을 피하고 통과·간판 에셋을 보존한다", () => {
+  const runtime = read("minigames/day4-office-escape/index.js");
+  const style = read("minigames/day4-office-escape/style.css");
+  assert.match(runtime, /const BACKGROUND_GROUPS = Object\.freeze\(\[/);
+  assert.match(runtime, /data-background="\$\{group\.key\}"/);
+  assert.match(runtime, /decoding="async"/);
+  assert.doesNotMatch(runtime, /Core\.BACKGROUND_ROUTE\.map\(\(segment\) =>/);
+  assert.match(runtime, /if \(centerX < -220 \|\| centerX > width \+ 240\) return;\s*const node = objectNode\(object\);/);
+  assert.match(runtime, /const targetLayer = behindRunners \? refs\.passedObjects : refs\.objects/);
+  assert.match(runtime, /sign: "prop\.office\.sign"/);
+  assert.doesNotMatch(runtime, /overheadLabel|통신 케이블|서류 보관함/);
+  assert.match(style, /\.oe2-passed-objects \{ z-index: 14; \}/);
+  assert.doesNotMatch(style, /\.oe2-overhead-frame b/);
+  assert.doesNotMatch(style, /\.oe2-background-panel[^}]*will-change/);
 });
 
 test("DAY 3 완료 화면에서 DAY 4를 시작할 수 있다", () => {

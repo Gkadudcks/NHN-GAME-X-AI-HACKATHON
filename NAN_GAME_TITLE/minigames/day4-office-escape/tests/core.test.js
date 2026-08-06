@@ -85,8 +85,10 @@ test("64초 코스는 18개 행동과 3개 수집물을 갖고 배경 순서를 
   assert.equal(hazards[1].width, Core.OVERHEAD_HAZARD_WIDTH);
   assert.equal(hazards[1].height, Core.OVERHEAD_HAZARD_HEIGHT);
   assert.equal(hazards[1].y, Core.OVERHEAD_HAZARD_BOTTOM);
-  assert.ok(hazards.filter((object) => object.avoid === "slide").every((object) => object.type === "overhead-cabinet" || object.type === "overhead-duct"));
-  assert.ok(hazards.every((object) => object.type !== "drawer" && object.type !== "sign"));
+  assert.equal(hazards.filter((object) => object.type === "sign").length, 5);
+  assert.equal(hazards.filter((object) => object.type === "overhead-duct").length, 4);
+  assert.ok(hazards.filter((object) => object.avoid === "slide").every((object) => object.type === "sign" || object.type === "overhead-duct"));
+  assert.ok(hazards.every((object) => object.type !== "drawer" && object.type !== "overhead-cabinet"));
 });
 
 test("기본 64초와 beat 시각은 유지하면서 world 접근 속도는 정확히 1.5배다", () => {
@@ -442,7 +444,7 @@ test("첫 jump·slide는 행동 지속 구간 안에 장애물을 통과해 avoi
 
 test("상부 구조물은 standing body와 겹치고 slide clearance를 비우며 시각·판정 경계가 4px 이내다", () => {
   const game = Core.create();
-  const overhead = game.snapshot().activeObjects.find((object) => object.kind === "hazard" && object.avoid === "slide");
+  const overhead = game.snapshot().activeObjects.find((object) => object.type === "overhead-duct");
   const standing = game.snapshot().playerRect;
   game.commitSlide();
   const sliding = game.snapshot().playerRect;
@@ -463,6 +465,25 @@ test("상부 구조물은 standing body와 겹치고 slide clearance를 비우�
     - (overhead.collisionRect.y + overhead.collisionRect.height)) * projection.scale;
   assert.ok(bottomDifference <= 4, `bottom edge ${bottomDifference}px`);
   assert.ok(topDifference <= 4, `top edge ${topDifference}px`);
+});
+
+test("승인 간판은 고정봉까지 렌더링하되 기존 상단 충돌 상자와 slide clearance를 유지한다", () => {
+  const game = Core.create();
+  const sign = game.snapshot().activeObjects.find((object) => object.type === "sign");
+  const standing = game.snapshot().playerRect;
+  game.commitSlide();
+  const sliding = game.snapshot().playerRect;
+
+  assert.ok(sign.artRect.width > sign.logicalRect.width);
+  assert.equal(sign.artRect.width, sign.artRect.height);
+  assert.ok(sign.visibleRect.height > sign.logicalRect.height * 2);
+  assert.ok(sign.collisionRect.x >= sign.visibleRect.x);
+  assert.ok(sign.collisionRect.x + sign.collisionRect.width <= sign.visibleRect.x + sign.visibleRect.width);
+  assert.ok(sign.collisionRect.y >= sign.visibleRect.y);
+  assert.ok(sign.collisionRect.y + sign.collisionRect.height <= sign.visibleRect.y + sign.visibleRect.height);
+  assert.ok(standing.y < sign.collisionRect.y + sign.collisionRect.height);
+  assert.ok(standing.y + standing.height > sign.collisionRect.y);
+  assert.ok(sign.collisionRect.y - (sliding.y + sliding.height) >= Core.SLIDE_CLEARANCE);
 });
 
 test("1440x900 run jump slide preview geometry는 actor와 두 판정 가이드를 화면 좌표로 산출한다", () => {
