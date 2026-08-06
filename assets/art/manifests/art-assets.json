@@ -1065,16 +1065,16 @@
       "character_id": "minjae",
       "pose": "neutral_standing",
       "expression": "embarrassed",
-      "active_version": null,
+      "active_version": "v001",
       "versions": [
         {
           "version": "v001",
-          "status": "planned",
-          "path": null,
-          "generation_log_id": null,
-          "sha256": null,
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "approved",
+          "path": "assets/art/characters/minjae/approved/minjae_neutral_standing_embarrassed_v001.png",
+          "generation_log_id": "minjae-neutral-standing-embarrassed-v001-chatgpt-web",
+          "sha256": "0209f9c92c66eb7ff3e66b5f10b34f282f553b9644d92f37587c70b7d60b6199",
+          "reviewed_by": "claude",
+          "reviewed_at": "2026-08-06T22:20:00+09:00"
         }
       ]
     },
@@ -1085,16 +1085,16 @@
       "character_id": "minjae",
       "pose": "arms_folded",
       "expression": "concerned",
-      "active_version": null,
+      "active_version": "v001",
       "versions": [
         {
           "version": "v001",
-          "status": "planned",
-          "path": null,
-          "generation_log_id": null,
-          "sha256": null,
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "approved",
+          "path": "assets/art/characters/minjae/approved/minjae_arms_folded_concerned_v001.png",
+          "generation_log_id": "minjae-arms-folded-concerned-v001-chatgpt-web",
+          "sha256": "58a3ce5e17f15a56b8003f908a575d75a6332877ae396c572f81952ce0d94698",
+          "reviewed_by": "claude",
+          "reviewed_at": "2026-08-06T22:20:00+09:00"
         }
       ]
     },
@@ -1283,7 +1283,7 @@
       "character_id": "sea",
       "pose": "neutral_standing",
       "expression": "gentle_smile",
-      "active_version": "v002",
+      "active_version": "v003",
       "versions": [
         {
           "version": "v001",
@@ -1302,6 +1302,15 @@
           "sha256": "17bca8620356ab241e44f379603a2a038e1a0b779363192d72fee1e2e34d1bcb",
           "reviewed_by": "codex",
           "reviewed_at": "2026-07-30T01:42:18.0955630+09:00"
+        },
+        {
+          "version": "v003",
+          "status": "approved",
+          "path": "assets/art/characters/sea/approved/sea_neutral_standing_gentle_smile_v003.png",
+          "generation_log_id": "sea-neutral-standing-gentle-smile-v003-alpha-cleanup",
+          "sha256": "f2d669e594ecc3322bd706ff26b2cd1c1fc908669198ddf235bdc7ad5ad0e0aa",
+          "reviewed_by": "claude",
+          "reviewed_at": "2026-08-06T22:45:00+09:00"
         }
       ]
     },

@@ -1005,3 +1005,37 @@ test("DAY 3 완료 화면에서 DAY 4를 시작할 수 있다", () => {
   assert.match(engine, /setTimeout\(\(\) => \{ location\.href = "day4\.html\?new=1"; \}, 2200\)/);
   assert.match(read("js/title-screen.js"), /Number\(slot\.day\) === 4 \? "day4\.html"/);
 });
+
+test("정시 퇴근 완벽 등급은 호감도 보상과 함께 다른 도착 대사로 안내된다", () => {
+  const runtime = read("js/day4.js");
+  assert.match(runtime, /if \(result\.grade === "perfect"\) state\.affection \+= 1/);
+  assert.match(runtime, /scene\.dynamic === "escapeArrival"/);
+  assert.match(runtime, /state\.minigameResult\?\.grade === "perfect"\) return "도착했습니다\. 이번에는 부장님 눈에 한 번도 안 띄었습니다\."/);
+  const arrival = story.scenes.find((scene) => scene.id === "day4SuccessArrival");
+  assert.equal(arrival.dynamic, "escapeArrival");
+});
+
+test("DAY 4는 18.4%를 개선 결과가 아니라 현재 확인값으로 표현한다", () => {
+  const source = read("js/day4-story.js");
+  assert.doesNotMatch(source, /개선 결과/);
+  const verifyMetric = story.scenes.find((scene) => scene.id === "day4VerifyMetric");
+  assert.ok(verifyMetric.system.rows.includes("현재 확인값 · 18.4%"));
+  const rehearsalScreen = story.scenes.find((scene) => scene.id === "day4RehearsalScreen");
+  assert.ok(rehearsalScreen.system.rows.includes("현재 확인값 · 7일 차 잔존율 18.4%"));
+  const rehearsalMetric = story.scenes.find((scene) => scene.id === "day4RehearsalMetric");
+  assert.equal(rehearsalMetric.system.title, "현재 확인값");
+  assert.match(rehearsalMetric.text, /개선 효과가 아니라/);
+  const submit = story.scenes.find((scene) => scene.id === "day4Submit");
+  assert.ok(submit.system.rows.includes("발표 자료 수치 · 18.4%"));
+  assert.ok(submit.system.rows.includes("근거 자료 수치 · 18.4%"));
+  assert.match(submit.system.rows.find((row) => row.startsWith("제출 확인")), /17:08/);
+});
+
+test("DAY 4는 발표 전주 대신 가장 최근 자료로 기준 기간을 설명한다", () => {
+  const source = read("js/day4-story.js");
+  assert.doesNotMatch(source, /발표 전주/);
+  assert.doesNotMatch(source, /7\/27~8\/2/);
+  assert.doesNotMatch(source, /7월 27일/);
+  const evidencePreview = story.scenes.find((scene) => scene.id === "day4EvidencePreview");
+  assert.ok(evidencePreview.system.rows.includes("계산 기준 · 가장 최근 자료 신규 가입자"));
+});

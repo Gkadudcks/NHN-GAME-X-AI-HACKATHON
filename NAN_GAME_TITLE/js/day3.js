@@ -765,16 +765,17 @@ function addStageChoicePrompt(scene) {
   refs.stageChoices.appendChild(prompt);
 }
 
-function choiceEffectTags(choice) {
-  const labels = { work: "◆ 업무력", affection: "♡ 호감도", trust: "◇ 신뢰도" };
-  const tags = Object.entries(choice.delta || {})
-    .filter(([, value]) => value !== 0)
-    .map(([key, value]) => labels[key] ? ({
-      text: `${labels[key]} ${value > 0 ? "상승" : "하락"}`,
-      tone: value > 0 ? "gain" : "loss",
-    }) : null)
-    .filter(Boolean);
-  return tags.length ? tags : [{ text: "스토리 분기", tone: "branch" }];
+const STAT_LABELS = Object.freeze({
+  work: "◆ 업무력",
+  affection: "♡ 호감도",
+  trust: "◇ 신뢰도",
+});
+
+function choiceEffectMarkup(delta = {}) {
+  const entries = Object.entries(delta).filter(([key, value]) => STAT_LABELS[key] && value !== 0);
+  if (!entries.length) return '<i class="branch stat-branch"><b>↗</b><span>스토리 분기</span></i>';
+  const icons = { work: "▤", affection: "♥", trust: "♢" };
+  return entries.map(([key, value]) => `<i class="${value > 0 ? "gain" : "loss"} stat-${key}"><b>${icons[key]}</b><span>${STAT_LABELS[key].slice(2)}</span><em>${value > 0 ? "▲" : "▼"} ${Math.abs(value)}</em></i>`).join("");
 }
 
 function choiceLock(choice) {
@@ -784,17 +785,21 @@ function choiceLock(choice) {
     : null;
 }
 
+function cgBadgeMarkup(choice) {
+  return choice.cg ? '<i class="cg stat-cg"><b>🖼</b><span>CG 확인</span></i>' : "";
+}
+
 function addStageChoice(choice, key, scene) {
   const button = document.createElement("button");
   const lock = choiceLock(choice);
-  const tags = lock
-    ? [{ text: `호감도 ${lock.required} 필요 · 현재 ${lock.current}`, tone: "locked" }]
-    : choiceEffectTags(choice);
+  const effects = (lock
+    ? `<i class="locked">호감도 ${lock.required} 필요 · 현재 ${lock.current}</i>`
+    : choiceEffectMarkup(choice.delta)) + cgBadgeMarkup(choice);
   button.type = "button";
   button.disabled = Boolean(lock);
   button.classList.toggle("choice-locked", Boolean(lock));
   if (lock) button.setAttribute("aria-label", `${choice.text} · 잠김 · 호감도 ${lock.required} 필요, 현재 ${lock.current}`);
-  button.innerHTML = `<span class="stage-choice-label">${escapeHtml(choice.text)}</span><small class="stage-choice-effects">${tags.map((tag) => `<i class="${tag.tone}">${escapeHtml(tag.text)}</i>`).join("")}</small>`;
+  button.innerHTML = `<span class="stage-choice-label">${escapeHtml(choice.text)}</span><small class="stage-choice-effects">${effects}</small>`;
   if (!lock) button.addEventListener("click", () => choose(choice, key, scene));
   refs.stageChoices.appendChild(button);
 }

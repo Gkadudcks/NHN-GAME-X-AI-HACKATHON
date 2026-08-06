@@ -85,7 +85,7 @@
     { id: "day3Summary", time: "18:00", speaker: "시스템", text: "오늘의 업무를 정산합니다.", bg: "office", bgm: "daily", daySummary: 3 },
     { id: "day3DepartureLead", time: "18:14", speaker: "한도윤", dynamic: "departureLead", bg: "office_night", bgm: "harin", location: "게임사업실 · 퇴근" },
     { id: "day3DepartureChoice", time: "18:14", speaker: "한도윤", text: "퇴근 준비를 마쳤다. 선배에게 어떻게 말할까?", bg: "office_night", location: "게임사업실 · 퇴근", choiceKey: "elevatorPlan", relationshipChoice: true, choices: [
-      { id: "wait", text: "왠지 선배가 기다리고 있을 것 같아 엘리베이터 로비로 향한다.", minAffection: 4, delta: { affection: 1 }, reply: "로비로 내려가자, 열린 엘리베이터 앞에 익숙한 모습이 기다리고 있었다." },
+      { id: "wait", text: "왠지 선배가 기다리고 있을 것 같아 엘리베이터 로비로 향한다.", minAffection: 4, cg: true, delta: { affection: 1 }, reply: "로비로 내려가자, 열린 엘리베이터 앞에 익숙한 모습이 기다리고 있었다." },
       { id: "lobby", text: "선배에게 먼저 퇴근하겠다고 인사한다.", minAffection: 2, delta: { affection: 1 }, reply: "퇴근 준비를 마친 선배에게 먼저 들어가 보겠다고 인사를 건넸다." },
       { id: "leave", text: "말없이 먼저 사무실을 나선다.", delta: {}, reply: "오늘은 별다른 인사를 남기지 않고 먼저 사무실을 나섰다." },
     ] },

@@ -173,7 +173,7 @@
     { id: "day2SettleIn", time: "09:03", speaker: "서하린", text: "자, 그럼 이제 슬슬 시작해 볼까요.", char: "harin" },
 
     { id: "day2VerifyLead", time: "09:05", speaker: "서하린", text: "DAY 1에 잡은 문제를 숫자로 한 번만 확인하고 다음 일로 넘어가죠.", char: "harin" },
-    { id: "day2VerifyReply", time: "09:06", speaker: "한도윤", text: "최근 7일 신규 설치자와 첫 전투 도달자를 같은 기준으로 맞췄습니다.", char: "harin" },
+    { id: "day2VerifyReply", time: "09:06", speaker: "한도윤", text: "최근 7일 신규 설치자와 첫 전투 도달자를 같은 기준으로 맞췄고, 가장 최근 자료의 7일 차 잔존율도 같이 확인했습니다.", char: "harin" },
     { id: "day2VerifyClose", time: "09:07", speaker: "서하린", text: "좋아요. 계산식과 조회 링크만 남겨요. 슬라이드 문장은 오후에 정리하고요.", char: "harin" },
     {
       id: "day2VerifyPanel",
@@ -186,6 +186,7 @@
           "최근 7일 신규 설치 · 12,480명",
           "첫 전투 도달 · 8,502명",
           "첫 전투 이전 이탈 · 31.9%",
+          "7일 차 잔존율 · 18.4%",
           "계산식 · (신규 설치 − 첫 전투 도달) ÷ 신규 설치",
           "조회 링크 · 사내 클라우드 작업 기록",
         ],

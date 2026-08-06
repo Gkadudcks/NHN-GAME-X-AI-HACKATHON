@@ -79,6 +79,14 @@ test("하린이 남기라고 한 계산식과 조회 링크가 검증 패널에 
   assert.ok(panel.systemPanel.rows.some((row) => row.startsWith("조회 링크 ·")));
 });
 
+test("DAY 2 검증 패널과 단서에 가장 최근 7일 차 잔존율 18.4%가 포함된다", () => {
+  const panel = story.scenes.find((entry) => entry.id === "day2VerifyPanel");
+  assert.ok(panel.systemPanel.rows.some((row) => row === "7일 차 잔존율 · 18.4%"));
+  assert.ok(panel.systemPanel.rows.some((row) => row.includes("12,480명")));
+  assert.ok(panel.systemPanel.rows.some((row) => row.includes("8,502명")));
+  assert.ok(panel.systemPanel.rows.some((row) => row.includes("31.9%")));
+});
+
 test("비밀 채팅을 부장에게 들키면 놀림을 받고, 그 외 등급에서는 나오지 않는다", () => {
   const tease = story.scenes.find((entry) => entry.id === "day2BossTease");
   const reaction = story.scenes.find((entry) => entry.id === "day2BossTeaseHarinReact");

@@ -264,6 +264,7 @@
 .stage-choice-effects .stat-affection{color:#a9465c;border-color:#efbdc8;background:linear-gradient(135deg,#fff8fa,#ffe9ef)}.stage-choice-effects .stat-affection b{background:linear-gradient(145deg,#f1849b,#d94f6c)}.stage-choice-effects .stat-affection em{color:#d44866}
 .stage-choice-effects .stat-trust{color:#7b5b32;border-color:#e1c998;background:linear-gradient(135deg,#fffdf5,#f8efd9)}.stage-choice-effects .stat-trust b{background:linear-gradient(145deg,#d7b56c,#a57b37)}.stage-choice-effects .stat-trust em{color:#9a702d}
 .stage-choice-effects .stat-branch{color:#705f68;border-color:#d8cbd0;background:linear-gradient(135deg,#fff,#f5f0f2)}.stage-choice-effects .stat-branch b{background:linear-gradient(145deg,#9d8992,#74616a)}
+.stage-choice-effects .stat-cg{color:#6b4fa0;border-color:#d3c2ea;background:linear-gradient(135deg,#faf8ff,#f0e9fa)}.stage-choice-effects .stat-cg b{background:linear-gradient(145deg,#b18ee0,#7d54b8)}
 .stage-choices button:hover .stage-choice-effects i[class*="stat-"],.stage-choices button:focus-visible .stage-choice-effects i[class*="stat-"]{color:#fff;border-color:#ffffff7d;background:#ffffff20}.stage-choices button:hover .stage-choice-effects i[class*="stat-"] em,.stage-choices button:focus-visible .stage-choice-effects i[class*="stat-"] em{color:#fff}
 
 /* Distinct illustrated cards for the persistent player stats */
