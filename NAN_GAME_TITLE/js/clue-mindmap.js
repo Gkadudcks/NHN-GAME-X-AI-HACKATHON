@@ -23,31 +23,6 @@
     node.style.height = `${height}px`;
   }
 
-  function curve(svg, from, to, className) {
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    const dx = to.x - from.x;
-    const dy = to.y - from.y;
-    const distance = Math.max(1, Math.hypot(dx, dy));
-    const offset = Math.min(46, distance * 0.14);
-    const normalX = -dy / distance;
-    const normalY = dx / distance;
-    const c1 = { x: from.x + dx * 0.36 + normalX * offset, y: from.y + dy * 0.36 + normalY * offset };
-    const c2 = { x: from.x + dx * 0.7 + normalX * offset, y: from.y + dy * 0.7 + normalY * offset };
-    path.setAttribute("d", `M ${from.x} ${from.y} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${to.x} ${to.y}`);
-    path.setAttribute("class", className);
-    svg.append(path);
-  }
-
-  function groupClues(clues, day) {
-    const grouped = new Map();
-    clues.forEach((clue) => {
-      if (clue.day !== day) return;
-      if (!grouped.has(clue.theme)) grouped.set(clue.theme, []);
-      grouped.get(clue.theme).push(clue);
-    });
-    return [...grouped.entries()];
-  }
-
   function enablePan(viewport, world, initialX, initialY, options = {}) {
     let x = initialX;
     let y = initialY;
@@ -246,77 +221,51 @@
     const world = element("div", "clue-canvas-world");
     let inspector;
     let tooltip;
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("class", "clue-connections");
-    world.append(svg);
-
-    const grouped = groupClues(clues, selectedDay);
+    const dayClues = clues.filter((clue) => clue.day === selectedDay);
     world.classList.add("radial");
 
-    const themeRadius = 175;
     const nodeDiameter = selection ? 190 : 166;
     const nodeGap = 34;
     const minCenterDistance = nodeDiameter + nodeGap;
-    const itemsPerRing = 4;
+    const itemsPerRing = 6;
     const ringStep = nodeDiameter + nodeGap;
-    const baseClueRadius = 300;
-    const themeCount = Math.max(1, grouped.length);
-    const sector = (Math.PI * 2) / themeCount;
-    const spreadCap = Math.min(sector * 0.92, Math.PI * 0.98);
+    const ringCount = Math.max(1, Math.ceil(dayClues.length / itemsPerRing));
+    const ringRadii = [];
 
-    let maxExtent = themeRadius + 90;
-    const layout = grouped.map(([theme, items], themeIndex) => {
-      const themeAngle = -Math.PI / 2 + themeIndex * sector;
-      const ringCount = Math.max(1, Math.ceil(items.length / itemsPerRing));
-      const ringRadii = [];
-      let previousRadius = baseClueRadius;
-      for (let ring = 0; ring < ringCount; ring += 1) {
-        const startIdx = ring * itemsPerRing;
-        const count = Math.min(itemsPerRing, items.length - startIdx);
-        const step = count > 1 ? spreadCap / (count - 1) : 0;
-        const requiredRadius = step > 0 ? minCenterDistance / (2 * Math.sin(step / 2)) : baseClueRadius;
-        const radius = Math.max(ring === 0 ? baseClueRadius : previousRadius + ringStep, requiredRadius);
-        ringRadii.push(radius);
-        previousRadius = radius;
-      }
-      maxExtent = Math.max(maxExtent, (ringRadii[ringRadii.length - 1] || baseClueRadius) + nodeDiameter / 2);
-      return { theme, items, themeIndex, themeAngle, ringRadii };
-    });
+    let previousRadius = 0;
+    for (let ring = 0; ring < ringCount; ring += 1) {
+      const startIdx = ring * itemsPerRing;
+      const count = Math.min(itemsPerRing, Math.max(0, dayClues.length - startIdx));
+      const requiredRadius = count > 1
+        ? minCenterDistance / (2 * Math.sin(Math.PI / count))
+        : 0;
+      const radius = dayClues.length === 1
+        ? 0
+        : Math.max(ring === 0 ? 160 : previousRadius + ringStep, requiredRadius + nodeGap);
+      ringRadii.push(radius);
+      previousRadius = radius;
+    }
 
-    const worldSize = Math.max(900, Math.ceil((maxExtent + 90) * 2));
+    const maxExtent = Math.max(nodeDiameter / 2, (ringRadii[ringRadii.length - 1] || 0) + nodeDiameter / 2);
+    const worldSize = Math.max(420, Math.ceil((maxExtent + 70) * 2));
     const worldWidth = worldSize;
     const worldHeight = worldSize;
     world.style.width = `${worldWidth}px`;
     world.style.height = `${worldHeight}px`;
-    svg.setAttribute("viewBox", `0 0 ${worldWidth} ${worldHeight}`);
     const centerX = worldWidth / 2;
     const centerY = worldHeight / 2;
 
-    const root = { x: centerX, y: centerY };
-    layout.forEach(({ theme, items, themeIndex, themeAngle, ringRadii }) => {
-        const themePoint = {
-          x: centerX + Math.cos(themeAngle) * themeRadius,
-          y: centerY + Math.sin(themeAngle) * themeRadius,
-        };
-        curve(svg, root, themePoint, "clue-link theme-link");
-        const themeNode = element("div", "clue-orbit-node clue-theme-orbit");
-        themeNode.innerHTML = `<small>TOPIC ${String(themeIndex + 1).padStart(2, "0")}</small><strong>${theme}</strong><span>${items.length}개 연결</span>`;
-        place(themeNode, themePoint.x, themePoint.y, 122);
-        themeNode.style.animationDelay = `${themeIndex * 90 + 100}ms`;
-        world.append(themeNode);
-
-        items.forEach((clue, clueIndex) => {
+    dayClues.forEach((clue, clueIndex) => {
           const ring = Math.floor(clueIndex / itemsPerRing);
           const startIdx = ring * itemsPerRing;
-          const count = Math.min(itemsPerRing, items.length - startIdx);
+          const count = Math.min(itemsPerRing, dayClues.length - startIdx);
           const indexInRing = clueIndex - startIdx;
-          const step = count > 1 ? spreadCap / (count - 1) : 0;
-          const clueAngle = themeAngle + (count > 1 ? -spreadCap / 2 + step * indexInRing : 0);
-          const clueRadius = ringRadii[ring];
+          const clueAngle = count === 2
+            ? indexInRing * Math.PI
+            : -Math.PI / 2 + indexInRing * (Math.PI * 2 / Math.max(1, count));
+          const clueRadius = ringRadii[ring] || 0;
           const clueX = centerX + Math.cos(clueAngle) * clueRadius;
           const clueY = centerY + Math.sin(clueAngle) * clueRadius;
-          const cluePoint = { x: clueX, y: clueY };
-          curve(svg, themePoint, cluePoint, "clue-link detail-link");
           const clueNode = element("button", "clue-orbit-node clue-detail-orbit");
           clueNode.type = "button";
           clueNode.setAttribute("aria-expanded", "false");
@@ -378,16 +327,15 @@
             }
             clueNode.classList.add("active");
             clueNode.setAttribute("aria-expanded", "true");
-            inspector.querySelector("small").textContent = `CLUE DETAIL · ${theme}`;
+            inspector.querySelector("small").textContent = "CLUE DETAIL";
             inspector.querySelector("strong").textContent = clue.title;
             inspector.querySelector("p").textContent = clue.detail;
             inspector.hidden = false;
           });
           place(clueNode, clueX, clueY, nodeDiameter);
-          clueNode.style.animationDelay = `${themeIndex * 90 + clueIndex * 55 + 210}ms`;
+          clueNode.style.animationDelay = `${clueIndex * 55 + 120}ms`;
           world.append(clueNode);
         });
-      });
 
     inspector = element("aside", "clue-inspector");
     inspector.id = "clue-inspector";
