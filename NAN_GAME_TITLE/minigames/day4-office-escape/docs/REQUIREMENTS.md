@@ -31,6 +31,7 @@
 
 - 점프와 슬라이드는 입력한 프레임에 시작하며 입력 예약·자동 실행·정답 보정을 금지한다.
 - 점프는 입력 순간 지상이고 슬라이드 중이 아닐 때만 실행한다. 공중·슬라이드 중 입력과 키 반복은 저장하지 않고 폐기하며 고정 점프와 0.7초 슬라이드는 유지한다.
+- 실행 가능한 키 입력은 같은 이벤트 처리 중 Core 상태와 캐릭터 포즈 DOM까지 갱신한다. 캐릭터 아트는 게임 시작 시 비동기 디코딩하고 세 캐릭터의 gait 교체 시점을 분산한다.
 - 캐릭터, 판정, 장애물 art/collision, cue는 하나의 world-to-screen projection을 사용한다.
 - 세 캐릭터는 bottom-center 앵커를 사용하고 도윤 판정은 보이는 몸체 안에 설명 가능하게 위치한다.
 - 현재 actor 크기는 최초 Phase 2 기준 `63%`다.
@@ -81,6 +82,7 @@
 | CUE-01 | `hazard-01` jump와 `hazard-02` slide에서만 회차당 한 번의 연속 PREPARE→ACT 안내 | `smoke_checked` |
 | PERF-01 | 장애물·배경·캐릭터 렌더 캐시, viewport 읽기 캐시, 합성 transform 배치 적용 | `smoke_checked` |
 | FORMATION-01 | 포즈와 무관한 run 기준 대형, 하린 고정 앵커, 부장 `chasePressure` 전용 이동 | `smoke_checked` |
+| INPUT-LATENCY-01 | actor 선디코딩, 독립 gait 위상, 성공 입력 즉시 포즈 렌더 | `smoke_checked` |
 
 완료 동작을 보호하는 핵심 테스트는 `minigames/day4-office-escape/tests/core.test.js`와 `NAN_GAME_TITLE/tests/day4-integration.test.js`다. 문서를 줄였다는 이유로 테스트를 삭제하거나 완화하지 않는다.
 
@@ -178,6 +180,7 @@
 | 2026-08-06 | 간판 에셋 복원 | 텍스트-only 상부 표기를 제거하고 승인 `prop.office.sign` v002를 판정 분리형 슬라이드 위험으로 복원 |
 | 2026-08-06 | CUE-01·PERF-01·FORMATION-01 | 최초 jump·slide cue 1회 제한, 렌더 캐시·합성 transform 적용, 포즈 독립 고정 대형 완료 |
 | 2026-08-06 | 입력·진행 HUD 보정 | 120ms 점프 버퍼 제거, 지난 장소 누적 초록 표시, 점프 버튼 기본 포커스 제거 |
+| 2026-08-06 | 키보드 입력 지연 보정 | actor 선디코딩, 세 캐릭터 gait 교체 분산, 성공 입력 즉시 렌더 적용 |
 
 ## 9. 최종 사용자 플레이 기록
 

@@ -474,9 +474,9 @@
     function releaseJump() { /* compatibility: fixed jump ignores release duration. */ }
     function commitJump() { return pressJump(); }
     function cancelJump() { /* compatibility: immediate jump has no queued state. */ }
-    function setSlide(active) { if (active) commitSlide(); }
+    function setSlide(active) { return active ? commitSlide() : false; }
     function commitSlide() {
-      activateSlide();
+      return activateSlide();
     }
     function cancelSlide() { /* fixed slide completes its committed duration. */ }
     function applyHazard(object) {

@@ -50,6 +50,7 @@
     collectedItems: Object.freeze([]),
     maxCombo: 18,
   });
+  const actorPreloads = new Map();
 
   let root = null;
   let refs = null;
@@ -69,6 +70,7 @@
     showHitboxes: false,
     actorArt: new Map(),
     actorLayout: new Map(),
+    chaseRender: { state: "", pressure: "" },
     objectRender: new Map(),
     backgroundRender: new Map(),
     formationMetrics: null,
@@ -115,6 +117,20 @@
       const priority = index === 0 ? ' fetchpriority="high"' : "";
       return `<figure class="oe2-background-panel" data-background="${group.key}"><img src="${resolve(group.id)}" decoding="async"${priority} alt="" aria-hidden="true"></figure>`;
     }).join("");
+  }
+
+  function preloadActorArt() {
+    Object.values(CHARACTER_IDS).forEach((id) => {
+      const source = resolve(id);
+      if (!source || actorPreloads.has(source)) return;
+      const image = new global.Image();
+      image.decoding = "async";
+      image.src = source;
+      const ready = typeof image.decode === "function"
+        ? Promise.resolve(image.decode()).catch(() => undefined)
+        : Promise.resolve();
+      actorPreloads.set(source, { image, ready });
+    });
   }
 
   function backgroundGroupForScene(scene = "") {
@@ -484,22 +500,28 @@
     }
     refs.items.forEach((node, id) => node.classList.toggle("is-collected", snapshot.collectedItems.includes(id)));
 
-    const gait = Core.gaitFrameIndex(snapshot.elapsed);
-    const doyunId = snapshot.sliding ? CHARACTER_IDS.doyunSlide : snapshot.y > 1 ? CHARACTER_IDS.doyunJump : gait ? CHARACTER_IDS.doyunRunAlt : CHARACTER_IDS.doyunRun;
-    const harinId = snapshot.assistUsed && snapshot.invulnerable > 0 ? CHARACTER_IDS.harinAssist : gait ? CHARACTER_IDS.harinRunAlt : CHARACTER_IDS.harinRun;
-    const bossId = gait ? CHARACTER_IDS.bossRunAlt : CHARACTER_IDS.bossRun;
+    const doyunGait = Core.gaitFrameIndex(snapshot.elapsed, Core.GAIT_PHASE_DELAY_MS.doyun);
+    const harinGait = Core.gaitFrameIndex(snapshot.elapsed, Core.GAIT_PHASE_DELAY_MS.harin);
+    const bossGait = Core.gaitFrameIndex(snapshot.elapsed, Core.GAIT_PHASE_DELAY_MS.boss);
+    const doyunId = snapshot.sliding ? CHARACTER_IDS.doyunSlide : snapshot.y > 1 ? CHARACTER_IDS.doyunJump : doyunGait ? CHARACTER_IDS.doyunRunAlt : CHARACTER_IDS.doyunRun;
+    const harinId = snapshot.assistUsed && snapshot.invulnerable > 0 ? CHARACTER_IDS.harinAssist : harinGait ? CHARACTER_IDS.harinRunAlt : CHARACTER_IDS.harinRun;
+    const bossId = bossGait ? CHARACTER_IDS.bossRunAlt : CHARACTER_IDS.bossRun;
     const formation = Core.actorFormationGeometry(formationMetrics(), projection, snapshot.chasePressure);
     const doyunMetric = setActorArt("doyun", doyunId, projection, formation.anchors.doyun);
     setActorArt("harin", harinId, projection, formation.anchors.harin);
     setActorArt("boss", bossId, projection, formation.anchors.boss);
-    refs.boss.dataset.chaseState = snapshot.chaseState;
-    refs.boss.style.setProperty("--oe2-chase-pressure", String(snapshot.chasePressure));
-    renderPlayerReference(doyunMetric, projection);
-    const playerBody = Core.projectWorldRect(snapshot.playerRect, projection);
-    refs.playerBody.style.left = `${playerBody.left}px`;
-    refs.playerBody.style.bottom = `${playerBody.bottom}px`;
-    refs.playerBody.style.width = `${playerBody.width}px`;
-    refs.playerBody.style.height = `${playerBody.height}px`;
+    const chasePressure = String(snapshot.chasePressure);
+    if (state.chaseRender.state !== snapshot.chaseState) refs.boss.dataset.chaseState = snapshot.chaseState;
+    if (state.chaseRender.pressure !== chasePressure) refs.boss.style.setProperty("--oe2-chase-pressure", chasePressure);
+    state.chaseRender = { state: snapshot.chaseState, pressure: chasePressure };
+    if (state.showHitboxes) {
+      renderPlayerReference(doyunMetric, projection);
+      const playerBody = Core.projectWorldRect(snapshot.playerRect, projection);
+      refs.playerBody.style.left = `${playerBody.left}px`;
+      refs.playerBody.style.bottom = `${playerBody.bottom}px`;
+      refs.playerBody.style.width = `${playerBody.width}px`;
+      refs.playerBody.style.height = `${playerBody.height}px`;
+    }
     renderObjects(snapshot, projection);
     const upcoming = snapshot.upcomingHazard;
     if (refs.telegraph.hidden === Boolean(upcoming)) refs.telegraph.hidden = !upcoming;
@@ -584,6 +606,7 @@
     state.paused = false;
     state.actorArt.clear();
     state.actorLayout.clear();
+    state.chaseRender = { state: "", pressure: "" };
     state.objectRender.clear();
     state.backgroundRender.clear();
     state.formationMetrics = null;
@@ -616,6 +639,7 @@
     refs.world.inert = false;
     refs.hud.inert = false;
     refs.resultAction.textContent = state.restartOnResult ? "다시 달리기" : "스토리 계속하기";
+    preloadActorArt();
     updateBackgroundSources();
     state.game = Core.create(options.testOverrides || {});
     if (options.autoStart === false) {
@@ -669,12 +693,15 @@
 
   function triggerJump() {
     if (!state.playing || state.paused || state.completed) return;
-    if (state.game.pressJump()) state.pressedUntil.jump = state.uiElapsed + 0.16;
+    if (!state.game.pressJump()) return;
+    state.pressedUntil.jump = state.uiElapsed + 0.16;
+    render(state.game.snapshot());
   }
   function triggerSlide() {
     if (!state.playing || state.paused || state.completed) return;
-    state.game.commitSlide();
+    if (!state.game.commitSlide()) return;
     state.pressedUntil.slide = state.uiElapsed + 0.16;
+    render(state.game.snapshot());
   }
   function pause() {
     if (!root || !state.playing || state.awaitingStart || state.paused || state.completed) return;
@@ -760,7 +787,8 @@
       if (event.code === "Enter" || event.code === "Space") { event.preventDefault(); beginRun(); }
       return;
     }
-    if (JUMP_KEYS.has(event.code)) { event.preventDefault(); if (!event.repeat) triggerJump(); }
+    if (event.repeat && (JUMP_KEYS.has(event.code) || SLIDE_KEYS.has(event.code))) { event.preventDefault(); return; }
+    if (JUMP_KEYS.has(event.code)) { event.preventDefault(); triggerJump(); }
     else if (SLIDE_KEYS.has(event.code)) { event.preventDefault(); triggerSlide(); }
     else if (event.code === "Escape") { event.preventDefault(); state.paused ? resume() : pause(); }
   });

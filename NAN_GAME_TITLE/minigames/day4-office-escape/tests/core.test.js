@@ -91,7 +91,8 @@ test("점프 입력은 실행 가능한 순간에만 시작되고 공중·슬라
   assert.equal(jumping.drainEvents().filter((event) => event.type === "jump").length, 0, "landing does not replay input");
 
   const sliding = Core.create({ duration: 8, length: 1800, course: [] });
-  sliding.commitSlide();
+  assert.equal(sliding.commitSlide(), true, "grounded slide starts immediately");
+  assert.equal(sliding.commitSlide(), false, "active slide rejects repeated input");
   sliding.drainEvents();
   assert.equal(sliding.pressJump(), false, "sliding input is discarded");
   advance(sliding, 0.72);
@@ -99,6 +100,11 @@ test("점프 입력은 실행 가능한 순간에만 시작되고 공중·슬라
   assert.equal(sliding.snapshot().y, 0);
   assert.equal(sliding.drainEvents().filter((event) => event.type === "jump").length, 0, "slide end does not replay input");
   assert.equal(sliding.pressJump(), true, "jump remains immediate after the visible slide ends");
+
+  const airborneSlide = Core.create({ duration: 8, length: 1800, course: [] });
+  assert.equal(airborneSlide.pressJump(), true);
+  assert.equal(airborneSlide.commitSlide(), false, "midair slide input is discarded");
+  assert.equal(airborneSlide.setSlide(true), false, "setSlide reports the same rejected input");
 });
 
 test("슬라이드는 한 번의 입력으로 0.7초이며 재입력으로 연장되지 않는다", () => {

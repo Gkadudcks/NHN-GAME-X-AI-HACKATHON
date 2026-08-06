@@ -1109,11 +1109,11 @@ test("V2 플레이어·장애물·cue·dev 판정은 46% bottom-center 단일 �
     assert.match(source, /day4-office-escape\/art-assets\.js\?v=5/);
   }
   assert.match(html, /day4-office-escape\/style\.css\?v=64/);
-  assert.match(html, /day4-office-escape\/core\.js\?v=34/);
-  assert.match(html, /day4-office-escape\/index\.js\?v=84/);
+  assert.match(html, /day4-office-escape\/core\.js\?v=35/);
+  assert.match(html, /day4-office-escape\/index\.js\?v=85/);
   assert.match(dev, /day4-office-escape\/style\.css\?v=21/);
-  assert.match(dev, /day4-office-escape\/core\.js\?v=34/);
-  assert.match(dev, /day4-office-escape\/index\.js\?v=27/);
+  assert.match(dev, /day4-office-escape\/core\.js\?v=35/);
+  assert.match(dev, /day4-office-escape\/index\.js\?v=28/);
   assert.match(dev, /day4-office-escape\/dev\/dev\.js\?v=11/);
 });
 
@@ -1128,9 +1128,24 @@ test("V2 행동 cue는 PREP·ACT 정보만 제공하고 입력은 직접 실행�
   assert.match(core, /issuedTutorialCues\.add\(object\.avoid\)/);
   assert.match(core, /function cuePhaseFor\(object, leadTime\) \{\s*if \(leadTime <= actionLeadFor\(object\.avoid\)\) return "act";\s*return "prepare";/);
   assert.match(core, /function pressJump\(\) \{\s*if \(!isGrounded\(\) \|\| isSliding\(\)\) return false;[\s\S]*emit\("jump"\);\s*return true;/);
-  assert.match(core, /function commitSlide\(\) \{\s*activateSlide\(\);/);
+  assert.match(core, /function commitSlide\(\) \{\s*return activateSlide\(\);/);
   assert.doesNotMatch(core, /reservedInput|reserveInput|inputQueued|inputExecuted|input-ready/);
   assert.doesNotMatch(runtime, /inputQueued|inputExecuted|input-ready|classList\.(?:toggle|add|remove)\("queued"\)|자동 실행 대기|알맞을 때 실행/);
+});
+
+test("V2 키보드 행동은 actor 디코딩과 gait 교체를 분산하고 성공 즉시 렌더한다", () => {
+  const core = read("minigames/day4-office-escape/core.js");
+  const runtime = read("minigames/day4-office-escape/index.js");
+  assert.match(core, /function setSlide\(active\) \{ return active \? commitSlide\(\) : false; \}/);
+  assert.match(runtime, /const actorPreloads = new Map\(\)/);
+  assert.match(runtime, /function preloadActorArt\(\) \{[\s\S]*Object\.values\(CHARACTER_IDS\)[\s\S]*new global\.Image\(\)[\s\S]*image\.decoding = "async"[\s\S]*image\.decode\(\)[\s\S]*catch\(\(\) => undefined\)[\s\S]*actorPreloads\.set/s);
+  assert.match(runtime, /Core\.gaitFrameIndex\(snapshot\.elapsed, Core\.GAIT_PHASE_DELAY_MS\.doyun\)/);
+  assert.match(runtime, /Core\.gaitFrameIndex\(snapshot\.elapsed, Core\.GAIT_PHASE_DELAY_MS\.harin\)/);
+  assert.match(runtime, /Core\.gaitFrameIndex\(snapshot\.elapsed, Core\.GAIT_PHASE_DELAY_MS\.boss\)/);
+  assert.match(runtime, /function triggerJump\(\) \{[\s\S]*if \(!state\.game\.pressJump\(\)\) return;[\s\S]*render\(state\.game\.snapshot\(\)\);/);
+  assert.match(runtime, /function triggerSlide\(\) \{[\s\S]*if \(!state\.game\.commitSlide\(\)\) return;[\s\S]*render\(state\.game\.snapshot\(\)\);/);
+  assert.match(runtime, /if \(event\.repeat && \(JUMP_KEYS\.has\(event\.code\) \|\| SLIDE_KEYS\.has\(event\.code\)\)\) \{ event\.preventDefault\(\); return; \}/);
+  assert.match(runtime, /if \(state\.showHitboxes\) \{\s*renderPlayerReference/);
 });
 
 test("V2 Phase 4 HUD·피격·pause·결과 접근성 계약을 유지한다", () => {
