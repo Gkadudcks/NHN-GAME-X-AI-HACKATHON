@@ -55,6 +55,10 @@ const INCIDENT_MINIGAME_SCENE_IDS = Object.freeze([
   ...VERIFICATION_SCENE_IDS,
   ...RECOVERY_SCENE_IDS,
 ]);
+const DAY5_COMPACT_NAV_START_ID = "day5PresentationStart";
+const DAY5_COMPACT_NAV_END_ID = "day5VerificationResult";
+const DAY5_COMPACT_NAV_START_INDEX = scenes.findIndex((scene) => scene.id === DAY5_COMPACT_NAV_START_ID);
+const DAY5_COMPACT_NAV_END_INDEX = scenes.findIndex((scene) => scene.id === DAY5_COMPACT_NAV_END_ID);
 const VERIFICATION_DECISIONS = Object.freeze([
   Object.freeze({ choiceKey: "factVerification", decision: "verified_facts" }),
   Object.freeze({ choiceKey: "aliasVerification", decision: "alias_changed_to_archive" }),
@@ -1001,6 +1005,18 @@ function syncStats() {
   $("#trust").textContent = state.trust;
 }
 
+function syncCompactNavigation() {
+  const controls = $("#day5-game-controls");
+  const messenger = $("#messenger");
+  const compact = DAY5_COMPACT_NAV_START_INDEX >= 0
+    && DAY5_COMPACT_NAV_END_INDEX >= DAY5_COMPACT_NAV_START_INDEX
+    && state.index >= DAY5_COMPACT_NAV_START_INDEX
+    && state.index <= DAY5_COMPACT_NAV_END_INDEX;
+  controls.classList.toggle("day5-compact-nav", compact);
+  messenger.classList.toggle("day5-compact-layout", compact);
+  controls.setAttribute("aria-label", compact ? "DAY 5 발표 상태와 진행 관리" : "현재 스탯과 진행 관리");
+}
+
 function unlockCg(scene) {
   if (!scene.cgAssetId) return;
   try {
@@ -1281,6 +1297,7 @@ function render() {
   const pendingEvidence = Boolean(evidencePrompt && !state.decisions[scene.choiceKey]);
   const pendingChoice = Boolean(scene.choices && !state.decisions[scene.choiceKey] && !pendingEvidence);
   const cinematic = Boolean(scene.cinematicDelay);
+  syncCompactNavigation();
   syncVerificationLives(scene);
   resetCinematic();
   $("#clock").textContent = scene.time;

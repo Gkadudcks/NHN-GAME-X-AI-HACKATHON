@@ -76,6 +76,33 @@ test("DAY 5 페이지는 DAY 1~4 공용 UI와 기능 모듈을 재사용한다",
   }
 });
 
+test("DAY 5 발표 구간은 기존 컨트롤을 72px 5등분 내비게이션으로 전환한다", () => {
+  const html = fs.readFileSync(path.join(root, "day5.html"), "utf8");
+  const runtime = fs.readFileSync(path.join(root, "js/day5.js"), "utf8");
+  const css = fs.readFileSync(path.join(root, "css/day5.css"), "utf8");
+  const ids = story.scenes.map((scene) => scene.id);
+
+  assert.match(html, /id="day5-game-controls"/);
+  assert.match(html, /id="save"[^>]*aria-label="현재 진행 저장"/);
+  assert.match(html, /id="load"[^>]*aria-label="저장한 진행 불러오기"/);
+  assert.match(html, /data-compact-label="저장"/);
+  assert.match(html, /data-compact-label="불러오기"/);
+
+  assert.match(runtime, /DAY5_COMPACT_NAV_START_ID\s*=\s*"day5PresentationStart"/);
+  assert.match(runtime, /DAY5_COMPACT_NAV_END_ID\s*=\s*"day5VerificationResult"/);
+  assert.match(runtime, /classList\.toggle\("day5-compact-nav", compact\)/);
+  assert.match(runtime, /classList\.toggle\("day5-compact-layout", compact\)/);
+  assert.ok(ids.indexOf("day5PresentationStart") < ids.indexOf("day5VerificationResult"));
+  assert.equal(ids.indexOf("day5VerificationResult") + 1, ids.indexOf("day5Resume"));
+
+  assert.match(css, /#day5-game-controls\.day5-compact-nav\s*\{[^}]*height:\s*72px;/s);
+  assert.match(css, /\.messenger\.day5-compact-layout\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\)/s);
+  assert.match(css, /grid-template-columns:\s*minmax\(0, 3fr\) minmax\(0, 2fr\)/);
+  assert.match(css, /\.system-grid\s*\{\s*grid-template-columns:\s*repeat\(3, minmax\(0, 1fr\)\)/s);
+  assert.match(css, /\.save-progress-panel\s*\{\s*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/s);
+  assert.match(css, /\.stat-help\s*\{\s*display:\s*none;/s);
+});
+
 test("DAY 5 발표 전 초반부는 확정 문서의 시간표와 대사를 빠짐없이 구현한다", () => {
   const ids = story.scenes.map((scene) => scene.id);
   for (const id of [
