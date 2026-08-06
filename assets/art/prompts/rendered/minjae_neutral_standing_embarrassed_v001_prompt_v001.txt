@@ -1,0 +1,43 @@
+Use case: identity-preserve
+Asset type: full-body visual-novel character sprite
+Asset ID: character.minjae.neutral_standing.embarrassed
+Output filename: minjae_neutral_standing_embarrassed_v001.png
+Prompt version: prompt-v001
+
+[INPUT IMAGE]
+Use the attached minjae-source.png as the only identity, costume, anatomy, color, and rendering reference. This is a tightly constrained character variation, not a redesign.
+
+[PRIMARY REQUEST]
+Create exactly one full-body sprite of the same adult Korean man, Kang Minjae, standing in a plain neutral pose while quietly admitting a mistake and apologizing. His emotion must read as quiet guilt and hesitation — faint warmth in the cheeks, shoulders slightly lowered, gaze briefly averted downward or to the side rather than meeting the viewer directly. This is remorse, not romantic bashfulness, comedy, or exaggerated shock. He remains a fundamentally decent, sociable coworker who feels bad about hiding something — never sinister, cowardly-comic, or villain-coded.
+
+[IDENTITY AND COSTUME LOCK]
+Preserve the attached reference exactly:
+- same lean oval adult face with a defined jaw, straight nose, natural lips, confident but approachable impression
+- same warm dark-brown, slightly narrow eyes with realistic adult proportions
+- same very dark brown short hair, softly parted near the center, loose curved forelocks, lightly tousled crown
+- same tall, lean, realistic adult proportions at 182 cm apparent scale
+- same tailored black suit jacket and trousers, crisp white dress shirt, plain black necktie, black leather belt, black dress shoes
+- same dark-navy lanyard and plain white employee ID card
+
+Do not change, add, remove, simplify, or reinterpret any facial feature, hairstyle detail, body proportion, garment, shoe, lanyard, or ID card.
+
+[POSE AND HANDS]
+Pose: neutral_standing.
+Both arms relaxed and hanging naturally at his sides, weight settled evenly, shoulders slightly dropped rather than squared. Both hands must be anatomically readable with five fingers per visible hand. No prop, phone, folder, cup, bag, or tablet. Do not fold the arms or put hands in pockets.
+
+[STYLE]
+Polished commercial anime visual-novel illustration for a modern Korean office-romance game with light mystery elements. Clean thin consistent line art, soft 2-to-3-step cel shading, minimal painterly texture, realistic adult anatomy, low-to-medium saturation, restrained navy/cream/muted-brown palette, soft indoor diffused key light, subtle cool ambient shadows, clean game-ready silhouette. Match the attached reference rather than inventing a new style.
+
+[COMPOSITION]
+Eye-level, front-facing three-quarter view, full body. Keep the complete hair silhouette, both arms, ID card, trouser hem, legs, and both shoes visible. Match the reference character's scale and eye/foot alignment. Leave generous empty transparent padding on every side so the sprite can be placed at left, center, or right in a visual-novel scene.
+
+[OUTPUT]
+Exactly 1024 x 1536 pixels, vertical 2:3, RGBA PNG with real alpha transparency.
+The background must be truly transparent — not white, gray, colored, gradient, or a baked checkerboard pattern.
+Exactly one character. No environment, floor plane, contact shadow, cast shadow, reflection, frame, text, speech balloon, logo, signature, or watermark.
+
+[REJECT IF]
+Reject and regenerate if the face or hair drifts from minjae-source.png; if the suit, tie, lanyard, ID card, or shoes change; if fingers or arms are malformed; if the expression looks like slapstick shock, romantic shyness, anger, or a smirk; if any background or checkerboard is baked into the pixels; or if the output is not a single full-body 1024 x 1536 transparent PNG.
+
+[AVOID]
+photorealism, semi-realistic Korean webtoon rendering, 3D CGI, watercolor, oil painting, sketch lines, thick outlines, chibi anatomy, oversized eyes, exaggerated blush, comedic sweat drop, high saturation, neon, cyberpunk, bloom, strong depth of field, dramatic rim light, manga reaction symbols, glare, extra fingers, fused fingers, missing fingers, duplicated limbs, hidden shoes, added accessories, readable text, logo, watermark

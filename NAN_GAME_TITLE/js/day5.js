@@ -55,6 +55,10 @@ const INCIDENT_MINIGAME_SCENE_IDS = Object.freeze([
   ...VERIFICATION_SCENE_IDS,
   ...RECOVERY_SCENE_IDS,
 ]);
+const DAY5_COMPACT_NAV_START_ID = "day5PresentationStart";
+const DAY5_COMPACT_NAV_END_ID = "day5VerificationResult";
+const DAY5_COMPACT_NAV_START_INDEX = scenes.findIndex((scene) => scene.id === DAY5_COMPACT_NAV_START_ID);
+const DAY5_COMPACT_NAV_END_INDEX = scenes.findIndex((scene) => scene.id === DAY5_COMPACT_NAV_END_ID);
 const VERIFICATION_DECISIONS = Object.freeze([
   Object.freeze({ choiceKey: "factVerification", decision: "verified_facts" }),
   Object.freeze({ choiceKey: "aliasVerification", decision: "alias_changed_to_archive" }),
@@ -63,6 +67,7 @@ const VERIFICATION_DECISIONS = Object.freeze([
   Object.freeze({ choiceKey: "responsibility", decision: "minjae_request_concealment" }),
 ]);
 const VERIFICATION_MISTAKE_LIMIT = 5;
+const RECOVERY_MISTAKE_LIMIT = 5;
 function evidencePromptFor(scene) {
   return PRESENTATION_EVIDENCE_PROMPTS[scene?.id] || null;
 }
@@ -71,6 +76,14 @@ function locationAt(index) {
     if (sceneMatchesBranch(scenes[cursor]) && scenes[cursor]?.location) return scenes[cursor].location;
   }
   return "";
+}
+function transitionMoodFor(scene) {
+  if (!scene) return {};
+  if (scene.ending === "bad") return { mood: "somber", caption: "짐을 정리하는 중" };
+  if (scene.ending === "middle" || scene.ending === "happy") return { mood: "warm", caption: "함께 걷는 중" };
+  if (scene.id === "day5Result" || scene.id === "day5WaitingForResult") return { mood: "tense", caption: "결과를 기다리는 중" };
+  if (scene.id === "day5PresentationStart") return { mood: "tense", caption: "발표를 준비하는 중" };
+  return {};
 }
 function bgmAt(index) {
   for (let cursor = Math.min(index, scenes.length - 1); cursor >= 0; cursor -= 1) {
@@ -81,6 +94,8 @@ function bgmAt(index) {
 const $ = (selector) => document.querySelector(selector);
 const progress = new URLSearchParams(location.search).has("new") ? GameProgress.resetDay5(localStorage) : GameProgress.startDay5(localStorage);
 const saved = progress.days[5];
+const day1Direction = Day5Story.normalizeDay1Direction(progress.days[1]?.decisions?.direction);
+const day2Subtask = Day5Story.normalizeDay2Subtask(progress.days[2]?.decisions?.day2Subtask);
 const state = {
   index: Math.max(0, scenes.findIndex((scene) => scene.id === saved.sceneId)),
   work: progress.shared.work,
@@ -103,12 +118,18 @@ presentationClueIds.forEach((id) => {
 });
 function sceneMatchesBranch(scene) {
   if (scene?.strategy && state.decisions.responseStrategy !== scene.strategy) return false;
+  if (scene?.playerRecovery && recoveryGrade() === "failed") return false;
+  if (scene?.supportRecovery && recoveryGrade() !== "failed") return false;
   if (scene?.ending && calculateEnding() !== scene.ending) return false;
   return true;
 }
 
 function verificationMistakes() {
   return Math.min(VERIFICATION_MISTAKE_LIMIT, Math.max(0, Number(state.decisions.verificationMistakes) || 0));
+}
+
+function recoveryMistakes() {
+  return Math.min(RECOVERY_MISTAKE_LIMIT, Math.max(0, Number(state.decisions.recoveryMistakes) || 0));
 }
 
 function verificationPlayerSolved() {
@@ -123,6 +144,41 @@ function verificationGrade() {
   const mistakes = verificationMistakes();
   if (mistakes >= VERIFICATION_MISTAKE_LIMIT) return "failed";
   return mistakes === 0 ? "perfect" : "partial";
+}
+
+function recoveryGrade() {
+  if (state.decisions.recoveryGrade) return state.decisions.recoveryGrade;
+  const mistakes = recoveryMistakes();
+  if (mistakes >= RECOVERY_MISTAKE_LIMIT) return "failed";
+  return mistakes === 0 ? "perfect" : "partial";
+}
+
+function neededSupport() {
+  return verificationGrade() === "failed" || recoveryGrade() === "failed";
+}
+
+const PERSONAL_THANKS_VARIANTS = {
+  plain: {
+    text: "오늘 아침 그 차 받았을 때부터 좀 두근거렸습니다. 다음엔 제가 사겠습니다.",
+    reply: "기대할게요. 도윤 씨가 사주는 건 또 처음이니까요.",
+  },
+  warm: {
+    text: "저도 그랬습니다. 그 차 받고 나서부터 계속 신경 쓰였어요. 다음엔 제가 사겠습니다.",
+    reply: "그 말 들으니까 저도 괜히 웃음이 나네요. 다음엔 뭘 살지 벌써 기대돼요.",
+  },
+  supported: {
+    text: "오늘 아침 그 차가 아니었으면 더 흔들렸을 겁니다. 다음엔 제가 사겠습니다.",
+    reply: "그렇게 말해주니 오늘 하루가 아주 헛되진 않았네요. 다음엔 기다릴게요.",
+  },
+  supportedWarm: {
+    text: "그 와중에도 오늘 아침 그 차 생각이 계속 났습니다. 다음엔 제가 사겠습니다.",
+    reply: "그런 순간에도 그 생각이 났다니… 그거면 오늘 버틴 보람이 있네요. 다음엔 꼭 같이 가요.",
+  },
+};
+
+function personalThanksVariant(affectionAtPoint) {
+  if (neededSupport()) return affectionAtPoint >= 5 ? PERSONAL_THANKS_VARIANTS.supportedWarm : PERSONAL_THANKS_VARIANTS.supported;
+  return affectionAtPoint >= 5 ? PERSONAL_THANKS_VARIANTS.warm : PERSONAL_THANKS_VARIANTS.plain;
 }
 
 function verificationSequenceActive(scene) {
@@ -143,16 +199,16 @@ function migrateLegacyVerificationFailure() {
   if (state.decisions.verificationGrade !== "failed") return;
   const start = scenes.findIndex((item) => item.id === "day5VerificationReady");
   const responsibility = scenes.findIndex((item) => item.id === "day5Responsibility");
-  const confrontation = scenes.findIndex((item) => item.id === "day5MinjaeConfront");
-  if (start < 0 || responsibility < 0 || confrontation < 0 || state.index < start || state.index > responsibility) return;
+  const supportRecovery = scenes.findIndex((item) => item.id === "day5SupportRecoveryStart");
+  if (start < 0 || responsibility < 0 || supportRecovery < 0 || state.index < start || state.index > responsibility) return;
   state.decisions.verificationMistakes = VERIFICATION_MISTAKE_LIMIT;
-  state.index = confrontation;
+  completeVerificationWithSupport();
+  completeRecoveryWithSupport();
+  state.index = supportRecovery;
 }
 
 function migrateVerificationPrelude() {
   const skippedPreludeIds = new Set([
-    "day5StrategyCallback",
-    "day5SpeculationCorrection",
     "day5NormalProved",
     "day5SubmissionProved",
     "day5Pause",
@@ -169,13 +225,18 @@ function syncVerificationLives(scene, feedback = "") {
   const active = verificationSequenceActive(scene);
   hud.hidden = !active;
   if (!active) return;
-  const remaining = VERIFICATION_MISTAKE_LIMIT - verificationMistakes();
+  const inRecoveryPhase = recoverySequenceActive(scene);
+  const limit = inRecoveryPhase ? RECOVERY_MISTAKE_LIMIT : VERIFICATION_MISTAKE_LIMIT;
+  const mistakes = inRecoveryPhase ? recoveryMistakes() : verificationMistakes();
+  const remaining = limit - mistakes;
+  const supportMode = inRecoveryPhase ? recoveryGrade() === "failed" : verificationGrade() === "failed";
   const phaseLabel = $("#day5-verification-phase-label");
-  if (phaseLabel) phaseLabel.textContent = recoverySequenceActive(scene) ? "원본 복구" : "오류 검증";
-  $("#day5-verification-life-label").textContent = `${remaining} / ${VERIFICATION_MISTAKE_LIMIT}`;
+  if (phaseLabel) phaseLabel.textContent = supportMode ? "담당자 지원" : inRecoveryPhase ? "원본 복구" : "오류 검증";
+  $("#day5-verification-life-label").textContent = `${remaining} / ${limit}`;
   $("#day5-verification-life-cells").querySelectorAll("i").forEach((cell, index) => {
     cell.classList.toggle("lost", index >= remaining);
   });
+  hud.classList.toggle("support-mode", supportMode);
   if (!feedback) return;
   const hudClass = feedback === "success" ? "feedback-success" : feedback === "failed" ? "feedback-failed" : "feedback-hit";
   const stageClass = feedback === "success" ? "verification-success-flash" : feedback === "failed" ? "verification-failed-flash" : "verification-hit-flash";
@@ -191,28 +252,14 @@ function syncVerificationLives(scene, feedback = "") {
   }, feedback === "failed" ? 760 : 520);
 }
 
-function recoveryComplete() {
-  return state.decisions.recoveryRefresh === "pause_refresh"
-    && state.decisions.recoverySource === "current_week"
-    && state.decisions.recoveryBasis === "new_users_current_week"
-    && state.decisions.recoveryBinding === "fixed_source";
-}
-
 function calculateEnding() {
-  const grade = verificationGrade();
-  const recoveryFinished = Boolean(state.decisions.recoveryBinding);
-  if (state.trust < 0) return "bad";
-  if (recoveryFinished && state.decisions.recoveryBinding !== "fixed_source") return "bad";
-  if (recoveryFinished && grade === "failed" && !recoveryComplete()) return "bad";
-  if (grade !== "failed" && recoveryComplete() && state.trust >= 5 && state.affection >= 5) return "nice";
+  const vGrade = verificationGrade();
+  const rGrade = recoveryGrade();
+  if (vGrade === "failed" || state.trust < 0) return "bad";
+  if (vGrade !== "failed" && rGrade !== "failed" && state.trust >= 8 && state.affection >= 7) return "happy";
   return "middle";
 }
 function nextSceneIndex(fromIndex) {
-  if (scenes[fromIndex]?.id === "day5RecoveryStart" && verificationGrade() === "failed") {
-    completeRecoveryWithSupport();
-    const recoveryVerify = scenes.findIndex((scene) => scene.id === "day5RecoveryVerify");
-    if (recoveryVerify >= 0) return recoveryVerify;
-  }
   if (scenes[fromIndex]?.id === "day5HarinPrompt") {
     const verificationReady = scenes.findIndex((scene) => scene.id === "day5VerificationReady");
     if (verificationReady >= 0) return verificationReady;
@@ -245,9 +292,11 @@ let cinematicRemaining = 0;
 let cinematicPaused = false;
 let deferNextNotification = false;
 let verificationFeedbackTimer;
+let verificationFailBannerTimer;
+let verificationDialogueTimer;
 const locationTransition = GameLocationTransition.install();
 const day5Start = progress.day5StartSnapshot || { work: 0, affection: 0, trust: 0, clues: [] };
-const AUTOSAVE_CHECKPOINTS = new Set(["day5PresentationStart", "day5Mismatch", "day5AuditArrives", "day5Result", "day5BadEnd", "day5MiddleEnd", "day5NiceEnd"]);
+const AUTOSAVE_CHECKPOINTS = new Set(["day5PresentationStart", "day5Mismatch", "day5AuditArrives", "day5Result", "day5BadEnd", "day5MiddleEnd", "day5HappyEnd"]);
 function escapeHtml(value) {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 }
@@ -275,6 +324,20 @@ function choiceEffectMarkup(delta = {}) {
 function choiceLock(choice) {
   const required = Number(choice?.minAffection);
   return Number.isFinite(required) && state.affection < required ? { required, current: state.affection } : null;
+}
+
+function cgBadgeMarkup(choice) {
+  return choice?.cg ? '<i class="cg stat-cg"><b>🖼</b><span>CG 확인</span></i>' : "";
+}
+
+function resolveChoiceText(scene, choice, affectionAtPoint = state.affection) {
+  if (scene.id === "day5DoyunThanks" && choice.id === "personal_thanks") return personalThanksVariant(affectionAtPoint).text;
+  return choice.text;
+}
+
+function resolveChoiceReply(scene, choice, affectionAtPoint = state.affection) {
+  if (scene.id === "day5DoyunThanks" && choice.id === "personal_thanks") return personalThanksVariant(affectionAtPoint).reply;
+  return choice.reply;
 }
 
 function saveProgress() {
@@ -521,7 +584,7 @@ function renderRecords() {
         clueIds: prompt.clueIds,
         selectedIds: [...selected],
         showDayHint: Boolean(prompt.showDayHint),
-        prompt: `${prompt.title} · ${selected.size}/${prompt.clueIds.length}${INCIDENT_MINIGAME_SCENE_IDS.includes(scene.id) ? ` · 실수 ${verificationMistakes()}/${VERIFICATION_MISTAKE_LIMIT}` : ""}`,
+        prompt: `${prompt.title} · ${selected.size}/${prompt.clueIds.length}${VERIFICATION_SCENE_IDS.includes(scene.id) ? ` · 실수 ${verificationMistakes()}/${VERIFICATION_MISTAKE_LIMIT}` : RECOVERY_SCENE_IDS.includes(scene.id) ? ` · 실수 ${recoveryMistakes()}/${RECOVERY_MISTAKE_LIMIT}` : ""}`,
         onSelect: (clue) => presentEvidence(scene, prompt, clue.id),
       },
     });
@@ -581,37 +644,52 @@ function completeRecoveryWithSupport() {
     if (!state.decisions[choiceKey]) state.decisions[choiceKey] = decision;
     state.decisions[`${choiceKey}:assisted`] = true;
   });
+  state.decisions.recoveryGrade = "failed";
 }
 
 function registerVerificationMistake(scene) {
-  if (!INCIDENT_MINIGAME_SCENE_IDS.includes(scene.id) || verificationMistakes() >= VERIFICATION_MISTAKE_LIMIT) return;
-  const mistakes = Math.min(VERIFICATION_MISTAKE_LIMIT, verificationMistakes() + 1);
-  state.decisions.verificationMistakes = mistakes;
+  const inVerification = VERIFICATION_SCENE_IDS.includes(scene.id);
+  const inRecovery = RECOVERY_SCENE_IDS.includes(scene.id);
+  if (!inVerification && !inRecovery) return;
+  const limit = inVerification ? VERIFICATION_MISTAKE_LIMIT : RECOVERY_MISTAKE_LIMIT;
+  const current = inVerification ? verificationMistakes() : recoveryMistakes();
+  if (current >= limit) return;
+  const mistakes = Math.min(limit, current + 1);
+  if (inVerification) state.decisions.verificationMistakes = mistakes;
+  else state.decisions.recoveryMistakes = mistakes;
   state.trust -= 1;
-  const remaining = VERIFICATION_MISTAKE_LIMIT - mistakes;
+  const remaining = limit - mistakes;
   let speaker = "평가위원";
   let feedback = "그 기록만으로는 단정하기 어렵습니다. 현재 질문을 직접 증명하는 단서를 다시 확인해 주세요.";
   if (mistakes === 2) {
     speaker = "서하린";
     feedback = "지금 필요한 사실이 기록된 DAY 탭부터 다시 확인해요. ‘근거 있음’ 표시가 있는 단서가 직접적인 증거예요.";
   }
-  if (mistakes >= VERIFICATION_MISTAKE_LIMIT) {
+  if (mistakes >= limit) {
     speaker = "시스템 담당자";
-    feedback = "직접 처리를 중단합니다. 남은 검증과 원본 복구는 보안 감사 원문을 기준으로 담당자가 지원하겠습니다.";
-    completeVerificationWithSupport();
-    const failedDuringRecovery = RECOVERY_SCENE_IDS.includes(scene.id);
-    if (failedDuringRecovery) completeRecoveryWithSupport();
-    const targetId = failedDuringRecovery ? "day5RecoveryVerify" : "day5MinjaeConfront";
-    const targetIndex = scenes.findIndex((item) => item.id === targetId);
+    feedback = inVerification
+      ? "직접 처리를 중단합니다. 남은 검증과 원본 복구는 보안 감사 원문을 기준으로 담당자가 지원하겠습니다."
+      : "직접 처리를 중단합니다. 남은 원본 복구는 보안 감사 원문을 기준으로 담당자가 지원하겠습니다.";
+    if (inVerification) completeVerificationWithSupport();
+    completeRecoveryWithSupport();
+    const targetIndex = scenes.findIndex((item) => item.id === "day5SupportRecoveryStart");
     if (targetIndex >= 0) state.index = targetIndex;
     render();
   }
-  UiSfx.playMinigameCue(mistakes >= VERIFICATION_MISTAKE_LIMIT ? "caught" : "warning");
-  syncVerificationLives(scene, mistakes >= VERIFICATION_MISTAKE_LIMIT ? "failed" : "hit");
+  UiSfx.playMinigameCue(mistakes >= limit ? "caught" : "warning");
+  syncVerificationLives(scene, mistakes >= limit ? "failed" : "hit");
   $("#speaker").textContent = speaker;
   $("#dialogue").textContent = feedback;
+  window.clearTimeout(verificationDialogueTimer);
+  if (mistakes < limit) {
+    verificationDialogueTimer = window.setTimeout(() => {
+      if (scenes[state.index] !== scene) return;
+      $("#speaker").textContent = scene.speaker;
+      $("#dialogue").textContent = dynamicText(scene);
+    }, 2400);
+  }
   syncStats();
-  toast(mistakes >= VERIFICATION_MISTAKE_LIMIT ? "직접 처리 실패 · 담당자 보조로 전환됩니다." : `잘못된 근거입니다. 남은 실수 기회 ${remaining}회`);
+  toast(mistakes >= limit ? "직접 처리 실패 · 담당자 보조로 전환됩니다." : `잘못된 근거입니다. 남은 실수 기회 ${remaining}회`);
   renderRecords();
 }
 
@@ -791,14 +869,21 @@ function dynamicText(scene) {
   if (scene.dynamic === "day4ResultReply") return escapedDay4 ? "어제는 선배 덕분에 긴장을 좀 풀었습니다. 오늘은 제가 먼저 준비해 두려고 했고요." : "네. 어제 확인을 끝내고 간 덕분에 마음은 오히려 편했습니다.";
   if (scene.dynamic === "day4ResultClose") return escapedDay4 ? "그럼 어제 저녁도 나름 도움이 됐네요. 너무 일찍부터 긴장하지만 말아요." : "다행이네요. 오늘은 확인한 기록을 믿고 발표에만 집중해요.";
   if (scene.dynamic === "presentationOpening") {
-    if (state.decisions.presentationFocus === "verification") return "정직원 전환 발표를 시작하겠습니다. 먼저 18.4%의 정상 원본과 교차 검증 과정부터 설명드리겠습니다.";
-    if (state.decisions.presentationFocus === "user_experience") return "정직원 전환 발표를 시작하겠습니다. 신규 사용자가 실제로 체감한 개선 효과부터 말씀드리겠습니다.";
-    return "정직원 전환 발표를 시작하겠습니다. 자동화는 보조 도구로만 사용했고 최종 수치는 사람이 검증했습니다.";
+    const focus = Day5Story.normalizePresentationFocus(state.decisions.presentationFocus);
+    const intro = "정직원 전환 발표를 시작하겠습니다. 발표 주제는 신규 유저 첫 전투 도달률 개선안입니다.";
+    if (focus === "dropoff_scale") return `${intro} 현재 신규 설치 사용자의 31.9%는 RPG의 핵심 플레이인 첫 전투에 도달하기 전에 이탈합니다. 저는 이 구간을 줄일 수 있는 개선안을 말씀드리겠습니다.`;
+    if (focus === "user_experience") return `${intro} 현재 신규 유저는 캐릭터를 움직이고 전투를 경험하기 전에 여러 안내와 보상을 먼저 마주합니다. 저는 첫 성공 경험이 더 빨리 시작되도록 순서를 바꾸는 방안을 말씀드리겠습니다.`;
+    return `${intro} 이번 제안은 새로운 시스템 전체를 한 번에 개발하는 계획이 아닙니다. 첫 전투 이전 구간만 작은 범위에서 바꾸고, 실제 지표로 확인한 뒤 확대하는 방안입니다.`;
   }
-  if (scene.dynamic === "presentationFocusDetail") {
-    if (state.decisions.presentationFocus === "verification") return "이번 발표에서 가장 먼저 말씀드릴 부분은 결과보다 검증 과정입니다. 동일한 원본과 계산식을 두 차례 확인해 수치가 우연히 맞은 것이 아닌지 검증했습니다.";
-    if (state.decisions.presentationFocus === "user_experience") return "이번 개선의 목적은 숫자만 높이는 것이 아니었습니다. 신규 사용자가 첫 목표를 더 빨리 이해하고, 실제 플레이의 재미까지 도달하도록 경험의 순서를 바꾸는 것이었습니다.";
-    return "자동화가 계산 결과를 대신 판단하게 두지 않았습니다. 자동화는 반복 작업을 보조했고, 대상과 기간을 고정해 최종 수치를 승인한 것은 사람의 검증 과정이었습니다.";
+  if (scene.dynamic === "presentationResearchEvidence") {
+    if (day2Subtask === "reviews") return "신규 유저 리뷰를 분류하자 비슷해 보이던 불만이 두 가지로 나뉘었습니다. ‘설명이 길어서 피곤하다’는 의견과 ‘다음에 무엇을 해야 할지 모르겠다’는 의견입니다. 안내를 전부 줄이면 피로는 줄어도 불안은 커질 수 있습니다. 따라서 정보량뿐 아니라 안내가 나타나는 시점과 다음 목표의 가시성을 함께 바꿔야 합니다.";
+    if (day2Subtask === "journey") return "첫 10분의 플레이 흐름을 직접 기록했습니다. 로그인 보상, 출석 보상, 패키지 안내를 차례로 닫고 캐릭터를 처음 움직이기까지 1분 42초가 걸렸습니다. 신규 유저가 RPG의 조작과 전투보다 창을 닫는 행동을 먼저 학습하고 있다는 것이 가장 큰 문제였습니다.";
+    return "동종 RPG 세 게임의 첫 전투 진입 과정을 같은 조건으로 비교했습니다. 가장 자연스러운 흐름은 튜토리얼이 무조건 짧은 게임이 아니라, 필요한 순간에 설명을 열고 다시 확인할 수 있는 게임이었습니다. 현재 문제는 설명의 양만이 아닙니다. 정해진 안내를 모두 따라가기 전까지 유저가 직접 선택할 수 없다는 점이 첫 플레이의 흐름을 끊고 있습니다.";
+  }
+  if (scene.dynamic === "presentationProposalDetail") {
+    if (day1Direction === "shorten_tutorial") return "첫 전투 전에는 이동, 전투, 첫 목표에 필요한 안내만 남기겠습니다. 출석, 상점, 패키지, 세부 성장 안내는 첫 전투와 첫 보상 이후로 옮기겠습니다. 정보를 없애는 것이 아니라 RPG의 핵심 행동을 먼저 경험하도록 순서를 바꾸는 방식입니다.";
+    if (day1Direction === "ai_help") return "유저가 일정 시간 멈추거나 같은 구간에서 반복 실패할 때, 나나봇이 현재 상황에 맞는 도움말을 제안하도록 하겠습니다. 나나봇이 공략을 임의로 만드는 방식은 아닙니다. 기획자가 작성하고 검토한 도움말 중 필요한 항목을 찾아 주고, 최종 내용과 적용 조건은 사람이 관리합니다.";
+    return "시작 구간에서 모든 기능을 한꺼번에 설명하지 않겠습니다. 전투, 장비, 성장 기능을 처음 사용하는 순간에 해당 안내만 보여 주고, 놓친 설명은 도움말에서 다시 열 수 있게 하겠습니다. 유저가 필요할 때 설명을 선택할 수 있게 해 흐름과 이해를 함께 지키는 방식입니다.";
   }
   if (scene.dynamic === "strategySetup") {
     if (state.decisions.responseStrategy === "defend_evidence") return "정상 원본과 DAY 2 교차 검증 기록을 첫 번째 증거 창에 열어 두겠습니다.";
@@ -807,13 +892,14 @@ function dynamicText(scene) {
     return "가능한 원인을 메모해 뒀지만, 실제 답변에서는 확인된 기록을 먼저 열겠습니다.";
   }
   if (scene.dynamic === "focusReaction") {
-    if (state.decisions.presentationFocus === "verification") return "수치뿐 아니라 교차 검증 과정을 먼저 제시한 점이 명확하군요. 계속해 주세요.";
-    if (state.decisions.presentationFocus === "user_experience") return "사용자가 체감한 변화에서 출발하니 개선 목적이 잘 보입니다. 계속해 주세요.";
-    return "자동화와 사람의 검증 범위를 구분한 점을 확인했습니다. 계속해 주세요.";
+    const focus = Day5Story.normalizePresentationFocus(state.decisions.presentationFocus);
+    if (focus === "dropoff_scale") return "첫 전투 이전에 빠져나가는 사용자 규모와 우선 개선할 구간은 확인했습니다. 결론을 말씀해 주세요.";
+    if (focus === "user_experience") return "유저가 핵심 플레이보다 안내를 먼저 경험하는 문제가 무엇인지 확인했습니다. 결론을 말씀해 주세요.";
+    return "작은 범위에서 검증한 뒤 확대하겠다는 실행 순서는 확인했습니다. 결론을 말씀해 주세요.";
   }
   if (scene.dynamic === "strategyCallback") {
     if (state.decisions.responseStrategy === "defend_evidence") return "정상 수치는 18.4%입니다. 지금 보존된 원본과 교차 검증 기록을 바로 제시하겠습니다.";
-    if (state.decisions.responseStrategy === "clarify_scope") return "먼저 두 자료가 같은 신규 가입 사용자와 같은 발표 전주를 대상으로 하는지 확인하겠습니다.";
+    if (state.decisions.responseStrategy === "clarify_scope") return "먼저 두 자료가 같은 신규 가입 사용자와 같은 가장 최근 자료 기간을 대상으로 하는지 확인하겠습니다.";
     if (state.decisions.responseStrategy === "coordinate_harin") return "서하린 선배, 보존한 정상 원본을 열어 주십시오. 저는 발표 흐름을 유지하며 산정 기준을 설명하겠습니다.";
     return "자동화 과정에서 문제가 생겼을 가능성이… 잠깐, 원인을 단정하기 전에 검증된 기록부터 확인하겠습니다.";
   }
@@ -823,57 +909,118 @@ function dynamicText(scene) {
     return "잠깐, 재실행을 요청한 건 맞지만 내가 직접 숫자를 바꾼 건 아니잖아. 그걸 전부 내 책임이라고 할 수 있어?";
   }
   if (scene.dynamic === "verificationFollowup") {
-    if (verificationGrade() === "failed") return "시스템 담당자가 감사 로그 원문을 추가로 공개했습니다. 요청 직후 자료 연결이 변경된 기록과 이상 징후 이후 미보고 기록이 모두 남아 있습니다.";
-    return "DAY 3에 이상 징후를 봤다면 왜 요청 사실을 말하지 않았습니까?";
+    if (verificationGrade() === "failed") return "시스템 담당자가 감사 로그 원문을 추가로 공개했어. 요청 직후 자료 연결이 바뀐 기록도, 이상 징후 이후 보고 안 한 기록도 다 남아 있어.";
+    return "DAY 3에 이상 징후를 봤으면서 왜 말 안 했어?";
   }
   if (scene.dynamic === "verificationAdmission") {
-    if (verificationGrade() === "failed") return "…알겠어. 내 요청 뒤 연결이 바뀐 것도, 이상을 보고도 말하지 않은 것도 맞아. 평가에서 빠질까 봐 숨겼어. 미안하다.";
-    return "내 요청 때문일 수도 있다고 생각했어. 평가에서 빠질까 봐… 먼저 말하지 못했어. 미안하다.";
+    if (verificationGrade() === "failed") return "…알겠어. 내 요청 뒤 연결이 바뀐 것도, 이상을 보고도 말하지 않은 것도 맞아. 평가에서 빠질까 봐 숨겼어. 지금은 일단 사실부터 정리해.";
+    return "내 요청 때문일 수도 있다고 생각했어. 평가에서 빠질까 봐… 먼저 말하지 못했어. 사과는 이거 끝나고 제대로 할게.";
   }
-  if (scene.dynamic === "recoveryResult") return state.decisions.recoverySource === "current_week" && state.decisions.recoveryBinding === "fixed_source"
-    ? "복구 전후 검증을 완료했습니다. PT와 고정된 증빙이 모두 18.4%로 일치합니다."
-    : "복구 검증에서 불안정한 연결이 남았습니다. 정상 원본은 구두로 제시할 수 있지만 증빙 완성도가 낮아집니다.";
-  if (scene.dynamic === "resumeStatement") return state.decisions.recoverySource === "current_week" && state.decisions.recoveryBinding === "fixed_source"
-    ? "정상 원본과 동일한 18.4% 수치로 증빙 자료를 복구했습니다. 산정 기준과 변경 경로도 함께 제출하겠습니다."
-    : "정상 원본의 18.4%는 확인했습니다. 다만 증빙 연결 복구는 추가 검토가 필요해 원본과 변경 기록으로 먼저 설명드리겠습니다.";
+  if (scene.dynamic === "supportRecoveryShock") {
+    if (verificationGrade() === "failed") return "화면이 내 손을 떠나 스스로 움직이기 시작했다. 검증조차 다 마치지 못하고 여기까지 왔다는 게 이제야 실감났다.";
+    if (state.trust < 0) return "화면이 내 손을 떠나 스스로 움직이기 시작했다. 다섯 번의 기회를 다 썼다는 것보다, 그전에 흔들렸던 판단들이 더 무겁게 남았다.";
+    return "화면이 내 손을 떠나 스스로 움직이기 시작했다. 다섯 번의 기회를 다 쓰고 나서야, 지금까지 이게 얼마나 위태로운 상태였는지 실감이 났다. 그래도 여기서 더 무너뜨리진 않았다.";
+  }
+  if (scene.dynamic === "supportRecoveryPanic") {
+    if (verificationGrade() === "failed") return "…이거, 진짜 큰일났다. 검증부터 놓쳤으니 남은 복구도 전부 담당자 손에 달렸다. 오늘 평가는… 이미 끝난 건지도 모른다.";
+    return "그래도 검증까지 놓친 건 아니다. 지금이라도 정신을 붙잡아야 한다.";
+  }
+  if (scene.dynamic === "recoveryResult") return recoveryGrade() === "failed"
+    ? "담당자 지원 복구를 확인했습니다. PT와 고정된 증빙은 18.4%로 일치하지만 플레이어 직접 복구 결과는 실패입니다."
+    : state.decisions.recoverySource === "current_week" && state.decisions.recoveryBinding === "fixed_source"
+      ? "복구 전후 검증을 완료했습니다. PT와 고정된 증빙이 모두 18.4%로 일치합니다."
+      : "복구 검증에서 불안정한 연결이 남았습니다. 정상 원본은 구두로 제시할 수 있지만 증빙 완성도가 낮아집니다.";
+  if (scene.dynamic === "resumeStatement") return recoveryGrade() === "failed"
+    ? "정상 원본에서 현재 기준값 18.4%와 2024년 당시 수치 12.7%의 출처 차이는 확인했습니다. 다만 제출 근거의 연결 복구는 시스템 담당자의 지원을 받았고, 직접 복구를 끝내지 못한 결과도 함께 보고드리겠습니다."
+    : state.decisions.recoverySource === "current_week" && state.decisions.recoveryBinding === "fixed_source"
+      ? "확인 결과, 이번 발표의 현재 기준값은 7일 차 잔존율 18.4%입니다. 제출 근거에는 2024년 당시 수치인 12.7%가 잘못 연결돼 있었습니다. 정상 원본으로 근거 자료를 복구했고, 산정 기준과 제출 이후 변경 경로도 함께 남겼습니다."
+      : "정상 원본에서 현재 기준값 18.4%와 2024년 당시 수치 12.7%의 출처 차이는 확인했습니다. 다만 제출 근거의 연결 복구에는 추가 검토가 필요해 원본과 변경 기록을 우선 제출하겠습니다.";
+  if (scene.dynamic === "proposalRestatement") return "그리고 18.4%는 이번 개선안으로 얻은 성과가 아니라 현재 상태를 설명하는 확인값입니다. 제안한 개선안의 효과는 아직 검증 전입니다. 일부 신규 유저를 대상으로 첫 전투 도달률 5%포인트 개선을 확인하고, 7일 차 잔존율과 사용자 반응이 함께 좋아질 때만 전체 적용을 제안하겠습니다.";
+  if (scene.dynamic === "evaluatorCloseResult") return neededSupport()
+    ? "정상 원본은 담당자 지원으로 복구됐습니다. 다만 직접 처리가 중단된 부분과 지원 전환을 개선안의 타당성과 함께 최종 평가에 반영하겠습니다."
+    : "발표 중 문제가 발생했지만 정상 원본과 제출 이후 변경 경로는 확인했습니다. 개선안의 타당성과 사고 대응 과정을 함께 최종 평가하겠습니다.";
   if (scene.dynamic === "postPresentationHarin") {
-    if (verificationGrade() === "failed") return "끝났어요. 담당자 지원까지 받았지만 문제를 숨기지 않고 여기까지 이어 온 건 도윤 씨예요. 이제 숨 쉬어도 돼요.";
-    if (verificationGrade() === "partial") return "끝났어요. 중간에 흔들렸어도 복구까지 직접 마쳤잖아요. 이제 숨 쉬어도 돼요.";
+    if (neededSupport()) return "끝났어요. 담당자 지원까지 받았지만 문제를 숨기지 않고 여기까지 이어 온 건 도윤 씨예요. 이제 숨 쉬어도 돼요.";
+    if (calculateEnding() === "bad") return "끝나긴 했는데… 오늘 대응이 전부 매끄러웠다고는 못 하겠어요. 결과가 어떻게 나올지는 조금 더 지켜봐야 할 것 같아요.";
+    if (verificationGrade() === "partial" || recoveryGrade() === "partial") return "끝났어요. 중간에 흔들렸어도 복구까지 직접 마쳤잖아요. 이제 숨 쉬어도 돼요.";
     return "끝났어요. 검증부터 복구까지 전부 직접 설명했어요. 이제 숨 쉬어도 돼요.";
   }
   if (scene.dynamic === "postPresentationMinjae") {
-    if (verificationGrade() === "failed") return "처음엔 내 요청이 원인이라고 인정하고 싶지 않았어. 감사 로그까지 다시 공개되고 나서야 더는 피할 수 없었다. 이상한 걸 봤을 때 바로 말했어야 했어. 미안하다.";
+    if (neededSupport()) return "처음엔 내 요청이 원인이라고 인정하고 싶지 않았어. 감사 로그까지 다시 공개되고 나서야 더는 피할 수 없었다. 이상한 걸 봤을 때 바로 말했어야 했어. 미안하다.";
     return "네가 기록을 순서대로 보여 주니까 더는 변명할 수 없더라. 내 요청 때문에 일이 커졌고, 이상한 걸 봤을 때 바로 말했어야 했어. 미안하다.";
   }
   if (scene.dynamic === "postPresentationReflection") {
+    if (neededSupport()) {
+      if (state.affection >= 5) return "예전 같았으면 제가 만든 규칙이라는 이유만으로 혼자 책임지려고 했을 거예요. 이번엔 도윤 씨도 끝까지 못 갔지만, 그래도 둘 다 도망치진 않았잖아요. 그게 저한텐 달랐어요.";
+      return "예전 같았으면 제가 만든 규칙이라는 이유만으로 혼자 책임지려고 했을 거예요. 이번엔 둘 다 끝까지 매달렸지만 결국 담당자 손을 빌렸죠. 그래도 숨기지 않은 건 도윤 씨 덕분이에요.";
+    }
     if (state.affection >= 5) return "예전 같았으면 제가 만든 규칙이라는 이유만으로 혼자 책임지려고 했을 거예요. 이번에는 도윤 씨가 제 옆에서 기록을 끝까지 봐 줬어요. 혼자가 아니라는 게 이렇게 다른 건지 몰랐네요.";
     return "예전 같았으면 제가 만든 규칙이라는 이유만으로 혼자 책임지려고 했을 거예요. 이번에는 도윤 씨가 기록을 끝까지 봐 줘서 그러지 않았어요.";
   }
   if (scene.dynamic === "postPresentationReport") {
-    if (verificationGrade() === "failed") return "제가 직접 확인한 부분과 담당자가 보완한 부분을 나눠 적었습니다. 실패한 과정도 숨기지 않고 복구 기록과 함께 남기겠습니다.";
+    if (neededSupport()) return "제가 직접 확인한 부분과 담당자가 보완한 부분을 나눠 적었습니다. 실패한 과정도 숨기지 않고 복구 기록과 함께 남기겠습니다.";
+    if (calculateEnding() === "bad") return "확인된 사실과 확인되지 않은 추측을 나눠 적었습니다. 다만 답변 중 몇 군데는 지금 다시 봐도 성급했던 것 같습니다. 그 부분도 그대로 남기겠습니다.";
     return "확인된 사실과 확인되지 않은 추측을 나눠 적었습니다. 제가 직접 검증한 경로와 복구 과정, 재발 방지 조치도 같은 기록에 연결하겠습니다.";
   }
   if (scene.dynamic === "postPresentationBeforeResult") {
     if (state.trust >= 5) return "결과가 어떻게 나오든 오늘 도윤 씨가 한 대응은 없어지지 않아요. 모두가 흔들릴 때 확인한 기록부터 다시 세웠고, 끝까지 정상 상태로 돌려놨으니까요.";
     return "결과를 기다리는 건 불편하겠지만, 오늘 문제를 숨기지 않고 끝까지 남아 정리한 건 분명해요. 그 부분은 평가에서도 기록으로 남을 거예요.";
   }
+  if (scene.dynamic === "middleEndingTone") {
+    if (recoveryGrade() === "failed") return "복구 과정에서 조금 흔들리긴 했지만, 그래도 끝까지 포기하지 않았잖아요. 앞으로도 잘 부탁해요, 한도윤 씨.";
+    return "오늘 대응은 나무랄 데 없었어요. 앞으로도 잘 부탁해요, 한도윤 씨.";
+  }
+  if (scene.dynamic === "badEndingReflection") {
+    if (recoveryGrade() === "failed") return "다섯 번의 실수 끝에 검증도 복구도 결국 담당자 손을 빌렸다. 근거는 정상으로 돌아왔지만, 내가 끝까지 확인했다고는 못 하겠다.";
+    if (verificationGrade() === "failed") return "검증에서 결국 담당자 손을 빌렸지만, 복구만큼은 끝까지 직접 해냈다. 그런데도 신뢰를 돌려놓기엔 부족했다.";
+    if (state.decisions.recoveryBinding === "live_alias") return "원본은 찾았는데, 마지막에 연결을 고정하지 않았다. 그 한 번의 선택이 오늘 전부를 흔들었다.";
+    return "검증도 복구도 문제없이 마쳤다. 그런데도 그 사이 흔들렸던 판단들이 남긴 균열은 끝내 메우지 못했다.";
+  }
   if (scene.dynamic === "evaluationResult") {
     const ending = calculateEnding();
-    if (ending === "bad") return "문제를 숨기지 않은 태도는 확인했다. 하지만 검증과 복구 과정에서 핵심 근거를 충분히 확보하지 못해 발표 자료의 신뢰를 회복했다고 판단하기 어렵다. 정직원 전환은 보류다.";
-    if (ending === "nice") return "정직원 전환 승인이다. 정상 원본을 찾아낸 것뿐 아니라 변경 경로와 책임 범위를 기록으로 설명했고, 복구와 재발 방지까지 직접 마무리한 대응이 높게 평가됐다.";
+    if (ending === "bad") {
+      if (neededSupport()) return "문제를 숨기지 않은 태도는 확인했다. 하지만 검증과 복구 과정에서 핵심 근거를 충분히 확보하지 못해 발표 자료의 신뢰를 회복했다고 판단하기 어렵다. 정직원 전환은 무산됐고, 계약 기간도 오늘부로 종료된다.";
+      return "제출한 근거 자체는 흠잡을 데 없었다. 다만 그 과정에서 보인 판단과 태도가 정직원으로서 믿고 맡기기에는 부족했다. 정직원 전환은 무산됐고, 계약 기간도 오늘부로 종료된다.";
+    }
+    if (ending === "happy") return "정직원 전환 승인이다. 정상 원본을 찾아낸 것뿐 아니라 변경 경로와 책임 범위를 기록으로 설명했고, 복구와 재발 방지까지 직접 마무리한 대응이 높게 평가됐다.";
     return "정직원 전환 승인이다. 일부 과정에는 지원이 필요했지만 문제를 숨기지 않고 검증 가능한 사실부터 복구한 대응은 충분히 인정받았다. 남은 기술 조사는 보안 담당이 이어 간다.";
   }
   return scene.text;
 }
 
+function dynamicSystem(scene) {
+  if (scene.dynamic === "presentationResearchEvidence") {
+    const byResearch = {
+      competitor: { title: "조사 근거", rows: ["조사 · 동종 RPG 첫 전투 진입 비교", "공통 패턴 · 필요한 순간에 안내", "사용자 선택 · 도움말 다시 열기 가능", "핵심 원인 · 강제된 안내 순서"] },
+      reviews: { title: "조사 근거", rows: ["조사 · 신규 유저 리뷰 분류", "피로 · 설명이 길다", "불안 · 다음 목표를 모르겠다", "핵심 원인 · 정보량과 노출 시점의 불일치"] },
+      journey: { title: "조사 근거", rows: ["조사 · 첫 10분 플레이 동선", "첫 조작까지 · 1분 42초", "선행 노출 · 로그인 / 출석 / 패키지", "핵심 원인 · 핵심 조작의 시작 지연"] },
+    };
+    return byResearch[day2Subtask] || byResearch.competitor;
+  }
+  if (scene.dynamic === "presentationProposalDetail") {
+    const byDirection = {
+      shorten_tutorial: { title: "구체적인 개선안", rows: ["필수 유지 · 이동 / 전투 / 첫 목표", "후순위 이동 · 출석 / 상점 / 패키지 / 세부 성장", "첫 성공 · 첫 전투와 첫 보상", "개선 원칙 · 삭제보다 순서 조정"] },
+      contextual_guide: { title: "구체적인 개선안", rows: ["안내 방식 · 기능 최초 사용 시 노출", "재확인 · 도움말에서 다시 열기", "다음 목표 · 화면에 지속 표시", "개선 원칙 · 필요한 순간에 필요한 설명"] },
+      ai_help: { title: "구체적인 개선안", rows: ["감지 · 장시간 정체 / 반복 실패", "제안 · 검토된 도움말 중 상황별 추천", "제외 · 임의 공략 생성", "최종 관리 · 담당자 승인"] },
+    };
+    return byDirection[day1Direction] || byDirection.contextual_guide;
+  }
+  return scene.system;
+}
+
 function selectChoice(scene, choice) {
   const before = { work: state.work, affection: state.affection, trust: state.trust };
+  const resolvedReply = resolveChoiceReply(scene, choice, before.affection);
   Object.entries(choice.delta || {}).forEach(([key, value]) => { state[key] += value; });
   state.decisions[scene.choiceKey] = choice.id;
-  state.decisions[`${scene.choiceKey}:reply`] = choice.reply;
+  state.decisions[`${scene.choiceKey}:reply`] = resolvedReply;
   if (VERIFICATION_SCENE_IDS.includes(scene.id)) {
     state.decisions[`${scene.choiceKey}:playerSolved`] = true;
     if (scene.id === "day5Responsibility") state.decisions.verificationGrade = verificationMistakes() === 0 ? "perfect" : "partial";
+  }
+  if (RECOVERY_SCENE_IDS.includes(scene.id)) {
+    state.decisions[`${scene.choiceKey}:playerSolved`] = true;
+    if (scene.id === "day5RecoveryBinding") state.decisions.recoveryGrade = recoveryMistakes() === 0 ? "perfect" : "partial";
   }
   if (INCIDENT_MINIGAME_SCENE_IDS.includes(scene.id)) {
     UiSfx.playMinigameCue("success");
@@ -892,7 +1039,7 @@ function selectChoice(scene, choice) {
   $("#clue-new").textContent = "NEW";
   const replySpeaker = choice.replySpeaker || scene.replySpeaker || scene.speaker;
   $("#speaker").textContent = replySpeaker;
-  $("#dialogue").textContent = choice.reply;
+  $("#dialogue").textContent = resolvedReply;
   Day5PresentationCinematic.playChoiceResult?.(scene, choice);
   const activeCharacter = characterIdFromSpeaker(replySpeaker);
   $("#character-layer").querySelectorAll(".character").forEach((image) => {
@@ -924,6 +1071,18 @@ function syncStats() {
   $("#sys-work").textContent = state.work;
   $("#affection").textContent = state.affection;
   $("#trust").textContent = state.trust;
+}
+
+function syncCompactNavigation() {
+  const controls = $("#day5-game-controls");
+  const messenger = $("#messenger");
+  const compact = DAY5_COMPACT_NAV_START_INDEX >= 0
+    && DAY5_COMPACT_NAV_END_INDEX >= DAY5_COMPACT_NAV_START_INDEX
+    && state.index >= DAY5_COMPACT_NAV_START_INDEX
+    && state.index <= DAY5_COMPACT_NAV_END_INDEX;
+  controls.classList.toggle("day5-compact-nav", compact);
+  messenger.classList.toggle("day5-compact-layout", compact);
+  controls.setAttribute("aria-label", compact ? "DAY 5 발표 상태와 진행 관리" : "현재 스탯과 진행 관리");
 }
 
 function unlockCg(scene) {
@@ -1015,9 +1174,25 @@ function sceneShowsAuditCutin(scene) {
   );
 }
 
+function renderVerificationFailBanner(scene) {
+  const banner = $("#day5-verification-fail-banner");
+  if (!banner) return;
+  if (scene.id !== "day5SupportRecoveryStart") return;
+  window.clearTimeout(verificationFailBannerTimer);
+  banner.hidden = true;
+  void banner.offsetWidth;
+  banner.hidden = false;
+  banner.setAttribute("aria-hidden", "false");
+  verificationFailBannerTimer = window.setTimeout(() => {
+    banner.hidden = true;
+    banner.setAttribute("aria-hidden", "true");
+  }, 2100);
+}
+
 function renderArt(scene) {
   const stage = $("#stage");
   const placeholder = $("#scene-placeholder");
+  renderVerificationFailBanner(scene);
   stage.classList.remove("urgent-scene");
   stage.classList.remove("urgent-impact");
   if (scene.urgent) {
@@ -1116,15 +1291,15 @@ function showDaySummary() {
   const ending = calculateEnding();
   const grade = ending.toUpperCase();
   $("#day-summary-grade").textContent = grade;
-  $("#day-summary-conclusion").textContent = ending === "nice" ? "사건의 전체 경로를 밝히고 다음 일정으로 나아갔다."
+  $("#day-summary-conclusion").textContent = ending === "happy" ? "사건의 전체 경로를 밝히고 다음 일정으로 나아갔다."
     : ending === "middle" ? "정직원으로 인정받고 믿을 수 있는 동료가 되었다."
-      : "발표의 신뢰를 충분히 회복하지 못했다.";
+      : "발표의 신뢰를 충분히 회복하지 못해 계약이 종료됐다.";
   $("#day-summary-note").textContent = "DAY 5의 선택과 누적 신뢰·호감도를 합산한 최종 결과입니다.";
   $("#day-summary-work").innerHTML = [
     summaryRow("✓", "정상 수치 검증", "18.4% 원본과 DAY 4 제출 기록 확인"),
     summaryRow(verificationGrade() === "failed" ? "!" : "✓", "오류 검증", verificationGrade() === "perfect" ? "완전 검증 · 직접 변경 경로 완성" : verificationGrade() === "partial" ? "부분 검증 · 하린의 보조로 완성" : "검증 실패 · 담당자 확인으로 이관"),
-    summaryRow("✓", "증빙 복구", state.decisions.recoveryBinding === "fixed_source" ? "고정 출처로 안정 복구" : "연결 안정성 추가 검토"),
-    summaryRow("↗", "정직원 전환", ending === "bad" ? "보류" : "승인"),
+    summaryRow(recoveryGrade() === "failed" ? "!" : "✓", "증빙 복구", recoveryGrade() === "perfect" ? "완전 복구 · 직접 원본 고정" : recoveryGrade() === "partial" ? "부분 복구 · 하린의 보조로 완성" : "복구 실패 · 담당자 확인으로 이관"),
+    summaryRow("↗", "정직원 전환", ending === "bad" ? "불승인 · 계약 종료" : "승인"),
   ].join("");
   const details = $("#day-summary-work").closest(".day-summary-details");
   if (details) details.open = false;
@@ -1160,9 +1335,12 @@ function closeDaySummary() {
 function syncVerificationResult() {
   const card = $("#day5-verification-result .day5-verification-result-card");
   if (!card) return;
-  const grade = verificationGrade();
-  const mistakes = verificationMistakes();
-  const recoveredDirectly = recoveryComplete() && !state.decisions["recoveryBinding:assisted"];
+  const gradeRank = { failed: 0, partial: 1, perfect: 2 };
+  const vGrade = verificationGrade();
+  const rGrade = recoveryGrade();
+  const grade = gradeRank[vGrade] <= gradeRank[rGrade] ? vGrade : rGrade;
+  const totalMistakes = verificationMistakes() + recoveryMistakes();
+  const totalLimit = VERIFICATION_MISTAKE_LIMIT + RECOVERY_MISTAKE_LIMIT;
   const config = {
     perfect: { title: "완전 해결", grade: "COMPLETE", copy: "모든 사건 경로를 직접 입증하고 정상 원본 복구까지 완료했습니다." },
     partial: { title: "복구 완료", grade: "RECOVERED", copy: "일부 실수가 있었지만 사건 경로를 확인하고 정상 원본을 직접 복구했습니다." },
@@ -1174,8 +1352,8 @@ function syncVerificationResult() {
   $("#day5-verification-result-copy").textContent = config.copy;
   $("#day5-verification-result-grade").textContent = config.grade;
   $("#day5-verification-result-solved").textContent = `${verificationPlayerSolved()} / 5`;
-  $("#day5-verification-result-mistakes").textContent = `${mistakes} / ${VERIFICATION_MISTAKE_LIMIT}`;
-  $("#day5-verification-result-route").textContent = recoveredDirectly ? "직접 복구" : "지원 복구";
+  $("#day5-verification-result-mistakes").textContent = `${totalMistakes} / ${totalLimit}`;
+  $("#day5-verification-result-route").textContent = rGrade === "failed" ? "지원 복구" : "직접 복구";
 }
 
 function render() {
@@ -1187,6 +1365,7 @@ function render() {
   const pendingEvidence = Boolean(evidencePrompt && !state.decisions[scene.choiceKey]);
   const pendingChoice = Boolean(scene.choices && !state.decisions[scene.choiceKey] && !pendingEvidence);
   const cinematic = Boolean(scene.cinematicDelay);
+  syncCompactNavigation();
   syncVerificationLives(scene);
   resetCinematic();
   $("#clock").textContent = scene.time;
@@ -1198,19 +1377,20 @@ function render() {
   }
   $("#next").disabled = cinematic;
   $("#next").textContent = scene.end ? "DAY 5 완료" : (scene.nextLabel || "다음");
-  $("#system-panel").classList.toggle("show", Boolean(scene.system));
-  $("#system-panel").setAttribute("aria-hidden", String(!scene.system));
-  $("#stage").classList.toggle("system-panel-active", Boolean(scene.system));
+  const resolvedSystem = dynamicSystem(scene);
+  $("#system-panel").classList.toggle("show", Boolean(resolvedSystem));
+  $("#system-panel").setAttribute("aria-hidden", String(!resolvedSystem));
+  $("#stage").classList.toggle("system-panel-active", Boolean(resolvedSystem));
   $("#system-panel").classList.remove("show");
-  if (scene.system) {
+  if (resolvedSystem) {
     void $("#system-panel").offsetWidth;
     $("#system-panel").classList.add("show");
   }
-  if (scene.system) {
-    PresentationScreen.apply($("#system-panel"), scene.system);
+  if (resolvedSystem) {
+    PresentationScreen.apply($("#system-panel"), resolvedSystem);
   }
   if (scene.verificationResult) syncVerificationResult();
-  const cinematicPresentation = Day5PresentationCinematic.apply(scene);
+  const cinematicPresentation = Day5PresentationCinematic.apply(scene, resolvedSystem);
   if (cinematicPresentation) {
     $("#system-panel").classList.remove("show");
     $("#system-panel").setAttribute("aria-hidden", "true");
@@ -1241,10 +1421,11 @@ function render() {
     $("#stage-choices").innerHTML = `<header class="stage-choice-prompt"><small>${escapeHtml(choicePromptLabel(scene))}</small><strong>${escapeHtml(scene.text)}</strong></header>` +
       scene.choices.map((choice, index) => {
         const lock = choiceLock(choice);
-        const effects = lock
-          ? `<i class="locked">🔒 호감도 ${lock.required} 필요 · 현재 ${lock.current}</i>`
-          : choiceEffectMarkup(choice.delta);
-        return `<button type="button" data-choice="${index}"${lock ? ` disabled class="choice-locked" aria-label="${escapeHtml(choice.text)} · 잠김 · 호감도 ${lock.required} 필요, 현재 ${lock.current}"` : ""}><span class="stage-choice-label">${escapeHtml(choice.text)}</span><small class="stage-choice-effects">${effects}</small></button>`;
+        const label = resolveChoiceText(scene, choice);
+        const effects = (lock
+          ? `<i class="locked">호감도 ${lock.required} 필요 · 현재 ${lock.current}</i>`
+          : choiceEffectMarkup(choice.delta)) + cgBadgeMarkup(choice);
+        return `<button type="button" data-choice="${index}"${lock ? ` disabled class="choice-locked" aria-label="${escapeHtml(label)} · 잠김 · 호감도 ${lock.required} 필요, 현재 ${lock.current}"` : ""}><span class="stage-choice-label">${escapeHtml(label)}</span><small class="stage-choice-effects">${effects}</small></button>`;
       }).join("");
     $("#stage-choices").classList.add("show");
     $("#stage").classList.add("choice-mode");
@@ -1263,7 +1444,7 @@ function render() {
     $("#clue-new").textContent = "NEW";
   }
   if (scene.stopBgm) bgmManager.stop();
-  else if (scene.bgm) bgmManager.play(scene.bgm);
+  else if (scene.bgm) bgmManager.play(scene.bgm, scene.bgmHardCut ? { fadeOut: 0, fadeIn: 0 } : undefined);
   if (scene.notification && !deferNotification) notifyMessage(scene.notification);
   renderMessages();
   if (cinematic) startCinematic(scene);
@@ -1294,7 +1475,7 @@ async function nextScene() {
   locked = true;
   $("#next").disabled = true;
   await preloadSceneImages(targetScene);
-  const locationChanged = await locationTransition.playIfChanged(locationAt(state.index), locationAt(nextIndex));
+  const locationChanged = await locationTransition.playIfChanged(locationAt(state.index), locationAt(nextIndex), undefined, transitionMoodFor(targetScene));
   state.index = nextIndex;
   deferNextNotification = locationChanged;
   render();

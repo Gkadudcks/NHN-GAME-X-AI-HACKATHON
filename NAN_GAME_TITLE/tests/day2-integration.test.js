@@ -14,8 +14,18 @@ test("DAY 2는 개인 메시지 미니게임을 사용한다", () => {
   assert.doesNotMatch(script, /WorkAlertMinigame/);
     assert.match(html, /minigames\/day2-secret-chat\/style\.css\?v=10/);
     assert.match(html, /ui-sfx\.js\?v=13/);
-    assert.match(html, /minigames\/day2-secret-chat\/index\.js\?v=14/);
+    assert.match(html, /minigames\/day2-secret-chat\/index\.js\?v=15/);
   assert.match(html, /day2\.js\?v=55/);
+});
+
+test("비밀 채팅 완벽 등급은 경고 1회까지 허용하고 기준을 안내한다", () => {
+  const core = require(path.join(root, "minigames/day2-secret-chat/index.js"));
+  assert.deepEqual(core.grade({ sent: 3, warnings: 0, elapsed: 40 }), { grade: "perfect", workDelta: 0, affectionDelta: 2 });
+  assert.deepEqual(core.grade({ sent: 3, warnings: 1, elapsed: 45 }), { grade: "perfect", workDelta: 0, affectionDelta: 2 });
+  assert.deepEqual(core.grade({ sent: 3, warnings: 2, elapsed: 40 }), { grade: "good", workDelta: 0, affectionDelta: 1 });
+  assert.deepEqual(core.grade({ sent: 3, warnings: 0, elapsed: 46 }), { grade: "good", workDelta: 0, affectionDelta: 1 });
+  const script = read("minigames/day2-secret-chat/index.js");
+  assert.match(script, /경고 1회 이하로 메시지 3개를 45초 안에 모두 보내면 호감도가 가장 많이 오릅니다/);
 });
 
 test("DAY 1의 이웃 대화는 DAY 2 아침 인사로 자연스럽게 이어진다", () => {

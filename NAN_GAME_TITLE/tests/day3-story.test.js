@@ -66,6 +66,9 @@ test("엘리베이터 선택지는 호감도 단계별로 모두 노출하고 �
   assert.equal(story.isVisible(lobby, { elevatorPlan: "lobby" }), true);
   assert.equal(story.isVisible(fallback, { elevatorPlan: "leave" }), true);
   assert.equal(cg.cgAssetId, "event_cg.day3.elevator_waiting");
+  assert.equal(choice.choices[0].cg, true);
+  assert.equal(choice.choices[1].cg, undefined);
+  assert.equal(choice.choices[2].cg, undefined);
 });
 
 test("DAY 3은 첫 변조를 확인하지만 실행자를 단정하지 않는다", () => {

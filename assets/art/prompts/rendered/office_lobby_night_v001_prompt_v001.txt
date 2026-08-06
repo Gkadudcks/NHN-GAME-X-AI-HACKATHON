@@ -1,0 +1,26 @@
+[ASSET]
+Use case: stylized-concept
+Asset type: 1920x1080 DAY 5 visual-novel background
+Stable ID: background.office_lobby.night
+Create the ground-floor main lobby of the same modern Korean game-company office tower used throughout this game, at night, matching the lobby already shown in the approved MIDDLE-ending event CG (cg_day5_colleague_departure_v001.png).
+
+[SCENE]
+A quiet, upscale corporate lobby at night. Polished light marble/travertine floor tiles with soft reflections. On the left, a long wood-paneled reception desk with warm under-counter lighting, a small desk lamp, and a compact monitor; a tall potted plant beside it. On the right, a cylindrical glass revolving door as the main entrance, flanked by floor-to-ceiling glass panels. Through the glass, a calm dusk/night cityscape: a paved plaza with low hedges, scattered trees, a few streetlamps, and distant lit building silhouettes under a deep blue-violet sky. A small unlabeled framed picture on the right-hand wall and a low bench/seating area near the entrance. No people.
+
+[COMPOSITION]
+Wide 16:9 frame at eye level, standing a short distance back from the revolving door so both the reception desk (left) and the entrance (right) are visible. Keep the lower-center foreground floor open and uncluttered for two standing character sprites. Keep the bottom 20% visually simple for dialogue UI.
+
+[LIGHTING]
+Warm interior recessed ceiling downlights and reception under-lighting, contrasted with the cool blue-violet dusk sky and city lights visible through the glass entrance. Gentle warm reflections on the polished floor. Quiet, calm, slightly wistful end-of-day mood — not dramatic or moody.
+
+[STYLE]
+Match the exact rendering style already established and approved for this project's backgrounds (office_day_v001.png, elevator_lobby_night_v001.png, presentation_room_day_v001.png, presentation_hallway_day_v001.png): detailed, polished architectural illustration with realistic materials, glass and metal reflections, and naturalistic lighting — the same finish as those approved images, not a flat 2D anime illustration. Warm-cool color contrast, clean and uncluttered composition, consistent with the same building's design language (navy/beige/warm wood accents).
+
+[CONSTRAINTS]
+Background only. No characters, readable text, logos, brand marks, watermark, or transparent areas. Keep the building's architectural style and material palette consistent with the reference images. No fisheye lens, no extreme perspective distortion, no cyberpunk/neon lighting, no crowds, no duplicated or malformed architecture.
+
+[OUTPUT]
+1920x1080 RGB image, 16:9, no alpha, no readable text, company logo, or watermark.
+
+[REFERENCE]
+Upload cg_day5_colleague_departure_v001.png as the primary layout/architecture reference — recreate its lobby (reception desk, revolving door, marble floor, dusk skyline through the glass) as an empty background with no character in it. Also upload office_day_v001.png and elevator_lobby_night_v001.png as building-identity and material/style references to match their established rendering finish exactly.

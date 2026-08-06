@@ -1,18 +1,18 @@
 (function (global) {
   const TRACKS = Object.freeze({
-    title: { source: "assets/audio/looped/title.ogg", loopSource: "assets/audio/looped/title-loop.ogg", loopStart: 11.75 },
-    daily: { source: "assets/audio/looped/daily.ogg", loopSource: "assets/audio/looped/daily-loop.ogg", loopStart: 9.25 },
-    commute: { source: "assets/audio/looped/subway-ride-pixabay-57289-rail-only-v2.wav", loopSource: "assets/audio/looped/subway-ride-pixabay-57289-rail-only-v2.wav", loopStart: 0 },
-    recordingStudio: { source: "assets/audio/looped/shared-headphones-loop.wav", loopSource: "assets/audio/looped/shared-headphones-loop.wav", loopStart: 0 },
-    presentationCalm: { source: "assets/audio/looped/day5-presentation-loop.wav", loopSource: "assets/audio/looped/day5-presentation-loop.wav", loopStart: 0 },
-    presentationUrgent: { source: "assets/audio/looped/day5-error-reveal-suno-v1.mp3", loopSource: "assets/audio/looped/day5-error-reveal-suno-v1.mp3", loopStart: 0 },
-    harin: { source: "assets/audio/looped/harin.ogg", loopSource: "assets/audio/looped/harin-loop.ogg", loopStart: 14.75 },
-    overtime: { source: "assets/audio/looped/overtime.ogg", loopSource: "assets/audio/looped/overtime-loop.ogg", loopStart: 18.0 },
-    mystery: { source: "assets/audio/looped/mystery.ogg", loopSource: "assets/audio/looped/mystery-loop.ogg", loopStart: 26.0 },
-    minigame: { source: "assets/audio/looped/minigame.ogg", loopSource: "assets/audio/looped/minigame-loop.ogg", loopStart: 10.75 },
-    happyEnding: { source: "assets/audio/looped/happy-ending.ogg", loopSource: "assets/audio/looped/happy-ending-loop.ogg", loopStart: 20.25 },
-    middleEnding: { source: "assets/audio/looped/middle-ending.ogg", loopSource: "assets/audio/looped/middle-ending-loop.ogg", loopStart: 25.0 },
-    badEnding: { source: "assets/audio/looped/bad-ending.ogg", loopSource: "assets/audio/looped/bad-ending-loop.ogg", loopStart: 5.5 },
+    title: { source: "assets/audio/looped/title.ogg", loopSource: "assets/audio/looped/title-loop.ogg", loopStart: 11.75, gain: 1 },
+    daily: { source: "assets/audio/looped/daily.ogg", loopSource: "assets/audio/looped/daily-loop.ogg", loopStart: 9.25, gain: 1 },
+    commute: { source: "assets/audio/looped/subway-ride-pixabay-57289-rail-only-v2.wav", loopSource: "assets/audio/looped/subway-ride-pixabay-57289-rail-only-v2.wav", loopStart: 0, gain: 1.8 },
+    recordingStudio: { source: "assets/audio/looped/shared-headphones-loop.wav", loopSource: "assets/audio/looped/shared-headphones-loop.wav", loopStart: 0, gain: 1.4 },
+    presentationCalm: { source: "assets/audio/looped/day5-presentation-loop.wav", loopSource: "assets/audio/looped/day5-presentation-loop.wav", loopStart: 0, gain: 1.3 },
+    presentationUrgent: { source: "assets/audio/looped/day5-error-reveal-suno-v1.mp3", loopSource: "assets/audio/looped/day5-error-reveal-suno-v1.mp3", loopStart: 0, gain: 1 },
+    harin: { source: "assets/audio/looped/harin.ogg", loopSource: "assets/audio/looped/harin-loop.ogg", loopStart: 14.75, gain: 1 },
+    overtime: { source: "assets/audio/looped/overtime.ogg", loopSource: "assets/audio/looped/overtime-loop.ogg", loopStart: 18.0, gain: 1 },
+    mystery: { source: "assets/audio/looped/mystery.ogg", loopSource: "assets/audio/looped/mystery-loop.ogg", loopStart: 26.0, gain: 1 },
+    minigame: { source: "assets/audio/looped/minigame.ogg", loopSource: "assets/audio/looped/minigame-loop.ogg", loopStart: 10.75, gain: 1 },
+    happyEnding: { source: "assets/audio/looped/happy-ending.ogg", loopSource: "assets/audio/looped/happy-ending-loop.ogg", loopStart: 20.25, gain: 1 },
+    middleEnding: { source: "assets/audio/looped/middle-ending.ogg", loopSource: "assets/audio/looped/middle-ending-loop.ogg", loopStart: 25.0, gain: 1 },
+    badEnding: { source: "assets/audio/looped/bad-ending.ogg", loopSource: "assets/audio/looped/bad-ending-loop.ogg", loopStart: 5.5, gain: 1 },
   });
 
   class BGMManager {
@@ -65,13 +65,19 @@
       return audio;
     }
 
+    trackGain() {
+      const track = TRACKS[this.currentScene];
+      return track && typeof track.gain === "number" ? track.gain : 1;
+    }
+
     setInternalVolume(value) {
       this.currentVolume = Math.min(1, Math.max(0, value));
-      if (this.gain) this.gain.gain.value = this.currentVolume;
-      if (this.audio) this.audio.volume = this.currentVolume;
-      if (this.fallbackLoopAudio) this.fallbackLoopAudio.volume = this.currentVolume;
+      const effective = Math.min(1, this.currentVolume * this.trackGain());
+      if (this.gain) this.gain.gain.value = effective;
+      if (this.audio) this.audio.volume = effective;
+      if (this.fallbackLoopAudio) this.fallbackLoopAudio.volume = effective;
       if (this.activeFallbackAudio && this.activeFallbackAudio !== this.audio) {
-        this.activeFallbackAudio.volume = this.currentVolume;
+        this.activeFallbackAudio.volume = effective;
       }
     }
 
@@ -216,7 +222,7 @@
       if (loopAudio) {
         loopAudio.currentTime = 0;
         loopAudio.loop = true;
-        loopAudio.volume = this.currentVolume;
+        loopAudio.volume = Math.min(1, this.currentVolume * this.trackGain());
         try {
           await loopAudio.play();
           if (generation !== this.fallbackGeneration) {
@@ -250,7 +256,7 @@
         this.setVolume();
         return this.resume();
       }
-      if (this.preferHtmlAudio) return this.playFallback(scene, track);
+      if (this.preferHtmlAudio) return this.playFallback(scene, track, options);
 
       const transitionId = ++this.transitionId;
       const fadeOut = this.currentScene ? (options.fadeOut ?? 800) : 0;
@@ -289,13 +295,19 @@
         return resumed;
       } catch (error) {
         console.warn("[BGM] Web Audio 재생에 실패해 기본 재생으로 전환합니다.", error);
-        return this.playFallback(scene, track);
+        return this.playFallback(scene, track, options);
       }
     }
 
-    async playFallback(scene, track) {
+    async playFallback(scene, track, options = {}) {
       if (!this.audio) return false;
-      ++this.transitionId;
+      const transitionId = ++this.transitionId;
+      const fadeOut = this.currentScene ? (options.fadeOut ?? 500) : 0;
+      const fadeIn = options.fadeIn ?? 500;
+
+      if (fadeOut > 0) await this.fade(this.currentVolume, 0, fadeOut, transitionId);
+      if (transitionId !== this.transitionId) return false;
+
       this.stopSource();
       this.stopFallback();
       this.backend = "html";
@@ -312,8 +324,7 @@
       this.audio.src = track.source;
       this.audio.currentTime = 0;
       this.audio.loop = false;
-      this.audio.volume = this.getVolume();
-      this.setInternalVolume(this.getVolume());
+      this.setInternalVolume(0);
       this.activeFallbackAudio = this.audio;
       this.audio.onended = () => this.switchToFallbackLoop(scene, track, generation);
       this.audio.load();
@@ -321,9 +332,12 @@
       this.fallbackLoopAudio = this.htmlPreloads.get(track.loopSource) || this.createHtmlAudio(track.loopSource);
       if (this.fallbackLoopAudio) {
         this.fallbackLoopAudio.loop = true;
-        this.fallbackLoopAudio.volume = this.currentVolume;
+        this.fallbackLoopAudio.volume = 0;
       }
-      return this.resumeFallback();
+      const resumed = await this.resumeFallback();
+      if (transitionId !== this.transitionId) return resumed;
+      await this.fade(0, this.getVolume(), fadeIn, transitionId);
+      return resumed;
     }
 
     stop() {

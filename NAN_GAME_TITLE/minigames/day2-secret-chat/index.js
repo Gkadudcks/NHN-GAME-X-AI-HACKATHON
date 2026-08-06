@@ -12,7 +12,7 @@
   ]);
 
   function grade({ sent = 0, warnings = 0, elapsed = 0 } = {}) {
-    if (sent >= 3 && warnings === 0 && elapsed <= 42) return { grade: "perfect", workDelta: 0, affectionDelta: 2 };
+    if (sent >= 3 && warnings <= 1 && elapsed <= 45) return { grade: "perfect", workDelta: 0, affectionDelta: 2 };
     if (sent >= 3) return { grade: "good", workDelta: 0, affectionDelta: 1 };
     return { grade: "caught", workDelta: -1, affectionDelta: 0 };
   }
@@ -103,6 +103,7 @@
         <section id="sc-intro" class="sc-screen sc-intro">
           <div class="sc-placeholder"><b>업무 자리 · 오전</b><span>박태식 부장의 시선을 피해 서하린의 개인 메시지에 짧게 답장하세요.</span></div>
           <p>버튼이나 Space를 누르는 동안 메시지를 작성합니다. 부장이 고개를 들면 즉시 손을 떼세요.</p>
+          <p class="sc-intro-hint">경고 1회 이하로 메시지 3개를 45초 안에 모두 보내면 호감도가 가장 많이 오릅니다.</p>
           <button id="sc-start" class="sc-primary" type="button">대화 시작</button>
         </section>
         <section id="sc-play" class="sc-screen sc-play" hidden>

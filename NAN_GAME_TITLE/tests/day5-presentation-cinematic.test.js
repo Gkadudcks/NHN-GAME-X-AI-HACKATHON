@@ -35,7 +35,7 @@ test("camera zoom keeps the physical screen and rendered PPT in one coordinate s
 });
 
 test("main renderer preserves blocking and delegates presentation scenes", () => {
-  assert.match(game, /Day5PresentationCinematic\.apply\(scene\)/);
+  assert.match(game, /Day5PresentationCinematic\.apply\(scene,\s*resolvedSystem\)/);
   assert.match(game, /Day5PresentationCinematic\.isLocked\(\)/);
   assert.match(game, /Day5PresentationCinematic\.playDialogue\(scene,\s*dynamicText\(scene\)\)/);
 });
@@ -73,6 +73,7 @@ test("error verification shows a minigame waiting screen before its evidence flo
   assert.match(cinematic, /전체 오류 검증이 기회 5개를 공유/);
   assert.match(cinematic, /‘근거 있음’ 표시가 있는 DAY 탭/);
   assert.match(cinematic, /READY_CONFIGS\[scene\?\.id\]\)\s*showReady\(scene\)/);
+  assert.match(cinematic, /최종 결과 영향.*오늘의 엔딩과 마무리 장면을 결정합니다/);
 });
 
 test("presentation and verification instruction screens use one shared modal and never stack", () => {
@@ -99,7 +100,7 @@ test("presentation dialogue uses the regular character layer without side cutsce
   assert.match(story, /id:\s*"day5BossPrompt"[^]*?characters:\s*boss/);
   assert.match(story, /id:\s*"day5HarinPrompt"[^]*?characters:\s*harinConcerned/);
   assert.doesNotMatch(story, /id:\s*"day5StrategyCallback"[^}]*characters\s*:/);
-  assert.match(story, /id:\s*"day5MinjaeConfront"[^]*?characters:\s*minjae/);
+  assert.match(story, /id:\s*"day5MinjaeConfront"[^]*?characters:\s*minjaeConcerned/);
 });
 
 test("recovery stays inside the cinematic overlay and keeps memory cuts accessible", () => {

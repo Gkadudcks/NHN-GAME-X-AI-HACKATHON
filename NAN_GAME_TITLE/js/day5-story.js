@@ -10,21 +10,26 @@
   const MESSAGES = Object.freeze([
     ...day4Story.MESSAGES.map((message) => Object.freeze({ ...message })),
     { id: "d5-result", room: "boss", at: "day5Result", sender: "박태식 부장", text: "평가 결과가 확정됐다. 수고했다.", day: 5, time: "18:05" },
+    { id: "d5-bad-harin-message", room: "harin", at: "day5BadMessage", sender: "서하린", text: "그동안 고생 많았어요. 이건 도윤 씨 잘못이 아니에요.", day: 5, time: "20:16" },
   ]);
 
   const office = "background.office.day";
   const meeting = "background.presentation_room.day";
   const elevator = "background.elevator_lobby.night";
+  const hallway = "background.presentation_hallway.day";
+  const officeLobby = "background.office_lobby.night";
   const harinNeutral = [{ id: "harin", assetId: "character.harin.relaxed_standing.neutral", position: "right" }];
   const harinSmile = [{ id: "harin", assetId: "character.harin.relaxed_standing.gentle_smile", position: "right" }];
   const harinConcerned = [{ id: "harin", assetId: "character.harin.arms_folded.concerned", position: "right" }];
   const minjae = [{ id: "minjae", assetId: "character.minjae.relaxed_standing.gentle_smile", position: "right" }];
+  const minjaeConcerned = [{ id: "minjae", assetId: "character.minjae.arms_folded.concerned", position: "right" }];
+  const minjaeEmbarrassed = [{ id: "minjae", assetId: "character.minjae.neutral_standing.embarrassed", position: "right" }];
   const boss = [{ id: "boss", assetId: "character.boss.holding_cup.concerned", position: "right" }];
   const auditResult = records.get("d5_security_audit_result");
 
   const scenes = Object.freeze([
     { id: "day5Intro", time: "09:06", speaker: "시스템", text: "DAY 5\n정직원 전환 발표", location: "게임사업실 · 오전", visual: "이른 아침의 게임사업실. 발표 PT가 열린 모니터 앞에 도윤이 홀로 앉아 있다.", bgAssetId: office, bgm: "daily" },
-    { id: "day5OriginalCheck", time: "09:06", speaker: "한도윤", text: "18.4%. 발표 전주 신규 가입자. 보존한 원본과 어제 제출 기록 모두 이상 없습니다.", visual: "도윤이 보존된 발표 자료와 제출 확인 기록을 대조한다.", bgAssetId: office, system: { title: "발표 전 최종 확인", rows: ["7일 차 잔존율 · 18.4%", "분석 대상 · 신규 가입 사용자", "분석 기준 · 발표 전주 가입자", "추가 수정 · 없음"] } },
+    { id: "day5OriginalCheck", time: "09:06", speaker: "한도윤", text: "18.4%. 가장 최근 자료의 신규 가입자. 보존한 원본과 어제 제출 기록 모두 이상 없습니다.", visual: "도윤이 보존된 발표 자료와 제출 확인 기록을 대조한다.", bgAssetId: office, system: { title: "발표 전 최종 확인", rows: ["7일 차 잔존율 · 18.4%", "분석 대상 · 신규 가입 사용자", "분석 기준 · 가장 최근 자료 가입자", "추가 수정 · 없음"] } },
     { id: "day5HarinArrival", time: "09:08", speaker: "서하린", dynamic: "day4ResultGreeting", text: "생각보다 일찍 왔네요.", visual: "하린이 출근해 도윤의 자리 쪽으로 다가온다.", bgAssetId: office, characters: harinSmile, activeCharacter: "harin" },
     { id: "day5GreetingReply", time: "09:08", speaker: "한도윤", dynamic: "day4ResultReply", text: "오늘은 제가 먼저 준비해 두려고 했습니다.", visual: "도윤이 확인을 끝낸 화면을 하린에게 보여 준다.", bgAssetId: office, characters: harinSmile },
     { id: "day5GreetingClose", time: "09:08", speaker: "서하린", dynamic: "day4ResultClose", text: "오늘은 확인한 기록을 믿고 발표에만 집중해요.", visual: "하린이 정상으로 표시된 확인 기록을 보고 고개를 끄덕인다.", bgAssetId: office, characters: harinSmile },
@@ -35,7 +40,7 @@
     { id: "day5TeaReply", time: "09:09", speaker: "한도윤", text: "제가 긴장하지 않았다고 해도 믿지 않으시겠군요.", visual: "도윤이 따뜻한 컵을 손에 든다.", bgAssetId: office, characters: harinSmile },
     { id: "day5TeaClose", time: "09:09", speaker: "서하린", text: "네. 오늘만큼은 안 믿을게요.", visual: "하린이 장난스럽게 답한 뒤 발표 화면으로 시선을 돌린다.", bgAssetId: office, characters: harinSmile, motion: "embarrassed", camera: "romance" },
     { id: "day5FinalCheck", time: "09:10", speaker: "서하린", text: "발표 자료의 수치는 어제 확인한 그대로예요. 질문이 나오면 결론부터 말하고 근거를 보여 줘요.", visual: "두 사람이 DAY 4 제출 기록과 PT의 18.4%를 마지막으로 확인한다.", bgAssetId: office, characters: harinConcerned },
-    { id: "day5FinalCheckReply", time: "09:10", speaker: "한도윤", text: "18.4%, 신규 가입 사용자, 발표 전주 가입자. 원본과 계산식까지 준비했습니다.", visual: "도윤이 핵심 수치와 분석 기준, 원본 계산식의 위치를 차례로 확인한다.", bgAssetId: office, characters: harinConcerned },
+    { id: "day5FinalCheckReply", time: "09:10", speaker: "한도윤", text: "18.4%, 신규 가입 사용자, 가장 최근 자료 가입자. 원본과 계산식까지 준비했습니다.", visual: "도윤이 핵심 수치와 분석 기준, 원본 계산식의 위치를 차례로 확인한다.", bgAssetId: office, characters: harinConcerned },
     { id: "day5FinalCheckWarning", time: "09:10", speaker: "서하린", text: "문제가 생겨도 추측부터 하지 말고 확인한 기록부터 제시해요.", visual: "하린이 보존된 기록을 가리키며 답변 원칙을 다시 강조한다.", bgAssetId: office, characters: harinConcerned, activeCharacter: "harin" },
     { id: "day5Strategy", time: "09:12", speaker: "한도윤", text: "예상하지 못한 질문이 나오면 어떤 순서로 대응할까?", visual: "도윤이 발표 답변 원칙을 정리한다.", bgAssetId: office, characters: harinNeutral, choiceKey: "responseStrategy", choices: [
       { id: "defend_evidence", text: "제가 확인한 결론을 먼저 밝히고 그 근거를 바로 제시하겠습니다.", delta: { work: 1 }, replySpeaker: "서하린", reply: "좋아요. 결론을 말한 만큼 바로 정확한 근거를 이어서 보여 줘요." },
@@ -50,30 +55,34 @@
     { id: "day5MoveMeeting", time: "09:22", speaker: "박태식", text: "장비 확인 끝났어. 발표 파일만 띄우고 나머지 창은 닫아.", location: "발표실 · 오전", visual: "발표실 대형 화면에 발표 첫 장이 표시되어 있다.", bgAssetId: meeting, characters: boss, bgm: "daily" },
     { id: "day5StrategySetup", time: "09:28", speaker: "한도윤", dynamic: "strategySetup", text: "선택한 대응 순서에 맞춰 마지막 준비를 하자.", visual: "도윤과 하린이 선택한 대응 전략에 맞춰 증거 창과 역할을 정리한다.", bgAssetId: meeting, characters: harinNeutral },
     { id: "day5AuditPending", time: "09:34", speaker: "시스템", text: "보안 감사 로그는 아직 담당자 확인 중입니다.", visual: "감사 로그 조회 상태가 대기로 표시된다.", bgAssetId: meeting, system: { title: "SECURITY AUDIT", rows: ["요청 계정 조회 · 처리 중", "현재 상태 · 담당자 확인 대기", "판단 가능 여부 · 아직 확인 불가"] } },
-    { id: "day5Rehearsal", time: "09:40", speaker: "한도윤", text: "핵심 개선안은 신규 사용자의 초반 이탈 구간을 줄이는 것입니다. 검증된 7일 차 잔존율은 18.4%입니다.", visual: "도윤이 실제 발표처럼 첫 문장과 핵심 수치를 소리 내어 점검한다.", bgAssetId: meeting, characters: harinNeutral },
-    { id: "day5RehearsalFeedback", time: "09:41", speaker: "서하린", text: "좋아요. 첫 문장에서 결론이 들려요. 질문이 들어오면 준비한 순서를 그대로 지키면 됩니다.", visual: "하린이 발표 시간을 확인하고 마지막 피드백을 건넨다.", bgAssetId: meeting, characters: harinSmile, activeCharacter: "harin" },
+    { id: "day5Rehearsal", time: "09:40", speaker: "한도윤", text: "이번 제안의 핵심은 신규 유저가 첫 전투에 도달하기 전에 이탈하는 구간을 줄이는 것입니다. 가장 최근 자료에서 첫 전투 이전 이탈률은 31.9%, 7일 차 잔존율은 18.4%로 확인됐습니다.", visual: "도윤이 실제 발표처럼 첫 문장과 핵심 수치를 소리 내어 점검한다.", bgAssetId: meeting, characters: harinNeutral },
+    { id: "day5RehearsalFeedback", time: "09:41", speaker: "서하린", text: "좋아요. 현재 수치와 앞으로 검증할 목표가 섞이지 않게 말해요. 18.4%는 지금 상태고, 개선 효과는 아직 확인 전이에요.", visual: "하린이 발표 시간을 확인하고 마지막 피드백을 건넨다.", bgAssetId: meeting, characters: harinSmile, activeCharacter: "harin" },
+    { id: "day5RehearsalOrder", time: "09:41", speaker: "한도윤", text: "네. 현재 문제, 조사한 원인, 제안, 검증 계획 순서로 설명하겠습니다.", visual: "도윤이 발표 순서를 다시 한번 소리 내어 정리한다.", bgAssetId: meeting, characters: harinNeutral },
     { id: "day5Focus", time: "09:45", speaker: "한도윤", text: "발표에서 가장 먼저 강조할 부분을 정하자.", visual: "발표 첫 장의 강조 순서를 고르는 화면.", bgAssetId: meeting, choiceKey: "presentationFocus", choices: [
-      { id: "verification", text: "정상 원본과 교차 검증 과정을 강조한다.", delta: { work: 1 }, reply: "검증 절차를 첫 근거로 배치했다." },
-      { id: "user_experience", text: "사용자 경험 개선 효과를 강조한다.", delta: {}, reply: "사용자가 체감한 변화를 발표 도입부에 배치했다." },
-      { id: "automation_boundary", text: "자동화는 보조 도구이며 사람이 검증했음을 강조한다.", delta: { trust: 1 }, reply: "사람이 최종 검증한 범위를 분명히 표시했다." },
+      { id: "dropoff_scale", text: "첫 전투 이전 이탈 규모를 먼저 보여 준다.", delta: { work: 1 }, reply: "이탈 규모와 사업적 문제를 첫 근거로 배치했다." },
+      { id: "user_experience", text: "신규 유저가 겪는 첫 10분의 혼란을 먼저 보여 준다.", delta: {}, reply: "핵심 재미보다 안내를 먼저 만나는 경험을 발표 도입부에 배치했다." },
+      { id: "execution_plan", text: "작은 범위에서 검증할 수 있는 실행 계획을 먼저 보여 준다.", delta: { trust: 1 }, reply: "제한 적용과 비교 검증 계획을 먼저 표시했다." },
     ] },
     { id: "day5EvaluatorsArrive", time: "09:50", speaker: "박태식", text: "평가위원들이 도착했어. 이제 자료는 건드리지 말고 자리에서 기다려.", visual: "도윤과 하린이 발표실 안에서 조용히 시작을 기다린다.", bgAssetId: meeting, characters: boss },
     { id: "day5TeaCallback", time: "09:50", speaker: "한도윤", text: "차가 아직 따뜻하군. 확실히 커피보다 마음이 가라앉는 것 같습니다.", visual: "도윤이 발표 직전 하린이 준 차를 한 모금 마신다.", bgAssetId: meeting, characters: harinSmile },
     { id: "day5HarinAdvice", time: "09:54", speaker: "서하린", text: "준비한 만큼만 보여 줘요. 모르는 건 확인하겠다고 말하면 되고요.", visual: "하린이 발표 화면을 마지막으로 확인한 뒤 도윤을 바라본다.", bgAssetId: meeting, characters: harinNeutral },
     { id: "day5EvaluatorsEnter", time: "09:57", speaker: "한도윤", text: "평가위원들이 들어왔다. 하린 선배가 소리 없이 ‘결론부터’라고 입 모양으로 알려 줬다.", visual: "하린이 발표실 앞쪽에서 도윤에게 마지막 신호를 보낸다.", bgAssetId: meeting, characters: harinNeutral },
-    { id: "day5ReadyToPresent", time: "09:59", speaker: "시스템", text: "발표 자료와 확인 기록이 준비되었습니다.", visual: "발표 첫 장과 시작 대기 중인 타이머가 화면에 표시된다.", bgAssetId: meeting, system: { title: "발표 준비 완료", rows: ["발표 자료 · 준비 완료", "제출 당시 수치 · 18.4%", "질문 대응 순서 · 선택 완료", "현재 상태 · 시작 대기"] }, nextLabel: "발표 시작" },
-    { id: "day5PresentationStart", time: "10:00", speaker: "한도윤", dynamic: "presentationOpening", text: "정직원 전환 발표를 시작하겠습니다.", location: "발표실 · 발표", visual: "도윤이 신규 사용자 경험 개선안 발표를 시작한다.", bgAssetId: meeting, system: { title: "신규 사용자 초반 경험 개선안", rows: ["개선 결과 · 7일 차 잔존율 18.4%", "분석 대상 · 신규 가입 사용자", "현재 순서 · 결과 설명"] }, bgm: "presentationCalm" },
-    { id: "day5PresentationProblem", time: "10:01", speaker: "한도윤", text: "먼저 확인한 문제는 신규 사용자가 첫 플레이 목표를 이해하기 전에 이탈한다는 점이었습니다. 기능은 충분했지만, 처음 무엇을 해야 하는지가 분명하지 않았습니다.", visual: "신규 사용자의 첫 진입 흐름과 주요 이탈 구간이 발표 화면에 표시된다.", bgAssetId: meeting, system: { title: "현재 문제", rows: ["분석 대상 · 신규 가입 사용자", "확인 구간 · 첫 플레이", "발견한 문제 · 목표를 알기 전에 이탈", "개선안 · 초반 진행 순서 명확화"] } },
-    { id: "day5PresentationSolution", time: "10:03", speaker: "한도윤", text: "그래서 첫 세션의 안내를 줄이고, 사용자가 바로 선택하고 행동할 수 있도록 핵심 동선을 다시 구성했습니다. 설명을 늘린 것이 아니라 첫 성공 경험까지의 거리를 줄였습니다.", visual: "개선 전후의 첫 플레이 동선이 나란히 비교된다.", bgAssetId: meeting, system: { title: "ONBOARDING FLOW", rows: ["불필요 안내 · 축소", "핵심 행동 · 전면 배치", "첫 성공 경험 · 앞당김", "측정 기준 · 동일 조건 비교"] } },
-    { id: "day5PresentationFocusDetail", time: "10:05", speaker: "한도윤", dynamic: "presentationFocusDetail", text: "선택한 발표 강조점에 따라 핵심 근거를 설명한다.", visual: "도윤이 발표 전에 선택한 강조점을 본문 근거와 연결한다.", bgAssetId: meeting },
-    { id: "day5PresentationMetric", time: "10:07", speaker: "한도윤", text: "그 결과 발표 전주 신규 가입자의 7일 차 잔존율은 18.4%로 확인됐습니다. 단순 조회값이 아니라 같은 대상과 기간을 고정해 다시 계산한 결과입니다.", emphasis: ["7일", "18.4%"], visual: "대형 스크린 중앙에 18.4%와 분석 대상, 기간이 차례로 강조된다.", bgAssetId: meeting, system: { title: "개선 결과", rows: ["7일 차 잔존율 · 18.4%", "분석 대상 · 신규 가입 사용자", "분석 기준 · 발표 전주 가입자", "확인 결과 · 원본과 계산 결과 일치"] }, camera: "focus" },
-    { id: "day5PresentationVerification", time: "10:09", speaker: "한도윤", text: "DAY 2에는 원본 데이터와 계산식을 서로 맞대어 확인했고, DAY 4 제출 직후에는 발표 자료와 근거 자료의 수치가 모두 18.4%인지 다시 확인했습니다.", emphasis: "18.4%", visual: "DAY 2 수치 확인 기록과 DAY 4 제출 직후 확인 화면이 연결되어 표시된다.", bgAssetId: meeting, system: { title: "수치 확인 과정", rows: ["DAY 2 · 원본과 계산 결과 대조", "DAY 4 · 제출 직후 다시 확인", "발표 자료 · 18.4%", "근거 자료 · 18.4%"] } },
-    { id: "day5PresentationBoundary", time: "10:10", speaker: "한도윤", text: "자동화는 자료를 정리하고 연결하는 보조 수단으로만 사용했습니다. 지표의 대상과 기간, 최종 수치의 판단은 사람이 원본을 확인해 확정했습니다.", visual: "자동화 처리와 사람의 최종 확인 범위가 분리된 도식으로 나타난다.", bgAssetId: meeting, system: { title: "자동화 활용 및 최종 확인", rows: ["자동화 · 자료 정리와 연결", "담당자 · 분석 대상과 기간 확인", "담당자 · 원본 수치 최종 확인", "최종 책임 · 발표자"] } },
-    { id: "day5FocusReaction", time: "10:11", speaker: "평가위원", dynamic: "focusReaction", text: "발표의 핵심 방향을 확인했습니다. 계속해 주세요.", visual: "잠시 정적이 흐른 뒤 화면 밖 평가위원이 기록을 넘긴다.", bgAssetId: meeting },
-    { id: "day5PresentationNormal", time: "10:12", speaker: "평가위원", text: "개선 방향과 검증 과정까지 확인했습니다. 공식 증빙 자료도 함께 보겠습니다.", visual: "대형 스크린의 발표 자료가 공식 증빙 화면으로 전환된다.", bgAssetId: meeting },
-    { id: "day5EvidenceRefresh", time: "10:16", speaker: "시스템", text: "제출용 근거 자료에 연결된 원본을 다시 불러옵니다.", visual: "평가 시스템이 제출 근거 자료의 연결 원본을 갱신한다.", bgAssetId: meeting, system: { title: "제출 자료 확인", rows: ["발표 자료 수치 · 18.4%", "제출 근거 수치 · 불러오는 중", "연결된 자료 · 7일 차 잔존율 검증본"] }, bgm: "presentationCalm" },
+    { id: "day5ReadyToPresent", time: "09:59", speaker: "시스템", text: "발표 자료와 확인 기록이 준비되었습니다.", visual: "발표 첫 장과 시작 대기 중인 타이머가 화면에 표시된다.", bgAssetId: meeting, system: { title: "발표 준비 완료", rows: ["발표 주제 · 신규 유저 첫 전투 도달률 개선안", "현재 첫 전투 도달률 · 68.1%", "목표 · 현재 대비 +5%p", "현재 7일 차 잔존율 · 18.4%"] }, nextLabel: "발표 시작" },
+    { id: "day5PresentationStart", time: "10:00", speaker: "한도윤", dynamic: "presentationOpening", text: "정직원 전환 발표를 시작하겠습니다. 발표 주제는 신규 유저 첫 전투 도달률 개선안입니다.", location: "발표실 · 발표", visual: "도윤이 신규 유저 첫 전투 도달률 개선안 발표를 시작한다.", bgAssetId: meeting, system: { title: "신규 유저 첫 전투 도달률 개선안", rows: ["현재 문제 · 첫 전투 이전 이탈", "개선 원칙 · 첫 성공 경험 앞당기기", "적용 방식 · 일부 신규 유저 대상 검증"] }, bgm: "presentationCalm" },
+    { id: "day5PresentationProblem", time: "10:01", speaker: "한도윤", text: "최근 자료의 신규 설치 사용자는 12,480명입니다. 그중 첫 전투에 도달한 사용자는 8,502명으로, 3,978명인 31.9%가 첫 전투 전에 이탈했습니다.", visual: "신규 설치부터 첫 전투 도달까지의 퍼널과 이탈 규모가 발표 화면에 표시된다.", bgAssetId: meeting, system: { title: "현재 문제", rows: ["신규 설치 · 12,480명", "첫 전투 도달 · 8,502명", "첫 전투 이전 이탈 · 3,978명", "첫 전투 이전 이탈률 · 31.9%"] } },
+    { id: "day5PresentationSolution", time: "10:03", speaker: "한도윤", text: "가장 최근 자료에서 신규 유저의 7일 차 잔존율은 18.4%로 확인됐습니다. 이 수치는 개선 후 성과가 아니라, 현재 상태와 이후 검증 결과를 비교하기 위한 확인값입니다.", visual: "현재 7일 차 잔존율과 확인 용도가 발표 화면에 표시된다.", bgAssetId: meeting, system: { title: "현재 잔존율", rows: ["현재 7일 차 잔존율 · 18.4%", "대상 · 신규 유저", "자료 기준 · 가장 최근 자료", "용도 · 개선안 검증 전 현재 상태 확인"] } },
+    { id: "day5PresentationFocusDetail", time: "10:04", speaker: "한도윤", dynamic: "presentationResearchEvidence", text: "DAY 2에서 선택한 조사에 따라 원인 근거를 설명한다.", visual: "도윤이 DAY 2에서 조사한 원인 근거를 발표 화면에 연결한다.", bgAssetId: meeting },
+    { id: "day5PresentationMetric", time: "10:06", speaker: "한도윤", text: "조사 방식은 달랐지만 결론은 같았습니다. 첫 전투까지 걸리는 시간만의 문제가 아니라, 그 전에 유저가 통제권과 다음 목표를 잃는 것이 원인이었습니다. 그래서 설명을 더 추가하기보다, 유저가 직접 행동하고 첫 성공을 경험하는 순서를 앞당기겠습니다.", visual: "서로 다른 조사 결과가 하나의 공통 결론으로 모인다.", bgAssetId: meeting, system: { title: "공통 결론", rows: ["공통 원인 · 통제권과 다음 목표 상실", "개선 방향 · 설명 추가가 아닌 순서 조정", "목표 · 첫 성공 경험 앞당기기"] }, camera: "focus" },
+    { id: "day5PresentationVerification", time: "10:07", speaker: "한도윤", dynamic: "presentationProposalDetail", text: "DAY 1에서 선택한 방향에 따라 구체적인 개선안을 설명한다.", visual: "도윤이 DAY 1에서 선택한 개선 방향을 구체적인 실행안으로 연결한다.", bgAssetId: meeting },
+    { id: "day5PresentationBoundary", time: "10:09", speaker: "한도윤", text: "개선안은 전체 신규 유저에게 바로 적용하지 않겠습니다. 일부 신규 유저에게만 적용하고 기존 흐름과 비교하겠습니다. 현재 첫 전투 도달률은 68.1%입니다. 1차 성공 기준은 73.1%, 현재 대비 5%포인트 개선입니다. 첫 전투 도달률만 높아지고 이후 잔존율이 나빠지는 경우를 막기 위해 7일 차 잔존율 18.4%도 함께 비교하겠습니다.", visual: "일부 적용 범위와 첫 전투 도달률 목표, 잔존율 확인 계획이 함께 표시된다.", bgAssetId: meeting, system: { title: "적용 및 검증 계획", rows: ["적용 · 일부 신규 유저", "현재 첫 전투 도달률 · 68.1%", "1차 목표 · 73.1% / +5%p", "함께 확인 · 7일 차 잔존율 18.4%"] } },
+    { id: "day5FocusReaction", time: "10:10", speaker: "평가위원", dynamic: "focusReaction", text: "발표의 핵심 방향을 확인했습니다. 결론을 말씀해 주세요.", visual: "잠시 정적이 흐른 뒤 화면 밖 평가위원이 기록을 넘긴다.", bgAssetId: meeting },
+    { id: "day5PresentationNormal", time: "10:11", speaker: "한도윤", text: "이번 제안의 목표는 신규 유저에게 더 많은 설명을 끝까지 듣게 하는 것이 아닙니다. 유저가 RPG의 핵심 재미를 먼저 경험하고, 필요한 설명은 적절한 순간에 받을 수 있게 하는 것입니다. 작은 범위에서 먼저 검증하고, 첫 전투 도달률과 7일 차 잔존율이 함께 개선될 때 전체 적용을 제안하겠습니다. 이상으로 발표를 마치겠습니다.", visual: "발표 마지막 화면이 결론 요약으로 전환된다.", bgAssetId: meeting },
+    { id: "day5NormalQaQuestion", time: "10:12", speaker: "평가위원", text: "첫 전투까지의 안내를 줄이거나 뒤로 옮기면 도달률은 높아져도, 필요한 정보를 놓친 사용자가 이후에 이탈할 수 있지 않습니까? 단순히 이탈 시점만 뒤로 미룬 것은 아닌지 어떻게 구분하겠습니까?", visual: "평가위원이 지표 개선과 지연된 이탈을 구분할 방법을 묻는다.", bgAssetId: meeting },
+    { id: "day5NormalQaAnswer", time: "10:13", speaker: "한도윤", text: "그래서 첫 전투 도달률만으로 성공을 판단하지 않겠습니다. 첫 전투 도달률이 목표인 5%포인트만큼 높아지더라도 다음 날 복귀와 7일 차 잔존율이 함께 좋아지지 않으면 전체 적용하지 않겠습니다. 또한 선택한 개선안과 관련된 신규 유저 불편 의견을 함께 확인해, 안내 부족으로 새로운 문제가 생기지 않았는지도 검토하겠습니다.", visual: "도달률과 잔존율을 함께 확인하는 확대 적용 조건이 화면에 표시된다.", bgAssetId: meeting },
+    { id: "day5NormalQaAccepted", time: "10:14", speaker: "평가위원", text: "좋습니다. 도달률만 올리고 끝내는 것이 아니라 이후 잔존과 사용자 반응까지 확대 조건으로 보겠다는 뜻이군요. 그러면 현재 기준값이 적힌 공식 근거 자료를 확인하겠습니다.", visual: "평가위원이 답변을 확인하고 공식 근거 자료를 요청한다.", bgAssetId: meeting },
+    { id: "day5EvidenceRefresh", time: "10:16", speaker: "시스템", text: "제출용 근거 자료에 연결된 원본을 다시 불러옵니다.", visual: "평가 시스템이 제출 근거 자료의 연결 원본을 갱신한다.", bgAssetId: meeting, system: { title: "제출 자료 확인", rows: ["발표에서 설명한 현재 수치 · 18.4%", "제출 근거 수치 · 불러오는 중", "연결된 자료명 · 7일 차 잔존율 검증본"] }, bgm: "presentationCalm" },
     { id: "day5EvaluatorHold", time: "10:18", speaker: "평가위원", text: "잠시만요…….", visual: "평가위원의 말과 함께 발표실의 음악이 멎고 짧은 정적이 흐른다.", bgAssetId: meeting, holdDelay: 2000, stopBgm: true, camera: "tension" },
-    { id: "day5Mismatch", time: "10:18", speaker: "평가위원", text: "발표 자료와 제출용 검증 자료의 수치가 다릅니다! 발표 자료는 18.4%인데, 제출용 검증 자료에는 12.7%로 표시돼 있습니다.", emphasis: ["18.4%", "12.7%"], visual: "대형 화면에 서로 다른 두 수치가 나란히 표시된다.", bgAssetId: meeting, system: { title: "수치 불일치 발견", rows: ["발표 자료 수치 · 18.4%", "제출용 검증 자료 수치 · 12.7%", "분석 기준 · 같은지 확인 필요", "현재 상태 · 원인 확인 중"] }, bgm: "presentationUrgent" },
+    { id: "day5Mismatch", time: "10:18", speaker: "평가위원", text: "잠시만요. 발표에서는 가장 최근 7일 차 잔존율을 18.4%라고 설명했는데, 제출된 근거 자료에는 12.7%로 표시됩니다. 두 수치가 서로 다른 시점의 자료인 겁니까, 아니면 제출 이후 연결된 자료가 바뀐 겁니까? 현재 기준이 어느 쪽인지 기록으로 설명해 주세요.", emphasis: ["18.4%", "12.7%"], visual: "대형 화면에 서로 다른 두 수치가 나란히 표시된다.", bgAssetId: meeting, system: { title: "수치 불일치 발견", rows: ["발표 자료 수치 · 18.4%", "제출용 근거 자료 수치 · 12.7%", "확인 필요 · 다른 시점인지 연결 변경인지", "현재 상태 · 원인 확인 중"] }, bgm: "presentationUrgent", bgmHardCut: true },
     { id: "day5MismatchDoyun", time: "10:18", speaker: "한도윤", text: "18.4%는 원본 데이터와 계산식을 교차 검증한 수치입니다.", emphasis: "18.4%", visual: "도윤이 당황한 기색을 누르고 보존된 원본 기록을 먼저 가리킨다.", bgAssetId: meeting, camera: "tension" },
     { id: "day5MismatchFollowup", time: "10:18", speaker: "평가위원", text: "그렇다면 혹시 제출 전부터 12.7%였던 것 아닙니까? 산정 기준이 다른 건지, 제출 이후 자료가 변경된 건지 설명해 주세요.", emphasis: "12.7%", visual: "두 수치 아래에 산정 기준과 제출 이후 변경 여부가 질문으로 표시된다.", bgAssetId: meeting },
     { id: "day5BossPrompt", time: "10:18", speaker: "박태식", text: "도윤 씨, 지금 확인한 기록으로 설명할 수 있겠어?", visual: "박태식이 화면보다 도윤을 바라보며 짧게 확인한다.", bgAssetId: meeting, characters: boss },
@@ -83,14 +92,14 @@
       { id: "keep_speculating", text: "자동화 오류일 가능성이 높다고 먼저 주장한다.", delta: { trust: -10 }, replySpeaker: "평가위원", reply: "가능성이 아니라 지금 확인할 수 있는 근거로 설명해 주세요." },
       { id: "return_to_evidence", text: "추측을 멈추고 검증된 18.4%의 원본부터 제시한다.", delta: { trust: 1 }, replySpeaker: "서하린", reply: "네. 그 순서면 됩니다." },
     ] },
-    { id: "day5NormalProved", time: "10:21", speaker: "한도윤", text: "DAY 2 수치 확인 기록입니다. 발표 전주 신규 가입자의 7일 차 잔존율은 18.4%로 확인됐습니다.", emphasis: ["7일", "18.4%"], visual: "확인된 원본과 계산식이 평가 화면에 표시된다.", bgAssetId: meeting, system: { title: "확인된 원본 수치", rows: ["7일 차 잔존율 · 18.4%", "분석 대상 · 신규 가입 사용자", "분석 기준 · 발표 전주 가입자", "DAY 2 · 원본과 계산 결과 일치"] } },
-    { id: "day5SubmissionProved", time: "10:23", speaker: "한도윤", text: "DAY 4 17시 8분 제출 직후에는 발표 자료와 근거 자료 모두 18.4%였습니다. 수치가 달라진 건 제출 전이 아니라, 제출 이후입니다.", emphasis: ["17시 8분", "18.4%"], visual: "DAY 4 제출 완료 기록과 확인 시각이 표시된다.", bgAssetId: meeting, system: { title: "제출 당시 기록", rows: ["발표 자료 · 18.4%", "근거 자료 · 18.4%", "제출 확인 · DAY 4 17:08", "추가 수정 · 없음"] } },
-    { id: "day5Pause", time: "10:24", speaker: "평가위원", text: "발표를 잠시 멈추겠습니다. 특정 사람이나 시스템을 먼저 지목하지 말고, 변경 경로를 확인해 주세요.", visual: "발표 타이머가 일시 정지되고 PPT가 오류 확인 순서로 전환된다.", bgAssetId: meeting, bgm: "presentationUrgent" },
+    { id: "day5NormalProved", time: "10:21", speaker: "한도윤", text: "현재 기준과 제출 당시 상태부터 확인하겠습니다.", visual: "도윤이 DAY 2 원본 기록과 제출 당시 기록을 화면에 나란히 연다.", bgAssetId: meeting, system: { title: "검증 절차 시작", rows: ["확인 대상 · 현재 기준과 제출 당시 상태", "확인 방법 · 기록 대조", "진행 상태 · 시작"] } },
+    { id: "day5SubmissionProved", time: "10:23", speaker: "서하린", text: "제출 기록과 감사 기록 창을 열어 둘게요. 순서대로 확인해요.", visual: "하린이 제출 기록과 감사 기록 창을 미리 열어 도윤 옆에 둔다.", bgAssetId: meeting, characters: harinConcerned, activeCharacter: "harin", system: { title: "기록 창 준비", rows: ["제출 기록 · 준비 완료", "감사 기록 · 준비 완료", "확인 순서 · 검증 절차에서 진행"] } },
+    { id: "day5Pause", time: "10:24", speaker: "평가위원", text: "질의응답을 잠시 멈추겠습니다. 어느 수치가 현재 기준인지, 제출 당시에는 어떤 상태였는지, 이후 무엇이 바뀌었는지를 기록 순서대로 확인해 주세요.", visual: "질의응답이 잠시 멈추고 PPT가 오류 확인 순서로 전환된다.", bgAssetId: meeting, bgm: "presentationUrgent" },
     { id: "day5VerificationReady", time: "10:25", speaker: "시스템", text: "오류 검증 준비가 완료되었습니다.", visual: "발표실 화면 위에 오류 검증 미니게임 대기창이 열린다.", bgAssetId: meeting },
     { id: "day5FactSort", time: "10:25", speaker: "평가위원", text: "제출 전부터 근거 자료가 12.7%였던 것 아닙니까?", emphasis: "12.7%", visual: "PPT에 발표 자료 18.4%와 제출 당시 기록이 나란히 표시된다.", bgAssetId: meeting, system: { title: "01 · 제출 당시 사실 확인", rows: ["평가위원 주장 · 제출 전부터 12.7%", "DAY 4 제출 직후 · 발표 자료 18.4%", "DAY 4 제출 직후 · 근거 자료 18.4%", "선택 · 기록으로 확인된 사실"] }, choiceKey: "factVerification", choices: [
       { id: "verified_facts", text: "제출 직후에는 발표 자료와 근거 자료 모두 18.4%였습니다.", delta: { work: 2, trust: 1 }, replySpeaker: "평가위원", reply: "좋습니다. 그렇다면 수치는 제출 이후에 달라졌군요." },
-      { id: "blame_harin", text: "서하린 선배가 자료를 변경했습니다.", delta: { trust: -2 }, replySpeaker: "서하린", reply: "지금 기록만으로는 실행한 사람을 단정할 수 없어요." },
-      { id: "blame_bot", text: "나나봇이 독립적으로 수치를 바꿨습니다.", delta: { trust: -2 }, replySpeaker: "평가위원", reply: "자동 실행 여부와 요청 계정은 구분해서 설명해 주세요." },
+      { id: "blame_harin", text: "말씀하신 대로 제출 전부터 12.7%였습니다.", delta: { trust: -2 }, replySpeaker: "한도윤", reply: "아닙니다. DAY 4 제출 직후 기록에는 분명히 18.4%로 남아 있습니다." },
+      { id: "blame_bot", text: "제출 전 수치는 지금 기록만으로 단정하기 어렵습니다.", delta: { trust: -2 }, replySpeaker: "평가위원", reply: "단정하기 어려운 게 아니라, 제출 직후 기록이 이미 18.4%로 확인돼 있습니다." },
     ] },
     { id: "day5AliasCheck", time: "10:27", speaker: "시스템", text: "12.7%가 화면에 나타난 과정을 기록 순서대로 판단하세요.", emphasis: "12.7%", visual: "PPT에 검증본과 이전 자료 사이의 연결 변경 기록이 순서대로 나타난다.", bgAssetId: meeting, system: { title: "02 · 자료 연결 변경", rows: ["09:57 · 7일 차 잔존율 검증본", "09:58 · 연결 대상 변경", "변경된 대상 · 2024년 이전 자료", "화면에 표시된 수치 · 12.7%"] }, choiceKey: "aliasVerification", choices: [
       { id: "alias_changed_to_archive", text: "검증본 연결이 2024년 이전 자료로 바뀌면서 12.7%가 표시됐습니다.", delta: { work: 2, trust: 1 }, replySpeaker: "한도윤", reply: "제출 파일의 숫자를 고친 것이 아니라, 화면이 불러오는 자료가 바뀐 것입니다." },
@@ -114,62 +123,114 @@
       { id: "intentional_manipulation", text: "민재가 12.7%를 직접 입력해 의도적으로 조작했습니다.", delta: { trust: -2 }, replySpeaker: "평가위원", reply: "직접 입력과 고의 조작을 입증할 기록은 없습니다." },
       { id: "harin_rule_creation", text: "과거 기능을 만든 하린에게 이번 사고의 책임이 있습니다.", delta: { trust: -2, affection: -1 }, replySpeaker: "서하린", reply: "과거 등록과 이번 재실행 요청은 별개의 책임이에요." },
     ] },
-    { id: "day5MinjaeConfront", time: "10:41", speaker: "강민재", dynamic: "verificationConfront", text: "재실행 요청은 내가 했어. 예전 검증 자료를 빨리 다시 쓰려던 거였고, 공식 근거 자료까지 바뀔 줄은 몰랐어.", visual: "오류 검증 결과에 따라 민재가 즉시 인정하거나 먼저 책임 범위를 방어한다.", bgAssetId: meeting, characters: minjae, bgm: "mystery" },
-    { id: "day5MinjaeWhy", time: "10:42", speaker: "한도윤", dynamic: "verificationFollowup", text: "DAY 3에 이상 징후를 봤다면 왜 요청 사실을 말하지 않았습니까?", visual: "검증 실패 시 보안 감사 로그 원문 전체가 다시 열리고, 그 외에는 도윤이 미보고 이유를 묻는다.", bgAssetId: meeting, characters: minjae },
-    { id: "day5MinjaeAdmit", time: "10:43", speaker: "강민재", dynamic: "verificationAdmission", text: "내 요청 때문일 수도 있다고 생각했어. 평가에서 빠질까 봐… 먼저 말하지 못했어. 미안하다.", visual: "민재가 검증 결과에 따른 추가 확인 뒤 요청 사실을 숨긴 이유를 인정한다.", bgAssetId: meeting, characters: minjae },
+    { id: "day5MinjaeConfront", time: "10:41", speaker: "강민재", dynamic: "verificationConfront", text: "재실행 요청은 내가 했어. 예전 검증 자료를 빨리 다시 쓰려던 거였고, 공식 근거 자료까지 바뀔 줄은 몰랐어.", visual: "오류 검증 결과에 따라 민재가 즉시 인정하거나 먼저 책임 범위를 방어한다.", bgAssetId: meeting, characters: minjaeConcerned },
+    { id: "day5MinjaeWhy", time: "10:42", speaker: "한도윤", dynamic: "verificationFollowup", text: "DAY 3에 이상 징후를 봤으면서 왜 말 안 했어?", visual: "검증 실패 시 보안 감사 로그 원문 전체가 다시 열리고, 그 외에는 도윤이 미보고 이유를 묻는다.", bgAssetId: meeting, characters: minjaeConcerned },
+    { id: "day5MinjaeAdmit", time: "10:43", speaker: "강민재", dynamic: "verificationAdmission", text: "내 요청 때문일 수도 있다고 생각했어. 평가에서 빠질까 봐… 먼저 말하지 못했어. 미안하다.", visual: "민재가 검증 결과에 따른 추가 확인 뒤 요청 사실을 숨긴 이유를 인정한다.", bgAssetId: meeting, characters: minjaeEmbarrassed },
     { id: "day5HarinConsequence", time: "10:43", speaker: "서하린", text: "처음 요청한 것보다, 이상을 알고도 숨긴 게 더 큰 문제예요.", visual: "하린이 민재의 실수와 이후 은폐를 분명하게 구분해 말한다.", bgAssetId: meeting, characters: harinConcerned, activeCharacter: "harin" },
-    { id: "day5RecoveryStart", time: "10:44", speaker: "평가위원", text: "확인된 변경 경로를 기준으로 근거 자료를 정상 상태로 되돌려 주세요.", visual: "발표실 PPT가 근거 자료 복구 순서로 전환된다.", bgAssetId: meeting, system: { title: "근거 자료 복구", rows: ["1 · 자동 갱신 일시 중지", "2 · 제출 당시 원본 선택", "3 · 분석 대상과 기간 확인", "4 · 원본 고정 연결"] }, bgm: "mystery" },
-    { id: "day5RecoveryRefresh", time: "10:45", speaker: "한도윤", text: "복구하는 동안 연결된 자료가 다시 바뀌지 않게 먼저 무엇을 해야 할까?", visual: "PPT가 현재 자동 갱신 상태와 복구 순서를 강조한다.", bgAssetId: meeting, system: { title: "01 · 자동 갱신 제어", rows: ["현재 상태 · 연결 자료 자동 갱신 중", "위험 · 복구 중 값이 다시 바뀔 수 있음", "우선 조치 · 갱신 상태 결정", "목표 · 복구 기준 고정"] }, choiceKey: "recoveryRefresh", choices: [
+    { id: "day5RecoveryStart", time: "10:44", speaker: "평가위원", text: "확인된 변경 경로를 기준으로 근거 자료를 정상 상태로 되돌려 주세요.", visual: "발표실 PPT가 근거 자료 복구 순서로 전환된다.", bgAssetId: meeting, system: { title: "근거 자료 복구", rows: ["1 · 자동 갱신 일시 중지", "2 · 제출 당시 원본 선택", "3 · 분석 대상과 기간 확인", "4 · 원본 고정 연결"] } },
+    { id: "day5RecoveryRefresh", time: "10:45", speaker: "한도윤", text: "복구하는 동안 연결된 자료가 다시 바뀌지 않게 먼저 무엇을 해야 할까?", visual: "PPT가 현재 자동 갱신 상태와 복구 순서를 강조한다.", bgAssetId: meeting, playerRecovery: true, system: { title: "01 · 자동 갱신 제어", rows: ["현재 상태 · 연결 자료 자동 갱신 중", "위험 · 복구 중 값이 다시 바뀔 수 있음", "우선 조치 · 갱신 상태 결정", "목표 · 복구 기준 고정"] }, choiceKey: "recoveryRefresh", choices: [
       { id: "pause_refresh", text: "자동 갱신을 잠시 중지하고 현재 상태를 보존한다.", delta: { work: 1, trust: 1 }, replySpeaker: "서하린", reply: "좋아요. 이제 복구하는 동안 연결 대상이 다시 바뀌지 않아요." },
       { id: "keep_refresh", text: "최신 값이 들어오도록 자동 갱신을 계속 유지한다.", delta: { work: -1, trust: -1 }, replySpeaker: "평가위원", reply: "복구 도중 값이 다시 바뀔 수 있습니다. 먼저 갱신을 멈춰 주세요." },
     ] },
-    { id: "day5RecoverySource", time: "10:46", speaker: "한도윤", text: "제출 당시 18.4%를 확인했던 원본을 선택하자.", emphasis: "18.4%", visual: "PPT에 현재 분석 원본과 2024년 이전 자료가 나란히 표시된다.", bgAssetId: meeting, system: { title: "02 · 복구할 원본 선택", rows: ["현재 분석 원본 · 18.4%", "2024년 이전 자료 · 12.7%", "임시 미리보기 · 출처 확인 불가", "선택 기준 · DAY 4 제출 기록"] }, choiceKey: "recoverySource", choices: [
+    { id: "day5RecoverySource", time: "10:46", speaker: "한도윤", text: "제출 당시 18.4%를 확인했던 원본을 선택하자.", emphasis: "18.4%", visual: "PPT에 현재 분석 원본과 2024년 이전 자료가 나란히 표시된다.", bgAssetId: meeting, playerRecovery: true, system: { title: "02 · 복구할 원본 선택", rows: ["현재 분석 원본 · 18.4%", "2024년 이전 자료 · 12.7%", "임시 미리보기 · 출처 확인 불가", "선택 기준 · DAY 4 제출 기록"] }, choiceKey: "recoverySource", choices: [
       { id: "current_week", text: "DAY 4 제출 기록과 일치하는 현재 분석 원본 18.4%를 선택한다.", delta: { work: 1, trust: 1 }, replySpeaker: "한도윤", reply: "제출 당시 기록과 같은 18.4% 원본을 선택했습니다." },
       { id: "archive", text: "현재 화면에 표시된 2024년 이전 자료 12.7%를 선택한다.", delta: { work: -1, trust: -1 }, replySpeaker: "서하린", reply: "그 자료가 이번 오류의 원인이에요. 제출 당시 원본과 대조해 보세요." },
       { id: "preview", text: "출처를 확인할 수 없는 임시 미리보기를 선택한다.", delta: { work: -1 }, replySpeaker: "평가위원", reply: "출처를 확인할 수 없는 자료는 공식 근거로 사용할 수 없습니다." },
     ] },
-    { id: "day5RecoveryBasis", time: "10:47", speaker: "한도윤", text: "발표 자료와 같은 분석 대상과 기간을 확인하자.", visual: "PPT에 분석 대상과 기간 조합이 비교 표시된다.", bgAssetId: meeting, system: { title: "03 · 분석 기준 확인", rows: ["발표 자료 대상 · 신규 가입 사용자", "발표 자료 기간 · 발표 전주", "측정 시점 · 가입 7일 후", "선택 · 같은 분석 기준"] }, choiceKey: "recoveryBasis", choices: [
-      { id: "new_users_current_week", text: "신규 가입 사용자 · 발표 전주 · 가입 7일 후를 선택한다.", delta: { work: 1 }, replySpeaker: "한도윤", reply: "발표 자료와 같은 분석 대상과 기간을 확인했습니다." },
-      { id: "all_users_current_week", text: "전체 사용자 · 발표 전주 · 가입 7일 후를 선택한다.", delta: { work: -1 }, replySpeaker: "평가위원", reply: "분석 대상이 발표 자료와 다릅니다." },
+    { id: "day5RecoveryBasis", time: "10:47", speaker: "한도윤", text: "발표 자료와 같은 분석 대상과 기간을 확인하자.", visual: "PPT에 분석 대상과 기간 조합이 비교 표시된다.", bgAssetId: meeting, playerRecovery: true, system: { title: "03 · 분석 기준 확인", rows: ["발표 자료 대상 · 신규 가입 사용자", "발표 자료 기간 · 가장 최근 자료", "측정 시점 · 가입 7일 후", "선택 · 같은 분석 기준"] }, choiceKey: "recoveryBasis", choices: [
+      { id: "new_users_current_week", text: "신규 가입 사용자 · 가장 최근 자료 · 가입 7일 후를 선택한다.", delta: { work: 1 }, replySpeaker: "한도윤", reply: "발표 자료와 같은 분석 대상과 기간을 확인했습니다." },
+      { id: "all_users_current_week", text: "전체 사용자 · 가장 최근 자료 · 가입 7일 후를 선택한다.", delta: { work: -1 }, replySpeaker: "평가위원", reply: "분석 대상이 발표 자료와 다릅니다." },
       { id: "new_users_archive", text: "신규 가입 사용자 · 2024년 보관 기간을 선택한다.", delta: { work: -1 }, replySpeaker: "서하린", reply: "분석 기간이 이번 발표 기준과 달라요." },
     ] },
-    { id: "day5RecoveryBinding", time: "10:48", speaker: "한도윤", text: "확인한 원본이 다시 다른 자료로 바뀌지 않게 연결 방식을 정하자.", visual: "PPT가 자동 연결과 원본 고정 연결의 차이를 보여 준다.", bgAssetId: meeting, system: { title: "04 · 원본 연결 방식", rows: ["자동 연결 · 다른 자료로 변경 가능", "원본 고정 · 선택한 자료 유지", "자동 갱신 · 일시 중지", "목표 · 18.4% 원본 유지"] }, choiceKey: "recoveryBinding", choices: [
+    { id: "day5RecoveryBinding", time: "10:48", speaker: "한도윤", text: "확인한 원본이 다시 다른 자료로 바뀌지 않게 연결 방식을 정하자.", visual: "PPT가 자동 연결과 원본 고정 연결의 차이를 보여 준다.", bgAssetId: meeting, playerRecovery: true, system: { title: "04 · 원본 연결 방식", rows: ["자동 연결 · 다른 자료로 변경 가능", "원본 고정 · 선택한 자료 유지", "자동 갱신 · 일시 중지", "목표 · 18.4% 원본 유지"] }, choiceKey: "recoveryBinding", choices: [
       { id: "fixed_source", text: "확인된 18.4% 원본에 고정하고 자동 갱신을 끈다.", delta: { work: 1, trust: 1 }, replySpeaker: "시스템", reply: "제출용 근거 자료가 확인된 원본에 고정되었습니다." },
       { id: "live_alias", text: "자동 연결을 유지해 최신 자료를 계속 불러온다.", delta: { work: -1, trust: -1 }, replySpeaker: "서하린", reply: "그러면 연결 대상이 다시 바뀔 수 있어요. 원본을 고정해야 합니다." },
     ] },
+    { id: "day5SupportRecoveryStart", time: "10:45", speaker: "시스템 담당자", text: "플레이어의 직접 복구를 종료합니다. 지금부터 보안 감사 원문을 기준으로 지원 복구를 진행하겠습니다.", visual: "생명이 모두 소진된 직후 조작이 종료되고 지원 복구 진행 화면으로 전환된다.", bgAssetId: meeting, supportRecovery: true, system: { title: "지원 복구 시작", rows: ["플레이어 조작 · 종료", "복구 등급 · 실패", "복구 담당 · 시스템 담당자", "기준 기록 · 보안 감사 원문"] } },
+    { id: "day5SupportRecoveryShock", time: "10:45", speaker: "한도윤", dynamic: "supportRecoveryShock", text: "화면이 내 손을 떠나 스스로 움직이기 시작했다. 다섯 번의 기회를 다 쓰고 나서야, 지금까지 이게 얼마나 위태로운 상태였는지 실감이 났다.", visual: "도윤이 더 이상 반응하지 않는 키보드와 마우스를 내려다본다.", bgAssetId: meeting, supportRecovery: true },
+    { id: "day5SupportRecoveryPanic", time: "10:45", speaker: "한도윤", dynamic: "supportRecoveryPanic", text: "…이거, 진짜 큰일났다.", visual: "도윤의 손이 미세하게 떨린다. 식은땀이 등을 타고 흐른다.", bgAssetId: meeting, supportRecovery: true },
+    { id: "day5SupportRecoveryAudit", time: "10:46", speaker: "시스템 담당자", text: "감사 로그에서 재활성화 요청 시각과 변경된 연결 대상을 다시 확인했습니다.", visual: "보안 감사 로그 원문이 열리고 요청 계정, 실행 시각, 변경 대상이 순서대로 확인된다.", bgAssetId: meeting, supportRecovery: true, auditCutin: true },
+    { id: "day5SupportRecoveryProcess", time: "10:47", speaker: "시스템 담당자", text: "자동 갱신을 중지하고 DAY 4 제출 기록과 일치하는 18.4% 원본을 선택합니다. 분석 기준을 확인한 뒤 연결을 고정합니다.", emphasis: "18.4%", visual: "담당자가 남은 네 단계 복구를 자동으로 수행하며 각 단계가 차례로 완료 표시된다.", bgAssetId: meeting, supportRecovery: true, system: { title: "지원 복구 진행", rows: ["01 · 자동 갱신 중지", "02 · 정상 원본 18.4% 선택", "03 · 분석 대상과 기간 확인", "04 · 원본 연결 고정"] } },
+    { id: "day5SupportRecoveryHarinReact", time: "10:47", speaker: "서하린", text: "여기서 손을 놓은 건 아쉬워요. 그래도 지금 중요한 건 복구가 끝난 뒤에 뭘 다시 확인하느냐예요.", visual: "하린이 자동으로 진행되는 복구 화면을 지켜보다 도윤에게 다음에 할 일을 짚어 준다.", bgAssetId: meeting, supportRecovery: true, characters: harinConcerned, activeCharacter: "harin" },
+    { id: "day5SupportRecoveryComplete", time: "10:48", speaker: "시스템", text: "담당자 지원으로 정상 원본 복구가 완료되었습니다. 플레이어 직접 해결 기록은 실패로 유지됩니다.", visual: "지원 복구 완료와 직접 복구 실패가 서로 다른 상태로 함께 표시된다.", bgAssetId: meeting, supportRecovery: true, system: { title: "지원 복구 완료", rows: ["정상 원본 · 18.4%", "자료 연결 · 고정 완료", "복구 방식 · 담당자 지원", "직접 복구 · 실패"] } },
     { id: "day5RecoveryVerify", time: "10:49", speaker: "시스템", dynamic: "recoveryResult", text: "복구 전후 확인을 완료했습니다.", visual: "복구 전후 수치와 연결된 원본을 비교하는 화면.", bgAssetId: meeting, system: { title: "복구 결과 확인", rows: ["발표 자료 · 18.4%", "복구한 근거 자료 · 결과 확인", "분석 기준 · 신규 사용자 / 7일", "원본 연결 · 결과 확인"] } },
     { id: "day5VerificationResult", time: "10:49", speaker: "시스템", text: "오류 검증과 근거 자료 복구가 완료되었습니다.", visual: "검증 결과와 정상 원본 복구 상태를 합산한 미니게임 최종 결과창이 열린다.", bgAssetId: meeting, verificationResult: true },
-    { id: "day5Resume", time: "10:50", speaker: "한도윤", dynamic: "resumeStatement", text: "정상 원본과 동일한 18.4% 수치로 증빙 자료를 복구했습니다.", visual: "도윤이 복구 결과와 변경 경로를 평가위원에게 제시한다.", bgAssetId: meeting, bgm: "daily" },
-    { id: "day5EvaluatorClose", time: "10:58", speaker: "평가위원", text: "발표 중 문제가 발생했지만 정상 원본과 제출 이후 변경 경로는 확인했습니다. 사고 대응을 포함해 최종 평가하겠습니다.", visual: "발표실 스크린에 최종 검토 상태가 표시된다.", bgAssetId: meeting },
-    { id: "day5PresentationEnd", time: "11:00", speaker: "시스템", text: "정직원 전환 발표가 종료되었습니다.", visual: "발표 화면이 닫히고 평가위원들이 최종 검토를 시작한다.", bgAssetId: meeting, system: { title: "발표 종료", rows: ["제출 당시 원본 · 확인", "제출 이후 변경 · 확인 완료", "근거 자료 복구 · 결과 반영", "최종 평가 · 심사 중"] } },
+    { id: "day5Resume", time: "10:50", speaker: "한도윤", dynamic: "resumeStatement", text: "수치 정정 결과를 보고하겠습니다.", visual: "도윤이 복구 결과와 변경 경로를 평가위원에게 제시한다.", bgAssetId: meeting, bgm: "presentationCalm" },
+    { id: "day5ProposalRestatement", time: "10:51", speaker: "한도윤", dynamic: "proposalRestatement", text: "18.4%는 개선안의 성과가 아니라 현재 상태를 설명하는 확인값임을 다시 밝힌다.", visual: "도윤이 개선안의 검증 전 상태와 확대 적용 조건을 다시 정리한다.", bgAssetId: meeting },
+    { id: "day5ResumeContinue", time: "10:52", speaker: "평가위원", text: "현재 수치와 2024년 자료의 연결 오류, 그리고 제안의 검증 범위를 확인했습니다. 개선안의 타당성과 사고 대응 과정을 함께 최종 평가하겠습니다.", visual: "평가위원이 정정된 수치와 검증 범위를 확인하고 기록을 넘긴다.", bgAssetId: meeting },
+    { id: "day5EvaluatorFollowUp", time: "10:54", speaker: "평가위원", text: "그렇다면 이번 사고가 개선안 자체의 신뢰도에도 영향을 준다고 보십니까?", visual: "평가위원이 근거 자료 문제와 별개로 개선안 자체의 신뢰도를 묻는다.", bgAssetId: meeting },
+    { id: "day5ResumeAnswer", time: "10:56", speaker: "한도윤", text: "개선안의 근거는 오늘 다시 검증한 원본과 동일합니다. 이번 사고는 자료를 관리하는 과정에서 생긴 문제였고, 개선안 자체의 효과와는 분리해서 판단해 주시기 바랍니다.", visual: "도윤이 사고 대응과 개선안의 실제 효과를 분명히 구분해 답한다.", bgAssetId: meeting },
+    { id: "day5EvaluatorClose", time: "10:58", speaker: "평가위원", dynamic: "evaluatorCloseResult", text: "개선안의 타당성과 사고 대응 과정을 함께 최종 평가하겠습니다.", visual: "발표실 스크린에 최종 검토 상태가 표시된다.", bgAssetId: meeting },
+    { id: "day5PresentationEnd", time: "11:00", speaker: "시스템", text: "정직원 전환 발표가 종료되었습니다.", visual: "발표 화면이 닫히고 평가위원들이 최종 검토를 시작한다.", bgAssetId: meeting, system: { title: "발표 종료", rows: ["현재 7일 차 잔존율 · 18.4%", "2024년 당시 잔존율 · 12.7%", "연결 변경 경로 · 확인 완료", "개선안 효과 · 검증 전", "최종 평가 · 심사 중"] } },
     { id: "day5AfterPresentationSilence", time: "11:01", speaker: "한도윤", text: "문이 닫히고 나서야 발표실이 조용하다는 걸 알았다. 손에 힘을 풀자 쥐고 있던 발표 리모컨이 뒤늦게 무겁게 느껴졌다.", visual: "평가위원들이 나간 발표실. 꺼진 프로젝터 아래에 도윤과 하린, 태식과 민재가 잠시 말없이 남아 있다.", bgAssetId: meeting, bgm: "daily" },
     { id: "day5HarinRelease", time: "11:02", speaker: "서하린", dynamic: "postPresentationHarin", text: "끝났어요. 이제 숨 쉬어도 돼요.", visual: "하린이 굳어 있던 도윤의 손에서 발표 리모컨을 받아 테이블 위에 내려놓는다.", bgAssetId: meeting, characters: harinSmile, activeCharacter: "harin" },
     { id: "day5DoyunRelease", time: "11:02", speaker: "한도윤", text: "발표를 끝냈다는 것보다, 잘못된 자료를 그대로 넘기지 않았다는 게 더 다행입니다.", visual: "도윤이 꺼진 발표 화면을 바라보다 천천히 숨을 내쉰다.", bgAssetId: meeting, characters: harinSmile },
     { id: "day5BossFollowup", time: "11:04", speaker: "박태식", text: "발표는 끝났지만 사고 처리는 지금부터다. 재실행 권한은 바로 회수하고, 감사 로그와 복구 기록은 오늘 안에 사고 보고서로 묶는다.", visual: "태식이 발표실 테이블에 남은 감사 기록을 정리하며 후속 조치를 지시한다.", bgAssetId: meeting, characters: boss },
-    { id: "day5MinjaeApology", time: "11:06", speaker: "강민재", dynamic: "postPresentationMinjae", text: "내 요청 때문에 일이 커졌다. 이상한 걸 봤을 때 바로 말했어야 했어. 미안하다.", visual: "민재가 변명 없이 재실행 요청과 미보고에 대해 도윤과 하린에게 사과한다.", bgAssetId: meeting, characters: minjae },
+    { id: "day5MinjaeApology", time: "11:06", speaker: "강민재", dynamic: "postPresentationMinjae", text: "내 요청 때문에 일이 커졌다. 이상한 걸 봤을 때 바로 말했어야 했어. 미안하다.", visual: "민재가 변명 없이 재실행 요청과 미보고에 대해 도윤과 하린에게 사과한다.", bgAssetId: meeting, characters: minjaeEmbarrassed },
     { id: "day5HarinBoundaryAfter", time: "11:07", speaker: "서하린", text: "직접 수치를 조작한 건 아니라는 것도 기록하겠습니다. 하지만 영향을 확인하지 않고 요청했고, 이상을 알고도 말하지 않은 책임은 따로 남겨야 해요.", visual: "하린이 실수와 은폐, 확인되지 않은 의도를 구분해 사고 기록에 적는다.", bgAssetId: meeting, characters: harinConcerned, activeCharacter: "harin" },
-    { id: "day5HallwayPause", time: "11:12", speaker: "한도윤", text: "발표실 문을 닫고 나오자 긴장이 한꺼번에 빠졌다. 끝났다고 생각했는데, 이제야 오늘 있었던 일이 실제처럼 느껴졌다.", visual: "발표실 밖 복도. 별도 배경 없이 도윤이 잠시 벽에 기대 숨을 고르는 상황을 글자로 표시한다." },
-    { id: "day5HarinHallway", time: "11:13", speaker: "서하린", dynamic: "postPresentationReflection", text: "예전 같았으면 제가 만든 규칙이라는 이유만으로 혼자 책임지려고 했을 거예요. 이번에는 도윤 씨가 기록을 끝까지 봐 줘서 그러지 않았어요.", visual: "복도에서 하린이 사건을 혼자 감당하지 않아도 됐던 이유를 도윤에게 말한다.", characters: harinNeutral, activeCharacter: "harin" },
-    { id: "day5DoyunThanks", time: "11:14", speaker: "한도윤", text: "저도 혼자였다면 첫 질문에서부터 흔들렸을 겁니다. 아침에 해 주신 말과 따뜻한 차까지 전부 도움이 됐습니다.", visual: "도윤이 발표 전 하린이 건넨 조언과 차를 떠올리며 감사 인사를 전한다.", characters: harinSmile },
+    { id: "day5HallwayPause", time: "11:12", speaker: "한도윤", text: "발표실 문을 닫고 나오자 긴장이 한꺼번에 빠졌다. 끝났다고 생각했는데, 이제야 오늘 있었던 일이 실제처럼 느껴졌다.", visual: "발표실 밖 복도. 도윤이 잠시 벽에 기대 숨을 고른다.", bgAssetId: hallway },
+    { id: "day5HarinHallway", time: "11:13", speaker: "서하린", dynamic: "postPresentationReflection", text: "예전 같았으면 제가 만든 규칙이라는 이유만으로 혼자 책임지려고 했을 거예요. 이번에는 도윤 씨가 기록을 끝까지 봐 줘서 그러지 않았어요.", visual: "복도에서 하린이 사건을 혼자 감당하지 않아도 됐던 이유를 도윤에게 말한다.", bgAssetId: hallway, characters: harinNeutral, activeCharacter: "harin" },
+    { id: "day5DoyunThanks", time: "11:14", speaker: "한도윤", text: "하린에게 어떻게 감사를 전할까?", visual: "도윤이 발표 전 하린이 건넨 조언과 차를 떠올리며 하린을 바라본다.", bgAssetId: hallway, characters: harinSmile, choiceKey: "hallwayThanks", choices: [
+      { id: "personal_thanks", text: "오늘 아침 그 차 받았을 때부터 좀 두근거렸습니다. 다음엔 제가 사겠습니다.", delta: { affection: 1 }, replySpeaker: "서하린", reply: "기대할게요. 도윤 씨가 사주는 건 또 처음이니까요." },
+      { id: "professional_thanks", text: "선배가 정리해 둔 순서 덕분에 흔들리지 않고 답했습니다.", delta: { trust: 1 }, replySpeaker: "서하린", reply: "그건 도윤 씨가 순서대로 잘 따라와 준 덕분이에요." },
+      { id: "quiet_thanks", text: "감사합니다.", delta: {}, replySpeaker: "서하린", reply: "그거면 됐어요." },
+    ] },
     { id: "day5ReturnOffice", time: "11:25", speaker: "시스템", text: "팀은 게임사업실로 돌아와 감사 로그, 발표 자료, 복구 기록을 하나의 사고 보고서로 정리하기 시작했습니다.", location: "게임사업실 · 오후", visual: "사무실 모니터에 세 기록의 확인 상태가 차례로 표시된다.", bgAssetId: office, system: { title: "사고 후속 조치", rows: ["재실행 요청 권한 · 회수", "감사 로그 원문 · 첨부", "정상 원본 18.4% · 고정", "사고 경위서 · 작성 중"] } },
     { id: "day5IncidentReport", time: "13:10", speaker: "한도윤", dynamic: "postPresentationReport", text: "확인된 사실과 확인되지 않은 추측을 나눠 적었습니다. 복구 과정과 재발 방지 조치도 같은 기록에 연결하겠습니다.", visual: "도윤이 검증 결과에 따라 담당자 지원 범위까지 포함한 사고 보고서를 작성한다.", bgAssetId: office },
     { id: "day5HarinReportCheck", time: "13:12", speaker: "서하린", text: "좋아요. 누가 기능을 만들었는지보다 누가 다시 실행을 요청했고, 이후 무엇을 보고했는지가 분명하게 보이네요.", visual: "하린이 도윤의 보고서에서 역할과 책임이 구분된 부분을 확인한다.", bgAssetId: office, characters: harinSmile, activeCharacter: "harin" },
-    { id: "day5AuditClosed", time: "14:30", speaker: "시스템", text: "보안 감사 기록과 정상 원본 복구 기록이 최종 사고 보고서에 첨부되었습니다. 추가 자료 연결 변경은 차단되었습니다.", visual: "별도 배경 없이 감사 종료와 원본 고정 완료 상태를 글자로 표시한다.", system: { title: "후속 조치 완료", rows: ["감사 로그 · 첨부 완료", "원본 연결 · 고정", "자동 갱신 · 중지", "추가 변경 · 차단"] } },
-    { id: "day5WaitingForResult", time: "17:40", speaker: "한도윤", text: "할 수 있는 정리는 모두 끝났다. 이제 남은 건 평가 결과뿐이었다.", location: "게임사업실 · 퇴근 전", visual: "해가 기운 사무실에서 도윤이 저장된 사고 보고서와 조용한 메신저 창을 번갈아 바라본다.", bgAssetId: "background.office.evening" },
+    { id: "day5AuditClosed", time: "14:30", speaker: "시스템", text: "보안 감사 기록과 정상 원본 복구 기록이 최종 사고 보고서에 첨부되었습니다. 추가 자료 연결 변경은 차단되었습니다.", visual: "감사 종료와 원본 고정 완료 상태가 사무실 화면에 표시된다.", bgAssetId: office, system: { title: "후속 조치 완료", rows: ["감사 로그 · 첨부 완료", "원본 연결 · 고정", "자동 갱신 · 중지", "추가 변경 · 차단"] } },
+    { id: "day5MinjaeAfterHours", time: "16:10", speaker: "강민재", text: "재실행 권한은 벌써 회수됐더라. 당연한 거긴 한데… 그래도 좀 그렇네.", visual: "민재가 자리를 정리하다 도윤 쪽을 잠깐 바라본다.", bgAssetId: office, characters: minjaeEmbarrassed },
+    { id: "day5MinjaeAfterHoursReply", time: "16:11", speaker: "한도윤", text: "필요하면 나중에 다시 얘기하자. 지금은 결과부터 기다리자.", visual: "도윤이 짧게 답하고 다시 화면으로 시선을 돌린다.", bgAssetId: office, characters: minjaeEmbarrassed },
+    { id: "day5WaitingForResult", time: "17:40", speaker: "한도윤", text: "할 수 있는 정리는 모두 끝났다. 이제 남은 건 평가 결과뿐이었다.", location: "게임사업실 · 퇴근 전", visual: "해가 기운 사무실에서 도윤이 저장된 사고 보고서와 조용한 메신저 창을 번갈아 바라본다.", bgAssetId: "background.office.evening", bgm: "overtime" },
     { id: "day5HarinBeforeResult", time: "17:42", speaker: "서하린", dynamic: "postPresentationBeforeResult", text: "결과가 어떻게 나오든 오늘 도윤 씨가 한 대응은 없어지지 않아요. 문제를 숨기지 않았고, 끝까지 정상 상태로 돌려놨으니까요.", visual: "하린이 결과를 기다리는 도윤의 책상 옆에 서서 오늘의 대응을 짚어 준다.", bgAssetId: "background.office.evening", characters: harinSmile, activeCharacter: "harin" },
+    { id: "day5WaitingRestless", time: "17:55", speaker: "한도윤", text: "시계를 몇 번이나 확인했는지 셀 수 없었다. 평가 결과는 아직이었다.", visual: "도윤이 화면과 시계를 번갈아 보며 초조하게 기다린다.", bgAssetId: "background.office.evening", characters: harinSmile },
+    { id: "day5HarinDistraction", time: "17:58", speaker: "서하린", text: "그렇게 보고 있어도 안 빨라져요. 잠깐 다른 얘기라도 할까요?", visual: "하린이 초조해하는 도윤을 보고 가볍게 말을 건다.", bgAssetId: "background.office.evening", characters: harinNeutral, activeCharacter: "harin" },
+    { id: "day5BossArrival", time: "18:03", speaker: "한도윤", text: "복도에서 발소리가 들렸다. 익숙한 걸음이었다. 도윤과 하린이 동시에 고개를 들었다.", visual: "박태식의 실루엣이 사무실 문 유리에 비친다.", bgAssetId: "background.office.evening", characters: harinSmile },
+    { id: "day5BeforeVerdict", time: "18:04", speaker: "서하린", text: "결과가 어떻든, 저는 여기 있을게요.", visual: "하린이 다가오는 발소리를 향해 시선을 고정한 채 짧게 말한다.", bgAssetId: "background.office.evening", characters: harinConcerned, activeCharacter: "harin" },
     { id: "day5Result", time: "18:05", speaker: "박태식", dynamic: "evaluationResult", text: "평가 결과가 확정됐다.", location: "게임사업실 · 퇴근", visual: "박태식이 도윤에게 정직원 전환 평가 결과를 전달한다.", bgAssetId: "background.office.evening", characters: boss, notification: "d5-result" },
-    { id: "day5BadEnd", ending: "bad", time: "20:10", speaker: "시스템", text: "정직원 전환은 보류됐다. 도윤은 빈 사무실에 홀로 남아 사고 보고서를 다시 펼쳤다.\n\n서하린: 내일 기록부터 다시 확인해요.", location: "게임사업실 · 야근", visual: "도윤이 짐을 든 채 텅 빈 로비를 지나 홀로 회사를 나선다.", bgAssetId: "background.office.night", cgAssetId: "event_cg.day5.lone_departure", cgTitle: "홀로 남은 퇴근길", cinematicDelay: 1600, end: true, bgm: "badEnding" },
-    { id: "day5MiddleElevator", ending: "middle", time: "18:20", speaker: "서하린", text: "앞으로도 잘 부탁해요, 한도윤 씨.", location: "엘리베이터 · 퇴근", visual: "퇴근 엘리베이터 안에 나란히 선 도윤과 하린.", bgAssetId: elevator, characters: harinSmile, bgm: "middleEnding" },
+    { id: "day5BadOffice", ending: "bad", time: "20:10", speaker: "시스템", text: "정직원 전환은 끝내 승인되지 않았다. 계약 기간도 오늘부로 끝이었다. 발표실의 소란이 무색하게, 사무실은 이미 대부분 불이 꺼져 있었다.", location: "게임사업실 · 야근", visual: "불이 꺼진 사무실에 도윤 혼자 남아 책상 위 짐을 상자에 담기 시작한다.", bgAssetId: "background.office.night", bgm: "badEnding" },
+    { id: "day5BadDoyunReflect", ending: "bad", time: "20:13", speaker: "한도윤", dynamic: "badEndingReflection", text: "확인은 끝까지 했는데, 그 과정에서 놓친 판단들이 더 크게 남았다.", visual: "상자에 짐을 담으며 도윤이 오늘 어디서부터 어긋났는지 되짚는다.", bgAssetId: "background.office.night" },
+    { id: "day5BadPacking", ending: "bad", time: "20:15", speaker: "한도윤", text: "머그컵과 책상 위에 놓아뒀던 작은 피규어 몇 개를 상자에 넣었다. 별거 아닌 물건들인데 유난히 손에 오래 머물렀다.", visual: "도윤이 개인 물품을 하나씩 상자에 담는다.", bgAssetId: "background.office.night" },
+    { id: "day5BadMessage", ending: "bad", time: "20:16", speaker: "한도윤", text: "하린에게서 메시지가 도착했다. ‘그동안 고생 많았어요. 이건 도윤 씨 잘못이 아니에요.’ 짧은 문장인데도 몇 번을 다시 읽었다.", visual: "짐을 정리하던 손을 멈추고, 야간 사무실 모니터 한쪽에 뜬 하린의 메시지를 바라본다.", bgAssetId: "background.office.night", notification: "d5-bad-harin-message" },
+    { id: "day5BadEnd", ending: "bad", time: "20:20", speaker: "한도윤", text: "그래, 여기까진가 보다.\n\nBAD ENDING\n정직원 전환은 끝내 승인되지 않았다. 도윤은 짐 상자를 들고 어두워진 사무실을 나섰다.", location: "게임사업실 · 퇴사", visual: "도윤이 개인 물품을 담은 상자를 품에 안고 사무실 문을 나선다. 창밖은 이미 캄캄하다.", bgAssetId: "background.office.night", cgAssetId: "event_cg.day5.lone_departure", cgTitle: "홀로 남은 퇴근길", cinematicDelay: 1600, end: true, bgm: "badEnding" },
+    { id: "day5MiddleElevator", ending: "middle", time: "18:20", speaker: "서하린", dynamic: "middleEndingTone", text: "앞으로도 잘 부탁해요, 한도윤 씨.", location: "엘리베이터 · 퇴근", visual: "퇴근 엘리베이터 안에 나란히 선 도윤과 하린.", bgAssetId: elevator, characters: harinSmile, bgm: "middleEnding" },
     { id: "day5MiddleReply", ending: "middle", time: "18:20", speaker: "한도윤", text: "저도 잘 부탁드립니다, 서하린 선배.", visual: "도윤이 하린을 향해 고개를 돌린다.", bgAssetId: elevator, characters: harinSmile },
     { id: "day5MiddleName", ending: "middle", time: "18:21", speaker: "서하린", text: "이제 계속 선배라고 부를 필요는 없을지도 모르겠네요.", visual: "하린이 조금 편안해진 표정으로 말한다.", bgAssetId: elevator, characters: harinSmile },
     { id: "day5MiddleQuestion", ending: "middle", time: "18:21", speaker: "한도윤", text: "그러면 뭐라고 불러야 합니까?", visual: "엘리베이터 층수가 천천히 내려간다.", bgAssetId: elevator, characters: harinSmile },
-    { id: "day5MiddleEnd", ending: "middle", time: "18:22", speaker: "서하린", text: "그건 다음에 생각해 봐요.\n\nMIDDLE ENDING\n사수와 신입으로 시작한 두 사람은 서로 믿고 일할 수 있는 동료가 되었다.", visual: "1층 도착음과 함께 하린이 먼저 엘리베이터 밖으로 걸어 나가 뒤를 돌아본다.", bgAssetId: elevator, cgAssetId: "event_cg.day5.colleague_departure", cgTitle: "함께한 퇴근길", cinematicDelay: 1600, end: true, bgm: "middleEnding" },
-    { id: "day5NiceElevator", ending: "nice", time: "18:20", speaker: "서하린", text: "오늘 정말 수고했어요. 도윤 씨가 기록부터 확인해 줘서 끝까지 설명할 수 있었어요.", location: "엘리베이터 · 퇴근", visual: "퇴근 엘리베이터 안에 도윤과 하린 둘만 남아 있다.", bgAssetId: elevator, characters: harinSmile, bgm: "happyEnding" },
-    { id: "day5NiceCall", ending: "nice", time: "18:21", speaker: "서하린", text: "도윤 씨.", visual: "하린이 층수 표시를 보다 도윤을 부른다.", bgAssetId: elevator, characters: [{ id: "harin", assetId: "character.harin.relaxed_standing.embarrassed", position: "right" }], camera: "romance" },
-    { id: "day5NiceReply", ending: "nice", time: "18:21", speaker: "한도윤", text: "네.", visual: "도윤이 하린 쪽으로 시선을 돌린다.", bgAssetId: elevator, characters: [{ id: "harin", assetId: "character.harin.relaxed_standing.embarrassed", position: "right" }] },
-    { id: "day5NicePause", ending: "nice", time: "18:21", speaker: "서하린", text: "이번 주말에…", visual: "하린이 잠시 말을 멈춘다.", bgAssetId: elevator, characters: [{ id: "harin", assetId: "character.harin.relaxed_standing.embarrassed", position: "right" }], camera: "romance" },
-    { id: "day5NiceEnd", ending: "nice", time: "18:22", speaker: "서하린", text: "시간 괜찮아요?\n\nNICE ENDING\n발표는 끝났지만, 두 사람의 다음 일정은 이제 시작된다.", visual: "1층 표시와 점등된 버튼 아래에서 하린이 주말 약속을 묻는다. 도윤이 대답하려는 순간 화면이 어두워진다.", bgAssetId: elevator, cgAssetId: "event_cg.day5.weekend_invitation", cgTitle: "서하린의 주말 약속", cinematicDelay: 1600, end: true, bgm: "happyEnding", camera: "romance" },
+    { id: "day5MiddleAnswer", ending: "middle", time: "18:22", speaker: "서하린", text: "아니에요, 그냥 지금처럼 불러요. 선배 소리가 더 편하네요.", visual: "말이 끝나갈 즈음 엘리베이터가 1층에 닿는 도착음이 울린다.", bgAssetId: elevator, characters: harinSmile },
+    { id: "day5MiddleExit", ending: "middle", time: "18:23", speaker: "시스템", text: "문이 열리고, 두 사람은 나란히 1층 로비로 걸어 나왔다.", location: "게임사업실 로비 · 퇴근", visual: "대리석 로비를 가로질러 회전문 쪽으로 걸어가는 도윤과 하린.", bgAssetId: officeLobby },
+    { id: "day5MiddleOutside", ending: "middle", time: "18:24", speaker: "서하린", text: "오늘 흔들릴 때 옆에서 붙잡아 준 건 잊지 않을게요.", visual: "회전문 너머로 노을 진 하늘이 보이는 로비에서, 하린이 오늘 하루를 돌아보며 말한다.", bgAssetId: officeLobby, characters: harinSmile, activeCharacter: "harin" },
+    { id: "day5MiddleEnd", ending: "middle", time: "18:25", speaker: "한도윤", text: "저도 오늘 선배 없었으면 못 버텼을 겁니다.\n\nMIDDLE ENDING\n사수와 신입으로 시작한 두 사람은 서로 믿고 일할 수 있는 동료가 되었다.", visual: "로비 회전문 앞에서, 두 사람이 나란히 걸음을 멈춘다.", bgAssetId: officeLobby, characters: harinSmile, cgAssetId: "event_cg.day5.colleague_departure", cgTitle: "함께한 퇴근길", cinematicDelay: 1600, end: true, bgm: "middleEnding" },
+    { id: "day5HappyResultReact", ending: "happy", time: "18:06", speaker: "서하린", text: "잠깐, 방금 승인이라고 하신 거 맞죠? 진짜요?", location: "게임사업실 · 퇴근", visual: "하린이 놀란 얼굴로 박태식에게 되묻는다.", bgAssetId: "background.office.evening", characters: [{ id: "harin", assetId: "character.harin.hand_to_chest.surprised", position: "right" }], activeCharacter: "harin" },
+    { id: "day5HappyResultCelebrate", ending: "happy", time: "18:07", speaker: "서하린", text: "다행이다… 진짜 다행이에요! 도윤 씨, 오늘 정말 잘했어요!", visual: "하린이 참았던 숨을 내쉬듯 활짝 웃으며 도윤의 팔을 살짝 붙잡는다.", bgAssetId: "background.office.evening", characters: harinSmile, activeCharacter: "harin" },
+    { id: "day5HappyElevator", ending: "happy", time: "18:20", speaker: "서하린", text: "오늘 정말 수고했어요. 도윤 씨가 기록부터 확인해 줘서 끝까지 설명할 수 있었어요.", location: "엘리베이터 · 퇴근", visual: "퇴근 엘리베이터 안에 도윤과 하린 둘만 남아 있다.", bgAssetId: elevator, characters: harinSmile, bgm: "happyEnding" },
+    { id: "day5HappyAcknowledge", ending: "happy", time: "18:20", speaker: "서하린", text: "오류 검증도, 복구도 전부 도윤 씨 손으로 끝냈어요. 저도 그 과정을 처음부터 끝까지 옆에서 믿고 지켜봤고요.", visual: "하린이 오늘 하루의 대응을 되짚으며 도윤을 바라본다.", bgAssetId: elevator, characters: harinSmile, activeCharacter: "harin" },
+    { id: "day5HappyDoorsClose", ending: "happy", time: "18:20", speaker: "시스템", text: "문이 닫히고, 1층까지 아무도 타지 않았다. 엘리베이터 안에는 두 사람만 남았다.", visual: "닫힌 엘리베이터 문과 나란히 선 두 사람 사이로 정적이 흐른다.", bgAssetId: elevator, characters: harinSmile },
+    { id: "day5HappyQuietBeat", ending: "happy", time: "18:21", speaker: "한도윤", text: "오늘따라 하린 선배가 평소보다 말이 없다는 걸 뒤늦게 알아챘다.", visual: "도윤이 평소와 다른 하린의 표정을 살핀다.", bgAssetId: elevator, characters: [{ id: "harin", assetId: "character.harin.relaxed_standing.embarrassed", position: "right" }], camera: "romance" },
+    { id: "day5HappyCall", ending: "happy", time: "18:21", speaker: "서하린", text: "도윤 씨.", visual: "하린이 층수 표시를 보다 도윤을 부른다.", bgAssetId: elevator, characters: [{ id: "harin", assetId: "character.harin.relaxed_standing.embarrassed", position: "right" }], camera: "romance" },
+    { id: "day5HappyReply", ending: "happy", time: "18:21", speaker: "한도윤", text: "네.", visual: "도윤이 하린 쪽으로 시선을 돌린다.", bgAssetId: elevator, characters: [{ id: "harin", assetId: "character.harin.relaxed_standing.embarrassed", position: "right" }] },
+    { id: "day5HappyPause", ending: "happy", time: "18:21", speaker: "서하린", text: "이번 주말에…", visual: "하린이 잠시 말을 멈춘다.", bgAssetId: elevator, characters: [{ id: "harin", assetId: "character.harin.relaxed_standing.embarrassed", position: "right" }], camera: "romance" },
+    { id: "day5HappyEnd", ending: "happy", time: "18:22", speaker: "서하린", text: "시간 괜찮아요?\n\nHAPPY ENDING\n발표는 끝났지만, 두 사람의 다음 일정은 이제 시작된다.", visual: "1층 표시와 점등된 버튼 아래에서 하린이 주말 약속을 묻는다. 도윤이 대답하려는 순간 화면이 어두워진다.", bgAssetId: elevator, cgAssetId: "event_cg.day5.weekend_invitation", cgTitle: "서하린의 주말 약속", cinematicDelay: 1600, end: true, bgm: "happyEnding", camera: "romance" },
   ]);
+
+  function normalizeDay1Direction(rawSentence) {
+    if (rawSentence === "긴 튜토리얼을 줄이고 핵심 행동부터 경험하게 한다.") return "shorten_tutorial";
+    if (rawSentence === "첫 전투까지 상황별 가이드를 제공한다.") return "contextual_guide";
+    if (rawSentence === "AI가 플레이 상황에 맞는 도움말을 추천한다.") return "ai_help";
+    return "contextual_guide";
+  }
+
+  function normalizeDay2Subtask(rawId) {
+    if (rawId === "competitor" || rawId === "reviews" || rawId === "journey") return rawId;
+    return "competitor";
+  }
+
+  function normalizePresentationFocus(rawId) {
+    if (rawId === "verification") return "dropoff_scale";
+    if (rawId === "automation_boundary") return "execution_plan";
+    if (rawId === "dropoff_scale" || rawId === "user_experience" || rawId === "execution_plan") return rawId;
+    return "dropoff_scale";
+  }
 
   function validateScenes(items) {
     const ids = new Set();
@@ -182,7 +243,7 @@
     return errors;
   }
 
-  const api = Object.freeze({ scenes, ROOMS, MESSAGES, validateScenes });
+  const api = Object.freeze({ scenes, ROOMS, MESSAGES, validateScenes, normalizeDay1Direction, normalizeDay2Subtask, normalizePresentationFocus });
   if (typeof module === "object" && module.exports) module.exports = api;
   global.Day5Story = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);

@@ -118,6 +118,10 @@ function choiceLock(choice) {
   return Number.isFinite(required) && state.affection < required ? { required, current: state.affection } : null;
 }
 
+function cgBadgeMarkup(choice) {
+  return choice?.cg ? '<i class="cg stat-cg"><b>🖼</b><span>CG 확인</span></i>' : "";
+}
+
 function saveProgress() {
   progress.currentDay = 4;
   progress.shared.work = state.work;
@@ -535,6 +539,10 @@ function dynamicText(scene) {
     if (affectionTone === "mid") return "오늘도 같이 마무리했네요. 확인한 상태만 보존하고, 부장님 오시기 전에 같이 나가요.";
     return "오늘 확인한 상태만 보존하고 같이 퇴근해요. 도윤 씨랑 나가려는데 또 일을 붙잡히면 아쉽잖아요.";
   }
+  if (scene.dynamic === "escapeArrival") {
+    if (state.minigameResult?.grade === "perfect") return "도착했습니다. 이번에는 부장님 눈에 한 번도 안 띄었습니다.";
+    return scene.text;
+  }
   if (scene.dynamic === "dinnerConversation") {
     if (affectionTone === "low") {
       return "내일 발표가 있으니 오래 있지는 말아요. 그래도 오늘 맡은 일은 잘 마무리했어요. 수고했어요, 도윤 씨.";
@@ -834,9 +842,9 @@ function render() {
     $("#stage-choices").innerHTML = `<header class="stage-choice-prompt"><small>${escapeHtml(choicePromptLabel(scene))}</small><strong>${escapeHtml(scene.text)}</strong></header>` +
       scene.choices.map((choice, index) => {
         const lock = choiceLock(choice);
-        const effects = lock
-          ? `<i class="locked">🔒 호감도 ${lock.required} 필요 · 현재 ${lock.current}</i>`
-          : choiceEffectMarkup(choice.delta);
+        const effects = (lock
+          ? `<i class="locked">호감도 ${lock.required} 필요 · 현재 ${lock.current}</i>`
+          : choiceEffectMarkup(choice.delta)) + cgBadgeMarkup(choice);
         return `<button type="button" data-choice="${index}"${lock ? ` disabled class="choice-locked" aria-label="${escapeHtml(choice.text)} · 잠김 · 호감도 ${lock.required} 필요, 현재 ${lock.current}"` : ""}><span class="stage-choice-label">${escapeHtml(choice.text)}</span><small class="stage-choice-effects">${effects}</small></button>`;
       }).join("");
     $("#stage-choices").classList.add("show");

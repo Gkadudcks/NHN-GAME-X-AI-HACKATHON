@@ -92,6 +92,20 @@ test("DAY 4는 녹음 부스 내부의 헤드폰 CG에서 장소 이동을 반�
   );
 });
 
+test("DAY 4 녹음실에서 사무실로 돌아올 때 마무리·이동·재개 장면이 이어진다", () => {
+  const ids = story.scenes.map((scene) => scene.id);
+  const lastTake = ids.indexOf("day4LastTake");
+  const wrapUp = ids.indexOf("day4StudioWrapUp");
+  const returnWalk = ids.indexOf("day4ReturnWalk");
+  const returnPrompt = ids.indexOf("day4ReturnPrompt");
+  const doyunReturn = ids.indexOf("day4Return");
+  assert.ok(lastTake < wrapUp && wrapUp < returnWalk && returnWalk < returnPrompt && returnPrompt < doyunReturn);
+  const returnPromptScene = story.scenes[returnPrompt];
+  assert.equal(returnPromptScene.location, "게임사업실 · 오전");
+  assert.equal(returnPromptScene.bgm, "mystery");
+  assert.equal(story.scenes[doyunReturn].bgm, undefined);
+});
+
 test("DAY 4 녹음실은 대사 분위기에 맞춰 서하린 표정 세 종류를 사용한다", () => {
   const assetOf = (id) => story.scenes.find((scene) => scene.id === id).characters[0].assetId;
   for (const id of ["day4StudioArrival", "day4StudioQuestion", "day4StudioAnswer", "day4HarinPast", "day4LastTake"]) {
@@ -1277,4 +1291,38 @@ test("DAY 3 완료 화면에서 DAY 4를 시작할 수 있다", () => {
   assert.match(engine, /bgmManager\.stop\(\)/);
   assert.match(engine, /setTimeout\(\(\) => \{ location\.href = "day4\.html\?new=1"; \}, 2200\)/);
   assert.match(read("js/title-screen.js"), /Number\(slot\.day\) === 4 \? "day4\.html"/);
+});
+
+test("정시 퇴근 완벽 등급은 호감도 보상과 함께 다른 도착 대사로 안내된다", () => {
+  const runtime = read("js/day4.js");
+  assert.match(runtime, /if \(result\.grade === "perfect"\) state\.affection \+= 1/);
+  assert.match(runtime, /scene\.dynamic === "escapeArrival"/);
+  assert.match(runtime, /state\.minigameResult\?\.grade === "perfect"\) return "도착했습니다\. 이번에는 부장님 눈에 한 번도 안 띄었습니다\."/);
+  const arrival = story.scenes.find((scene) => scene.id === "day4SuccessArrival");
+  assert.equal(arrival.dynamic, "escapeArrival");
+});
+
+test("DAY 4는 18.4%를 개선 결과가 아니라 현재 확인값으로 표현한다", () => {
+  const source = read("js/day4-story.js");
+  assert.doesNotMatch(source, /개선 결과/);
+  const verifyMetric = story.scenes.find((scene) => scene.id === "day4VerifyMetric");
+  assert.ok(verifyMetric.system.rows.includes("현재 확인값 · 18.4%"));
+  const rehearsalScreen = story.scenes.find((scene) => scene.id === "day4RehearsalScreen");
+  assert.ok(rehearsalScreen.system.rows.includes("현재 확인값 · 7일 차 잔존율 18.4%"));
+  const rehearsalMetric = story.scenes.find((scene) => scene.id === "day4RehearsalMetric");
+  assert.equal(rehearsalMetric.system.title, "현재 확인값");
+  assert.match(rehearsalMetric.text, /개선 효과가 아니라/);
+  const submit = story.scenes.find((scene) => scene.id === "day4Submit");
+  assert.ok(submit.system.rows.includes("발표 자료 수치 · 18.4%"));
+  assert.ok(submit.system.rows.includes("근거 자료 수치 · 18.4%"));
+  assert.match(submit.system.rows.find((row) => row.startsWith("제출 확인")), /17:08/);
+});
+
+test("DAY 4는 발표 전주 대신 가장 최근 자료로 기준 기간을 설명한다", () => {
+  const source = read("js/day4-story.js");
+  assert.doesNotMatch(source, /발표 전주/);
+  assert.doesNotMatch(source, /7\/27~8\/2/);
+  assert.doesNotMatch(source, /7월 27일/);
+  const evidencePreview = story.scenes.find((scene) => scene.id === "day4EvidencePreview");
+  assert.ok(evidencePreview.system.rows.includes("계산 기준 · 가장 최근 자료 신규 가입자"));
 });
