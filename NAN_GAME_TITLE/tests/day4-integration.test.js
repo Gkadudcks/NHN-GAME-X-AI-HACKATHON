@@ -1030,13 +1030,13 @@ test("V2 Phase 3 dev preview는 jump hazard·maximum chase·hit 직후를 query�
   assert.match(runtime, /refs\.feedback\.textContent = "회전 의자에 부딪힘 · 남은 여유 2회"/);
 });
 
-test("V2 플레이어·장애물·cue·dev 판정은 62.5% bottom-center 단일 투영을 공유한다", () => {
+test("V2 플레이어·장애물·cue·dev 판정은 46% bottom-center 단일 투영을 공유한다", () => {
   const html = read("day4.html");
   const dev = read("minigames/day4-office-escape/dev/index.html");
   const core = read("minigames/day4-office-escape/core.js");
   const runtime = read("minigames/day4-office-escape/index.js");
   const style = read("minigames/day4-office-escape/style.css");
-  assert.match(core, /const VIEW_PLAYER_ANCHOR_X_RATIO = 0\.625/);
+  assert.match(core, /const VIEW_PLAYER_ANCHOR_X_RATIO = 0\.46/);
   assert.match(core, /const VIEW_GROUND_RATIO = 0\.09/);
   assert.match(core, /function screenProjection\(snapshot, viewportWidth, viewportHeight\)/);
   assert.match(core, /function projectWorldRect\(rect, projection\)/);
@@ -1048,6 +1048,8 @@ test("V2 플레이어·장애물·cue·dev 판정은 62.5% bottom-center 단일 
   assert.match(core, /function actorFormationGeometry\(metrics, projection, chasePressure/);
   assert.match(runtime, /Core\.actorFormationGeometry\(actorMetrics, projection, snapshot\.chasePressure\)/);
   assert.match(runtime, /function renderPlayerReference\(metric, projection\)/);
+  assert.match(core, /function debugGeometry\(snapshot, metrics, viewportWidth, viewportHeight\)/);
+  assert.match(runtime, /const geometry = Core\.debugGeometry\(snapshot, metrics, width, height\)/);
   assert.match(runtime, /id="oe2-player-body" aria-hidden="true"/);
   assert.match(runtime, /id="oe2-player-reference" aria-hidden="true"/);
   assert.match(style, /\.oe2-actor\s*\{[^}]*width: var\(--oe2-canvas-size\)[^}]*height: var\(--oe2-canvas-size\)/s);
@@ -1057,14 +1059,14 @@ test("V2 플레이어·장애물·cue·dev 판정은 62.5% bottom-center 단일 
   assert.doesNotMatch(style, /\[data-composition="[abc]"\][^{]*\.oe2-doyun/);
   assert.doesNotMatch(runtime, /snapshot\.y\s*=|snapshot\.sliding\s*=/);
   for (const source of [html, dev]) {
-    assert.match(source, /day4-office-escape\/art-assets\.js\?v=3/);
+    assert.match(source, /day4-office-escape\/art-assets\.js\?v=5/);
   }
   assert.match(html, /day4-office-escape\/style\.css\?v=57/);
-  assert.match(html, /day4-office-escape\/core\.js\?v=27/);
-  assert.match(html, /day4-office-escape\/index\.js\?v=77/);
+  assert.match(html, /day4-office-escape\/core\.js\?v=30/);
+  assert.match(html, /day4-office-escape\/index\.js\?v=78/);
   assert.match(dev, /day4-office-escape\/style\.css\?v=14/);
-  assert.match(dev, /day4-office-escape\/core\.js\?v=27/);
-  assert.match(dev, /day4-office-escape\/index\.js\?v=20/);
+  assert.match(dev, /day4-office-escape\/core\.js\?v=30/);
+  assert.match(dev, /day4-office-escape\/index\.js\?v=21/);
   assert.match(dev, /day4-office-escape\/dev\/dev\.js\?v=10/);
 });
 

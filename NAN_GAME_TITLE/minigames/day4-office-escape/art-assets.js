@@ -48,16 +48,16 @@
   // Normalized source-image facts. canonicalOpaqueHeight is measured once at
   // 1440x900 and converted to world units; every actor then uses Core.scale.
   const VISUAL_METRICS = Object.freeze({
-    "minigame_character.doyun.run.right": actorMetric({ alpha: bounds(63 / 512, 0, 386 / 512, 1), footX: 256 / 512, canonicalOpaqueHeight: 224 }),
-    "minigame_character.doyun.run_alt.right": actorMetric({ alpha: bounds(57 / 512, 0, 361 / 512, 494 / 512), footX: 237.5 / 512, canonicalOpaqueHeight: 224 }),
-    "minigame_character.doyun.jump.right": actorMetric({ alpha: bounds(73 / 512, 32 / 512, 365 / 512, 480 / 512), footX: 255.5 / 512, canonicalOpaqueHeight: 224 }),
-    "minigame_character.doyun.slide.right": actorMetric({ alpha: bounds(16 / 512, 314 / 512, 480 / 512, 198 / 512), body: bounds(175 / 512, 350 / 512, 260 / 512, 162 / 512), footX: 256 / 512, canonicalOpaqueHeight: 123 }),
-    "minigame_character.harin.run.right": actorMetric({ alpha: bounds(79 / 512, 0, 354 / 512, 1), footX: 256 / 512, canonicalOpaqueHeight: 215 }),
-    "minigame_character.harin.run_alt.right": actorMetric({ alpha: bounds(91 / 512, 2 / 512, 330 / 512, 510 / 512), footX: 256 / 512, canonicalOpaqueHeight: 215 }),
-    "minigame_character.harin.assist.right": actorMetric({ alpha: bounds(77 / 512, 22 / 512, 357 / 512, 478 / 512), footX: 255.5 / 512, canonicalOpaqueHeight: 215 }),
-    "minigame_character.boss.chase.right": actorMetric({ alpha: bounds(38 / 512, 1 / 512, 436 / 512, 511 / 512), footX: 256 / 512, canonicalOpaqueHeight: 233 }),
-    "minigame_character.boss.chase_alt.right": actorMetric({ alpha: bounds(55 / 512, 0, 402 / 512, 1), footX: 256 / 512, canonicalOpaqueHeight: 233 }),
-    "minigame_character.boss.call.right": actorMetric({ alpha: bounds(111 / 512, 24 / 512, 289 / 512, 476 / 512), footX: 255.5 / 512, canonicalOpaqueHeight: 233 }),
+    "minigame_character.doyun.run.right": actorMetric({ alpha: bounds(63 / 512, 0, 386 / 512, 1), footX: 256 / 512, canonicalOpaqueHeight: 141.12 }),
+    "minigame_character.doyun.run_alt.right": actorMetric({ alpha: bounds(57 / 512, 0, 361 / 512, 494 / 512), footX: 237.5 / 512, canonicalOpaqueHeight: 141.12 }),
+    "minigame_character.doyun.jump.right": actorMetric({ alpha: bounds(73 / 512, 32 / 512, 365 / 512, 480 / 512), footX: 255.5 / 512, canonicalOpaqueHeight: 141.12 }),
+    "minigame_character.doyun.slide.right": actorMetric({ alpha: bounds(16 / 512, 314 / 512, 480 / 512, 198 / 512), body: bounds(175 / 512, 350 / 512, 260 / 512, 162 / 512), footX: 256 / 512, canonicalOpaqueHeight: 77.49 }),
+    "minigame_character.harin.run.right": actorMetric({ alpha: bounds(79 / 512, 0, 354 / 512, 1), footX: 256 / 512, canonicalOpaqueHeight: 135.45 }),
+    "minigame_character.harin.run_alt.right": actorMetric({ alpha: bounds(91 / 512, 2 / 512, 330 / 512, 510 / 512), footX: 256 / 512, canonicalOpaqueHeight: 135.45 }),
+    "minigame_character.harin.assist.right": actorMetric({ alpha: bounds(77 / 512, 22 / 512, 357 / 512, 478 / 512), footX: 255.5 / 512, canonicalOpaqueHeight: 135.45 }),
+    "minigame_character.boss.chase.right": actorMetric({ alpha: bounds(38 / 512, 1 / 512, 436 / 512, 511 / 512), footX: 256 / 512, canonicalOpaqueHeight: 146.79 }),
+    "minigame_character.boss.chase_alt.right": actorMetric({ alpha: bounds(55 / 512, 0, 402 / 512, 1), footX: 256 / 512, canonicalOpaqueHeight: 146.79 }),
+    "minigame_character.boss.call.right": actorMetric({ alpha: bounds(111 / 512, 24 / 512, 289 / 512, 476 / 512), footX: 255.5 / 512, canonicalOpaqueHeight: 146.79 }),
   });
 
   function resolve(id) {

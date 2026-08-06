@@ -591,7 +591,17 @@
     root.dataset.composition = composition;
   }
   function debugSnapshot() {
-    return Object.freeze({ ...(state.game?.snapshot() || {}), playing: state.playing, paused: state.paused, composition: state.composition });
+    const snapshot = state.game?.snapshot() || {};
+    const gait = Core.gaitFrameIndex(snapshot.elapsed);
+    const metrics = {
+      doyun: Art.metrics(snapshot.sliding ? CHARACTER_IDS.doyunSlide : snapshot.y > 1 ? CHARACTER_IDS.doyunJump : gait ? CHARACTER_IDS.doyunRunAlt : CHARACTER_IDS.doyunRun),
+      harin: Art.metrics(snapshot.assistUsed && snapshot.invulnerable > 0 ? CHARACTER_IDS.harinAssist : gait ? CHARACTER_IDS.harinRunAlt : CHARACTER_IDS.harinRun),
+      boss: Art.metrics(gait ? CHARACTER_IDS.bossRunAlt : CHARACTER_IDS.bossRun),
+    };
+    const width = refs.world?.clientWidth || global.innerWidth;
+    const height = refs.world?.clientHeight || global.innerHeight;
+    const geometry = Core.debugGeometry(snapshot, metrics, width, height);
+    return Object.freeze({ ...snapshot, playing: state.playing, paused: state.paused, composition: state.composition, geometry });
   }
 
   global.addEventListener("keydown", (event) => {

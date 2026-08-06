@@ -1,6 +1,6 @@
 # [FEATURE ENTRYPOINT] DAY 4 오피스 이스케이프 V2
 
-상태: **구조 재작업 계획 승인 · 구현 시작 전**
+상태: **Phase 1~4 smoke 완료 · Phase 4R-A3 추격 대형 46% 좌측 정렬 smoke 완료 · 사용자 검수 대기**
 
 이 README는 DAY 4 `부장님 피해서 퇴근하기`의 파일 지도와 문서 진입점이다. 세부 제품 결정, Phase 범위, 완료 기준은 아래 `[AUTHORITATIVE]` 문서 하나만 따른다.
 
@@ -61,4 +61,4 @@ README에 테스트 명령이나 완료 수치를 중복 기록하지 않는다.
 - 검수 보드와 가공 원본: `assets/art/reviews/`, `assets/art/work/`
 - 저장소 공용 manifest: `../../../assets/art/manifests/art-assets.json`
 
-신규 또는 재가공 이미지는 사용자 승인 전 production에 적용하지 않는다. 4프레임 달리기 작업은 구조 재작업의 앞선 Phase가 사용자 승인된 뒤 별도 아트 Phase로 진행한다.
+신규 또는 재가공 이미지는 사용자 승인 전 production에 적용하지 않는다. 현재 순서는 `4R-A2 캐릭터·장애물 추가 축소와 속도 사용자 검수 → 4R-B 상단 장애물 → 4R-C 최초 cue·수집물 오라 → Phase 5 4프레임 → Phase 6 통합`이며, 세부 수치·게이트·완료 상태는 `[AUTHORITATIVE]` 문서에서만 갱신한다.

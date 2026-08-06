@@ -7,18 +7,20 @@
 
   const DEFAULT_DURATION = 64;
   const DEFAULT_LENGTH = 16000;
+  const WORLD_SPEED_MULTIPLIER = 1.5;
+  const PRODUCTION_HAZARD_SCALE = 0.7;
   const FIXED_STEP = 1 / 120;
   const PLAYER_X_OFFSET = 8;
   const PLAYER_PATH_WIDTH = 44;
   const PLAYER_BOTTOM_FORGIVENESS = 8;
-  const PLAYER_WIDTH = 127;
-  const STANDING_HEIGHT = 168;
-  const SLIDING_WIDTH = 113;
-  const SLIDING_HEIGHT = 70;
+  const PLAYER_WIDTH = 80.01;
+  const STANDING_HEIGHT = 105.84;
+  const SLIDING_WIDTH = 71.19;
+  const SLIDING_HEIGHT = 44.1;
   const PLAYER_PROFILES = Object.freeze({
-    run: Object.freeze({ width: PLAYER_WIDTH, height: STANDING_HEIGHT, referenceWidth: 224 * 386 / 512, referenceHeight: 224 }),
-    jump: Object.freeze({ width: PLAYER_WIDTH, height: STANDING_HEIGHT, referenceWidth: 224 * 365 / 480, referenceHeight: 224 }),
-    slide: Object.freeze({ width: SLIDING_WIDTH, height: SLIDING_HEIGHT, referenceWidth: 123 * 260 / 198, referenceHeight: 123 * 162 / 198 }),
+    run: Object.freeze({ width: PLAYER_WIDTH, height: STANDING_HEIGHT, referenceWidth: 141.12 * 386 / 512, referenceHeight: 141.12 }),
+    jump: Object.freeze({ width: PLAYER_WIDTH, height: STANDING_HEIGHT, referenceWidth: 141.12 * 365 / 480, referenceHeight: 141.12 }),
+    slide: Object.freeze({ width: SLIDING_WIDTH, height: SLIDING_HEIGHT, referenceWidth: 77.49 * 260 / 198, referenceHeight: 77.49 * 162 / 198 }),
   });
   const GRAVITY = 1900;
   const JUMP_VELOCITY = 760;
@@ -40,7 +42,7 @@
   const GAIT_PHASE_DELAY_MS = Object.freeze({ doyun: 0, harin: 150, boss: 300 });
   const COLLISION_INSET = Object.freeze({ horizontal: 0.11, vertical: 0.15 });
   const VIEW_REFERENCE_WIDTH = 780;
-  const VIEW_PLAYER_ANCHOR_X_RATIO = 0.625;
+  const VIEW_PLAYER_ANCHOR_X_RATIO = 0.46;
   const VIEW_GROUND_RATIO = 0.09;
   const ACTOR_FORMATION = Object.freeze({
     doyunHarinGap: 12,
@@ -48,10 +50,11 @@
     bossHarinMinimumGap: 10,
     viewportMarginRatio: 0.016,
     viewportMarginMinimum: 16,
-    minimumForwardViewRatio: 0.25,
+    minimumForwardViewRatio: 0.32,
   });
-  const HAZARD_EDGE_ALIGNMENT = 2;
-  const SLIDE_CLEARANCE = 8;
+  const HAZARD_EDGE_ALIGNMENT = 1.4;
+  const SLIDE_CLEARANCE = 5.6;
+  const SLIDE_HAZARD_REFERENCE_HEIGHT = 49;
   const SLIDE_DRAWER_WIDTH = 152;
 
   const PROP_ART_FRAMING = Object.freeze({
@@ -168,11 +171,11 @@
   }
   function distanceAt(elapsed, duration, length) {
     const p = clamp(elapsed / duration, 0, 1);
-    return length * (0.88 * p + 0.12 * p * p);
+    return length * WORLD_SPEED_MULTIPLIER * (0.88 * p + 0.12 * p * p);
   }
   function speedAt(elapsed, duration, length) {
     const p = clamp(elapsed / duration, 0, 1);
-    return (length / duration) * (0.88 + 0.24 * p);
+    return (length / duration) * WORLD_SPEED_MULTIPLIER * (0.88 + 0.24 * p);
   }
   function playerAnchorAt(distance = 0, y = 0) {
     return {
@@ -188,7 +191,7 @@
       x: (snapshot?.playerRect?.x || 0) + (snapshot?.playerRect?.width || PLAYER_WIDTH) / 2,
       y: Math.max(0, (snapshot?.playerRect?.y || 0) - PLAYER_BOTTOM_FORGIVENESS),
     };
-    // Phase 3 translates the whole runner formation by moving this shared
+    // Phase 4R-A translates the whole runner formation by moving this shared
     // anchor. It remains both Doyun's visual bottom-center and the mechanical
     // player center, so hazards, collision guides, and cues keep one world axis.
     const playerAnchorX = width * VIEW_PLAYER_ANCHOR_X_RATIO;
@@ -276,6 +279,25 @@
       gaps: Object.freeze({ doyunHarin: ACTOR_FORMATION.doyunHarinGap, bossHarin: bossGap }),
     });
   }
+  function debugGeometry(snapshot, metrics, viewportWidth, viewportHeight) {
+    const projection = screenProjection(snapshot, viewportWidth, viewportHeight);
+    const formation = actorFormationGeometry(metrics, projection, snapshot?.chasePressure);
+    const doyunRight = formation.actors.doyun.silhouette.left + formation.actors.doyun.silhouette.width;
+    const forwardView = projection.width - doyunRight;
+    return Object.freeze({
+      anchorRatio: VIEW_PLAYER_ANCHOR_X_RATIO,
+      projection,
+      formation,
+      forwardView,
+      forwardViewRatio: forwardView / projection.width,
+      canonicalOpaqueHeights: Object.freeze({
+        doyun: metrics.doyun.canonicalOpaqueHeight,
+        harin: metrics.harin.canonicalOpaqueHeight,
+        boss: metrics.boss.canonicalOpaqueHeight,
+      }),
+      playerProfiles: PLAYER_PROFILES,
+    });
+  }
   function isTutorialHazard(object) { return object?.id === "hazard-01" || object?.id === "hazard-02"; }
   function prepareLeadFor(elapsed, object) {
     if (isTutorialHazard(object)) return TUTORIAL_PREPARE_LEAD_TIME;
@@ -293,6 +315,9 @@
       id: `hazard-${String(index + 1).padStart(2, "0")}`,
       kind: "hazard",
       ...beat,
+      width: beat.width * PRODUCTION_HAZARD_SCALE,
+      height: beat.height * PRODUCTION_HAZARD_SCALE,
+      y: (beat.y || 0) * PRODUCTION_HAZARD_SCALE,
       x: distanceAt(beat.time / DEFAULT_DURATION * duration, duration, length) + PLAYER_X_OFFSET + PLAYER_PATH_WIDTH,
     }));
     const items = COLLECTIBLE_BEATS.map((beat, index) => ({
@@ -357,7 +382,7 @@
       const visibleHeight = framing ? artSize * framing.alphaHeight : logicalRect.height;
       const edgeInset = Math.min(HAZARD_EDGE_ALIGNMENT, logicalRect.width / 2, visibleHeight / 2);
       const visibleY = object.avoid === "slide"
-        ? PLAYER_BOTTOM_FORGIVENESS + SLIDING_HEIGHT + SLIDE_CLEARANCE - edgeInset
+        ? PLAYER_BOTTOM_FORGIVENESS + SLIDE_HAZARD_REFERENCE_HEIGHT + SLIDE_CLEARANCE - edgeInset
         : logicalRect.y;
       const visibleRect = framing ? {
         x: logicalRect.x,
@@ -492,7 +517,7 @@
         emit("telegraph", { object, leadTime: metrics.leadTime });
       }
       for (const object of course) resolveObject(object, previousPlayer, currentPlayer);
-      if (state.elapsed >= duration || state.distance >= length) finish();
+      if (state.elapsed >= duration || state.distance >= length * WORLD_SPEED_MULTIPLIER) finish();
     }
     function step(seconds) {
       if (state.finished) return snapshot();
@@ -549,7 +574,7 @@
       return {
         ...state,
         progress,
-        distanceProgress: clamp(state.distance / length, 0, 1),
+        distanceProgress: clamp(state.distance / (length * WORLD_SPEED_MULTIPLIER), 0, 1),
         duration,
         length,
         zone: zoneFor(progress),
@@ -573,13 +598,13 @@
   const COURSE = Object.freeze(buildCourse(DEFAULT_DURATION, DEFAULT_LENGTH));
   return Object.freeze({
     create, gradeForHits, gaitFrameIndex, zoneFor, courseStageFor, chasePressureFor, routeSegmentFor, backgroundPresentationAt, distanceAt, speedAt,
-    playerAnchorAt, screenProjection, projectWorldRect, projectWorldPoint, actorScreenGeometry, actorFormationGeometry,
-    COURSE, ZONES, COURSE_STAGES, BACKGROUND_ROUTE, DEFAULT_DURATION, DEFAULT_LENGTH, FIXED_STEP,
+    playerAnchorAt, screenProjection, projectWorldRect, projectWorldPoint, actorScreenGeometry, actorFormationGeometry, debugGeometry,
+    COURSE, ZONES, COURSE_STAGES, BACKGROUND_ROUTE, DEFAULT_DURATION, DEFAULT_LENGTH, WORLD_SPEED_MULTIPLIER, PRODUCTION_HAZARD_SCALE, FIXED_STEP,
     PLAYER_X_OFFSET, PLAYER_PATH_WIDTH, PLAYER_BOTTOM_FORGIVENESS, PLAYER_WIDTH, STANDING_HEIGHT, SLIDING_WIDTH, SLIDING_HEIGHT, PLAYER_PROFILES,
     GRAVITY, JUMP_VELOCITY, JUMP_BUFFER, SLIDE_DURATION, SLIDE_RECOVERY,
     INVULNERABLE_TIME, GAIT_FRAME_MS, GAIT_PHASE_DELAY_MS, COLLISION_INSET, PROP_ART_FRAMING, BACKGROUND_TRANSITION_DURATION,
     ACTION_LEAD_TIME, TUTORIAL_PREPARE_LEAD_TIME, MIN_HAZARD_GAP_SECONDS, CHASE_PRESSURE,
     VIEW_REFERENCE_WIDTH, VIEW_PLAYER_ANCHOR_X_RATIO, VIEW_GROUND_RATIO,
-    ACTOR_FORMATION, HAZARD_EDGE_ALIGNMENT, SLIDE_CLEARANCE, SLIDE_DRAWER_WIDTH,
+    ACTOR_FORMATION, HAZARD_EDGE_ALIGNMENT, SLIDE_CLEARANCE, SLIDE_HAZARD_REFERENCE_HEIGHT, SLIDE_DRAWER_WIDTH,
   });
 });
