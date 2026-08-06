@@ -78,6 +78,7 @@
     floorX: "",
     progressValue: -1,
     zoneId: "",
+    routeIndex: -1,
     uiElapsed: 0,
     feedbackUntil: 0,
     assistUntil: 0,
@@ -484,17 +485,21 @@
     refs.progress.style.setProperty("--oe2-progress", String(progress));
     renderBackgrounds(snapshot, width);
     const zoneIndex = snapshot.zone.id === "office" ? 0 : snapshot.zone.id === "corridor" ? 1 : 2;
+    const routeIndex = snapshot.finished ? 2 : Math.min(zoneIndex, 1);
     const progressValue = Math.round(progress * 100);
     if (state.progressValue !== progressValue) {
       refs.route.setAttribute("aria-valuenow", String(progressValue));
       refs.route.setAttribute("aria-valuetext", `${snapshot.zone.label} · ${progressValue}%`);
       state.progressValue = progressValue;
     }
-    if (state.zoneId !== snapshot.zone.id) {
+    if (state.routeIndex !== routeIndex) {
       refs.routeNodes.forEach((node, index) => {
-        node.classList.toggle("is-passed", index < zoneIndex);
-        node.classList.toggle("is-active", index === zoneIndex);
+        node.classList.toggle("is-passed", index < routeIndex);
+        node.classList.toggle("is-active", index === routeIndex);
       });
+      state.routeIndex = routeIndex;
+    }
+    if (state.zoneId !== snapshot.zone.id) {
       refs.zoneNodes.forEach((node, index) => node.classList.toggle("is-active", index === zoneIndex));
       state.zoneId = snapshot.zone.id;
     }
@@ -614,6 +619,7 @@
     state.floorX = "";
     state.progressValue = -1;
     state.zoneId = "";
+    state.routeIndex = -1;
     state.uiElapsed = 0;
     state.feedbackUntil = 0;
     state.assistUntil = 0;

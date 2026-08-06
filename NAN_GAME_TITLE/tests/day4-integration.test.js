@@ -1110,10 +1110,10 @@ test("V2 플레이어·장애물·cue·dev 판정은 46% bottom-center 단일 �
   }
   assert.match(html, /day4-office-escape\/style\.css\?v=64/);
   assert.match(html, /day4-office-escape\/core\.js\?v=35/);
-  assert.match(html, /day4-office-escape\/index\.js\?v=85/);
+  assert.match(html, /day4-office-escape\/index\.js\?v=86/);
   assert.match(dev, /day4-office-escape\/style\.css\?v=21/);
   assert.match(dev, /day4-office-escape\/core\.js\?v=35/);
-  assert.match(dev, /day4-office-escape\/index\.js\?v=28/);
+  assert.match(dev, /day4-office-escape\/index\.js\?v=29/);
   assert.match(dev, /day4-office-escape\/dev\/dev\.js\?v=11/);
 });
 
@@ -1194,11 +1194,13 @@ test("V2 점프 입력·누적 진행도·초기 포커스는 예약이나 상�
   const style = read("minigames/day4-office-escape/style.css");
   assert.doesNotMatch(core, /JUMP_BUFFER|jumpBuffer|jumpHeld/);
   assert.match(core, /function commitJump\(\) \{ return pressJump\(\); \}/);
-  assert.match(runtime, /if \(JUMP_KEYS\.has\(event\.code\)\) \{ event\.preventDefault\(\); if \(!event\.repeat\) triggerJump\(\); \}/);
-  assert.match(runtime, /if \(state\.game\.pressJump\(\)\) state\.pressedUntil\.jump = state\.uiElapsed \+ 0\.16/);
+  assert.match(runtime, /if \(event\.repeat && \(JUMP_KEYS\.has\(event\.code\) \|\| SLIDE_KEYS\.has\(event\.code\)\)\) \{ event\.preventDefault\(\); return; \}/);
+  assert.match(runtime, /if \(!state\.game\.pressJump\(\)\) return;\s*state\.pressedUntil\.jump = state\.uiElapsed \+ 0\.16;\s*render\(state\.game\.snapshot\(\)\);/);
   assert.match(runtime, /role="application" tabindex="-1"/);
-  assert.match(runtime, /node\.classList\.toggle\("is-passed", index < zoneIndex\)/);
-  assert.match(runtime, /node\.classList\.toggle\("is-active", index === zoneIndex\)/);
+  assert.match(runtime, /const routeIndex = snapshot\.finished \? 2 : Math\.min\(zoneIndex, 1\)/);
+  assert.match(runtime, /node\.classList\.toggle\("is-passed", index < routeIndex\)/);
+  assert.match(runtime, /node\.classList\.toggle\("is-active", index === routeIndex\)/);
+  assert.match(runtime, /if \(state\.routeIndex !== routeIndex\)/);
   assert.match(runtime, /refs\.world\.focus\(\{ preventScroll: true \}\)/);
   assert.doesNotMatch(runtime, /refs\.jump\.focus\(/);
   assert.match(style, /\.oe2-route li\.is-passed,\.oe2-route li\.is-active \{ color: var\(--oe2-green\); \}/);
