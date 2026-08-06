@@ -1,6 +1,6 @@
 # [FEATURE ENTRYPOINT] DAY 4 오피스 이스케이프 V2
 
-상태: **Phase 1~4 smoke 완료 · Phase 4R-A2/A3 사용자 승인 · Phase 4R-B 상부 구조물·ITEM-01 수집물 오라·Phase 4R-D 시작 안내 smoke 완료 · CUE-01 대기**
+상태: **기존 구조·UI 개선 완료 · 남은 작업 3개: CUE-01 → 4프레임 달리기 → 최종 통합**
 
 이 README는 DAY 4 `부장님 피해서 퇴근하기`의 파일 지도와 문서 진입점이다. 세부 제품 결정, Phase 범위, 완료 기준은 아래 `[AUTHORITATIVE]` 문서 하나만 따른다.
 
@@ -64,4 +64,4 @@ README에 테스트 명령이나 완료 수치를 중복 기록하지 않는다.
 - 검수 보드와 가공 원본: `assets/art/reviews/`, `assets/art/work/`
 - 저장소 공용 manifest: `../../../assets/art/manifests/art-assets.json`
 
-신규 또는 재가공 이미지는 사용자 승인 전 production에 적용하지 않는다. 현재 남은 순서는 `4R-C 최초 jump·slide cue 제한 → Phase 5 4프레임 → Phase 6 통합`이며, 세부 수치·게이트·완료 상태는 `[AUTHORITATIVE]` 문서에서만 갱신한다.
+신규 또는 재가공 이미지는 사용자 승인 전 production에 적용하지 않는다. 완료된 작업은 `[AUTHORITATIVE]` 문서의 압축 완료표에 기록돼 있으며, 현재 남은 순서는 `CUE-01 최초 jump·slide cue 제한 → 4프레임 달리기 → 최종 통합`이다.
