@@ -92,17 +92,26 @@ function bgmAt(index) {
   return "";
 }
 const $ = (selector) => document.querySelector(selector);
-const progress = new URLSearchParams(location.search).has("new") ? GameProgress.resetDay5(localStorage) : GameProgress.startDay5(localStorage);
+const query = new URLSearchParams(location.search);
+const CG_PREVIEW_CONFIG = Object.freeze({
+  bad: Object.freeze({ sceneId: "day5BadMessage", trust: -1, affection: 0 }),
+  middle: Object.freeze({ sceneId: "day5MiddleOutside", trust: 0, affection: 0 }),
+  happy: Object.freeze({ sceneId: "day5HappyPause", trust: 8, affection: 7 }),
+});
+const cgPreview = CG_PREVIEW_CONFIG[query.get("cgPreview")] || null;
+const progress = cgPreview
+  ? GameProgress.load(localStorage)
+  : query.has("new") ? GameProgress.resetDay5(localStorage) : GameProgress.startDay5(localStorage);
 const saved = progress.days[5];
 const day1Direction = Day5Story.normalizeDay1Direction(progress.days[1]?.decisions?.direction);
 const day2Subtask = Day5Story.normalizeDay2Subtask(progress.days[2]?.decisions?.day2Subtask);
 const state = {
-  index: Math.max(0, scenes.findIndex((scene) => scene.id === saved.sceneId)),
+  index: Math.max(0, scenes.findIndex((scene) => scene.id === (cgPreview?.sceneId || saved.sceneId))),
   work: progress.shared.work,
-  affection: progress.shared.affection,
-  trust: progress.shared.trust,
+  affection: cgPreview?.affection ?? progress.shared.affection,
+  trust: cgPreview?.trust ?? progress.shared.trust,
   clues: ClueRecords.normalizeList(progress.shared.clues),
-  decisions: { ...saved.decisions },
+  decisions: cgPreview ? {} : { ...saved.decisions },
   seenNotifications: { ...(progress.days[3]?.seenNotifications || {}), ...saved.seenNotifications },
   summariesSeen: { ...saved.summariesSeen },
   evidence: { ...saved.evidence },
@@ -341,6 +350,7 @@ function resolveChoiceReply(scene, choice, affectionAtPoint = state.affection) {
 }
 
 function saveProgress() {
+  if (cgPreview) return;
   progress.currentDay = 5;
   progress.shared.work = state.work;
   progress.shared.affection = state.affection;
@@ -360,6 +370,7 @@ function saveProgress() {
 }
 
 function saveDay5Slot(checkpoint) {
+  if (cgPreview) return;
   saveProgress();
   const scene = scenes[state.index] || scenes[0];
   const snapshot = GameProgress.load(localStorage);
@@ -402,6 +413,7 @@ async function toggleBgm() {
 }
 
 function autoSaveAtCheckpoint(scene) {
+  if (cgPreview) return;
   if (!AUTOSAVE_CHECKPOINTS.has(scene.id)) return;
   const result = GameProgress.saveAutoSlot(localStorage, `day5:${scene.id}`, buildGameSavePayload(scene));
   if (result.status === "saved" || result.status === "updated") toast(`SLOT ${String(result.slotId).padStart(2, "0")}에 자동 저장했습니다.`);
@@ -1086,7 +1098,7 @@ function syncCompactNavigation() {
 }
 
 function unlockCg(scene) {
-  if (!scene.cgAssetId) return;
+  if (cgPreview || !scene.cgAssetId) return;
   try {
     const image = ArtAssets.resolve(scene.cgAssetId);
     const savedCgs = JSON.parse(localStorage.getItem("nan-unlocked-cgs-v1")) || [];
@@ -1191,7 +1203,9 @@ function renderVerificationFailBanner(scene) {
 
 function renderArt(scene) {
   const stage = $("#stage");
+  const endingCgActive = Boolean(scene.ending && scene.cgAssetId);
   const placeholder = $("#scene-placeholder");
+  $("#game").classList.toggle("ending-cg-fullscreen", endingCgActive);
   renderVerificationFailBanner(scene);
   stage.classList.remove("urgent-scene");
   stage.classList.remove("urgent-impact");

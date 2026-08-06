@@ -54,16 +54,16 @@ test("DAY 5는 확정된 사건과 세 통합 엔딩을 포함한다", () => {
   assert.match(source, /시간 괜찮아요/);
   const happyEnd = story.scenes.find((scene) => scene.id === "day5HappyEnd");
   assert.equal(happyEnd.cgAssetId, "event_cg.day5.weekend_invitation");
-  assert.equal(happyEnd.cinematicDelay, 1600);
+  assert.equal(happyEnd.cinematicDelay, 3000);
   const middleEnd = story.scenes.find((scene) => scene.id === "day5MiddleEnd");
   assert.equal(middleEnd.cgAssetId, "event_cg.day5.colleague_departure");
-  assert.equal(middleEnd.cinematicDelay, 1600);
+  assert.equal(middleEnd.cinematicDelay, 3000);
   for (const id of ["day5MiddleExit", "day5MiddleOutside", "day5MiddleEnd"]) {
     assert.equal(story.scenes.find((scene) => scene.id === id)?.bgAssetId, "background.office_lobby.night", id);
   }
   const badEnd = story.scenes.find((scene) => scene.id === "day5BadEnd");
   assert.equal(badEnd.cgAssetId, "event_cg.day5.lone_departure");
-  assert.equal(badEnd.cinematicDelay, 1600);
+  assert.equal(badEnd.cinematicDelay, 3000);
 });
 
 test("DAY 5 페이지는 DAY 1~4 공용 UI와 기능 모듈을 재사용한다", () => {
@@ -508,5 +508,36 @@ test("호감도 선택지의 대사와 하린의 답변은 지원 필요 여부�
 test("과거 저장 데이터의 발표 강조점 ID는 새 의미로 정상 해석된다", () => {
   const runtime = fs.readFileSync(path.join(root, "js/day5.js"), "utf8");
   assert.match(runtime, /Day5Story\.normalizePresentationFocus\(state\.decisions\.presentationFocus\)/);
+});
+
+test("DAY 5 CG preview URLs start immediately before each ending CG without saving progress", () => {
+  const runtime = fs.readFileSync(path.join(root, "js/day5.js"), "utf8");
+  assert.match(runtime, /bad:\s*Object\.freeze\(\{ sceneId: "day5BadMessage", trust: -1, affection: 0 \}\)/);
+  assert.match(runtime, /middle:\s*Object\.freeze\(\{ sceneId: "day5MiddleOutside", trust: 0, affection: 0 \}\)/);
+  assert.match(runtime, /happy:\s*Object\.freeze\(\{ sceneId: "day5HappyPause", trust: 8, affection: 7 \}\)/);
+  assert.match(runtime, /const progress = cgPreview\s*\? GameProgress\.load\(localStorage\)/);
+  assert.match(runtime, /function saveProgress\(\) \{\s*if \(cgPreview\) return;/);
+  assert.match(runtime, /function autoSaveAtCheckpoint\(scene\) \{\s*if \(cgPreview\) return;/);
+  assert.match(runtime, /function unlockCg\(scene\) \{\s*if \(cgPreview \|\| !scene\.cgAssetId\) return;/);
+
+  const ids = story.scenes.map((scene) => scene.id);
+  for (const [beforeId, cgId] of [
+    ["day5BadMessage", "day5BadEnd"],
+    ["day5MiddleOutside", "day5MiddleEnd"],
+    ["day5HappyPause", "day5HappyEnd"],
+  ]) {
+    assert.equal(ids.indexOf(beforeId) + 1, ids.indexOf(cgId));
+    assert.ok(story.scenes.find((scene) => scene.id === cgId)?.cgAssetId);
+  }
+});
+
+test("all DAY 5 ending CGs fill the complete desktop viewport", () => {
+  const runtime = fs.readFileSync(path.join(root, "js/day5.js"), "utf8");
+  const css = fs.readFileSync(path.join(root, "css/day5.css"), "utf8");
+  assert.match(runtime, /const endingCgActive = Boolean\(scene\.ending && scene\.cgAssetId\)/);
+  assert.match(runtime, /classList\.toggle\("ending-cg-fullscreen", endingCgActive\)/);
+  assert.match(css, /\.game\.ending-cg-fullscreen\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\)/s);
+  assert.match(css, /\.game\.ending-cg-fullscreen \.messenger\s*\{[^}]*display:\s*none/s);
+  assert.equal(story.scenes.filter((scene) => scene.ending && scene.cgAssetId).length, 3);
 });
 
