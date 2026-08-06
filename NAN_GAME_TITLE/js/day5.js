@@ -853,7 +853,7 @@ function dynamicText(scene) {
   }
   if (scene.dynamic === "strategyCallback") {
     if (state.decisions.responseStrategy === "defend_evidence") return "정상 수치는 18.4%입니다. 지금 보존된 원본과 교차 검증 기록을 바로 제시하겠습니다.";
-    if (state.decisions.responseStrategy === "clarify_scope") return "먼저 두 자료가 같은 신규 가입 사용자와 같은 발표 전주를 대상으로 하는지 확인하겠습니다.";
+    if (state.decisions.responseStrategy === "clarify_scope") return "먼저 두 자료가 같은 신규 가입 사용자와 같은 7월 27일~8월 2일 기간을 대상으로 하는지 확인하겠습니다.";
     if (state.decisions.responseStrategy === "coordinate_harin") return "서하린 선배, 보존한 정상 원본을 열어 주십시오. 저는 발표 흐름을 유지하며 산정 기준을 설명하겠습니다.";
     return "자동화 과정에서 문제가 생겼을 가능성이… 잠깐, 원인을 단정하기 전에 검증된 기록부터 확인하겠습니다.";
   }

@@ -1,18 +1,18 @@
 (function (global) {
   const TRACKS = Object.freeze({
-    title: { source: "assets/audio/looped/title.ogg", loopSource: "assets/audio/looped/title-loop.ogg", loopStart: 11.75 },
-    daily: { source: "assets/audio/looped/daily.ogg", loopSource: "assets/audio/looped/daily-loop.ogg", loopStart: 9.25 },
-    commute: { source: "assets/audio/looped/subway-ride-pixabay-57289-rail-only-v2.wav", loopSource: "assets/audio/looped/subway-ride-pixabay-57289-rail-only-v2.wav", loopStart: 0 },
-    recordingStudio: { source: "assets/audio/looped/shared-headphones-loop.wav", loopSource: "assets/audio/looped/shared-headphones-loop.wav", loopStart: 0 },
-    presentationCalm: { source: "assets/audio/looped/day5-presentation-loop.wav", loopSource: "assets/audio/looped/day5-presentation-loop.wav", loopStart: 0 },
-    presentationUrgent: { source: "assets/audio/looped/day5-error-reveal-suno-v1.mp3", loopSource: "assets/audio/looped/day5-error-reveal-suno-v1.mp3", loopStart: 0 },
-    harin: { source: "assets/audio/looped/harin.ogg", loopSource: "assets/audio/looped/harin-loop.ogg", loopStart: 14.75 },
-    overtime: { source: "assets/audio/looped/overtime.ogg", loopSource: "assets/audio/looped/overtime-loop.ogg", loopStart: 18.0 },
-    mystery: { source: "assets/audio/looped/mystery.ogg", loopSource: "assets/audio/looped/mystery-loop.ogg", loopStart: 26.0 },
-    minigame: { source: "assets/audio/looped/minigame.ogg", loopSource: "assets/audio/looped/minigame-loop.ogg", loopStart: 10.75 },
-    happyEnding: { source: "assets/audio/looped/happy-ending.ogg", loopSource: "assets/audio/looped/happy-ending-loop.ogg", loopStart: 20.25 },
-    middleEnding: { source: "assets/audio/looped/middle-ending.ogg", loopSource: "assets/audio/looped/middle-ending-loop.ogg", loopStart: 25.0 },
-    badEnding: { source: "assets/audio/looped/bad-ending.ogg", loopSource: "assets/audio/looped/bad-ending-loop.ogg", loopStart: 5.5 },
+    title: { source: "assets/audio/looped/title.ogg", loopSource: "assets/audio/looped/title-loop.ogg", loopStart: 11.75, gain: 1 },
+    daily: { source: "assets/audio/looped/daily.ogg", loopSource: "assets/audio/looped/daily-loop.ogg", loopStart: 9.25, gain: 1 },
+    commute: { source: "assets/audio/looped/subway-ride-pixabay-57289-rail-only-v2.wav", loopSource: "assets/audio/looped/subway-ride-pixabay-57289-rail-only-v2.wav", loopStart: 0, gain: 1.8 },
+    recordingStudio: { source: "assets/audio/looped/shared-headphones-loop.wav", loopSource: "assets/audio/looped/shared-headphones-loop.wav", loopStart: 0, gain: 1.4 },
+    presentationCalm: { source: "assets/audio/looped/day5-presentation-loop.wav", loopSource: "assets/audio/looped/day5-presentation-loop.wav", loopStart: 0, gain: 1.3 },
+    presentationUrgent: { source: "assets/audio/looped/day5-error-reveal-suno-v1.mp3", loopSource: "assets/audio/looped/day5-error-reveal-suno-v1.mp3", loopStart: 0, gain: 1 },
+    harin: { source: "assets/audio/looped/harin.ogg", loopSource: "assets/audio/looped/harin-loop.ogg", loopStart: 14.75, gain: 1 },
+    overtime: { source: "assets/audio/looped/overtime.ogg", loopSource: "assets/audio/looped/overtime-loop.ogg", loopStart: 18.0, gain: 1 },
+    mystery: { source: "assets/audio/looped/mystery.ogg", loopSource: "assets/audio/looped/mystery-loop.ogg", loopStart: 26.0, gain: 1 },
+    minigame: { source: "assets/audio/looped/minigame.ogg", loopSource: "assets/audio/looped/minigame-loop.ogg", loopStart: 10.75, gain: 1 },
+    happyEnding: { source: "assets/audio/looped/happy-ending.ogg", loopSource: "assets/audio/looped/happy-ending-loop.ogg", loopStart: 20.25, gain: 1 },
+    middleEnding: { source: "assets/audio/looped/middle-ending.ogg", loopSource: "assets/audio/looped/middle-ending-loop.ogg", loopStart: 25.0, gain: 1 },
+    badEnding: { source: "assets/audio/looped/bad-ending.ogg", loopSource: "assets/audio/looped/bad-ending-loop.ogg", loopStart: 5.5, gain: 1 },
   });
 
   class BGMManager {
@@ -65,13 +65,19 @@
       return audio;
     }
 
+    trackGain() {
+      const track = TRACKS[this.currentScene];
+      return track && typeof track.gain === "number" ? track.gain : 1;
+    }
+
     setInternalVolume(value) {
       this.currentVolume = Math.min(1, Math.max(0, value));
-      if (this.gain) this.gain.gain.value = this.currentVolume;
-      if (this.audio) this.audio.volume = this.currentVolume;
-      if (this.fallbackLoopAudio) this.fallbackLoopAudio.volume = this.currentVolume;
+      const effective = Math.min(1, this.currentVolume * this.trackGain());
+      if (this.gain) this.gain.gain.value = effective;
+      if (this.audio) this.audio.volume = effective;
+      if (this.fallbackLoopAudio) this.fallbackLoopAudio.volume = effective;
       if (this.activeFallbackAudio && this.activeFallbackAudio !== this.audio) {
-        this.activeFallbackAudio.volume = this.currentVolume;
+        this.activeFallbackAudio.volume = effective;
       }
     }
 
@@ -216,7 +222,7 @@
       if (loopAudio) {
         loopAudio.currentTime = 0;
         loopAudio.loop = true;
-        loopAudio.volume = this.currentVolume;
+        loopAudio.volume = Math.min(1, this.currentVolume * this.trackGain());
         try {
           await loopAudio.play();
           if (generation !== this.fallbackGeneration) {

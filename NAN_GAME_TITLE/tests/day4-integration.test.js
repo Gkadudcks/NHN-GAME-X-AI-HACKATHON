@@ -92,6 +92,20 @@ test("DAY 4는 녹음 부스 내부의 헤드폰 CG에서 장소 이동을 반�
   );
 });
 
+test("DAY 4 녹음실에서 사무실로 돌아올 때 마무리·이동·재개 장면이 이어진다", () => {
+  const ids = story.scenes.map((scene) => scene.id);
+  const lastTake = ids.indexOf("day4LastTake");
+  const wrapUp = ids.indexOf("day4StudioWrapUp");
+  const returnWalk = ids.indexOf("day4ReturnWalk");
+  const returnPrompt = ids.indexOf("day4ReturnPrompt");
+  const doyunReturn = ids.indexOf("day4Return");
+  assert.ok(lastTake < wrapUp && wrapUp < returnWalk && returnWalk < returnPrompt && returnPrompt < doyunReturn);
+  const returnPromptScene = story.scenes[returnPrompt];
+  assert.equal(returnPromptScene.location, "게임사업실 · 오전");
+  assert.equal(returnPromptScene.bgm, "mystery");
+  assert.equal(story.scenes[doyunReturn].bgm, undefined);
+});
+
 test("DAY 4 녹음실은 대사 분위기에 맞춰 서하린 표정 세 종류를 사용한다", () => {
   const assetOf = (id) => story.scenes.find((scene) => scene.id === id).characters[0].assetId;
   for (const id of ["day4StudioArrival", "day4StudioQuestion", "day4StudioAnswer", "day4HarinPast", "day4LastTake"]) {

@@ -13,8 +13,8 @@ test("오래된 프로젝트에서 이름을 발견한 다음 하린은 당황�
     /id:'harinOldProject'.*characters:\[\{id:'harin',assetId:'character\.harin\.hand_to_chest\.surprised'\}\][^]*?motion:'nervous'/
   );
   assert.match(source, /entry\.assetId\?ArtAssets\.resolve\(entry\.assetId\)/);
-  const artAssetsIndex = html.indexOf('src="js/art-assets.js?v=15"');
-  const gameIndex = html.indexOf('src="js/game.js?v=60"');
+  const artAssetsIndex = html.indexOf('src="js/art-assets.js?v=17"');
+  const gameIndex = html.indexOf('src="js/game.js?v=67"');
   assert.ok(artAssetsIndex >= 0, "DAY 1 페이지가 아트 자산 해석기를 불러와야 한다");
   assert.ok(artAssetsIndex < gameIndex, "아트 자산 해석기는 DAY 1 엔진보다 먼저 로드되어야 한다");
 });
@@ -30,7 +30,7 @@ test("DAY 1에서 하린의 걱정을 계속 밀어내면 호감도와 신뢰도
   );
   assert.match(
     source,
-    /text:'혹시 부장님이 저를 못 미더워하신 건가요\?',delta:\{trust:1\}/
+    /text:'저 혼자서는 못 미더우신 겁니까\?',delta:\{trust:1\}/
   );
 });
 
@@ -48,7 +48,7 @@ test("DAY 1 커피 전달 뒤 회의는 승인된 회의실 배경에서 진행�
     const sceneEnd = source.indexOf("},", sceneStart);
     const scene = source.slice(sceneStart, sceneEnd);
     assert.ok(sceneStart >= 0, `${id} 장면이 존재해야 한다`);
-    assert.match(scene, /bgAssetId:'background\.meeting_room\.afternoon'/);
+    assert.match(scene, /bgAssetId:'background\.meeting_room\.morning'/);
     assert.doesNotMatch(scene, /bgPosition:/);
     assert.match(scene, /location:'회의실 · 오전'/);
   }
@@ -61,4 +61,12 @@ test("DAY 1 커피 전달 뒤 회의는 승인된 회의실 배경에서 진행�
 
 test("DAY 1 편의점 이웃 선택지는 호감도 1부터 선택할 수 있다", () => {
   assert.match(source, /text:'회사에서도 가끔은 이웃처럼 편하게 대해도 될까요\?',minAffection:1/);
+});
+
+test("DAY 1 과제 지시 뒤에는 이탈률 문제의 구체적 근거가 이어진다", () => {
+  const ids = ["boss1", "boss1b", "boss1c", "boss2"];
+  const positions = ids.map((id) => source.indexOf(`id:'${id}'`));
+  for (const pos of positions) assert.ok(pos >= 0);
+  for (let i = 1; i < positions.length; i += 1) assert.ok(positions[i] > positions[i - 1]);
+  assert.match(source, /id:'boss1c'.*systemPanel:\{title:'운영팀 요약 보고'/);
 });

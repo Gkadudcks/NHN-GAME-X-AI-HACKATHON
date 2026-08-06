@@ -1166,6 +1166,25 @@
       ]
     },
     {
+      "id": "background.meeting_room.morning",
+      "kind": "background",
+      "profile": "background_16_9",
+      "location": "meeting_room",
+      "variant": "morning",
+      "active_version": "v001",
+      "versions": [
+        {
+          "version": "v001",
+          "status": "approved",
+          "path": "assets/art/backgrounds/approved/meeting_room_morning_v001.png",
+          "generation_log_id": "meeting-room-morning-v001-chatgpt-web",
+          "sha256": "ee48334e3672cfe4a9e4a3c196406ee856952756896568e750191ceddfb0599a",
+          "reviewed_by": "user",
+          "reviewed_at": "2026-08-06T16:15:27.8047063+09:00"
+        }
+      ]
+    },
+    {
       "id": "background.meeting_room.afternoon",
       "kind": "background",
       "profile": "background_16_9",

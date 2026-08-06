@@ -90,7 +90,7 @@
       room: "harin",
       at: "day2HarinMessage",
       sender: "서하린 사수",
-      text: "출근하면 오전에 숫자부터 같이 검증해요. 어제 만든 초안은 덮어쓰지 말고 그대로 두고요.",
+      text: "어제 집 잘 들어갔어요? 출근하면 오전에 숫자부터 같이 검증해요. 어제 만든 초안은 덮어쓰지 말고 그대로 두고요.",
       time: "DAY 2 · 08:47",
     },
     {
@@ -169,6 +169,8 @@
     { id: "day2ConvenienceReaction", time: "08:59", speaker: "서하린", dynamic: "introHarinReaction", char: "harin" },
     { id: "day2MorningSmallTalkDoyun", time: "09:00", speaker: "한도윤", text: "오늘 지하철은 유난히 붐비더군요.", char: "harin" },
     { id: "day2MorningSmallTalkHarin", time: "09:01", speaker: "서하린", text: "저도요. 한 정거장 전부터 내릴 준비를 했는데도 겨우 내렸어요.", char: "harin" },
+    { id: "day2SmallTalkClose", time: "09:02", speaker: "한도윤", text: "그렇게 스몰토크를 나누다 보니 어느새 자리에 도착해 있었다.", char: "harin" },
+    { id: "day2SettleIn", time: "09:03", speaker: "서하린", text: "자, 그럼 이제 슬슬 시작해 볼까요.", char: "harin" },
 
     { id: "day2VerifyLead", time: "09:05", speaker: "서하린", text: "DAY 1에 잡은 문제를 숫자로 한 번만 확인하고 다음 일로 넘어가죠.", char: "harin" },
     { id: "day2VerifyReply", time: "09:06", speaker: "한도윤", text: "최근 7일 신규 설치자와 첫 전투 도달자를 같은 기준으로 맞췄습니다.", char: "harin" },
@@ -180,7 +182,13 @@
       text: "검증 기준이 사내 클라우드 작업 기록에 저장되었습니다.",
       systemPanel: {
         title: "DAY 2 · VERIFIED METRICS",
-        rows: ["최근 7일 신규 설치 · 12,480명", "첫 전투 도달 · 8,502명", "첫 전투 이전 이탈 · 31.9%"],
+        rows: [
+          "최근 7일 신규 설치 · 12,480명",
+          "첫 전투 도달 · 8,502명",
+          "첫 전투 이전 이탈 · 31.9%",
+          "계산식 · (신규 설치 − 첫 전투 도달) ÷ 신규 설치",
+          "조회 링크 · 사내 클라우드 작업 기록",
+        ],
       },
       clue: CLUES.verifiedBaseline,
       notification: "harin-metrics-link",
@@ -209,6 +217,8 @@
     { id: "day2RequestGame", time: "10:38", speaker: "시스템", text: "박태식 부장의 시선을 피해 서하린의 개인 메시지에 짧게 답장합니다.", startSecretChat: true, bgm: "minigame" },
     { id: "day2RequestResult", time: "11:20", speaker: "서하린", dynamic: "secretChatResult", char: "harin", bgm: "daily" },
     { id: "day2RequestResultReply", time: "11:21", speaker: "한도윤", dynamic: "secretChatReply", char: "harin" },
+    { id: "day2BossTease", time: "11:22", speaker: "박태식", text: "너네 둘이 뭐야, 회사에서 연애라도 해?", char: "boss", when: { decision: "secretChatOutcome", equals: "caught" } },
+    { id: "day2BossTeaseHarinReact", time: "11:23", speaker: "서하린", text: "아, 아니에요! 그냥 업무 메시지 확인한 거예요.", characters: [{ id: "harin", assetId: "character.harin.relaxed_standing.embarrassed", position: "right" }], activeCharacter: "harin", when: { decision: "secretChatOutcome", equals: "caught" } },
 
     { id: "day2LunchChoice", time: "12:18", speaker: "한도윤", text: "긴 줄 끝에 메뉴판이 보였다. 오전 내내 밀려든 요청은 잠시 잊고, 지금 먹고 싶은 걸 고르자.", bg: "restaurant_lunch", char: "minjae", location: "회사 밖 식당 · 점심", choiceKey: "day2LunchMenu", choices: [
       { value: "spicyPork", text: "매콤한 제육볶음을 주문한다.", delta: {}, reply: "매운 걸 먹으면 오전 스트레스도 좀 풀리겠지. 민재가 같은 메뉴 두 개를 주문했다." },

@@ -67,6 +67,32 @@ test("DAY 2 아침 인사 뒤에는 하린의 반응을 거쳐 업무 이야기�
   assert.equal(story.scenes[reaction].dynamic, "introHarinReaction");
   assert.match(story.scenes[smallTalkDoyun].text, /지하철/);
   assert.match(story.scenes[smallTalkHarin].text, /저도요/);
+
+  const smallTalkClose = story.scenes.findIndex((entry) => entry.id === "day2SmallTalkClose");
+  const settleIn = story.scenes.findIndex((entry) => entry.id === "day2SettleIn");
+  assert.ok(smallTalkHarin < smallTalkClose && smallTalkClose < settleIn && settleIn < work);
+});
+
+test("하린이 남기라고 한 계산식과 조회 링크가 검증 패널에 실제로 남는다", () => {
+  const panel = story.scenes.find((entry) => entry.id === "day2VerifyPanel");
+  assert.ok(panel.systemPanel.rows.some((row) => row.startsWith("계산식 ·")));
+  assert.ok(panel.systemPanel.rows.some((row) => row.startsWith("조회 링크 ·")));
+});
+
+test("비밀 채팅을 부장에게 들키면 놀림을 받고, 그 외 등급에서는 나오지 않는다", () => {
+  const tease = story.scenes.find((entry) => entry.id === "day2BossTease");
+  const reaction = story.scenes.find((entry) => entry.id === "day2BossTeaseHarinReact");
+  assert.equal(tease.speaker, "박태식");
+  assert.deepEqual(tease.when, { decision: "secretChatOutcome", equals: "caught" });
+  assert.equal(reaction.speaker, "서하린");
+  assert.deepEqual(reaction.when, { decision: "secretChatOutcome", equals: "caught" });
+  assert.equal(story.isVisible(tease, { secretChatOutcome: "caught" }), true);
+  assert.equal(story.isVisible(tease, { secretChatOutcome: "perfect" }), false);
+  assert.equal(story.isVisible(tease, { secretChatOutcome: "good" }), false);
+  const replyIndex = story.scenes.findIndex((entry) => entry.id === "day2RequestResultReply");
+  const teaseIndex = story.scenes.findIndex((entry) => entry.id === "day2BossTease");
+  const reactionIndex = story.scenes.findIndex((entry) => entry.id === "day2BossTeaseHarinReact");
+  assert.ok(replyIndex < teaseIndex && teaseIndex < reactionIndex);
 });
 
 test("DAY 2에서 하린의 동행 제안을 다시 밀어내면 호감도가 내려간다", () => {

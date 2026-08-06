@@ -1,0 +1,13 @@
+Use case: lighting-weather
+Asset type: 16:9 visual-novel meeting-room background, morning/mid-morning variant
+Input image: Image 1 is the primary edit target and exact spatial/layout reference (this is the same meeting room already approved for this game, currently lit for a sunset/afternoon scene).
+
+Change only the time of day and lighting of Image 1 from warm sunset/afternoon to bright mid-morning daylight (roughly 10:30-11:00 AM). Preserve the exact room architecture, camera position, perspective, crop, and placement of every object: the large wall-mounted screen and its cabinet, the navy accent wall, the wood-paneled side wall, the conference table, all four mesh office chairs, the potted plant, the floor-to-ceiling windows with blinds, and the city view balcony beyond them. Do not redesign, add, or remove any furniture.
+
+Outside the windows, replace the low sunset sun and orange-gold sky with a clear late-morning sky: pale blue with a few soft white clouds, ordinary daylight brightness, no visible sun disk near the horizon. The city buildings and trees outside should read as neutrally lit under overcast-to-clear daytime light, not backlit or silhouetted. Indoors, replace the warm low-angle golden light and long dramatic shadows with even, cool-neutral daylight coming through the windows, mixed with the existing warm ceiling downlights at a subdued level (daytime rooms usually don't need much artificial light). Shadows should be short and soft, falling roughly straight down rather than raking sideways. The overall mood should read as a calm, alert mid-morning work meeting, clearly distinct from the existing sunset version — no warm golden cast, no dramatic contrast.
+
+Style: preserve the exact same rendering style as Image 1 — detailed, polished architectural illustration with realistic materials, glass and metal reflections, and naturalistic lighting, matching this project's other approved backgrounds. Same palette family (navy, warm wood, beige) just under daylight instead of sunset.
+
+Constraints: background only, 16:9 landscape, no people, no character silhouettes, no readable text, no logo, no watermark, no added or missing furniture, no neon colors, no lens flare, no heavy depth of field, no fisheye distortion. This must look like a lighting-only edit of the same approved meeting room, not a newly designed room.
+
+Reference: Image 1 (meeting_room_afternoon_v001.png) is both the layout reference and the material/style reference — match its exact furniture, camera angle, and finish, changing only the time of day and lighting as described above.
