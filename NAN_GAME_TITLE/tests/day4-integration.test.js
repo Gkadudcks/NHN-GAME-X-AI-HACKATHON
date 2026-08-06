@@ -349,7 +349,7 @@ test("DAY 4 페이지는 스토리와 추격 미니게임을 엔진 전에 불�
   const minigameIndex = html.indexOf('src="minigames/day4-office-escape/index.js');
   const engineIndex = html.indexOf('src="js/day4.js');
   assert.ok(storyIndex >= 0 && storyIndex < minigameIndex && minigameIndex < engineIndex);
-  assert.match(html, /day4-office-escape\/style\.css\?v=57/);
+  assert.match(html, /day4-office-escape\/style\.css\?v=60/);
 });
 
 test("모든 DAY 자료 화면은 공용 PPT형 슬라이드 스타일을 사용한다", () => {
@@ -988,7 +988,7 @@ test("V2 배경 전환과 조작 UI는 분리된 상단 HUD와 대칭 원형 행
   assert.match(dev, /class="oe2-ring-action oe2-review-ring oe2-jump"/);
   assert.match(runtime, /<span>JUMP<\/span>/);
   assert.match(runtime, /<span>SLIDE<\/span>/);
-  assert.doesNotMatch(runtime, /<kbd>|현재 시각/);
+  assert.doesNotMatch(runtime, /현재 시각/);
   assert.doesNotMatch(style, /\.oe2-ring-action\.queued/);
   assert.match(runtime, /<div class="oe2-clock"><strong id="oe2-clock">17:58<\/strong><\/div>/);
   assert.doesNotMatch(runtime, /oe2-floor-guide/);
@@ -1013,13 +1013,48 @@ test("V2 해결·화면 이탈 오브젝트는 hidden 작성자 규칙으로 제
   assert.match(runtime, /class="oe2-feedback" id="oe2-feedback" role="status" aria-live="polite"/);
 });
 
-test("V2 Phase 3 dev preview는 jump hazard·maximum chase·hit 직후를 query로 재현한다", () => {
+test("V2 슬라이드 장애물은 서랍·표지 이미지를 쓰지 않고 수집물에만 초록 오라를 준다", () => {
+  const core = read("minigames/day4-office-escape/core.js");
+  const runtime = read("minigames/day4-office-escape/index.js");
+  const style = read("minigames/day4-office-escape/style.css");
+  assert.doesNotMatch(core, /avoid: "slide", type: "(?:drawer|sign)"/);
+  assert.match(core, /const OVERHEAD_HAZARD_WIDTH = 96/);
+  assert.match(core, /const OVERHEAD_HAZARD_HEIGHT = 22/);
+  assert.match(core, /const OVERHEAD_HAZARD_BOTTOM = 88/);
+  assert.match(runtime, /object\.avoid === "slide"[\s\S]*oe2-overhead-frame/);
+  assert.doesNotMatch(runtime, /drawer: "prop\.office\.drawer"|sign: "prop\.office\.sign"/);
+  assert.match(style, /\.oe2-overhead-frame::before,\.oe2-overhead-frame::after/);
+  assert.match(style, /\.oe2-item \.oe2-object-aura/);
+  assert.doesNotMatch(style, /\.oe2-hazard \.oe2-object-aura/);
+});
+
+test("V2 시작 안내는 목표와 조작을 보여준 뒤 명시적 입력으로만 타이머를 시작한다", () => {
+  const runtime = read("minigames/day4-office-escape/index.js");
+  const style = read("minigames/day4-office-escape/style.css");
+  assert.match(runtime, /class="oe2-intro" id="oe2-intro" role="dialog" aria-modal="true"/);
+  assert.match(runtime, /부장님 피해서 퇴근하기/);
+  assert.match(runtime, /초록빛 물건은 선택 수집 목표/);
+  assert.match(runtime, /<kbd>Space<\/kbd> 또는 <kbd>↑<\/kbd>/);
+  assert.match(runtime, /<kbd>S<\/kbd> 또는 <kbd>↓<\/kbd>/);
+  assert.match(runtime, /function showIntro\(\)[\s\S]*state\.awaitingStart = true;[\s\S]*state\.playing = false;/);
+  assert.match(runtime, /function beginRun\(\)[\s\S]*state\.awaitingStart = false;[\s\S]*state\.playing = true;[\s\S]*requestAnimationFrame\(tick\)/);
+  assert.match(runtime, /if \(options\.autoStart === false\) \{\s*preview\(options\.previewScene \|\| "run"\);\s*return;\s*\}\s*render\(state\.game\.snapshot\(\)\);\s*showIntro\(\);/);
+  assert.match(style, /\.oe2-intro\[hidden\] \{ display: none; \}/);
+  assert.match(style, /\.oe2-intro-guide > button:focus-visible/);
+  assert.match(style, /--oe2-intro-coral: #e9656e/);
+  assert.match(style, /--oe2-intro-paper: #fffaf4/);
+  assert.match(style, /\.oe2-intro-guide > button[^}]*background: var\(--oe2-intro-coral\)/);
+  assert.match(style, /\.oe2-intro-item i[^}]*background: var\(--oe2-green\)/);
+});
+
+test("V2 dev preview는 jump·collectible·maximum chase·hit 직후를 query로 재현한다", () => {
   const runtime = read("minigames/day4-office-escape/index.js");
   const devHtml = read("minigames/day4-office-escape/dev/index.html");
   const dev = read("minigames/day4-office-escape/dev/dev.js");
   assert.match(devHtml, /data-preview="maximum" aria-label="최대 추격 대형 정적 장면"/);
   assert.match(devHtml, /data-preview="hit" aria-label="피격 직후 제거 정적 장면"/);
-  assert.match(dev, /const previewScenes = new Set\(\["run", "jump", "slide", "first-risk", "maximum", "hit", "arrival", "result"\]\)/);
+  assert.match(devHtml, /data-preview="collectible"/);
+  assert.match(dev, /const previewScenes = new Set\(\["run", "jump", "slide", "collectible", "first-risk", "maximum", "hit", "arrival", "result"\]\)/);
   assert.match(dev, /const initialScene = previewScenes\.has\(params\.get\("scene"\)\)/);
   assert.match(dev, /setQuery\("scene", currentScene\)/);
   assert.match(runtime, /scene === "jump" \? 4\.5/);
@@ -1061,13 +1096,13 @@ test("V2 플레이어·장애물·cue·dev 판정은 46% bottom-center 단일 �
   for (const source of [html, dev]) {
     assert.match(source, /day4-office-escape\/art-assets\.js\?v=5/);
   }
-  assert.match(html, /day4-office-escape\/style\.css\?v=57/);
-  assert.match(html, /day4-office-escape\/core\.js\?v=30/);
-  assert.match(html, /day4-office-escape\/index\.js\?v=78/);
-  assert.match(dev, /day4-office-escape\/style\.css\?v=14/);
-  assert.match(dev, /day4-office-escape\/core\.js\?v=30/);
-  assert.match(dev, /day4-office-escape\/index\.js\?v=21/);
-  assert.match(dev, /day4-office-escape\/dev\/dev\.js\?v=10/);
+  assert.match(html, /day4-office-escape\/style\.css\?v=60/);
+  assert.match(html, /day4-office-escape\/core\.js\?v=31/);
+  assert.match(html, /day4-office-escape\/index\.js\?v=80/);
+  assert.match(dev, /day4-office-escape\/style\.css\?v=17/);
+  assert.match(dev, /day4-office-escape\/core\.js\?v=31/);
+  assert.match(dev, /day4-office-escape\/index\.js\?v=23/);
+  assert.match(dev, /day4-office-escape\/dev\/dev\.js\?v=11/);
 });
 
 test("V2 행동 cue는 PREP·ACT 정보만 제공하고 입력은 직접 실행한다", () => {

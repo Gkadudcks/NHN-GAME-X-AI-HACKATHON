@@ -2,9 +2,9 @@
 
 - 문서 ID: `DAY4-OFFICE-ESCAPE-STRUCTURAL-RESET-2026-08-05`
 - 승인일: 2026-08-05
-- 상태: Phase 1~4 `smoke_checked` · Phase 4R-A2 크기 사용자 승인 · Phase 4R-A3 `smoke_checked` · 위치 승인 대기
+- 상태: Phase 1~4 `smoke_checked` · Phase 4R-A2/A3 사용자 승인 · Phase 4R-B·4R-D 및 ITEM-01 `smoke_checked` · CUE-01 대기
 - 지원 환경: PC 데스크톱 브라우저 전용
-- 현재 사용자 승인: Phase 4R-A2 캐릭터 크기는 승인, 세 캐릭터를 같은 이동폭으로 더 왼쪽에 배치해 부장님을 점프 버튼 쪽에 정렬
+- 현재 사용자 승인: 최종 63% 캐릭터 크기와 46% shared anchor 승인, 공중 drawer/sign 제거·상부 구조물 재보정·수집물 전용 초록 오라 구현 승인
 
 이 문서는 `부장님 피해서 퇴근하기`의 유일한 구현 요구사항, 실행 계획, 상태 추적 문서다. 구현 에이전트는 작업 전에 이 문서를 처음부터 끝까지 읽고, 현재 담당 Phase만 수정한다.
 
@@ -81,8 +81,8 @@
 - 슬라이드 장애물은 캐릭터에 비해 충분한 폭과 높이를 가져야 하며, 작은 물체가 공중에 떠 있는 인상을 허용하지 않는다.
 - 기존 에셋의 의미가 동작과 맞지 않으면 억지로 확대하지 않고 별도 아트 후보로 분리한다.
 - 충돌한 장애물은 판정 즉시 화면에서 제거한다. 피격 강조는 장애물 잔류가 아니라 별도의 충격·문구 효과로 표시한다.
-- Phase 4R-B의 상단 장애물은 Phase 4R-A 크기 승인 뒤 다시 계산한다. 보이는 하단이 서 있는 도윤의 목 아래~어깨선 band에 오고, 슬라이드 몸체 위에는 명확한 가시 여유가 있어야 한다.
-- 공중에 뜬 서랍·안내판 표현은 production 의미로 승인하지 않는다. overhead cabinet, 천장 beam 또는 cable-duct 계열의 새 후보로 교체하며 아트 파이프라인·manifest·사용자 승인 전에는 production `active_version`을 바꾸지 않는다.
+- Phase 4R-B의 상단 장애물은 최종 63% actor 기준 `96×22wu`, 하단 `88wu`로 통일한다. 보이는 하단과 collision 하단은 1.4wu 이내이며, standing body의 목 아래~어깨선에 걸리고 slide body 위에는 8wu 이상의 여유가 있어야 한다.
+- 공중에 뜬 서랍·안내판 production 표현은 제거한다. 기존 raster를 억지로 재사용하지 않고, 지지봉이 보이는 코드 기반 `overhead-cabinet`·`overhead-duct` 구조물로 교체한다. 이미지·manifest·active version은 변경하지 않는다.
 - Phase 4R-A2에서 production 위험물의 logical width·height와 파생 art/collision rect를 현재 값의 `0.70`배로 축소한다. custom/dev course의 명시적 geometry는 자동 변환하지 않는다.
 - 기본 64초와 각 beat의 충돌 시각은 유지하면서 world travel·위험물 접근·collision cue 속도를 현재의 `1.50`배로 높인다. 배경 경로 시간, 점프 물리, 0.7초 슬라이드 지속시간은 바꾸지 않는다.
 
@@ -102,6 +102,9 @@
 - 화면 하단 주황색 `.oe2-floor-guide`는 제거한다. 의미 없는 가로선을 다른 진행 정보로 오인하게 만들지 않는다.
 - dev 도구 복구 버튼은 게임 HUD와 겹치지 않는 dev 전용 안전 영역에 둔다.
 - 결과 화면은 배경 조작보다 높은 위계를 가지며 종료 후 점프·슬라이드·pause가 실행되지 않아야 한다.
+- 본편 `start()`는 게임 타이머를 즉시 흘리지 않고 DAY 1~3처럼 간단한 시작 안내를 먼저 표시한다. 안내에는 목표, 점프·슬라이드 조작, 초록 오라 수집물의 선택 목표 의미만 담는다.
+- `퇴근 시작`을 누른 뒤에만 결정론 코어 step과 64초 타이머가 시작된다. 안내 중 점프·슬라이드·pause 입력은 실행되지 않으며 시작 버튼이 첫 포커스를 가진다.
+- dev 정적 preview는 시작 안내를 거치지 않고 지정 장면을 바로 렌더링한다. dev의 `실제 플레이`는 본편과 같은 시작 안내를 거친다.
 
 ### 1.8 결과 의미 계약
 
@@ -146,11 +149,12 @@
 | SCALE-02 | P0 | 4R-A 이후에도 캐릭터가 너무 큼 | 10% 축소만으로 실제 플레이 점유율을 해결하지 못함 | 4R-A2 | smoke_checked |
 | HAZ-04 | P0 | 캐릭터 재축소 뒤 장애물 비율과 회피 판정 재동기화 필요 | actor와 production hazard geometry의 배율 분리 | 4R-A2 | smoke_checked |
 | SPEED-01 | P0 | 점프·슬라이드를 실행해도 느린 장애물이 행동 종료 뒤 남아 충돌 | 세계 접근 속도와 고정 행동 지속시간의 부조화 | 4R-A2 | smoke_checked |
-| POS-01 | P1 | 승인된 크기에서도 추격 대형 전체가 오른쪽에 치우침 | 56.5% shared anchor가 축소 후 대형에 비해 큼 | 4R-A3 | smoke_checked |
-| HAZ-03 | P0 | 슬라이드 장애물 높이·크기가 조정 후 캐릭터와 불일치 | actor scale 확정 전에 장애물 세로 위치를 고정 | 4R-B | planned |
-| ART-01 | P1 | 서랍·안내판이 머리 높이에서 공중에 뜬 가구로 보임 | 동작 의미와 기존 prop 실루엣 불일치 | 4R-B | planned · approval-gated |
+| POS-01 | P1 | 승인된 크기에서도 추격 대형 전체가 오른쪽에 치우침 | 56.5% shared anchor가 축소 후 대형에 비해 큼 | 4R-A3 | user_accepted |
+| HAZ-03 | P0 | 슬라이드 장애물 높이·크기가 조정 후 캐릭터와 불일치 | actor scale 확정 전에 장애물 세로 위치를 고정 | 4R-B | smoke_checked |
+| ART-01 | P1 | 서랍·안내판이 머리 높이에서 공중에 뜬 가구로 보임 | 동작 의미와 기존 prop 실루엣 불일치 | 4R-B | smoke_checked · code-native |
 | CUE-01 | P1 | 반복 cue가 플레이어 판단을 과도하게 대신함 | 모든 위험에서 같은 행동 안내가 반복됨 | 4R-C | planned |
-| ITEM-01 | P1 | 피해야 할 위험물과 얻어야 할 수집물이 즉시 구분되지 않음 | 수집물만의 안정적인 시각 채널 부재 | 4R-C | planned |
+| ITEM-01 | P1 | 피해야 할 위험물과 얻어야 할 수집물이 즉시 구분되지 않음 | 수집물만의 안정적인 시각 채널 부재 | 4R-C | smoke_checked |
+| UI-05 | P1 | DAY 4만 조작 안내 없이 즉시 타이머가 시작됨 | `start()`가 intro 상태 없이 곧바로 tick을 예약 | 4R-D | smoke_checked |
 | ANIM-01 | P2 | 달리기가 느린 두 장 교체처럼 보임 | 500ms 간격 2프레임과 프레임 anchor 부족 | 5 | planned |
 | ANIM-02 | P2 | 세 캐릭터가 같은 박자로 움직임 | 캐릭터별 gait phase가 렌더링에 적용되지 않음 | 5 | planned |
 | TEST-01 | P0 | 테스트가 잘못된 동작을 성공 조건으로 보호 | 내부 일치·문자열·overflow 중심 검증 | 1~6 | smoke_checked (Phase 1 timing · Phase 2 geometry · Phase 3 formation/hazard/lifecycle · Phase 4 HUD/result) · Phase 4R-A geometry code_complete |
@@ -440,21 +444,21 @@ Phase 4R은 Phase 1~4의 기록을 되돌리지 않고, 실제 플레이에서 �
 
 #### Phase 4R-B · 상단 장애물 재보정과 prop 교체
 
-- 상태: `planned`
+- 상태: `smoke_checked`
 - 담당 하위 모델: `gpt-5.6-sol`, reasoning `medium`, 단일 실행
 - 의존성: Phase 4R-A2 사용자 크기·장애물 비율·회피 체감 확인
 - 담당 이슈: HAZ-03, ART-01, HAZ-01의 ART-BACKLOG
-- 사전 스킬: `day4-office-escape-loop`, `sprite-pipeline`; 새 raster 후보가 필요할 때 `imagegen`
+- 사전 스킬: `day4-office-escape-loop`, `impeccable`; 새 raster 후보가 필요할 때만 `sprite-pipeline`·`imagegen`
 - 허용 파일: 장애물 geometry·runtime·dev 장면·직접 관련 테스트, 승인된 아트 파이프라인 범위, manifest와 generation log
-- 금지: actor 크기·anchor 재조정, 코스 시간, cue·수집물 오라, HUD, 4프레임 actor animation, 승인 전 production active version 교체
+- 금지: actor 크기·anchor 재조정, 코스 시간, cue, HUD, 4프레임 actor animation, 이미지·manifest·production active version 변경
 
 구현 작업:
 
 1. Phase 4R-A에서 승인된 standing/slide body bounds를 기준으로 상단 장애물 하단을 목 아래~어깨선 band에 맞춘다.
-2. standing rect는 확실히 충돌하고 slide rect 위에는 최소 8 world unit과 1440×900에서 식별 가능한 가시 여유가 모두 남게 한다.
+2. production 상부 구조물은 `96×22wu`, 하단 `88wu`로 통일한다. standing rect는 확실히 충돌하고 slide rect 위에는 최소 8 world unit과 1440×900에서 식별 가능한 가시 여유가 모두 남게 한다.
 3. 장애물 art rect와 collision rect의 하단·상단 오차를 1440×900에서 4px 이하로 유지한다.
-4. 공중에 뜬 drawer/sign 의미를 overhead cabinet, beam 또는 cable-duct 후보로 교체한다. 기존 승인 에셋 재사용 가능성을 먼저 확인한다.
-5. 새 이미지가 필요하면 draft review 자산과 generation log까지만 만들고, 사용자가 승인하기 전 manifest `active_version`과 production resolver를 바꾸지 않는다.
+4. 공중에 뜬 drawer/sign production type과 resolver 연결을 제거하고, 지지봉이 붙은 `overhead-cabinet`·`overhead-duct` 코드 구조물로 교체한다.
+5. 이 Phase에서는 새 이미지가 필요하지 않으므로 raster·manifest·generation log를 변경하지 않는다.
 
 합격 기준:
 
@@ -465,7 +469,7 @@ Phase 4R은 Phase 1~4의 기록을 되돌리지 않고, 실제 플레이에서 �
 
 #### Phase 4R-C · 최초 행동 cue와 수집물 전용 오라
 
-- 상태: `planned`
+- 상태: `in_progress` (`ITEM-01` smoke_checked, `CUE-01` planned)
 - 담당 하위 모델: `gpt-5.6-sol`, reasoning `medium`, 단일 실행
 - 의존성: Phase 4R-B `smoke_checked` 또는 아트 후보가 approval-gated로 명확히 분리됨
 - 담당 이슈: CUE-01, ITEM-01
@@ -486,6 +490,32 @@ Phase 4R은 Phase 1~4의 기록을 되돌리지 않고, 실제 플레이에서 �
 - 재시작 뒤 두 최초 cue가 다시 각각 한 번 동작한다.
 - 수집물은 위험물과 즉시 구분되며 초록색 외에 bob 또는 sparkle 단서가 있다.
 - aura가 충돌 위치·수집 시점·HUD·캐릭터 가독성을 바꾸지 않고 위험물에는 적용되지 않는다.
+
+#### Phase 4R-D · 게임 시작 안내
+
+- 상태: `smoke_checked`
+- 담당: 주 에이전트
+- 의존성: Phase 4R-B·ITEM-01 `smoke_checked`
+- 담당 이슈: UI-05
+- 허용 파일: `index.js`, `style.css`, dev·본편 캐시 버전, 직접 관련 통합 테스트, 이 문서와 README
+- 금지: 코어 물리·코스·속도, actor·hazard geometry, cue 횟수, 이미지·manifest, gait animation
+
+구현 작업:
+
+1. 기존 `OfficeEscapeMinigame.start()` 공개 API를 유지하면서 내부에 `awaitingStart` 상태를 둔다.
+2. 배경과 정지된 추격 대형 위에 목표, JUMP·SLIDE 조작, 초록 오라 수집물 의미, 약 1분 소요를 간결하게 표시한다.
+3. 시작 버튼 클릭 또는 안내 상태의 Enter·Space로만 tick을 시작하고, 시작 전에는 행동·pause를 차단한다.
+4. 시작 버튼에 첫 포커스를 주고 실제 시작 뒤 점프 버튼으로 포커스를 넘긴다.
+5. dev 정적 preview는 안내를 생략하고, dev `실제 플레이`는 안내를 표시한다.
+6. 안내문은 메인 게임과 DAY 1~3의 크림(`#fffaf4`)·코랄(`#e9656e`) 계열을 사용한다. 초록색은 수집물 의미 표시에만 유지한다.
+
+합격 기준:
+
+- 시작 안내가 열린 동안 `elapsed`와 `distance`가 0이며 `playing`은 false다.
+- `퇴근 시작` 뒤에만 `playing`이 true가 되고 64초 플레이가 진행된다.
+- 안내만 보고 점프·슬라이드 키와 초록 오라 수집물의 선택 목표 의미를 이해할 수 있다.
+- 시작 안내가 HUD나 게임 결과와 동시에 보이지 않고 키보드 포커스가 유실되지 않는다.
+- 안내문의 배경·버튼·조작 아이콘이 메인 게임의 분홍 테마로 읽히며, 수집물 표식만 의미색인 초록색을 유지한다.
 
 ### Phase 5 · 4프레임 달리기 에셋
 
@@ -588,7 +618,9 @@ Phase 4R은 Phase 1~4의 기록을 되돌리지 않고, 실제 플레이에서 �
 | 2026-08-05 | 4 | planned → in_progress → code_complete → smoke_checked | `index.js`, `style.css`, dev·본편 캐시 버전, 직접 관련 통합 테스트, `docs/REQUIREMENTS.md` | HUD·cue·결과 정적 상태 3건, syntax 2건, production 금지 문자열·DOM 검사, `git diff --check`, Impeccable detector, 1440×900 UI 장면 4종 | ghost cue와 결과 preview 경로 수정 후 기본 HUD·첫 위험·결과/재시작·dev 접힘 재확인 | day4_ui_restore · root |
 | 2026-08-06 | 4R-A | planned → in_progress → code_complete | `core.js`, `index.js`, `art-assets.js`, dev·본편 캐시 버전, 직접 관련 테스트, `docs/REQUIREMENTS.md` | actor metric·collision·projection·formation·위험 노출 대상 7건, syntax 3건, 폐기 anchor 정적 검사, `git diff --check`; 1440×900 브라우저는 dev 런타임 미로드로 미확인 | 새 크기·좌우 위치·판단시간 사용자 확인 대기 | day4_scale_lookahead |
 | 2026-08-06 | 4R-A2 | planned → in_progress → code_complete → smoke_checked | `core.js`, `art-assets.js`, 대상 테스트, dev·본편 캐시 버전, `docs/REQUIREMENTS.md`, README | 코어 22건·DAY 4 통합 43건 통과, 첫 jump/slide avoid 확인, 1440×900 run·jump·slide 캡처 | 최종 63% 캐릭터 크기·70% 장애물·1.5배 접근 속도 사용자 승인 대기 | root |
-| 2026-08-06 | 4R-A3 | planned → in_progress → code_complete → smoke_checked | `core.js`, projection·통합 테스트, dev·본편 캐시 버전, `docs/REQUIREMENTS.md`, README | 코어 22건·DAY 4 통합 43건 통과, 1440×900 steady 캡처에서 부장님 left 약 82px 확인 | 46% shared anchor 위치 사용자 승인 대기 | root |
+| 2026-08-06 | 4R-A3 | planned → in_progress → code_complete → smoke_checked → user_accepted | `core.js`, projection·통합 테스트, dev·본편 캐시 버전, `docs/REQUIREMENTS.md`, README | 코어 22건·DAY 4 통합 43건 통과, 1440×900 steady 캡처에서 부장님 left 약 82px 확인 | 사용자가 46% shared anchor 위치 승인 | root |
+| 2026-08-06 | 4R-B + ITEM-01 | planned → in_progress → code_complete → smoke_checked | `core.js`, `index.js`, `style.css`, dev·본편 캐시 버전, 대상 테스트, `docs/REQUIREMENTS.md`, README | 코어 22건·DAY 4 통합 44건 통과, Impeccable detector 0건, 1280×720 slide·hitbox·collectible 정적 화면 확인, 1440×900 수치 계약 검사 | drawer/sign production 연결 제거, 96×22wu·bottom 88wu 상부 구조물과 수집물 전용 초록 오라 적용; CUE-01은 별도 대기 | root |
+| 2026-08-06 | 4R-D | planned → in_progress → code_complete → smoke_checked | `index.js`, `style.css`, dev·본편 캐시 버전, 통합 테스트, `docs/REQUIREMENTS.md`, README | DAY 4 대상 67건 중 61 통과·legacy 6 skip, Impeccable detector 0건, 앱 내장 브라우저 1280×720에서 크림·코랄 안내와 초록 수집물 의미색 분리 확인 | DAY 1~3 흐름을 참고한 목표·조작·선택 수집 안내를 추가하고, 사용자 확인에 따라 크림·코랄 테마로 통일. 초록색은 수집물 의미색으로만 유지 | root |
 
 새 구현 기록은 위 표에 한 줄씩만 추가한다. 과거 검증 수치와 폐기된 결정은 다시 복사하지 않는다.
 

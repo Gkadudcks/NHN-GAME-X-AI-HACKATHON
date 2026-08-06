@@ -3,7 +3,7 @@
   const params = new URLSearchParams(location.search);
   const composition = ["a", "b", "c"].includes(params.get("composition")) ? params.get("composition") : "c";
   const defaultScene = { a: "jump", b: "slide", c: "run" };
-  const previewScenes = new Set(["run", "jump", "slide", "first-risk", "maximum", "hit", "arrival", "result"]);
+  const previewScenes = new Set(["run", "jump", "slide", "collectible", "first-risk", "maximum", "hit", "arrival", "result"]);
   const initialScene = previewScenes.has(params.get("scene")) ? params.get("scene") : defaultScene[composition];
   let reviewAssetMap = {};
   let currentComposition = composition;

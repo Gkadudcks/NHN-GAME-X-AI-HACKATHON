@@ -82,9 +82,11 @@ test("64초 코스는 18개 행동과 3개 수집물을 갖고 배경 순서를 
   assert.ok(hazards.some((object, index) => index > 0 && object.avoid === hazards[index - 1].avoid), "mixed/finale contains repeated actions");
   assert.equal(hazards[0].width, 76 * 0.7);
   assert.equal(hazards[0].height, 42 * 0.7);
-  assert.equal(hazards[1].width, 152 * 0.7);
-  assert.equal(hazards[1].height, 36 * 0.7);
-  assert.equal(hazards[1].y, 56 * 0.7);
+  assert.equal(hazards[1].width, Core.OVERHEAD_HAZARD_WIDTH);
+  assert.equal(hazards[1].height, Core.OVERHEAD_HAZARD_HEIGHT);
+  assert.equal(hazards[1].y, Core.OVERHEAD_HAZARD_BOTTOM);
+  assert.ok(hazards.filter((object) => object.avoid === "slide").every((object) => object.type === "overhead-cabinet" || object.type === "overhead-duct"));
+  assert.ok(hazards.every((object) => object.type !== "drawer" && object.type !== "sign"));
 });
 
 test("기본 64초와 beat 시각은 유지하면서 world 접근 속도는 정확히 1.5배다", () => {
@@ -438,27 +440,27 @@ test("첫 jump·slide는 행동 지속 구간 안에 장애물을 통과해 avoi
   assert.deepEqual([...avoided].sort(), ["hazard-01", "hazard-02"]);
 });
 
-test("slide drawer는 standing body와 겹치고 축소된 clearance를 비우며 시각·판정 경계가 4px 이내다", () => {
+test("상부 구조물은 standing body와 겹치고 slide clearance를 비우며 시각·판정 경계가 4px 이내다", () => {
   const game = Core.create();
-  const drawer = game.snapshot().activeObjects.find((object) => object.kind === "hazard" && object.avoid === "slide" && object.type === "drawer");
+  const overhead = game.snapshot().activeObjects.find((object) => object.kind === "hazard" && object.avoid === "slide");
   const standing = game.snapshot().playerRect;
   game.commitSlide();
   const sliding = game.snapshot().playerRect;
-  const standingVerticalOverlap = Math.min(standing.y + standing.height, drawer.collisionRect.y + drawer.collisionRect.height)
-    - Math.max(standing.y, drawer.collisionRect.y);
+  const standingVerticalOverlap = Math.min(standing.y + standing.height, overhead.collisionRect.y + overhead.collisionRect.height)
+    - Math.max(standing.y, overhead.collisionRect.y);
   assert.ok(standingVerticalOverlap > 0);
-  assert.ok(drawer.collisionRect.y - (sliding.y + sliding.height) >= Core.SLIDE_CLEARANCE);
+  assert.ok(overhead.collisionRect.y - (sliding.y + sliding.height) >= Core.SLIDE_CLEARANCE);
 
   const runMetric = Art.metrics("minigame_character.doyun.run.right");
   const opaqueWidth = runMetric.canonicalOpaqueHeight / runMetric.alphaBounds.height * runMetric.alphaBounds.width;
-  assert.ok(drawer.visibleRect.width >= opaqueWidth * 0.9);
-  assert.ok(drawer.visibleRect.height / runMetric.canonicalOpaqueHeight >= 0.18);
-  assert.ok(drawer.visibleRect.height / runMetric.canonicalOpaqueHeight <= 0.32);
+  assert.ok(overhead.visibleRect.width >= opaqueWidth * 0.85);
+  assert.ok(overhead.visibleRect.height / runMetric.canonicalOpaqueHeight >= 0.14);
+  assert.ok(overhead.visibleRect.height / runMetric.canonicalOpaqueHeight <= 0.2);
 
   const projection = Core.screenProjection(game.snapshot(), 1440, 827.1);
-  const bottomDifference = (drawer.collisionRect.y - drawer.visibleRect.y) * projection.scale;
-  const topDifference = ((drawer.visibleRect.y + drawer.visibleRect.height)
-    - (drawer.collisionRect.y + drawer.collisionRect.height)) * projection.scale;
+  const bottomDifference = (overhead.collisionRect.y - overhead.visibleRect.y) * projection.scale;
+  const topDifference = ((overhead.visibleRect.y + overhead.visibleRect.height)
+    - (overhead.collisionRect.y + overhead.collisionRect.height)) * projection.scale;
   assert.ok(bottomDifference <= 4, `bottom edge ${bottomDifference}px`);
   assert.ok(topDifference <= 4, `top edge ${topDifference}px`);
 });

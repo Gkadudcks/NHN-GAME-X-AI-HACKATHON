@@ -30,10 +30,8 @@
   const PROP_IDS = Object.freeze({
     chair: "prop.office.chair",
     cable: "prop.office.cable",
-    drawer: "prop.office.drawer",
     papers: "prop.office.papers",
     cart: "prop.office.cart",
-    sign: "prop.office.sign",
     "access-card": "prop.office.access_card",
     phone: "prop.office.phone",
     "backup-usb": "prop.office.backup_usb",
@@ -66,6 +64,7 @@
   let state = {
     game: null,
     playing: false,
+    awaitingStart: false,
     paused: false,
     completed: false,
     lastFrame: 0,
@@ -138,6 +137,21 @@
           <button class="oe2-pause" type="button" aria-label="일시정지" aria-pressed="false">${icon("pause")}</button>
         </div>
       </header>
+      <section class="oe2-intro" id="oe2-intro" role="dialog" aria-modal="true" aria-labelledby="oe2-intro-title" aria-describedby="oe2-intro-copy" hidden>
+        <div class="oe2-intro-panel">
+          <div class="oe2-intro-copy">
+            <h1 id="oe2-intro-title">부장님 피해서 퇴근하기</h1>
+            <p id="oe2-intro-copy">장애물을 피하며 엘리베이터까지 달리세요. 초록빛 물건은 선택 수집 목표입니다.</p>
+            <span>약 1분 · 장애물에 맞아도 하린이 한 번 도와줍니다</span>
+          </div>
+          <div class="oe2-intro-guide" aria-label="조작 방법">
+            <div>${icon("up")}<p><strong>점프</strong><span><kbd>Space</kbd> 또는 <kbd>↑</kbd></span></p></div>
+            <div>${icon("down")}<p><strong>슬라이드</strong><span><kbd>S</kbd> 또는 <kbd>↓</kbd></span></p></div>
+            <p class="oe2-intro-item"><i aria-hidden="true"></i><span><strong>초록 오라</strong> 선택 수집 목표 · 위험물은 주황 안내</span></p>
+            <button id="oe2-intro-start" type="button">퇴근 시작 <b aria-hidden="true">→</b></button>
+          </div>
+        </div>
+      </section>
       <div class="oe2-world" aria-label="부장님을 피해 엘리베이터로 달리는 사무실" role="application">
         <div class="oe2-background-track" id="oe2-background-track" aria-hidden="true">${backgroundPanels()}</div>
         <div class="oe2-ground" aria-hidden="true"><i class="oe2-speed-line"></i><i class="oe2-speed-line"></i><i class="oe2-speed-line"></i></div>
@@ -169,6 +183,7 @@
     root.innerHTML = markup();
     document.body.append(root);
     refs = {
+      hud: root.querySelector(".oe2-hud"), intro: root.querySelector("#oe2-intro"), introStart: root.querySelector("#oe2-intro-start"),
       world: root.querySelector(".oe2-world"),
       clock: root.querySelector("#oe2-clock"), route: root.querySelector(".oe2-route"), progress: root.querySelector("#oe2-route-progress"),
       routeNodes: [...root.querySelectorAll(".oe2-route li")], zoneNodes: [...root.querySelectorAll(".oe2-zone-markers li")],
@@ -183,6 +198,7 @@
     };
     refs.jump.addEventListener("click", triggerJump);
     refs.slide.addEventListener("click", triggerSlide);
+    refs.introStart.addEventListener("click", beginRun);
     refs.pause.addEventListener("click", () => state.paused ? resume() : pause());
     refs.resultAction.addEventListener("click", handleResultAction);
     return root;
@@ -241,7 +257,9 @@
     node.className = `oe2-object oe2-${object.kind} oe2-${object.type}`;
     node.dataset.objectId = object.id;
     node.setAttribute("aria-hidden", "true");
-    node.innerHTML = `<img src="${resolve(PROP_IDS[object.type])}" alt="" aria-hidden="true"><span></span>`;
+    node.innerHTML = object.avoid === "slide"
+      ? '<span class="oe2-object-paint oe2-overhead-frame" aria-hidden="true"><i></i><i></i></span><span class="oe2-object-hitbox"></span>'
+      : `<span class="oe2-object-paint"><span class="oe2-object-aura" aria-hidden="true"></span><img src="${resolve(PROP_IDS[object.type])}" alt="" aria-hidden="true"></span><span class="oe2-object-hitbox"></span>`;
     refs.objects.append(node);
     refs.objectNodes.set(object.id, node);
     return node;
@@ -414,13 +432,18 @@
   }
 
   function preview(scene = "run") {
-    if (!new Set(["run", "jump", "slide", "first-risk", "maximum", "hit", "arrival", "result"]).has(scene)) return;
+    if (!new Set(["run", "jump", "slide", "collectible", "first-risk", "maximum", "hit", "arrival", "result"]).has(scene)) return;
     ensureRoot();
     cancelAnimationFrame(frame);
     state.playing = false;
+    state.awaitingStart = false;
     state.paused = false;
     state.previewScene = scene;
     root.classList.remove("is-impact");
+    root.classList.remove("is-awaiting-start");
+    refs.intro.hidden = true;
+    refs.world.inert = false;
+    refs.hud.inert = false;
     refs.feedback.classList.remove("show");
     refs.feedback.textContent = "";
     refs.feedback.removeAttribute("data-kind");
@@ -429,7 +452,7 @@
       ? { duration: 8, length: 1800, assist: false, course: hitCourse }
       : { duration: Core.DEFAULT_DURATION, assist: true });
     if (scene === "hit") render(previewCore.snapshot());
-    const seconds = scene === "arrival" || scene === "result" ? 61.5 : scene === "slide" ? 8.65 : scene === "jump" ? 4.5 : scene === "first-risk" ? 3.4 : scene === "hit" ? 0 : 2;
+    const seconds = scene === "arrival" || scene === "result" ? 61.5 : scene === "slide" ? 8.65 : scene === "collectible" ? 14.35 : scene === "jump" ? 4.5 : scene === "first-risk" ? 3.4 : scene === "hit" ? 0 : 2;
     for (let elapsed = 0; elapsed < seconds && !previewCore.snapshot().finished; elapsed += 0.1) previewCore.step(0.1);
     if (scene === "jump") { previewCore.pressJump(); previewCore.step(0.2); }
     if (scene === "slide") { previewCore.commitSlide(); previewCore.step(0.12); }
@@ -456,6 +479,7 @@
 
   function start(options = {}) {
     ensureRoot();
+    cancelAnimationFrame(frame);
     state.composition = COMPOSITIONS.has(options.composition) ? options.composition : state.composition;
     state.reviewAssetMap = options.reviewAssetMap || {};
     state.reviewAssetsEnabled = Boolean(options.reviewAssetsEnabled);
@@ -464,6 +488,8 @@
     state.restartOnResult = options.resultAction === "restart";
     state.restartOptions = state.restartOnResult ? { ...options } : null;
     state.completed = false;
+    state.playing = false;
+    state.awaitingStart = false;
     state.paused = false;
     state.actorArt.clear();
     state.uiElapsed = 0;
@@ -486,6 +512,9 @@
     refs.feedback.removeAttribute("data-kind");
     refs.assistBadge.classList.remove("show");
     refs.result.hidden = true;
+    refs.intro.hidden = true;
+    refs.world.inert = false;
+    refs.hud.inert = false;
     refs.resultAction.textContent = state.restartOnResult ? "다시 달리기" : "스토리 계속하기";
     updateBackgroundSources();
     state.game = Core.create(options.testOverrides || {});
@@ -493,9 +522,35 @@
       preview(options.previewScene || "run");
       return;
     }
+    render(state.game.snapshot());
+    showIntro();
+  }
+
+  function showIntro() {
+    state.awaitingStart = true;
+    state.playing = false;
+    refs.intro.hidden = false;
+    refs.world.inert = true;
+    refs.hud.inert = true;
+    refs.jump.disabled = true;
+    refs.slide.disabled = true;
+    refs.pause.disabled = true;
+    root.classList.add("is-awaiting-start");
+    requestAnimationFrame(() => refs.introStart.focus({ preventScroll: true }));
+  }
+
+  function beginRun() {
+    if (!state.awaitingStart || state.completed) return;
+    state.awaitingStart = false;
+    refs.intro.hidden = true;
+    refs.world.inert = false;
+    refs.hud.inert = false;
+    refs.jump.disabled = false;
+    refs.slide.disabled = false;
+    refs.pause.disabled = false;
+    root.classList.remove("is-awaiting-start");
     state.playing = true;
     state.lastFrame = performance.now();
-    render(state.game.snapshot());
     frame = requestAnimationFrame(tick);
     refs.jump.focus({ preventScroll: true });
   }
@@ -523,7 +578,7 @@
     state.pressedUntil.slide = state.uiElapsed + 0.16;
   }
   function pause() {
-    if (!root || state.paused || state.completed) return;
+    if (!root || !state.playing || state.awaitingStart || state.paused || state.completed) return;
     state.paused = true;
     root.classList.add("is-paused");
     refs.pause.setAttribute("aria-pressed", "true");
@@ -542,9 +597,13 @@
   function renderResultState(result) {
     state.completed = true;
     state.playing = false;
+    state.awaitingStart = false;
     cancelAnimationFrame(frame);
     root.classList.add("is-complete");
-    root.classList.remove("is-impact", "is-paused");
+    root.classList.remove("is-impact", "is-paused", "is-awaiting-start");
+    refs.intro.hidden = true;
+    refs.world.inert = false;
+    refs.hud.inert = false;
     state.paused = false;
     refs.jump.disabled = true;
     refs.slide.disabled = true;
@@ -601,11 +660,15 @@
     const width = refs.world?.clientWidth || global.innerWidth;
     const height = refs.world?.clientHeight || global.innerHeight;
     const geometry = Core.debugGeometry(snapshot, metrics, width, height);
-    return Object.freeze({ ...snapshot, playing: state.playing, paused: state.paused, composition: state.composition, geometry });
+    return Object.freeze({ ...snapshot, playing: state.playing, awaitingStart: state.awaitingStart, paused: state.paused, composition: state.composition, geometry });
   }
 
   global.addEventListener("keydown", (event) => {
     if (!root || root.hidden) return;
+    if (state.awaitingStart) {
+      if (event.code === "Enter" || event.code === "Space") { event.preventDefault(); beginRun(); }
+      return;
+    }
     if (JUMP_KEYS.has(event.code)) { event.preventDefault(); triggerJump(); }
     else if (SLIDE_KEYS.has(event.code)) { event.preventDefault(); triggerSlide(); }
     else if (event.code === "Escape") { event.preventDefault(); state.paused ? resume() : pause(); }
