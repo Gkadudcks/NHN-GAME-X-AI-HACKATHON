@@ -33,17 +33,31 @@
     "prop.office.sign": "minigames/day4-office-escape/assets/art/props/approved/prop_office_sign_v002.png",
   });
 
-  // Alpha bounds are source-image facts, not layout guesses. Renderers use
-  // them to align each pose on the same bottom-center baseline.
+  const bounds = (left, top, width, height) => Object.freeze({ left, top, width, height });
+  const point = (x, y) => Object.freeze({ x, y });
+  const actorMetric = ({ alpha, footX, canonicalOpaqueHeight, body = alpha }) => Object.freeze({
+    alphaBounds: alpha,
+    bodyBounds: body,
+    footAnchor: point(footX, alpha.top + alpha.height),
+    alphaHeight: alpha.height,
+    alphaWidth: alpha.width,
+    bottomPadding: 1 - alpha.top - alpha.height,
+    canonicalOpaqueHeight,
+  });
+
+  // Normalized source-image facts. canonicalOpaqueHeight is measured once at
+  // 1440x900 and converted to world units; every actor then uses Core.scale.
   const VISUAL_METRICS = Object.freeze({
-    "minigame_character.doyun.run.right": Object.freeze({ alphaHeight: 1, alphaWidth: 386 / 512, bottomPadding: 0 }),
-    "minigame_character.doyun.run_alt.right": Object.freeze({ alphaHeight: 494 / 512, alphaWidth: 361 / 512, bottomPadding: 18 / 512 }),
-    "minigame_character.doyun.jump.right": Object.freeze({ alphaHeight: 480 / 512, alphaWidth: 365 / 512, bottomPadding: 0 }),
-    "minigame_character.doyun.slide.right": Object.freeze({ alphaHeight: 198 / 512, alphaWidth: 480 / 512, bottomPadding: 0 }),
-    "minigame_character.harin.run.right": Object.freeze({ alphaHeight: 1, alphaWidth: 354 / 512, bottomPadding: 0 }),
-    "minigame_character.harin.run_alt.right": Object.freeze({ alphaHeight: 510 / 512, alphaWidth: 330 / 512, bottomPadding: 2 / 512 }),
-    "minigame_character.boss.chase.right": Object.freeze({ alphaHeight: 511 / 512, alphaWidth: 436 / 512, bottomPadding: 1 / 512 }),
-    "minigame_character.boss.chase_alt.right": Object.freeze({ alphaHeight: 1, alphaWidth: 402 / 512, bottomPadding: 0 }),
+    "minigame_character.doyun.run.right": actorMetric({ alpha: bounds(63 / 512, 0, 386 / 512, 1), footX: 256 / 512, canonicalOpaqueHeight: 141.12 }),
+    "minigame_character.doyun.run_alt.right": actorMetric({ alpha: bounds(57 / 512, 0, 361 / 512, 494 / 512), footX: 237.5 / 512, canonicalOpaqueHeight: 141.12 }),
+    "minigame_character.doyun.jump.right": actorMetric({ alpha: bounds(73 / 512, 32 / 512, 365 / 512, 480 / 512), footX: 255.5 / 512, canonicalOpaqueHeight: 141.12 }),
+    "minigame_character.doyun.slide.right": actorMetric({ alpha: bounds(16 / 512, 314 / 512, 480 / 512, 198 / 512), body: bounds(175 / 512, 350 / 512, 260 / 512, 162 / 512), footX: 256 / 512, canonicalOpaqueHeight: 77.49 }),
+    "minigame_character.harin.run.right": actorMetric({ alpha: bounds(79 / 512, 0, 354 / 512, 1), footX: 256 / 512, canonicalOpaqueHeight: 135.45 }),
+    "minigame_character.harin.run_alt.right": actorMetric({ alpha: bounds(91 / 512, 2 / 512, 330 / 512, 510 / 512), footX: 256 / 512, canonicalOpaqueHeight: 135.45 }),
+    "minigame_character.harin.assist.right": actorMetric({ alpha: bounds(77 / 512, 22 / 512, 357 / 512, 478 / 512), footX: 255.5 / 512, canonicalOpaqueHeight: 135.45 }),
+    "minigame_character.boss.chase.right": actorMetric({ alpha: bounds(38 / 512, 1 / 512, 436 / 512, 511 / 512), footX: 256 / 512, canonicalOpaqueHeight: 146.79 }),
+    "minigame_character.boss.chase_alt.right": actorMetric({ alpha: bounds(55 / 512, 0, 402 / 512, 1), footX: 256 / 512, canonicalOpaqueHeight: 146.79 }),
+    "minigame_character.boss.call.right": actorMetric({ alpha: bounds(111 / 512, 24 / 512, 289 / 512, 476 / 512), footX: 255.5 / 512, canonicalOpaqueHeight: 146.79 }),
   });
 
   function resolve(id) {
@@ -52,7 +66,7 @@
   }
 
   function metrics(id) {
-    return VISUAL_METRICS[id] || Object.freeze({ alphaHeight: 1, alphaWidth: 1, bottomPadding: 0 });
+    return VISUAL_METRICS[id] || Object.freeze({ alphaBounds: bounds(0, 0, 1, 1), bodyBounds: bounds(0, 0, 1, 1), footAnchor: point(.5, 1), alphaHeight: 1, alphaWidth: 1, bottomPadding: 0, canonicalOpaqueHeight: 224 });
   }
 
   return Object.freeze({ ACTIVE, VISUAL_METRICS, resolve, metrics });
