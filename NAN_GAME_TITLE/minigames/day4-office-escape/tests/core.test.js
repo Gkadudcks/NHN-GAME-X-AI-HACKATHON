@@ -11,18 +11,51 @@ function advance(game, seconds, frame = 1 / 120) {
 
 function scriptedPerfect(frame) {
   const game = Core.create({ assist: false });
-  let lastId = "";
+  const acted = new Set();
   while (!game.snapshot().finished) {
-    const next = game.snapshot().upcomingHazard;
-    if (next && next.id !== lastId && next.telegraphPhase === "act") {
+    const snapshot = game.snapshot();
+    const speed = Core.speedAt(snapshot.elapsed, snapshot.duration, snapshot.length);
+    const next = snapshot.activeObjects.find((object) => {
+      if (object.kind !== "hazard" || acted.has(object.id)) return false;
+      const entryGap = object.collisionRect.x - (snapshot.playerRect.x + snapshot.playerRect.width);
+      return entryGap >= 0 && entryGap / speed <= Core.ACTION_LEAD_TIME[object.avoid];
+    });
+    if (next) {
       if (next.avoid === "jump") game.pressJump();
       else game.commitSlide();
-      lastId = next.id;
+      acted.add(next.id);
     }
     game.step(frame);
   }
   return game;
 }
+
+test("tutorial cue는 첫 jump·slide에서만 한 번 발행되고 새 게임에서 초기화된다", () => {
+  function collectTutorialCues(game, seconds) {
+    const emitted = [];
+    const visible = new Map();
+    for (let elapsed = 0; elapsed < seconds && !game.snapshot().finished; elapsed += Core.FIXED_STEP) {
+      const upcoming = game.snapshot().upcomingHazard;
+      if (upcoming) {
+        if (!visible.has(upcoming.id)) visible.set(upcoming.id, new Set());
+        visible.get(upcoming.id).add(upcoming.telegraphPhase);
+      }
+      game.step(Core.FIXED_STEP);
+      emitted.push(...game.drainEvents().filter((event) => event.type === "telegraph"));
+    }
+    return { emitted, visible };
+  }
+
+  const firstRun = collectTutorialCues(Core.create({ assist: false }), Core.DEFAULT_DURATION);
+  assert.deepEqual(firstRun.emitted.map((event) => event.object.id), ["hazard-01", "hazard-02"]);
+  assert.deepEqual(firstRun.emitted.map((event) => event.object.avoid), ["jump", "slide"]);
+  assert.deepEqual([...firstRun.visible.keys()], ["hazard-01", "hazard-02"]);
+  assert.deepEqual([...firstRun.visible.get("hazard-01")].sort(), ["act", "prepare"]);
+  assert.deepEqual([...firstRun.visible.get("hazard-02")].sort(), ["act", "prepare"]);
+
+  const restarted = collectTutorialCues(Core.create({ assist: false }), 11);
+  assert.deepEqual(restarted.emitted.map((event) => event.object.id), ["hazard-01", "hazard-02"]);
+});
 
 test("고정 스텝 점프는 60·120·144Hz에서 같은 정점과 체공 시간을 낸다", () => {
   const samples = [1 / 60, 1 / 120, 1 / 144].map((frame) => {
@@ -393,6 +426,35 @@ test("1440x900 actor 대형은 46% 축에서 부장님을 점프 버튼 쪽에 �
   assert.ok(forwardView >= projection.width * Core.ACTOR_FORMATION.minimumForwardViewRatio, `forward view ${forwardView}px`);
   const mechanicalPlayer = Core.projectWorldRect(snapshot.playerRect, projection);
   assert.ok(Math.abs(mechanicalPlayer.left + mechanicalPlayer.width / 2 - steady.anchors.doyun.x) < 0.000001);
+});
+
+test("고정 달리기 대형은 도윤 slide 포즈와 하린 assist 포즈에서도 동료 앵커를 유지한다", () => {
+  const runGame = Core.create({ duration: 8, length: 1800, course: [] });
+  const slideGame = Core.create({ duration: 8, length: 1800, course: [] });
+  slideGame.commitSlide();
+  slideGame.step(Core.FIXED_STEP);
+  const formationMetrics = {
+    doyun: Art.metrics("minigame_character.doyun.run.right"),
+    harin: Art.metrics("minigame_character.harin.run.right"),
+    boss: Art.metrics("minigame_character.boss.chase.right"),
+  };
+  const runProjection = Core.screenProjection(runGame.snapshot(), 1440, 827.1);
+  const slideProjection = Core.screenProjection(slideGame.snapshot(), 1440, 827.1);
+  const runFormation = Core.actorFormationGeometry(formationMetrics, runProjection, Core.CHASE_PRESSURE.stageBase.learning);
+  const slideFormation = Core.actorFormationGeometry(formationMetrics, slideProjection, Core.CHASE_PRESSURE.stageBase.learning);
+
+  assert.ok(Math.abs(runFormation.anchors.harin.x - slideFormation.anchors.harin.x) <= 1);
+  assert.ok(Math.abs(runFormation.anchors.boss.x - slideFormation.anchors.boss.x) <= 1);
+  const slideVisual = Core.actorScreenGeometry(
+    Art.metrics("minigame_character.doyun.slide.right"),
+    slideFormation.anchors.doyun,
+    slideProjection,
+  );
+  const overlap = Math.max(0, Math.min(
+    slideVisual.silhouette.left + slideVisual.silhouette.width,
+    slideFormation.actors.harin.silhouette.left + slideFormation.actors.harin.silhouette.width,
+  ) - Math.max(slideVisual.silhouette.left, slideFormation.actors.harin.silhouette.left));
+  assert.ok(overlap > 0, "slide art may pass in front without moving Harin");
 });
 
 test("1440x900 첫 jump·slide 위험은 1.5배 속도에서도 충돌 전 0.8초 이상 보인다", () => {

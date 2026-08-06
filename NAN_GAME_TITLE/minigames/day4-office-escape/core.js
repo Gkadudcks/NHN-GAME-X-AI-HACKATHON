@@ -299,9 +299,8 @@
       playerProfiles: PLAYER_PROFILES,
     });
   }
-  function isTutorialHazard(object) { return object?.id === "hazard-01" || object?.id === "hazard-02"; }
-  function prepareLeadFor(elapsed, object) {
-    if (isTutorialHazard(object)) return TUTORIAL_PREPARE_LEAD_TIME;
+  function prepareLeadFor(elapsed, object, tutorialHazardIds) {
+    if (tutorialHazardIds?.has(object?.id)) return TUTORIAL_PREPARE_LEAD_TIME;
     return elapsed < 24 ? 1.35 : elapsed < 48 ? 1.15 : 1;
   }
   function actionLeadFor(avoid) { return ACTION_LEAD_TIME[avoid] || ACTION_LEAD_TIME.jump; }
@@ -339,7 +338,12 @@
     const course = buildCourse(duration, length, options.course);
     const resolved = new Set();
     const collected = new Set();
-    const warned = new Set();
+    const tutorialHazards = Object.freeze({
+      jump: course.find((object) => object.kind === "hazard" && object.avoid === "jump") || null,
+      slide: course.find((object) => object.kind === "hazard" && object.avoid === "slide") || null,
+    });
+    const tutorialHazardIds = new Set(Object.values(tutorialHazards).filter(Boolean).map((object) => object.id));
+    const issuedTutorialCues = new Set();
     const events = [];
     let jumpBuffer = 0;
     let slideUntil = 0;
@@ -544,10 +548,10 @@
       const currentPlayer = playerRect();
       const speed = speedAt(state.elapsed, duration, length);
       for (const object of course) {
-        if (object.kind !== "hazard" || resolved.has(object.id) || warned.has(object.id)) continue;
+        if (!tutorialHazardIds.has(object.id) || resolved.has(object.id) || issuedTutorialCues.has(object.avoid)) continue;
         const metrics = collisionCueMetrics(object, speed);
-        if (metrics.exitGap < 0 || metrics.leadTime > prepareLeadFor(previousElapsed, object)) continue;
-        warned.add(object.id);
+        if (metrics.exitGap < 0 || metrics.leadTime > prepareLeadFor(previousElapsed, object, tutorialHazardIds)) continue;
+        issuedTutorialCues.add(object.avoid);
         emit("telegraph", { object, leadTime: metrics.leadTime });
       }
       for (const object of course) resolveObject(object, previousPlayer, currentPlayer);
@@ -565,10 +569,10 @@
     function upcomingHazard() {
       const speed = speedAt(state.elapsed, duration, length);
       for (const object of course) {
-        if (object.kind !== "hazard" || resolved.has(object.id)) continue;
+        if (!tutorialHazardIds.has(object.id) || resolved.has(object.id)) continue;
         const metrics = collisionCueMetrics(object, speed);
         if (metrics.exitGap < 0) continue;
-        const prepareLeadTime = prepareLeadFor(state.elapsed, object);
+        const prepareLeadTime = prepareLeadFor(state.elapsed, object, tutorialHazardIds);
         if (metrics.leadTime > prepareLeadTime) return null;
         const telegraphPhase = cuePhaseFor(object, metrics.leadTime);
         return {

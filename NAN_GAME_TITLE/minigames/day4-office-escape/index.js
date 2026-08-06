@@ -36,6 +36,11 @@
     bossRunAlt: "minigame_character.boss.chase_alt.right",
     bossCall: "minigame_character.boss.call.right",
   });
+  const FORMATION_IDS = Object.freeze({
+    doyun: CHARACTER_IDS.doyunRun,
+    harin: CHARACTER_IDS.harinRun,
+    boss: CHARACTER_IDS.bossRun,
+  });
   const ITEM_IDS = Object.freeze(["access-card", "phone", "backup-usb"]);
   const PREVIEW_RESULT = Object.freeze({
     grade: "perfect",
@@ -63,6 +68,14 @@
     reviewAssetsEnabled: false,
     showHitboxes: false,
     actorArt: new Map(),
+    actorLayout: new Map(),
+    objectRender: new Map(),
+    backgroundRender: new Map(),
+    formationMetrics: null,
+    viewport: { width: 0, height: 0, dirty: true },
+    floorX: "",
+    progressValue: -1,
+    zoneId: "",
     uiElapsed: 0,
     feedbackUntil: 0,
     assistUntil: 0,
@@ -196,8 +209,31 @@
     refs.introStart.addEventListener("click", beginRun);
     refs.pause.addEventListener("click", () => state.paused ? resume() : pause());
     refs.resultAction.addEventListener("click", handleResultAction);
-    global.addEventListener("resize", () => { state.cueLayout = null; }, { passive: true });
+    global.addEventListener("resize", () => {
+      state.cueLayout = null;
+      state.viewport.dirty = true;
+    }, { passive: true });
     return root;
+  }
+
+  function viewportSize() {
+    if (state.viewport.dirty || !state.viewport.width || !state.viewport.height) {
+      state.viewport.width = refs.world.clientWidth || global.innerWidth;
+      state.viewport.height = refs.world.clientHeight || global.innerHeight;
+      state.viewport.dirty = false;
+    }
+    return state.viewport;
+  }
+
+  function formationMetrics() {
+    if (!state.formationMetrics) {
+      state.formationMetrics = Object.freeze({
+        doyun: Art.metrics(FORMATION_IDS.doyun),
+        harin: Art.metrics(FORMATION_IDS.harin),
+        boss: Art.metrics(FORMATION_IDS.boss),
+      });
+    }
+    return state.formationMetrics;
   }
 
   function setActorArt(role, id, projection, anchor) {
@@ -209,14 +245,20 @@
       state.actorArt.set(role, id);
     }
     const metric = Art.metrics(id);
-    const geometry = Core.actorScreenGeometry(metric, { x: 0, bottom: projection.ground }, projection);
+    const geometry = Core.actorScreenGeometry(metric, anchor, projection);
     const canvasSize = geometry.canvasSize;
-    host.style.setProperty("--oe2-alpha-height", String(metric.alphaHeight));
-    host.style.setProperty("--oe2-bottom-padding", String(metric.bottomPadding));
-    host.style.setProperty("--oe2-canvas-size", `${canvasSize}px`);
-    host.style.translate = `${-metric.footAnchor.x * canvasSize}px 0`;
-    host.style.left = `${anchor.x}px`;
-    host.style.bottom = `${anchor.bottom}px`;
+    const layout = {
+      alphaHeight: String(metric.alphaHeight),
+      bottomPadding: String(metric.bottomPadding),
+      canvasSize: `${canvasSize}px`,
+      transform: `translate3d(${geometry.host.left}px, ${-geometry.host.bottom}px, 0)`,
+    };
+    const previous = state.actorLayout.get(role) || {};
+    if (previous.alphaHeight !== layout.alphaHeight) host.style.setProperty("--oe2-alpha-height", layout.alphaHeight);
+    if (previous.bottomPadding !== layout.bottomPadding) host.style.setProperty("--oe2-bottom-padding", layout.bottomPadding);
+    if (previous.canvasSize !== layout.canvasSize) host.style.setProperty("--oe2-canvas-size", layout.canvasSize);
+    if (previous.transform !== layout.transform) host.style.transform = layout.transform;
+    state.actorLayout.set(role, layout);
     return metric;
   }
 
@@ -260,26 +302,27 @@
   function renderObjects(snapshot, projection) {
     const { width, scale } = projection;
     const active = new Set(snapshot.activeObjects.map((object) => object.id));
-    refs.objectNodes.forEach((node, id) => {
-      if (active.has(id)) {
-        node.hidden = true;
-        return;
-      }
-      node.remove();
-      refs.objectNodes.delete(id);
-    });
+    const visible = new Set();
     snapshot.activeObjects.forEach((object) => {
-      const visible = object.visibleRect;
-      const art = object.artRect || visible;
+      const visibleRect = object.visibleRect;
+      const art = object.artRect || visibleRect;
       const screen = Core.projectWorldRect(art, projection);
       const centerX = screen.left + screen.width / 2;
       if (centerX < -220 || centerX > width + 240) return;
+      visible.add(object.id);
       const node = objectNode(object);
-      node.hidden = false;
-      node.style.width = `${Math.max(20, screen.width)}px`;
-      node.style.height = `${Math.max(16, screen.height)}px`;
-      node.style.left = `${centerX}px`;
-      node.style.bottom = `${screen.bottom}px`;
+      if (node.hidden) node.hidden = false;
+      const layout = {
+        width: `${Math.max(20, screen.width)}px`,
+        height: `${Math.max(16, screen.height)}px`,
+        left: `${centerX}px`,
+        bottom: `${screen.bottom}px`,
+      };
+      const previous = state.objectRender.get(object.id) || {};
+      if (previous.width !== layout.width) node.style.width = layout.width;
+      if (previous.height !== layout.height) node.style.height = layout.height;
+      if (previous.left !== layout.left) node.style.left = layout.left;
+      if (previous.bottom !== layout.bottom) node.style.bottom = layout.bottom;
       const behindRunners = screen.left + screen.width <= projection.playerAnchorX + 8;
       const targetLayer = behindRunners ? refs.passedObjects : refs.objects;
       if (node.parentElement !== targetLayer) targetLayer.append(node);
@@ -289,10 +332,25 @@
       node.dataset.motion = object.motion || "still";
       if (state.showHitboxes) {
         const collision = object.collisionRect;
-        node.style.setProperty("--oe2-hit-left", `${(collision.x - art.x) * scale}px`);
-        node.style.setProperty("--oe2-hit-bottom", `${(collision.y - art.y) * scale}px`);
-        node.style.setProperty("--oe2-hit-width", `${collision.width * scale}px`);
-        node.style.setProperty("--oe2-hit-height", `${collision.height * scale}px`);
+        const hitbox = `${(collision.x - art.x) * scale}px|${(collision.y - art.y) * scale}px|${collision.width * scale}px|${collision.height * scale}px`;
+        if (previous.hitbox !== hitbox) {
+          const [left, bottom, hitWidth, hitHeight] = hitbox.split("|");
+          node.style.setProperty("--oe2-hit-left", left);
+          node.style.setProperty("--oe2-hit-bottom", bottom);
+          node.style.setProperty("--oe2-hit-width", hitWidth);
+          node.style.setProperty("--oe2-hit-height", hitHeight);
+          layout.hitbox = hitbox;
+        } else layout.hitbox = previous.hitbox;
+      }
+      state.objectRender.set(object.id, layout);
+    });
+    refs.objectNodes.forEach((node, id) => {
+      if (!active.has(id)) {
+        node.remove();
+        refs.objectNodes.delete(id);
+        state.objectRender.delete(id);
+      } else if (!visible.has(id) && !node.hidden) {
+        node.hidden = true;
       }
     });
   }
@@ -305,20 +363,34 @@
     const currentKey = backgroundGroupForScene(presentation.segment.scene);
     const nextKey = presentation.nextSegment ? backgroundGroupForScene(presentation.nextSegment.scene) : currentKey;
     const changingGroup = currentKey !== nextKey;
-    refs.backgroundPanels.forEach((panel) => {
+    refs.backgroundPanels.forEach((panel, index) => {
       const key = panel.dataset.background;
       const current = key === currentKey;
       const next = changingGroup && key === nextKey;
+      const active = current || next;
       const opacity = current ? (changingGroup ? presentation.currentOpacity : 1) : next ? presentation.nextOpacity : 0;
       const group = BACKGROUND_GROUPS.find((candidate) => candidate.key === key);
       const groupProgress = group ? Math.max(0, Math.min(1, (snapshot.elapsed - group.start) / (group.end - group.start))) : 0;
-      panel.style.opacity = String(opacity);
-      panel.style.zIndex = next ? "1" : current ? "0" : "-1";
-      panel.firstElementChild?.style.setProperty("--oe2-background-pan", `${reducedMotion ? 0 : -3 * groupProgress}%`);
+      const nextRender = {
+        hidden: !active,
+        opacity: String(opacity),
+        zIndex: next ? "1" : current ? "0" : "-1",
+        pan: `${reducedMotion || !active ? 0 : -3 * groupProgress}%`,
+      };
+      const previous = state.backgroundRender.get(key) || {};
+      if (previous.hidden !== nextRender.hidden) panel.hidden = nextRender.hidden;
+      if (previous.opacity !== nextRender.opacity) panel.style.opacity = nextRender.opacity;
+      if (previous.zIndex !== nextRender.zIndex) panel.style.zIndex = nextRender.zIndex;
+      if (active && previous.pan !== nextRender.pan) refs.backgroundImages[index].style.setProperty("--oe2-background-pan", nextRender.pan);
+      state.backgroundRender.set(key, nextRender);
     });
     const floorCycle = width * 0.36;
     const floorOffset = floorCycle ? -((snapshot.distance * (width / 780)) % floorCycle) : 0;
-    refs.world.style.setProperty("--oe2-floor-x", `${floorOffset}px`);
+    const floorX = `${Math.round(floorOffset * 100) / 100}px`;
+    if (state.floorX !== floorX) {
+      refs.world.style.setProperty("--oe2-floor-x", floorX);
+      state.floorX = floorX;
+    }
   }
 
   function showFeedback(text, kind = "") {
@@ -382,38 +454,38 @@
 
   function render(snapshot) {
     if (!root || !snapshot) return;
-    const width = refs.world.clientWidth || global.innerWidth;
-    const height = refs.world.clientHeight || global.innerHeight;
+    const { width, height } = viewportSize();
     const projection = Core.screenProjection(snapshot, width, height);
     const scale = projection.scale;
     const progress = snapshot.progress;
     if (state.playing) consumeEvents(snapshot);
-    root.dataset.scene = snapshot.finished ? "arrival" : snapshot.sliding ? "slide" : snapshot.y > 1 ? "jump" : "run";
-    root.dataset.zone = snapshot.zone.id;
-    root.dataset.courseStage = snapshot.courseStage.id;
+    const scene = snapshot.finished ? "arrival" : snapshot.sliding ? "slide" : snapshot.y > 1 ? "jump" : "run";
+    if (root.dataset.scene !== scene) root.dataset.scene = scene;
+    if (root.dataset.zone !== snapshot.zone.id) root.dataset.zone = snapshot.zone.id;
+    if (root.dataset.courseStage !== snapshot.courseStage.id) root.dataset.courseStage = snapshot.courseStage.id;
     root.classList.toggle("is-hurt", snapshot.invulnerable > 0);
     root.classList.toggle("show-hitboxes", state.showHitboxes);
-    refs.clock.textContent = formatClock();
     refs.progress.style.setProperty("--oe2-progress", String(progress));
     renderBackgrounds(snapshot, width);
     const zoneIndex = snapshot.zone.id === "office" ? 0 : snapshot.zone.id === "corridor" ? 1 : 2;
     const progressValue = Math.round(progress * 100);
-    refs.route.setAttribute("aria-valuenow", String(progressValue));
-    refs.route.setAttribute("aria-valuetext", `${snapshot.zone.label} · ${progressValue}%`);
-    refs.routeNodes.forEach((node, index) => node.classList.toggle("is-active", index === zoneIndex));
-    refs.zoneNodes.forEach((node, index) => node.classList.toggle("is-active", index === zoneIndex));
+    if (state.progressValue !== progressValue) {
+      refs.route.setAttribute("aria-valuenow", String(progressValue));
+      refs.route.setAttribute("aria-valuetext", `${snapshot.zone.label} · ${progressValue}%`);
+      state.progressValue = progressValue;
+    }
+    if (state.zoneId !== snapshot.zone.id) {
+      refs.routeNodes.forEach((node, index) => node.classList.toggle("is-active", index === zoneIndex));
+      refs.zoneNodes.forEach((node, index) => node.classList.toggle("is-active", index === zoneIndex));
+      state.zoneId = snapshot.zone.id;
+    }
     refs.items.forEach((node, id) => node.classList.toggle("is-collected", snapshot.collectedItems.includes(id)));
 
     const gait = Core.gaitFrameIndex(snapshot.elapsed);
     const doyunId = snapshot.sliding ? CHARACTER_IDS.doyunSlide : snapshot.y > 1 ? CHARACTER_IDS.doyunJump : gait ? CHARACTER_IDS.doyunRunAlt : CHARACTER_IDS.doyunRun;
     const harinId = snapshot.assistUsed && snapshot.invulnerable > 0 ? CHARACTER_IDS.harinAssist : gait ? CHARACTER_IDS.harinRunAlt : CHARACTER_IDS.harinRun;
     const bossId = gait ? CHARACTER_IDS.bossRunAlt : CHARACTER_IDS.bossRun;
-    const actorMetrics = {
-      doyun: Art.metrics(doyunId),
-      harin: Art.metrics(harinId),
-      boss: Art.metrics(bossId),
-    };
-    const formation = Core.actorFormationGeometry(actorMetrics, projection, snapshot.chasePressure);
+    const formation = Core.actorFormationGeometry(formationMetrics(), projection, snapshot.chasePressure);
     const doyunMetric = setActorArt("doyun", doyunId, projection, formation.anchors.doyun);
     setActorArt("harin", harinId, projection, formation.anchors.harin);
     setActorArt("boss", bossId, projection, formation.anchors.boss);
@@ -427,17 +499,19 @@
     refs.playerBody.style.height = `${playerBody.height}px`;
     renderObjects(snapshot, projection);
     const upcoming = snapshot.upcomingHazard;
-    refs.telegraph.hidden = !upcoming;
+    if (refs.telegraph.hidden === Boolean(upcoming)) refs.telegraph.hidden = !upcoming;
     if (upcoming) {
       const object = snapshot.activeObjects.find((candidate) => candidate.id === upcoming.id) || upcoming;
       const cueRect = object.type === "sign"
         ? object.visibleRect
         : object.collisionRect || object.visibleRect || object;
       const cuePoint = Core.projectWorldPoint({ x: cueRect.x + cueRect.width / 2, y: cueRect.y + cueRect.height }, projection);
-      refs.telegraph.dataset.phase = upcoming.telegraphPhase;
+      if (refs.telegraph.dataset.phase !== upcoming.telegraphPhase) refs.telegraph.dataset.phase = upcoming.telegraphPhase;
       const action = upcoming.avoid.toUpperCase();
-      refs.telegraphAction.textContent = upcoming.telegraphPhase === "act" ? `${action} NOW` : action;
-      refs.telegraphLabel.textContent = upcoming.telegraphPhase === "act" ? "지금!" : `${upcoming.label} · 준비`;
+      const actionText = upcoming.telegraphPhase === "act" ? `${action} NOW` : action;
+      const labelText = upcoming.telegraphPhase === "act" ? "지금!" : `${upcoming.label} · 준비`;
+      if (refs.telegraphAction.textContent !== actionText) refs.telegraphAction.textContent = actionText;
+      if (refs.telegraphLabel.textContent !== labelText) refs.telegraphLabel.textContent = labelText;
       refs.telegraph.style.left = `${telegraphCenterX(cuePoint.x, width)}px`;
       refs.telegraph.style.bottom = `${Math.max(projection.ground + 12, Math.min(height - 84, cuePoint.bottom + 12))}px`;
     }
@@ -506,6 +580,14 @@
     state.awaitingStart = false;
     state.paused = false;
     state.actorArt.clear();
+    state.actorLayout.clear();
+    state.objectRender.clear();
+    state.backgroundRender.clear();
+    state.formationMetrics = null;
+    state.viewport.dirty = true;
+    state.floorX = "";
+    state.progressValue = -1;
+    state.zoneId = "";
     state.uiElapsed = 0;
     state.feedbackUntil = 0;
     state.assistUntil = 0;
@@ -666,15 +748,8 @@
   }
   function debugSnapshot() {
     const snapshot = state.game?.snapshot() || {};
-    const gait = Core.gaitFrameIndex(snapshot.elapsed);
-    const metrics = {
-      doyun: Art.metrics(snapshot.sliding ? CHARACTER_IDS.doyunSlide : snapshot.y > 1 ? CHARACTER_IDS.doyunJump : gait ? CHARACTER_IDS.doyunRunAlt : CHARACTER_IDS.doyunRun),
-      harin: Art.metrics(snapshot.assistUsed && snapshot.invulnerable > 0 ? CHARACTER_IDS.harinAssist : gait ? CHARACTER_IDS.harinRunAlt : CHARACTER_IDS.harinRun),
-      boss: Art.metrics(gait ? CHARACTER_IDS.bossRunAlt : CHARACTER_IDS.bossRun),
-    };
-    const width = refs.world?.clientWidth || global.innerWidth;
-    const height = refs.world?.clientHeight || global.innerHeight;
-    const geometry = Core.debugGeometry(snapshot, metrics, width, height);
+    const { width, height } = viewportSize();
+    const geometry = Core.debugGeometry(snapshot, formationMetrics(), width, height);
     return Object.freeze({ ...snapshot, playing: state.playing, awaitingStart: state.awaitingStart, paused: state.paused, composition: state.composition, geometry });
   }
 

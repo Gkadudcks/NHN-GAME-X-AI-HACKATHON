@@ -2,9 +2,9 @@
 
 - 문서 ID: `DAY4-OFFICE-ESCAPE-LEAN-2026-08-06`
 - 지원 환경: PC 데스크톱 브라우저 전용
-- 완료: 직접 입력, 좌표·판정, 캐릭터 크기·대형, 장애물·수명주기, HUD·결과, 수집물 오라, 시작 안내
-- 남은 작업: `CUE-01 → ANIM-01/02 → FINAL-01`
-- 다음 작업: `CUE-01` 최초 점프·슬라이드 안내 제한
+- 완료: 직접 입력, 좌표·판정, 캐릭터 크기·고정 대형, 장애물·수명주기, HUD·결과, 수집물 오라, 시작 안내, `CUE-01`, `PERF-01`, `FORMATION-01`
+- 남은 작업: `ANIM-01/02 → FINAL-01`
+- 다음 작업: `ANIM-01/02` 4프레임 달리기
 
 이 파일은 `부장님 피해서 퇴근하기`의 유일한 구현 요구사항과 인계 문서다. 완료된 Phase의 장황한 실행 기록은 2026-08-06에 의도적으로 제거했다. 런타임과 테스트는 이 문서를 읽지 않으며, 완료 동작은 코드와 테스트가 보호한다.
 
@@ -39,7 +39,9 @@
 ### 대형·장애물 계약
 
 - 진행 방향은 오른쪽이며 대형 순서는 `부장님 → 하린 → 도윤`이다.
-- shared player anchor는 화면 폭 `46%`이며 세 캐릭터 실루엣은 겹치지 않는다.
+- shared player anchor는 화면 폭 `46%`이며 대형 계산에는 세 캐릭터의 고정 run 메트릭을 사용한다.
+- 하린 앵커는 도윤 포즈와 무관하게 고정하고, 부장 앵커는 하린 고정 앵커와 `chasePressure`만 사용한다.
+- 슬라이드 중 도윤 실루엣이 하린과 잠시 겹칠 수 있으며, 이때 도윤을 기존 전면 z-order로 표시한다. 이 겹침을 없애려고 하린·부장을 뒤로 밀거나 평상시 간격을 넓히지 않는다.
 - 도윤 visual center, mechanical center, world origin은 같은 이동량을 사용한다.
 - production 위험물 크기는 재조정 전 기준의 `70%`, 접근 속도는 재조정 전 기준의 `1.5배`다.
 - 상단 장애물은 `96×22wu`, 하단 `88wu`이며 standing 목~어깨와 충돌하고 slide 위에는 8wu 이상 여유가 있어야 한다.
@@ -74,31 +76,42 @@
 | 시작 안내 | 조작·목표 안내와 명시적 시작, 메인 크림·코랄 테마 적용 | 완료·사용자 승인 |
 | 렌더링 회귀 | 중복 배경 패널 제거, 실제 3개 배경만 교차 전환, 화면 밖 장애물 DOM 생성 방지 | 완료 |
 | 통과 연출·간판 복원 | 통과 중 장애물을 동료 뒤 레이어로 전환하고 승인된 간판 v002 에셋 복원 | 완료 |
+| CUE-01 | `hazard-01` jump와 `hazard-02` slide에서만 회차당 한 번의 연속 PREPARE→ACT 안내 | `smoke_checked` |
+| PERF-01 | 장애물·배경·캐릭터 렌더 캐시, viewport 읽기 캐시, 합성 transform 배치 적용 | `smoke_checked` |
+| FORMATION-01 | 포즈와 무관한 run 기준 대형, 하린 고정 앵커, 부장 `chasePressure` 전용 이동 | `smoke_checked` |
 
 완료 동작을 보호하는 핵심 테스트는 `minigames/day4-office-escape/tests/core.test.js`와 `NAN_GAME_TITLE/tests/day4-integration.test.js`다. 문서를 줄였다는 이유로 테스트를 삭제하거나 완화하지 않는다.
 
-## 4. 남은 작업 1 — CUE-01
+## 4. 완료 작업 — CUE-01·PERF-01·FORMATION-01
 
-- 상태: `planned`
+- 상태: `smoke_checked`
 - 목적: 첫 점프 위험과 첫 슬라이드 위험에서만 조작 안내를 각각 한 번 보여준다.
-- 허용: `core.js`, `index.js`, dev cue 경로, 직접 관련 테스트, 캐시 버전
-- 금지: actor·hazard geometry, 속도·코스, HUD, 이미지·manifest, animation frame
+- 보존: actor·hazard geometry, 속도·64초 코스, HUD, 이미지·manifest, animation frame, 공개 API
 
 구현 조건:
 
-1. production 한 회차에서 jump cue 1회, slide cue 1회만 발행한다.
-2. 같은 행동 유형의 후속 위험에서는 cue를 표시하지 않는다.
-3. 재시작하면 두 tutorial cue 플래그를 초기화한다.
-4. dev 정적 cue는 production 횟수 상태와 분리한다.
-5. cue는 입력을 예약하거나 자동 실행하지 않는다.
+1. 코스의 최초 jump `hazard-01`, 최초 slide `hazard-02`가 1.8초 준비 범위에 들어오면 행동별 `telegraph`를 한 번만 발행한다.
+2. 해당 위험이 해결될 때까지 기존 주황색 `PREPARE → ACT`, `JUMP/SLIDE`, `NOW` 안내를 연속 표시한다.
+3. 같은 행동 유형의 후속 위험은 `upcomingHazard`와 telegraph에서 제외하지만 충돌·회피 판정은 유지한다.
+4. 재시작은 새 Core의 빈 cue 상태로 시작하며 dev 정적 장면은 별도 Core로 production 상태와 분리한다.
+5. cue는 입력을 예약하거나 자동 실행하지 않으며 120ms 점프 버퍼와 0.7초 슬라이드를 변경하지 않는다.
+
+렌더링·대형 조건:
+
+1. `renderObjects()`는 가시 노드 갱신 → 화면 밖 노드 숨김 → 해결 노드 제거 순서를 사용하고, 화면 안 노드의 `hidden`을 매 프레임 토글하지 않는다.
+2. 장애물의 `hidden`·부모 레이어·위치·크기, 캐릭터의 art·canvas·anchor, 배경의 활성 상태·opacity·z-index·pan은 값이 바뀔 때만 쓴다.
+3. viewport 크기는 시작·resize 시에만 다시 읽고 캐릭터 배치는 `translate3d`를 사용한다. 부장은 CSS `left` transition 없이 Core의 `chasePressure` 보간만 따른다.
+4. 배경은 현재 패널과 0.7초 교차 전환 대상만 활성화하며 이미지 필터·해상도·에셋은 유지한다.
+5. run→jump/slide/assist 및 gait 프레임 교체는 대형 앵커를 움직이지 않는다. 동일 `chasePressure`에서 하린·부장 앵커 변화 허용치는 1px 이하이다.
 
 완료 기준:
 
-- 자연 플레이와 재시작 플레이에서 각 cue의 횟수가 정확하다.
-- 직접 입력과 기존 판정·속도·코스 계약이 유지된다.
-- 대상 테스트와 1440×900 첫 jump·slide smoke가 통과한다.
+- 64초 결정론 테스트와 새 Core 재시작 테스트에서 각 cue가 jump 1회, slide 1회다.
+- 반복 렌더 테스트에서 화면 안 장애물의 `hidden` 변이가 없고 해결 노드 제거는 한 번이다.
+- 1440×900·1920×1080 브라우저에서 고정 대형과 전면 겹침을 확인하며 run→slide 하린·부장 앵커 변화가 1px 이하이다.
+- 성능 목표는 10초 워밍업에서 p95 프레임 간격 25ms 이하, 34ms 초과 2% 이하, 50ms 이상 long task 0회다. 최종 수치는 `FINAL-01`의 브라우저 프로파일러에서 기록한다.
 
-## 5. 남은 작업 2 — ANIM-01/02 4프레임 달리기
+## 5. 남은 작업 1 — ANIM-01/02 4프레임 달리기
 
 - 상태: `planned`
 - 시작 조건: `CUE-01 smoke_checked`
@@ -121,7 +134,7 @@
 - 1440×900에서 크기 펌핑, 좌우 흔들림, 발 미끄러짐, 완전 동기화가 보이지 않는다.
 - 아트 validation이 통과하고 사용자 승인이 기록돼 있다.
 
-## 6. 남은 작업 3 — FINAL-01 최종 통합
+## 6. 남은 작업 2 — FINAL-01 최종 통합
 
 - 상태: `planned`
 - 시작 조건: `CUE-01 smoke_checked`, 4프레임 자산 사용자 승인과 production 적용 완료
@@ -146,7 +159,7 @@
 ## 7. 작업 상태 갱신 규칙
 
 - 상태 흐름은 `planned → in_progress → code_complete → smoke_checked → user_accepted`를 사용한다.
-- 새 세션은 위 세 남은 작업 중 하나만 담당한다.
+- 새 세션은 위 두 남은 작업 중 하나만 담당한다.
 - 구현 시작·완료 시 해당 절의 상태와 아래 기록 한 줄만 갱신한다.
 - 범위 밖 문제는 즉시 수정하지 않고 이 문서에 한 줄로 추가한다.
 
@@ -161,6 +174,7 @@
 | 2026-08-06 | 문서 압축 | 완료 Phase 상세를 제거하고 남은 세 작업 중심으로 축약 |
 | 2026-08-06 | 렌더링 회귀 수정 | 중복 배경 합성과 같은 이미지 교차 전환 제거, 장애물 동료 충돌 착시·상부 표기 누락 수정 |
 | 2026-08-06 | 간판 에셋 복원 | 텍스트-only 상부 표기를 제거하고 승인 `prop.office.sign` v002를 판정 분리형 슬라이드 위험으로 복원 |
+| 2026-08-06 | CUE-01·PERF-01·FORMATION-01 | 최초 jump·slide cue 1회 제한, 렌더 캐시·합성 transform 적용, 포즈 독립 고정 대형 완료 |
 
 ## 9. 최종 사용자 플레이 기록
 
