@@ -80,6 +80,27 @@ test("고정 스텝 점프는 60·120·144Hz에서 같은 정점과 체공 시�
   assert.ok(Math.max(...samples.map((sample) => sample.apex)) - Math.min(...samples.map((sample) => sample.apex)) <= Core.FIXED_STEP);
 });
 
+test("점프 입력은 실행 가능한 순간에만 시작되고 공중·슬라이드 입력을 예약하지 않는다", () => {
+  const jumping = Core.create({ duration: 8, length: 1800, course: [] });
+  assert.equal(jumping.pressJump(), true);
+  assert.ok(jumping.snapshot().y > 0);
+  jumping.drainEvents();
+  assert.equal(jumping.pressJump(), false, "midair input is discarded");
+  advance(jumping, 1);
+  assert.equal(jumping.snapshot().y, 0);
+  assert.equal(jumping.drainEvents().filter((event) => event.type === "jump").length, 0, "landing does not replay input");
+
+  const sliding = Core.create({ duration: 8, length: 1800, course: [] });
+  sliding.commitSlide();
+  sliding.drainEvents();
+  assert.equal(sliding.pressJump(), false, "sliding input is discarded");
+  advance(sliding, 0.72);
+  assert.equal(sliding.snapshot().sliding, false);
+  assert.equal(sliding.snapshot().y, 0);
+  assert.equal(sliding.drainEvents().filter((event) => event.type === "jump").length, 0, "slide end does not replay input");
+  assert.equal(sliding.pressJump(), true, "jump remains immediate after the visible slide ends");
+});
+
 test("슬라이드는 한 번의 입력으로 0.7초이며 재입력으로 연장되지 않는다", () => {
   for (const frame of [1 / 60, 1 / 120, 1 / 144]) {
     const game = Core.create({ duration: 8, length: 1800, course: [] });

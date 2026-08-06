@@ -39,8 +39,9 @@
 .oe2-route li { position: relative; z-index: 1; display: grid; grid-template-rows: 42px 18px; justify-items: center; gap: 5px; color: rgba(245, 234, 208, .62); font-size: 14px; font-weight: 750; line-height: 18px; white-space: nowrap; }
 .oe2-route li svg { width: 42px; height: 42px; box-sizing: border-box; padding: 10px; color: var(--oe2-ivory); background: #07111d; border: 1px solid currentColor; border-radius: 50%; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
 .oe2-route li span { padding-inline: 4px; background: rgba(4, 12, 21, .94); }
-.oe2-route li.is-active { color: var(--oe2-green); }
-.oe2-route li.is-active svg { color: #07111d; background: var(--oe2-green); }
+.oe2-route li.is-passed,.oe2-route li.is-active { color: var(--oe2-green); }
+.oe2-route li.is-passed svg,.oe2-route li.is-active svg { color: #07111d; background: var(--oe2-green); }
+.oe2-route li.is-active svg { box-shadow: 0 0 0 2px rgba(245,234,208,.7); }
 .oe2-tools { display: flex; align-items: center; justify-content: flex-end; gap: 16px; }
 .oe2-items { display: flex; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .oe2-items li { display: grid; width: 29px; height: 29px; place-items: center; opacity: .32; border: 1px solid rgba(245, 234, 208, .35); border-radius: 7px; transition: opacity 160ms ease, border-color 160ms ease; }
@@ -71,6 +72,7 @@
 .oe2-intro-guide > button b { font-size: 20px; }.oe2-intro-guide > button:hover { background: var(--oe2-intro-coral-dark); }.oe2-intro-guide > button:active { translate: 0 2px; }.oe2-intro-guide > button:focus-visible { outline: 3px solid #f29aa2; outline-offset: 3px; }
 
 .oe2-world { position: relative; min-height: 0; overflow: hidden; container-type: size; isolation: isolate; background: #0a1520; }
+.oe2-world:focus { outline: none; }
 .oe2-background-track { position: absolute; z-index: -5; inset: 0; height: auto; width: auto; isolation: isolate; }
 .oe2-background-panel { position: absolute; z-index: -1; inset: 0; contain: paint; margin: 0; overflow: hidden; background: #0b1520; opacity: 0; pointer-events: none; }
 .oe2-background-panel img { position: absolute; top: 0; bottom: 0; left: -2%; display: block; width: 104%; height: 100%; max-width: none; object-fit: cover; object-position: center; filter: saturate(.83) brightness(.78) contrast(1.07); transform: translate3d(var(--oe2-background-pan, 0%), 0, 0); }

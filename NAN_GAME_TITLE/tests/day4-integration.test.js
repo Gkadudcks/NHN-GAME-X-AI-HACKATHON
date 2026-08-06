@@ -349,7 +349,7 @@ test("DAY 4 페이지는 스토리와 추격 미니게임을 엔진 전에 불�
   const minigameIndex = html.indexOf('src="minigames/day4-office-escape/index.js');
   const engineIndex = html.indexOf('src="js/day4.js');
   assert.ok(storyIndex >= 0 && storyIndex < minigameIndex && minigameIndex < engineIndex);
-  assert.match(html, /day4-office-escape\/style\.css\?v=63/);
+  assert.match(html, /day4-office-escape\/style\.css\?v=64/);
 });
 
 test("모든 DAY 자료 화면은 공용 PPT형 슬라이드 스타일을 사용한다", () => {
@@ -937,7 +937,7 @@ test("V2 퇴근 미니게임은 공개 진입점·결과·저장 연동을 유�
   const dev = read("minigames/day4-office-escape/dev/dev.js");
   assert.ok(html.indexOf("day4-office-escape/core.js") < html.indexOf("day4-office-escape/index.js"));
   assert.match(core, /const FIXED_STEP = 1 \/ 120/);
-  assert.match(core, /const JUMP_BUFFER = 0\.12/);
+  assert.doesNotMatch(core, /JUMP_BUFFER|jumpBuffer|jumpHeld/);
   assert.match(core, /const SLIDE_DURATION = 0\.7/);
   assert.match(core, /const SLIDE_RECOVERY = 0\.15/);
   assert.match(core, /const INVULNERABLE_TIME = 0\.75/);
@@ -1108,12 +1108,12 @@ test("V2 플레이어·장애물·cue·dev 판정은 46% bottom-center 단일 �
   for (const source of [html, dev]) {
     assert.match(source, /day4-office-escape\/art-assets\.js\?v=5/);
   }
-  assert.match(html, /day4-office-escape\/style\.css\?v=63/);
-  assert.match(html, /day4-office-escape\/core\.js\?v=33/);
-  assert.match(html, /day4-office-escape\/index\.js\?v=83/);
-  assert.match(dev, /day4-office-escape\/style\.css\?v=20/);
-  assert.match(dev, /day4-office-escape\/core\.js\?v=33/);
-  assert.match(dev, /day4-office-escape\/index\.js\?v=26/);
+  assert.match(html, /day4-office-escape\/style\.css\?v=64/);
+  assert.match(html, /day4-office-escape\/core\.js\?v=34/);
+  assert.match(html, /day4-office-escape\/index\.js\?v=84/);
+  assert.match(dev, /day4-office-escape\/style\.css\?v=21/);
+  assert.match(dev, /day4-office-escape\/core\.js\?v=34/);
+  assert.match(dev, /day4-office-escape\/index\.js\?v=27/);
   assert.match(dev, /day4-office-escape\/dev\/dev\.js\?v=11/);
 });
 
@@ -1127,7 +1127,7 @@ test("V2 행동 cue는 PREP·ACT 정보만 제공하고 입력은 직접 실행�
   assert.match(core, /if \(!tutorialHazardIds\.has\(object\.id\) \|\| resolved\.has\(object\.id\) \|\| issuedTutorialCues\.has\(object\.avoid\)\) continue/);
   assert.match(core, /issuedTutorialCues\.add\(object\.avoid\)/);
   assert.match(core, /function cuePhaseFor\(object, leadTime\) \{\s*if \(leadTime <= actionLeadFor\(object\.avoid\)\) return "act";\s*return "prepare";/);
-  assert.match(core, /function pressJump\(\) \{\s*jumpBuffer = JUMP_BUFFER;/);
+  assert.match(core, /function pressJump\(\) \{\s*if \(!isGrounded\(\) \|\| isSliding\(\)\) return false;[\s\S]*emit\("jump"\);\s*return true;/);
   assert.match(core, /function commitSlide\(\) \{\s*activateSlide\(\);/);
   assert.doesNotMatch(core, /reservedInput|reserveInput|inputQueued|inputExecuted|input-ready/);
   assert.doesNotMatch(runtime, /inputQueued|inputExecuted|input-ready|classList\.(?:toggle|add|remove)\("queued"\)|자동 실행 대기|알맞을 때 실행/);
@@ -1158,7 +1158,7 @@ test("V2 Phase 4 HUD·피격·pause·결과 접근성 계약을 유지한다", (
   assert.match(runtime, /state\.restartOptions = \{ \.\.\.state\.restartOptions, previewScene: "run" \}/);
   assert.match(runtime, /refs\.jump\.disabled = false;[\s\S]*refs\.slide\.disabled = false;[\s\S]*refs\.pause\.disabled = false;/);
   assert.match(runtime, /refs\.result\.hidden = true;/);
-  assert.match(runtime, /if \(restartOptions\.autoStart === false\) refs\.jump\.focus\(\{ preventScroll: true \}\)/);
+  assert.doesNotMatch(runtime, /refs\.jump\.focus\(/);
   assert.match(runtime, /result\.hitCount === 0 \? `무피격 \$\{grade\}`/);
   assert.match(runtime, /refs\.resultGoal\.textContent = `수집 \$\{result\.collectedItems\.length\}\/3 · 선택 목표`/);
   assert.match(runtime, /result\.caught[\s\S]*부장님에게 붙잡혔습니다\. 확인 업무 후 퇴근합니다\./);
@@ -1171,6 +1171,23 @@ test("V2 Phase 4 HUD·피격·pause·결과 접근성 계약을 유지한다", (
   assert.doesNotMatch(devHtml, /\.oe2-dev-tools-toggle\s*\{[^}]*left:/s);
   assert.match(dev, /resultAction: currentScene === "result" \? "restart" : undefined/);
   assert.match(dev, /setToolsCollapsed\(true\);[\s\S]*resultAction: "restart"/);
+});
+
+test("V2 점프 입력·누적 진행도·초기 포커스는 예약이나 상시 초록 표시를 만들지 않는다", () => {
+  const core = read("minigames/day4-office-escape/core.js");
+  const runtime = read("minigames/day4-office-escape/index.js");
+  const style = read("minigames/day4-office-escape/style.css");
+  assert.doesNotMatch(core, /JUMP_BUFFER|jumpBuffer|jumpHeld/);
+  assert.match(core, /function commitJump\(\) \{ return pressJump\(\); \}/);
+  assert.match(runtime, /if \(JUMP_KEYS\.has\(event\.code\)\) \{ event\.preventDefault\(\); if \(!event\.repeat\) triggerJump\(\); \}/);
+  assert.match(runtime, /if \(state\.game\.pressJump\(\)\) state\.pressedUntil\.jump = state\.uiElapsed \+ 0\.16/);
+  assert.match(runtime, /role="application" tabindex="-1"/);
+  assert.match(runtime, /node\.classList\.toggle\("is-passed", index < zoneIndex\)/);
+  assert.match(runtime, /node\.classList\.toggle\("is-active", index === zoneIndex\)/);
+  assert.match(runtime, /refs\.world\.focus\(\{ preventScroll: true \}\)/);
+  assert.doesNotMatch(runtime, /refs\.jump\.focus\(/);
+  assert.match(style, /\.oe2-route li\.is-passed,\.oe2-route li\.is-active \{ color: var\(--oe2-green\); \}/);
+  assert.match(style, /\.oe2-route li\.is-passed svg,\.oe2-route li\.is-active svg \{ color: #07111d; background: var\(--oe2-green\); \}/);
 });
 
 test("V2 Phase 5 코스 구간과 추격 압박은 기존 결과·pause 계약 안에서 렌더링된다", () => {

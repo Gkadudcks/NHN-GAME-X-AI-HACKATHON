@@ -24,7 +24,6 @@
   });
   const GRAVITY = 1900;
   const JUMP_VELOCITY = 760;
-  const JUMP_BUFFER = 0.12;
   const SLIDE_DURATION = 0.7;
   const SLIDE_RECOVERY = 0.15;
   const ACTION_LEAD_TIME = Object.freeze({ jump: 0.16, slide: 0.15 });
@@ -345,7 +344,6 @@
     const tutorialHazardIds = new Set(Object.values(tutorialHazards).filter(Boolean).map((object) => object.id));
     const issuedTutorialCues = new Set();
     const events = [];
-    let jumpBuffer = 0;
     let slideUntil = 0;
     let slideCooldownUntil = 0;
     let accumulator = 0;
@@ -365,7 +363,7 @@
     };
 
     function emit(type, detail = {}) { events.push({ type, ...detail }); }
-    function isGrounded() { return state.y <= 0.001; }
+    function isGrounded() { return state.y <= 0; }
     function isSliding() { return isGrounded() && state.elapsed < slideUntil; }
     function playerRect(y = state.y, sliding = isSliding()) {
       const profile = sliding ? PLAYER_PROFILES.slide : PLAYER_PROFILES.run;
@@ -467,11 +465,15 @@
       return true;
     }
     function pressJump() {
-      jumpBuffer = JUMP_BUFFER;
+      if (!isGrounded() || isSliding()) return false;
+      state.velocityY = JUMP_VELOCITY;
+      state.y = 0.001;
+      emit("jump");
+      return true;
     }
     function releaseJump() { /* compatibility: fixed jump ignores release duration. */ }
-    function commitJump() { pressJump(); }
-    function cancelJump() { jumpBuffer = 0; }
+    function commitJump() { return pressJump(); }
+    function cancelJump() { /* compatibility: immediate jump has no queued state. */ }
     function setSlide(active) { if (active) commitSlide(); }
     function commitSlide() {
       activateSlide();
@@ -528,15 +530,8 @@
       state.elapsed = Math.min(duration, state.elapsed + dt);
       state.invulnerable = Math.max(0, state.invulnerable - dt);
       state.chasePressureBoost = Math.max(0, state.chasePressureBoost - CHASE_PRESSURE.recoveryPerSecond * dt);
-      jumpBuffer = Math.max(0, jumpBuffer - dt);
       if (wasSliding && !isSliding()) {
         slideCooldownUntil = Math.max(slideCooldownUntil, state.elapsed + SLIDE_RECOVERY);
-      }
-      if (jumpBuffer > 0 && isGrounded() && !isSliding()) {
-        state.velocityY = JUMP_VELOCITY;
-        state.y = 0.001;
-        jumpBuffer = 0;
-        emit("jump");
       }
       state.velocityY -= GRAVITY * dt;
       state.y += state.velocityY * dt;
@@ -621,7 +616,6 @@
         chaseState: state.chasePressureBoost > 0.08 ? "closing" : state.chasePressureBoost > 0.001 ? "recovering" : "steady",
         backgroundSegment: routeSegmentFor(progress),
         sliding: isSliding(),
-        jumpHeld: jumpBuffer > 0,
         course,
         collectedItems: [...collected],
         playerAnchor: playerAnchorAt(state.distance, state.y),
@@ -639,7 +633,7 @@
     playerAnchorAt, screenProjection, projectWorldRect, projectWorldPoint, actorScreenGeometry, actorFormationGeometry, debugGeometry,
     COURSE, ZONES, COURSE_STAGES, BACKGROUND_ROUTE, DEFAULT_DURATION, DEFAULT_LENGTH, WORLD_SPEED_MULTIPLIER, PRODUCTION_HAZARD_SCALE, FIXED_STEP,
     PLAYER_X_OFFSET, PLAYER_PATH_WIDTH, PLAYER_BOTTOM_FORGIVENESS, PLAYER_WIDTH, STANDING_HEIGHT, SLIDING_WIDTH, SLIDING_HEIGHT, PLAYER_PROFILES,
-    GRAVITY, JUMP_VELOCITY, JUMP_BUFFER, SLIDE_DURATION, SLIDE_RECOVERY,
+    GRAVITY, JUMP_VELOCITY, SLIDE_DURATION, SLIDE_RECOVERY,
     INVULNERABLE_TIME, GAIT_FRAME_MS, GAIT_PHASE_DELAY_MS, COLLISION_INSET, PROP_ART_FRAMING, BACKGROUND_TRANSITION_DURATION,
     ACTION_LEAD_TIME, TUTORIAL_PREPARE_LEAD_TIME, MIN_HAZARD_GAP_SECONDS, CHASE_PRESSURE,
     VIEW_REFERENCE_WIDTH, VIEW_PLAYER_ANCHOR_X_RATIO, VIEW_GROUND_RATIO,

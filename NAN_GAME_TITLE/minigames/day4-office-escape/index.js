@@ -159,7 +159,7 @@
           </div>
         </div>
       </section>
-      <div class="oe2-world" aria-label="부장님을 피해 엘리베이터로 달리는 사무실" role="application">
+      <div class="oe2-world" aria-label="부장님을 피해 엘리베이터로 달리는 사무실" role="application" tabindex="-1">
         <div class="oe2-background-track" id="oe2-background-track" aria-hidden="true">${backgroundPanels()}</div>
         <div class="oe2-ground" aria-hidden="true"><i class="oe2-speed-line"></i><i class="oe2-speed-line"></i><i class="oe2-speed-line"></i></div>
         <ol class="oe2-zone-markers" aria-hidden="true"><li class="is-active"><span>1</span><b>사무실</b></li><li><span>2</span><b>복도</b></li><li><span>3</span><b>로비</b></li></ol>
@@ -475,7 +475,10 @@
       state.progressValue = progressValue;
     }
     if (state.zoneId !== snapshot.zone.id) {
-      refs.routeNodes.forEach((node, index) => node.classList.toggle("is-active", index === zoneIndex));
+      refs.routeNodes.forEach((node, index) => {
+        node.classList.toggle("is-passed", index < zoneIndex);
+        node.classList.toggle("is-active", index === zoneIndex);
+      });
       refs.zoneNodes.forEach((node, index) => node.classList.toggle("is-active", index === zoneIndex));
       state.zoneId = snapshot.zone.id;
     }
@@ -649,7 +652,7 @@
     state.playing = true;
     state.lastFrame = performance.now();
     frame = requestAnimationFrame(tick);
-    refs.jump.focus({ preventScroll: true });
+    refs.world.focus({ preventScroll: true });
   }
 
   function tick(now) {
@@ -666,8 +669,7 @@
 
   function triggerJump() {
     if (!state.playing || state.paused || state.completed) return;
-    state.game.pressJump();
-    state.pressedUntil.jump = state.uiElapsed + 0.16;
+    if (state.game.pressJump()) state.pressedUntil.jump = state.uiElapsed + 0.16;
   }
   function triggerSlide() {
     if (!state.playing || state.paused || state.completed) return;
@@ -728,7 +730,6 @@
     if (state.restartOnResult && state.restartOptions) {
       const restartOptions = state.restartOptions;
       start(restartOptions);
-      if (restartOptions.autoStart === false) refs.jump.focus({ preventScroll: true });
       return;
     }
     completeToStory();
@@ -759,7 +760,7 @@
       if (event.code === "Enter" || event.code === "Space") { event.preventDefault(); beginRun(); }
       return;
     }
-    if (JUMP_KEYS.has(event.code)) { event.preventDefault(); triggerJump(); }
+    if (JUMP_KEYS.has(event.code)) { event.preventDefault(); if (!event.repeat) triggerJump(); }
     else if (SLIDE_KEYS.has(event.code)) { event.preventDefault(); triggerSlide(); }
     else if (event.code === "Escape") { event.preventDefault(); state.paused ? resume() : pause(); }
   });
