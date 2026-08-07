@@ -8,11 +8,11 @@ description: Continue, tune, test, or review the NAN DAY 4 “부장님 피해�
 ## Start
 
 1. Read `AGENTS.md`.
-2. Read `NAN_GAME_TITLE/minigames/day4-office-escape/docs/REQUIREMENTS.md` completely.
+2. Read `NAN_GAME_TITLE/minigames/day4-office-escape/README.md` completely.
 3. For image work, read every required file under `docs/art/` before touching assets.
 4. Inspect the existing core, runtime, dev page, tests, and manifest entries before editing.
 
-Treat the requirements document as the durable source of truth after context compaction. Update its decision log only when a product or implementation decision actually changes.
+Treat the feature README as the durable source of truth after context compaction. Update it only when a product or implementation contract actually changes.
 
 ## Route the work
 
@@ -38,12 +38,4 @@ Follow `planned -> draft -> review -> approved`. Generate and log candidates, bu
 
 ## Verify every loop
 
-Run:
-
-```powershell
-python scripts/validate_art_assets.py
-Set-Location NAN_GAME_TITLE
-node --test tests/*.test.js minigames/*/tests/*.test.js
-```
-
-Then playtest desktop and mobile. Check intro, jump, slide, telegraphing, hit recovery, all three zones, pause/resume, result, callback, and restart. Do not call the loop complete while a required validation is failing.
+Run the Core or DAY 4 integration tests that directly cover the changed contract, then playtest the affected path on a PC desktop viewport. Run the full suite only for final integration, and run art validation whenever an image or manifest changes. Do not call the loop complete while a required targeted validation is failing.

@@ -7,6 +7,15 @@
   background: transparent;
 }
 
+/* Ending CGs take over the complete desktop viewport; dialogue returns after the reveal. */
+.game.ending-cg-fullscreen {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.game.ending-cg-fullscreen .messenger {
+  display: none;
+}
+
 /* Full-screen evidence panels replace the character view for that beat. */
 .stage.system-panel-active .character-layer {
   opacity: 0;

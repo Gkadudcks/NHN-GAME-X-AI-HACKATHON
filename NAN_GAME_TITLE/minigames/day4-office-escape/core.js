@@ -7,25 +7,55 @@
 
   const DEFAULT_DURATION = 64;
   const DEFAULT_LENGTH = 16000;
+  const WORLD_SPEED_MULTIPLIER = 1.5;
+  const PRODUCTION_HAZARD_SCALE = 0.7;
   const FIXED_STEP = 1 / 120;
   const PLAYER_X_OFFSET = 8;
+  const PLAYER_PATH_WIDTH = 44;
   const PLAYER_BOTTOM_FORGIVENESS = 8;
-  const PLAYER_WIDTH = 44;
-  const STANDING_HEIGHT = 88;
-  // The slide sprite is deliberately long, but its collision box stays close
-  // to Doyun's hips. This lets a 0.7s committed slide clear a desk-height
-  // obstacle without treating transparent leading pixels as a hit.
-  const SLIDING_WIDTH = 50;
-  const SLIDING_HEIGHT = 42;
+  const PLAYER_WIDTH = 80.01;
+  const STANDING_HEIGHT = 105.84;
+  const SLIDING_WIDTH = 71.19;
+  const SLIDING_HEIGHT = 44.1;
+  const PLAYER_PROFILES = Object.freeze({
+    run: Object.freeze({ width: PLAYER_WIDTH, height: STANDING_HEIGHT, referenceWidth: 141.12 * 386 / 512, referenceHeight: 141.12 }),
+    jump: Object.freeze({ width: PLAYER_WIDTH, height: STANDING_HEIGHT, referenceWidth: 141.12 * 365 / 480, referenceHeight: 141.12 }),
+    slide: Object.freeze({ width: SLIDING_WIDTH, height: SLIDING_HEIGHT, referenceWidth: 77.49 * 260 / 198, referenceHeight: 77.49 * 162 / 198 }),
+  });
   const GRAVITY = 1900;
   const JUMP_VELOCITY = 760;
-  const JUMP_BUFFER = 0.12;
   const SLIDE_DURATION = 0.7;
   const SLIDE_RECOVERY = 0.15;
+  const ACTION_LEAD_TIME = Object.freeze({ jump: 0.16, slide: 0.15 });
+  const TUTORIAL_PREPARE_LEAD_TIME = 1.8;
   const INVULNERABLE_TIME = 0.75;
+  const MIN_HAZARD_GAP_SECONDS = 2.8;
+  const CHASE_PRESSURE = Object.freeze({
+    stageBase: Object.freeze({ learning: 0.18, mixed: 0.28, finale: 0.38 }),
+    assistBoost: 0.16,
+    hitBoost: 0.28,
+    recoveryPerSecond: 0.32,
+    maximum: 0.82,
+  });
   const GAIT_FRAME_MS = 500;
   const GAIT_PHASE_DELAY_MS = Object.freeze({ doyun: 0, harin: 150, boss: 300 });
   const COLLISION_INSET = Object.freeze({ horizontal: 0.11, vertical: 0.15 });
+  const VIEW_REFERENCE_WIDTH = 780;
+  const VIEW_PLAYER_ANCHOR_X_RATIO = 0.46;
+  const VIEW_GROUND_RATIO = 0.09;
+  const ACTOR_FORMATION = Object.freeze({
+    doyunHarinGap: 12,
+    bossHarinSteadyGap: 30,
+    bossHarinMinimumGap: 10,
+    viewportMarginRatio: 0.016,
+    viewportMarginMinimum: 16,
+    minimumForwardViewRatio: 0.32,
+  });
+  const HAZARD_EDGE_ALIGNMENT = 1.4;
+  const SLIDE_CLEARANCE = 5.6;
+  const OVERHEAD_HAZARD_WIDTH = 96;
+  const OVERHEAD_HAZARD_HEIGHT = 22;
+  const OVERHEAD_HAZARD_BOTTOM = 88;
 
   const PROP_ART_FRAMING = Object.freeze({
     chair: Object.freeze({ alphaWidth: 333 / 512, alphaHeight: 468 / 512, bottomPadding: 12 / 512 }),
@@ -60,25 +90,31 @@
   ]);
   const BACKGROUND_TRANSITION_DURATION = 0.7;
 
+  const COURSE_STAGES = Object.freeze([
+    Object.freeze({ id: "learning", label: "초반 학습", start: 0, end: 20, intent: "첫 점프·슬라이드와 한 번의 교대 반복으로 조작을 익힌다." }),
+    Object.freeze({ id: "mixed", label: "중반 혼합", start: 20, end: 48, intent: "같은 행동 2회와 행동 전환을 섞어 단순 교대 암기를 깬다." }),
+    Object.freeze({ id: "finale", label: "후반 압박", start: 48, end: DEFAULT_DURATION, intent: "슬라이드 반복과 점프 반복을 짧게 교차해 마지막 변주를 만든다." }),
+  ]);
+
   const COURSE_BEATS = Object.freeze([
-    Object.freeze({ time: 5, avoid: "jump", type: "chair", label: "회전 의자", width: 76, height: 42, motion: "roll" }),
-    Object.freeze({ time: 9, avoid: "slide", type: "drawer", label: "낮은 서랍", width: 76, height: 36, y: 56 }),
-    Object.freeze({ time: 13, avoid: "jump", type: "cable", label: "전원 케이블", width: 122, height: 24 }),
-    Object.freeze({ time: 16.7, avoid: "slide", type: "sign", label: "낮은 안내 표지", width: 70, height: 36, y: 56, motion: "sway" }),
-    Object.freeze({ time: 20, avoid: "jump", type: "papers", label: "쏟아진 서류", width: 112, height: 34, motion: "scatter" }),
-    Object.freeze({ time: 23, avoid: "slide", type: "drawer", label: "열린 급지함", width: 80, height: 36, y: 56 }),
-    Object.freeze({ time: 26.4, avoid: "jump", type: "chair", label: "회전 의자", width: 78, height: 42, motion: "roll" }),
-    Object.freeze({ time: 29.6, avoid: "slide", type: "sign", label: "낮은 표지판", width: 72, height: 36, y: 56, motion: "sway" }),
-    Object.freeze({ time: 32.8, avoid: "jump", type: "cart", label: "서류 카트", width: 112, height: 44, motion: "rattle" }),
-    Object.freeze({ time: 36.2, avoid: "slide", type: "drawer", label: "복도 서랍", width: 80, height: 36, y: 56 }),
-    Object.freeze({ time: 39.1, avoid: "jump", type: "cable", label: "복합기 케이블", width: 124, height: 24 }),
-    Object.freeze({ time: 42, avoid: "slide", type: "sign", label: "유리 복도 표지", width: 74, height: 36, y: 56, motion: "sway" }),
-    Object.freeze({ time: 44.9, avoid: "jump", type: "papers", label: "흩어진 서류", width: 114, height: 34, motion: "scatter" }),
-    Object.freeze({ time: 47.8, avoid: "slide", type: "drawer", label: "열린 캐비닛", width: 82, height: 36, y: 56 }),
-    Object.freeze({ time: 50.8, avoid: "jump", type: "cart", label: "택배 카트", width: 114, height: 44, motion: "rattle" }),
-    Object.freeze({ time: 53.8, avoid: "slide", type: "sign", label: "로비 표지", width: 74, height: 36, y: 56, motion: "sway" }),
-    Object.freeze({ time: 56.7, avoid: "jump", type: "chair", label: "마지막 의자", width: 80, height: 42, motion: "roll" }),
-    Object.freeze({ time: 59.6, avoid: "slide", type: "drawer", label: "마지막 서랍", width: 84, height: 36, y: 56 }),
+    Object.freeze({ time: 5, stage: "learning", pattern: "introduce", avoid: "jump", type: "chair", label: "회전 의자", width: 76, height: 42, motion: "roll" }),
+    Object.freeze({ time: 9, stage: "learning", pattern: "introduce", avoid: "slide", type: "sign", label: "엘리베이터 안내판", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
+    Object.freeze({ time: 13, stage: "learning", pattern: "reinforce", avoid: "jump", type: "cable", label: "전원 케이블", width: 122, height: 24 }),
+    Object.freeze({ time: 16.7, stage: "learning", pattern: "reinforce", avoid: "slide", type: "overhead-duct", label: "낮은 케이블 덕트", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
+    Object.freeze({ time: 20, stage: "mixed", pattern: "repeat-jump", avoid: "jump", type: "papers", label: "쏟아진 서류", width: 112, height: 34, motion: "scatter" }),
+    Object.freeze({ time: 23, stage: "mixed", pattern: "repeat-jump", avoid: "jump", type: "chair", label: "밀려난 의자", width: 78, height: 42, motion: "roll" }),
+    Object.freeze({ time: 26.4, stage: "mixed", pattern: "repeat-slide", avoid: "slide", type: "sign", label: "사무실 안내판", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
+    Object.freeze({ time: 29.6, stage: "mixed", pattern: "repeat-slide", avoid: "slide", type: "overhead-duct", label: "낮은 케이블 덕트", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
+    Object.freeze({ time: 32.8, stage: "mixed", pattern: "switch", avoid: "jump", type: "cart", label: "서류 카트", width: 112, height: 44, motion: "rattle" }),
+    Object.freeze({ time: 36.2, stage: "mixed", pattern: "switch", avoid: "slide", type: "sign", label: "복도 안내판", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
+    Object.freeze({ time: 39.1, stage: "mixed", pattern: "repeat-slide", avoid: "slide", type: "overhead-duct", label: "복도 케이블 덕트", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
+    Object.freeze({ time: 42, stage: "mixed", pattern: "repeat-jump", avoid: "jump", type: "cable", label: "복합기 케이블", width: 124, height: 24 }),
+    Object.freeze({ time: 44.9, stage: "mixed", pattern: "repeat-jump", avoid: "jump", type: "papers", label: "흩어진 서류", width: 114, height: 34, motion: "scatter" }),
+    Object.freeze({ time: 47.8, stage: "mixed", pattern: "handoff", avoid: "slide", type: "sign", label: "로비 진입 안내판", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
+    Object.freeze({ time: 50.8, stage: "finale", pattern: "repeat-slide", avoid: "slide", type: "overhead-duct", label: "로비 케이블 덕트", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
+    Object.freeze({ time: 53.8, stage: "finale", pattern: "repeat-jump", avoid: "jump", type: "cart", label: "택배 카트", width: 114, height: 44, motion: "rattle" }),
+    Object.freeze({ time: 56.7, stage: "finale", pattern: "repeat-jump", avoid: "jump", type: "chair", label: "마지막 의자", width: 80, height: 42, motion: "roll" }),
+    Object.freeze({ time: 59.6, stage: "finale", pattern: "finish", avoid: "slide", type: "sign", label: "마지막 엘리베이터 안내판", width: OVERHEAD_HAZARD_WIDTH, height: OVERHEAD_HAZARD_HEIGHT, y: OVERHEAD_HAZARD_BOTTOM }),
   ]);
 
   const COLLECTIBLE_BEATS = Object.freeze([
@@ -97,6 +133,14 @@
     return Math.floor(Math.max(0, (Number(elapsedSeconds) || 0) * 1000 - delayMs) / GAIT_FRAME_MS) % 2;
   }
   function zoneFor(progress) { return ZONES.find((zone) => progress >= zone.start && progress < zone.end) || ZONES.at(-1); }
+  function courseStageFor(elapsed) {
+    const seconds = clamp(Number(elapsed) || 0, 0, DEFAULT_DURATION);
+    return COURSE_STAGES.find((stage) => seconds >= stage.start && seconds < stage.end) || COURSE_STAGES.at(-1);
+  }
+  function chasePressureFor(stageId, boost = 0) {
+    const base = CHASE_PRESSURE.stageBase[stageId] ?? CHASE_PRESSURE.stageBase.learning;
+    return clamp(base + Math.max(0, Number(boost) || 0), 0, CHASE_PRESSURE.maximum);
+  }
   function routeSegmentFor(progress) {
     const seconds = clamp(Number(progress) || 0, 0, 1) * DEFAULT_DURATION;
     return BACKGROUND_ROUTE.find((segment) => seconds >= segment.start && seconds < segment.end) || BACKGROUND_ROUTE.at(-1);
@@ -127,16 +171,142 @@
   }
   function distanceAt(elapsed, duration, length) {
     const p = clamp(elapsed / duration, 0, 1);
-    return length * (0.88 * p + 0.12 * p * p);
+    return length * WORLD_SPEED_MULTIPLIER * (0.88 * p + 0.12 * p * p);
   }
   function speedAt(elapsed, duration, length) {
     const p = clamp(elapsed / duration, 0, 1);
-    return (length / duration) * (0.88 + 0.24 * p);
+    return (length / duration) * WORLD_SPEED_MULTIPLIER * (0.88 + 0.24 * p);
   }
-  function prepareLeadFor(elapsed) { return elapsed < 24 ? 1.35 : elapsed < 48 ? 1.15 : 1; }
-  // The long prepare phase explains the required verb; the filled ACT cue
-  // appears close enough to contact that a fixed action covers the far edge.
-  function actionLeadFor(avoid) { return avoid === "jump" ? 0.16 : 0.15; }
+  function playerAnchorAt(distance = 0, y = 0) {
+    return {
+      x: (Number(distance) || 0) + PLAYER_X_OFFSET + PLAYER_PATH_WIDTH / 2,
+      y: Number(y) || 0,
+    };
+  }
+  function screenProjection(snapshot, viewportWidth, viewportHeight) {
+    const width = Math.max(1, Number(viewportWidth) || VIEW_REFERENCE_WIDTH);
+    const height = Math.max(1, Number(viewportHeight) || 1);
+    const scale = width / VIEW_REFERENCE_WIDTH;
+    const anchor = snapshot?.playerAnchor || {
+      x: (snapshot?.playerRect?.x || 0) + (snapshot?.playerRect?.width || PLAYER_WIDTH) / 2,
+      y: Math.max(0, (snapshot?.playerRect?.y || 0) - PLAYER_BOTTOM_FORGIVENESS),
+    };
+    // Phase 4R-A translates the whole runner formation by moving this shared
+    // anchor. It remains both Doyun's visual bottom-center and the mechanical
+    // player center, so hazards, collision guides, and cues keep one world axis.
+    const playerAnchorX = width * VIEW_PLAYER_ANCHOR_X_RATIO;
+    const ground = height * VIEW_GROUND_RATIO;
+    return Object.freeze({
+      width,
+      height,
+      scale,
+      ground,
+      playerAnchorX,
+      playerAnchorBottom: ground + anchor.y * scale,
+      worldOriginX: playerAnchorX - anchor.x * scale,
+    });
+  }
+  function projectWorldRect(rect, projection) {
+    const scale = projection.scale;
+    return {
+      left: projection.worldOriginX + rect.x * scale,
+      bottom: projection.ground + rect.y * scale,
+      width: rect.width * scale,
+      height: rect.height * scale,
+    };
+  }
+  function projectWorldPoint(point, projection) {
+    return {
+      x: projection.worldOriginX + point.x * projection.scale,
+      bottom: projection.ground + point.y * projection.scale,
+    };
+  }
+  function actorScreenGeometry(metric, anchor, projection) {
+    const alpha = metric.alphaBounds;
+    const body = metric.bodyBounds;
+    const foot = metric.footAnchor;
+    const canvasSize = metric.canonicalOpaqueHeight / alpha.height * projection.scale;
+    const alphaBottom = alpha.top + alpha.height;
+    return Object.freeze({
+      canvasSize,
+      host: Object.freeze({
+        left: anchor.x - foot.x * canvasSize,
+        bottom: anchor.bottom,
+        width: canvasSize,
+        height: canvasSize,
+      }),
+      reference: Object.freeze({
+        left: anchor.x + (body.left - foot.x) * canvasSize,
+        bottom: anchor.bottom + (alphaBottom - body.top - body.height) * canvasSize,
+        width: body.width * canvasSize,
+        height: body.height * canvasSize,
+      }),
+      silhouette: Object.freeze({
+        left: anchor.x + (alpha.left - foot.x) * canvasSize,
+        bottom: anchor.bottom,
+        width: alpha.width * canvasSize,
+        height: alpha.height * canvasSize,
+      }),
+    });
+  }
+  function actorFormationGeometry(metrics, projection, chasePressure = CHASE_PRESSURE.stageBase.learning) {
+    const doyunAnchor = Object.freeze({ x: projection.playerAnchorX, bottom: projection.playerAnchorBottom });
+    const doyun = actorScreenGeometry(metrics.doyun, doyunAnchor, projection);
+    const harinProbe = actorScreenGeometry(metrics.harin, { x: 0, bottom: projection.ground }, projection);
+    const harinRight = doyun.silhouette.left - ACTOR_FORMATION.doyunHarinGap * projection.scale;
+    const harinAnchor = Object.freeze({
+      x: harinRight - harinProbe.silhouette.left - harinProbe.silhouette.width,
+      bottom: projection.ground,
+    });
+    const harin = actorScreenGeometry(metrics.harin, harinAnchor, projection);
+    const pressureRange = CHASE_PRESSURE.maximum - CHASE_PRESSURE.stageBase.learning;
+    const pressureRatio = clamp((chasePressure - CHASE_PRESSURE.stageBase.learning) / pressureRange, 0, 1);
+    const bossGap = ACTOR_FORMATION.bossHarinSteadyGap
+      + (ACTOR_FORMATION.bossHarinMinimumGap - ACTOR_FORMATION.bossHarinSteadyGap) * pressureRatio;
+    const bossProbe = actorScreenGeometry(metrics.boss, { x: 0, bottom: projection.ground }, projection);
+    const bossRight = harin.silhouette.left - bossGap * projection.scale;
+    const bossAnchor = Object.freeze({
+      x: bossRight - bossProbe.silhouette.left - bossProbe.silhouette.width,
+      bottom: projection.ground,
+    });
+    return Object.freeze({
+      anchors: Object.freeze({ doyun: doyunAnchor, harin: harinAnchor, boss: bossAnchor }),
+      actors: Object.freeze({
+        doyun,
+        harin,
+        boss: actorScreenGeometry(metrics.boss, bossAnchor, projection),
+      }),
+      gaps: Object.freeze({ doyunHarin: ACTOR_FORMATION.doyunHarinGap, bossHarin: bossGap }),
+    });
+  }
+  function debugGeometry(snapshot, metrics, viewportWidth, viewportHeight) {
+    const projection = screenProjection(snapshot, viewportWidth, viewportHeight);
+    const formation = actorFormationGeometry(metrics, projection, snapshot?.chasePressure);
+    const doyunRight = formation.actors.doyun.silhouette.left + formation.actors.doyun.silhouette.width;
+    const forwardView = projection.width - doyunRight;
+    return Object.freeze({
+      anchorRatio: VIEW_PLAYER_ANCHOR_X_RATIO,
+      projection,
+      formation,
+      forwardView,
+      forwardViewRatio: forwardView / projection.width,
+      canonicalOpaqueHeights: Object.freeze({
+        doyun: metrics.doyun.canonicalOpaqueHeight,
+        harin: metrics.harin.canonicalOpaqueHeight,
+        boss: metrics.boss.canonicalOpaqueHeight,
+      }),
+      playerProfiles: PLAYER_PROFILES,
+    });
+  }
+  function prepareLeadFor(elapsed, object, tutorialHazardIds) {
+    if (tutorialHazardIds?.has(object?.id)) return TUTORIAL_PREPARE_LEAD_TIME;
+    return elapsed < 24 ? 1.35 : elapsed < 48 ? 1.15 : 1;
+  }
+  function actionLeadFor(avoid) { return ACTION_LEAD_TIME[avoid] || ACTION_LEAD_TIME.jump; }
+  function cuePhaseFor(object, leadTime) {
+    if (leadTime <= actionLeadFor(object.avoid)) return "act";
+    return "prepare";
+  }
 
   function buildCourse(duration, length, customCourse) {
     if (Array.isArray(customCourse)) return customCourse.map((entry) => ({ ...entry }));
@@ -144,7 +314,10 @@
       id: `hazard-${String(index + 1).padStart(2, "0")}`,
       kind: "hazard",
       ...beat,
-      x: distanceAt(beat.time / DEFAULT_DURATION * duration, duration, length) + PLAYER_X_OFFSET + PLAYER_WIDTH,
+      width: beat.avoid === "slide" ? beat.width : beat.width * PRODUCTION_HAZARD_SCALE,
+      height: beat.avoid === "slide" ? beat.height : beat.height * PRODUCTION_HAZARD_SCALE,
+      y: beat.avoid === "slide" ? beat.y : (beat.y || 0) * PRODUCTION_HAZARD_SCALE,
+      x: distanceAt(beat.time / DEFAULT_DURATION * duration, duration, length) + PLAYER_X_OFFSET + PLAYER_PATH_WIDTH,
     }));
     const items = COLLECTIBLE_BEATS.map((beat, index) => ({
       id: `item-${beat.type}`,
@@ -153,7 +326,7 @@
       height: 38,
       y: 112,
       ...beat,
-      x: distanceAt(beat.time / DEFAULT_DURATION * duration, duration, length) + PLAYER_X_OFFSET + PLAYER_WIDTH + 28,
+      x: distanceAt(beat.time / DEFAULT_DURATION * duration, duration, length) + PLAYER_X_OFFSET + PLAYER_PATH_WIDTH + 28,
     }));
     return [...hazard, ...items].sort((a, b) => a.x - b.x);
   }
@@ -164,9 +337,13 @@
     const course = buildCourse(duration, length, options.course);
     const resolved = new Set();
     const collected = new Set();
-    const warned = new Set();
+    const tutorialHazards = Object.freeze({
+      jump: course.find((object) => object.kind === "hazard" && object.avoid === "jump") || null,
+      slide: course.find((object) => object.kind === "hazard" && object.avoid === "slide") || null,
+    });
+    const tutorialHazardIds = new Set(Object.values(tutorialHazards).filter(Boolean).map((object) => object.id));
+    const issuedTutorialCues = new Set();
     const events = [];
-    let jumpBuffer = 0;
     let slideUntil = 0;
     let slideCooldownUntil = 0;
     let accumulator = 0;
@@ -181,18 +358,21 @@
       invulnerable: 0,
       assistAvailable: options.assist !== false,
       assistUsed: false,
+      chasePressureBoost: 0,
       finished: false,
     };
 
     function emit(type, detail = {}) { events.push({ type, ...detail }); }
-    function isGrounded() { return state.y <= 0.001; }
+    function isGrounded() { return state.y <= 0; }
     function isSliding() { return isGrounded() && state.elapsed < slideUntil; }
     function playerRect(y = state.y, sliding = isSliding()) {
+      const profile = sliding ? PLAYER_PROFILES.slide : PLAYER_PROFILES.run;
+      const anchor = playerAnchorAt(state.distance, y);
       return {
-        x: state.distance + PLAYER_X_OFFSET,
+        x: anchor.x - profile.width / 2,
         y: y + PLAYER_BOTTOM_FORGIVENESS,
-        width: sliding ? SLIDING_WIDTH : PLAYER_WIDTH,
-        height: sliding ? SLIDING_HEIGHT : STANDING_HEIGHT,
+        width: profile.width,
+        height: profile.height,
       };
     }
     function objectRects(object) {
@@ -200,32 +380,69 @@
       if (object.kind === "item") {
         return { logicalRect, visibleRect: logicalRect, artRect: logicalRect, collisionRect: { ...logicalRect } };
       }
+      if (object.avoid === "slide") {
+        const edgeInset = Math.min(HAZARD_EDGE_ALIGNMENT, logicalRect.width / 2, logicalRect.height / 2);
+        const collisionRect = {
+          x: logicalRect.x + edgeInset,
+          y: logicalRect.y + edgeInset,
+          width: logicalRect.width - edgeInset * 2,
+          height: logicalRect.height - edgeInset * 2,
+        };
+        if (object.type === "sign") {
+          const framing = PROP_ART_FRAMING.sign;
+          const artSize = logicalRect.width / framing.alphaWidth;
+          return {
+            logicalRect,
+            visibleRect: {
+              x: logicalRect.x,
+              y: logicalRect.y,
+              width: logicalRect.width,
+              height: artSize * framing.alphaHeight,
+            },
+            artRect: {
+              x: logicalRect.x - (artSize - logicalRect.width) / 2,
+              y: logicalRect.y - artSize * framing.bottomPadding,
+              width: artSize,
+              height: artSize,
+            },
+            collisionRect,
+          };
+        }
+        return {
+          logicalRect,
+          visibleRect: logicalRect,
+          artRect: logicalRect,
+          collisionRect,
+        };
+      }
       const framing = PROP_ART_FRAMING[object.type];
       const artSize = framing ? logicalRect.width / framing.alphaWidth : Math.max(logicalRect.width, logicalRect.height);
+      const visibleHeight = framing ? artSize * framing.alphaHeight : logicalRect.height;
+      const edgeInset = Math.min(HAZARD_EDGE_ALIGNMENT, logicalRect.width / 2, visibleHeight / 2);
+      const visibleY = logicalRect.y;
       const visibleRect = framing ? {
         x: logicalRect.x,
-        y: logicalRect.y,
+        y: visibleY,
         width: logicalRect.width,
-        height: artSize * framing.alphaHeight,
-      } : logicalRect;
+        height: visibleHeight,
+      } : { ...logicalRect, y: visibleY };
       const artRect = framing ? {
         x: visibleRect.x - (artSize - visibleRect.width) / 2,
         y: visibleRect.y - artSize * framing.bottomPadding,
         width: artSize,
         height: artSize,
       } : logicalRect;
-      const insetX = visibleRect.width * COLLISION_INSET.horizontal;
-      const insetY = visibleRect.height * COLLISION_INSET.vertical;
-      const groundForgiveness = object.avoid === "jump" ? visibleRect.height * 0.04 : 0;
+      const collisionBottomInset = 0;
+      const collisionTopInset = edgeInset;
       return {
         logicalRect,
         visibleRect,
         artRect,
         collisionRect: {
-          x: visibleRect.x + insetX,
-          y: visibleRect.y + insetY - groundForgiveness,
-          width: visibleRect.width - insetX * 2,
-          height: visibleRect.height - insetY * 2,
+          x: visibleRect.x + edgeInset,
+          y: visibleRect.y + collisionBottomInset,
+          width: visibleRect.width - edgeInset * 2,
+          height: visibleRect.height - collisionBottomInset - collisionTopInset,
         },
       };
     }
@@ -247,12 +464,20 @@
       emit("slide");
       return true;
     }
-    function pressJump() { jumpBuffer = JUMP_BUFFER; }
+    function pressJump() {
+      if (!isGrounded() || isSliding()) return false;
+      state.velocityY = JUMP_VELOCITY;
+      state.y = 0.001;
+      emit("jump");
+      return true;
+    }
     function releaseJump() { /* compatibility: fixed jump ignores release duration. */ }
-    function commitJump() { pressJump(); }
-    function cancelJump() { jumpBuffer = 0; }
-    function setSlide(active) { if (active) activateSlide(); }
-    function commitSlide() { activateSlide(); }
+    function commitJump() { return pressJump(); }
+    function cancelJump() { /* compatibility: immediate jump has no queued state. */ }
+    function setSlide(active) { return active ? commitSlide() : false; }
+    function commitSlide() {
+      return activateSlide();
+    }
     function cancelSlide() { /* fixed slide completes its committed duration. */ }
     function applyHazard(object) {
       resolved.add(object.id);
@@ -260,12 +485,14 @@
       if (state.assistAvailable) {
         state.assistAvailable = false;
         state.assistUsed = true;
+        state.chasePressureBoost = Math.min(CHASE_PRESSURE.maximum, state.chasePressureBoost + CHASE_PRESSURE.assistBoost);
         emit("assist", { object });
         return;
       }
       state.hitCount += 1;
       state.combo = 0;
       state.invulnerable = INVULNERABLE_TIME;
+      state.chasePressureBoost = Math.min(CHASE_PRESSURE.maximum, state.chasePressureBoost + CHASE_PRESSURE.hitBoost);
       emit("hit", { object, hitCount: state.hitCount });
     }
     function resolveObject(object, previousPlayer, currentPlayer) {
@@ -302,15 +529,9 @@
       const wasSliding = isSliding();
       state.elapsed = Math.min(duration, state.elapsed + dt);
       state.invulnerable = Math.max(0, state.invulnerable - dt);
-      jumpBuffer = Math.max(0, jumpBuffer - dt);
+      state.chasePressureBoost = Math.max(0, state.chasePressureBoost - CHASE_PRESSURE.recoveryPerSecond * dt);
       if (wasSliding && !isSliding()) {
         slideCooldownUntil = Math.max(slideCooldownUntil, state.elapsed + SLIDE_RECOVERY);
-      }
-      if (jumpBuffer > 0 && isGrounded() && !isSliding()) {
-        state.velocityY = JUMP_VELOCITY;
-        state.y = 0.001;
-        jumpBuffer = 0;
-        emit("jump");
       }
       state.velocityY -= GRAVITY * dt;
       state.y += state.velocityY * dt;
@@ -322,14 +543,14 @@
       const currentPlayer = playerRect();
       const speed = speedAt(state.elapsed, duration, length);
       for (const object of course) {
-        if (object.kind !== "hazard" || resolved.has(object.id) || warned.has(object.id)) continue;
+        if (!tutorialHazardIds.has(object.id) || resolved.has(object.id) || issuedTutorialCues.has(object.avoid)) continue;
         const metrics = collisionCueMetrics(object, speed);
-        if (metrics.exitGap < 0 || metrics.leadTime > prepareLeadFor(previousElapsed)) continue;
-        warned.add(object.id);
+        if (metrics.exitGap < 0 || metrics.leadTime > prepareLeadFor(previousElapsed, object, tutorialHazardIds)) continue;
+        issuedTutorialCues.add(object.avoid);
         emit("telegraph", { object, leadTime: metrics.leadTime });
       }
       for (const object of course) resolveObject(object, previousPlayer, currentPlayer);
-      if (state.elapsed >= duration || state.distance >= length) finish();
+      if (state.elapsed >= duration || state.distance >= length * WORLD_SPEED_MULTIPLIER) finish();
     }
     function step(seconds) {
       if (state.finished) return snapshot();
@@ -343,18 +564,21 @@
     function upcomingHazard() {
       const speed = speedAt(state.elapsed, duration, length);
       for (const object of course) {
-        if (object.kind !== "hazard" || resolved.has(object.id)) continue;
+        if (!tutorialHazardIds.has(object.id) || resolved.has(object.id)) continue;
         const metrics = collisionCueMetrics(object, speed);
         if (metrics.exitGap < 0) continue;
+        const prepareLeadTime = prepareLeadFor(state.elapsed, object, tutorialHazardIds);
+        if (metrics.leadTime > prepareLeadTime) return null;
+        const telegraphPhase = cuePhaseFor(object, metrics.leadTime);
         return {
           ...object,
           gap: object.x - state.distance,
           collisionGap: metrics.entryGap,
           leadTime: metrics.leadTime,
           clearLeadTime: metrics.clearLeadTime,
-          prepareLeadTime: prepareLeadFor(state.elapsed),
-          telegraphPhase: metrics.leadTime <= actionLeadFor(object.avoid) ? "act" : "prepare",
-          inputReady: metrics.leadTime <= actionLeadFor(object.avoid),
+          prepareLeadTime,
+          actionLeadTime: actionLeadFor(object.avoid),
+          telegraphPhase,
         };
       }
       return null;
@@ -378,18 +602,23 @@
     function drainEvents() { return events.splice(0, events.length); }
     function snapshot() {
       const progress = clamp(state.elapsed / duration, 0, 1);
+      const courseStage = courseStageFor(progress * DEFAULT_DURATION);
+      const chasePressure = chasePressureFor(courseStage.id, state.chasePressureBoost);
       return {
         ...state,
         progress,
-        distanceProgress: clamp(state.distance / length, 0, 1),
+        distanceProgress: clamp(state.distance / (length * WORLD_SPEED_MULTIPLIER), 0, 1),
         duration,
         length,
         zone: zoneFor(progress),
+        courseStage,
+        chasePressure,
+        chaseState: state.chasePressureBoost > 0.08 ? "closing" : state.chasePressureBoost > 0.001 ? "recovering" : "steady",
         backgroundSegment: routeSegmentFor(progress),
         sliding: isSliding(),
-        jumpHeld: jumpBuffer > 0,
         course,
         collectedItems: [...collected],
+        playerAnchor: playerAnchorAt(state.distance, state.y),
         playerRect: playerRect(),
         activeObjects: course.filter((object) => !resolved.has(object.id)).map((object) => ({ ...object, ...objectRects(object) })),
         upcomingHazard: upcomingHazard(),
@@ -400,10 +629,15 @@
 
   const COURSE = Object.freeze(buildCourse(DEFAULT_DURATION, DEFAULT_LENGTH));
   return Object.freeze({
-    create, gradeForHits, gaitFrameIndex, zoneFor, routeSegmentFor, backgroundPresentationAt, distanceAt, speedAt,
-    COURSE, ZONES, BACKGROUND_ROUTE, DEFAULT_DURATION, DEFAULT_LENGTH, FIXED_STEP,
-    PLAYER_X_OFFSET, PLAYER_BOTTOM_FORGIVENESS, PLAYER_WIDTH, STANDING_HEIGHT, SLIDING_WIDTH, SLIDING_HEIGHT,
-    GRAVITY, JUMP_VELOCITY, JUMP_BUFFER, SLIDE_DURATION, SLIDE_RECOVERY,
+    create, gradeForHits, gaitFrameIndex, zoneFor, courseStageFor, chasePressureFor, routeSegmentFor, backgroundPresentationAt, distanceAt, speedAt,
+    playerAnchorAt, screenProjection, projectWorldRect, projectWorldPoint, actorScreenGeometry, actorFormationGeometry, debugGeometry,
+    COURSE, ZONES, COURSE_STAGES, BACKGROUND_ROUTE, DEFAULT_DURATION, DEFAULT_LENGTH, WORLD_SPEED_MULTIPLIER, PRODUCTION_HAZARD_SCALE, FIXED_STEP,
+    PLAYER_X_OFFSET, PLAYER_PATH_WIDTH, PLAYER_BOTTOM_FORGIVENESS, PLAYER_WIDTH, STANDING_HEIGHT, SLIDING_WIDTH, SLIDING_HEIGHT, PLAYER_PROFILES,
+    GRAVITY, JUMP_VELOCITY, SLIDE_DURATION, SLIDE_RECOVERY,
     INVULNERABLE_TIME, GAIT_FRAME_MS, GAIT_PHASE_DELAY_MS, COLLISION_INSET, PROP_ART_FRAMING, BACKGROUND_TRANSITION_DURATION,
+    ACTION_LEAD_TIME, TUTORIAL_PREPARE_LEAD_TIME, MIN_HAZARD_GAP_SECONDS, CHASE_PRESSURE,
+    VIEW_REFERENCE_WIDTH, VIEW_PLAYER_ANCHOR_X_RATIO, VIEW_GROUND_RATIO,
+    ACTOR_FORMATION, HAZARD_EDGE_ALIGNMENT, SLIDE_CLEARANCE,
+    OVERHEAD_HAZARD_WIDTH, OVERHEAD_HAZARD_HEIGHT, OVERHEAD_HAZARD_BOTTOM,
   });
 });

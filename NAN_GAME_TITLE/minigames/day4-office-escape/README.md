@@ -1,21 +1,55 @@
 # DAY 4 오피스 이스케이프 V2
 
-DAY 4 미니게임의 코드, 문서, 생산 에셋, 시안과 생성 이력을 이 기능 폴더에서 함께 관리한다. 전역 `assets/art/manifests/art-assets.json`은 안정 ID를 위한 저장소 공용 색인으로만 남긴다.
+`부장님 피해서 퇴근하기`는 DAY 4 본편에 연결된 64초 자동 달리기 미니게임이다. 현재 구현과 본게임 연결은 완료됐으며, 이 README가 기능의 파일 지도와 유지보수 계약을 함께 담당한다.
 
-- V2 플레이 런타임: `core.js`, `index.js`, `style.css`
-- 검수 페이지와 승인 보드: `dev/index.html`
-- 시안 A: `dev/index.html?composition=a&scene=jump`
-- 시안 B: `dev/index.html?composition=b&scene=slide`
-- 시안 C: `dev/index.html?composition=c&scene=run`
-- 생산 에셋과 생성 이력: `assets/art/`
-- 비교 시안과 프롬프트: `assets/art/concepts/`
-- 검수 보드와 가공 원본: `assets/art/reviews/`, `assets/art/work/`
-- 공개 API: `OfficeEscapeMinigame.start({ onComplete })`, `pause()`, `resume()`, `debugSnapshot()`
-- 이전 V044 구현: `legacy/v044/`
-- 확정 수정 계획: `docs/V2_BACKGROUND_TRANSITION_UI_REFINEMENT_PLAN.md`
+## 현재 상태
 
-V2는 64초 고정 자동 러너다. 1/120초 고정 스텝, 고정 점프, 0.7초 슬라이드, swept AABB 판정으로 18개 장애물과 3개 수집물을 처리한다. 배경 순서는 사무실 A-B-C-A-B-C → 복도 A-B → 로비 A-B-A이며, 마지막에는 기존 승인 엘리베이터 아트가 도착 장면으로 남는다.
+- PC 데스크톱 브라우저 전용
+- 64초 코스, 위험물 18개, 선택 수집물 3개
+- 점프·슬라이드 직접 입력, 입력 예약과 자동 실행 없음
+- 최초 점프·슬라이드 위험에서만 회차당 한 번씩 조작 cue 표시
+- 고정 캐릭터 대형, 렌더 캐시, 배경 교차 전환 적용
+- 결과 화면의 `스토리 계속하기`로 DAY 4 성공·잡힘 후속 장면에 복귀
+- 추가 구현 예정 작업 없음
 
-`dev/index.html`의 `review 배경` 토글은 Office B/C, Corridor B, Lobby A/B 후보를 본편과 분리해 확인한다. 이 5장은 `review` 상태이며, 버튼 통일안 A/B/C와 함께 사용자 승인 전에는 production UI 또는 active asset에 적용되지 않는다.
+## 파일 지도
 
-검증 명령: `node --test NAN_GAME_TITLE/minigames/day4-office-escape/tests/core.test.js`, `python scripts/validate_art_assets.py` (저장소 루트에서 실행).
+| 파일 | 역할 |
+| --- | --- |
+| `core.js` | 코스, 입력, 이동, 충돌, 결과를 담당하는 결정론적 코어 |
+| `index.js` | DOM, 키보드 입력, 렌더링, 효과음, 본게임 콜백 |
+| `style.css` | HUD, 캐릭터, 장애물, 결과 화면의 시각 표현 |
+| `art-assets.js` | 승인된 아트 ID와 메트릭 해석 |
+| `dev/index.html` | 정적 장면과 실제 플레이 검수 진입점 |
+| `tests/core.test.js` | 코어 규칙 테스트 |
+| `../../tests/day4-integration.test.js` | DAY 4 본편·저장·스토리 연결 테스트 |
+| `../../day4.html` | production 진입점 |
+
+## 공개 계약
+
+- `OfficeEscapeMinigame.start({ onComplete })`
+- `OfficeEscapeMinigame.pause()`
+- `OfficeEscapeMinigame.resume()`
+- `OfficeEscapeMinigame.debugSnapshot()`
+- 완료 결과 필드: `grade`, `caught`, `elapsed`, `hitCount`, `collectedItems`, `maxCombo`
+
+`caught`도 정상적인 DAY 4 완료다. Production 결과 버튼은 재시작을 강제하지 않고 결과를 본편 콜백으로 전달한다. `caught: false`는 하린과 저녁 식사 장면, `caught: true`는 추가 확인 야근 장면으로 이어지며 저장 결과는 DAY 5의 전날 회상 대사에도 반영된다.
+
+## 유지보수 규칙
+
+- 게임 규칙은 `core.js`, 브라우저 상태와 표현은 `index.js`·`style.css`에 둔다.
+- 공개 API와 결과 필드를 깨지 않는다.
+- 점프·슬라이드는 실행 가능한 입력 프레임에만 시작하며 실행 불가 입력은 폐기한다.
+- 하린의 기계적 보조는 호감도와 결합하지 않는다.
+- production 아트는 `ArtAssets.resolve(id)`와 승인된 manifest 버전을 사용한다.
+- 미니게임 루트의 `hidden` 상태는 반드시 `display: none`으로 처리해 본편 복귀 화면을 가리지 않게 한다.
+- 변경 범위에 해당하는 Core 또는 DAY 4 integration 대상 테스트만 우선 실행한다. 전체 테스트와 아트 검증은 최종 통합이나 이미지·manifest 변경 때 수행한다.
+
+## 검수 진입점
+
+- 기본 검수: `dev/index.html`
+- 실제 플레이: 시작 안내의 `퇴근 시작`
+- 정적 장면: `?composition=c&scene=run`, `jump`, `slide`, `collectible`, `maximum`, `hit`, `arrival`, `result`
+- 판정 확인: dev 페이지의 `판정 보기`
+
+Legacy 구현은 `legacy/v044/`에 보존돼 있으며 명시적인 회귀 조사 외에는 현재 결정 근거로 사용하지 않는다.
