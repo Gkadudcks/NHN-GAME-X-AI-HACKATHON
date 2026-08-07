@@ -37,9 +37,9 @@
   const FALLBACK_SLIDES = Object.freeze({
     day5PresentationStart: ["신규 유저 첫 전투 도달률 개선안", ["현재 문제 · 첫 전투 이전 이탈", "개선 원칙 · 첫 성공 경험 앞당기기", "적용 방식 · 일부 신규 유저 대상 검증"]],
     day5PresentationProblem: ["현재 문제", ["신규 설치 · 12,480명", "첫 전투 도달 · 8,502명", "첫 전투 이전 이탈 · 3,978명", "첫 전투 이전 이탈률 · 31.9%"]],
-    day5PresentationSolution: ["현재 잔존율", ["현재 7일 차 잔존율 · 18.4%", "대상 · 신규 유저", "자료 기준 · 가장 최근 자료", "용도 · 개선안 검증 전 현재 상태 확인"]],
-    day5PresentationFocusDetail: ["조사 근거", ["DAY 2 조사 · 선택한 조사 기준", "원인 근거 · 조사별 상세 확인", "핵심 원인 · 발표 화면 참조", "다음 순서 · 공통 결론"]],
-    day5PresentationVerification: ["구체적인 개선안", ["DAY 1 방향 · 선택한 방향 기준", "실행 방식 · 발표 화면 참조", "개선 원칙 · 발표 화면 참조", "다음 순서 · 적용 및 검증 계획"]],
+    day5PresentationSolution: ["현재 잔존율", ["7일 후 잔존율 · 18.4%", "대상 · 신규 유저", "자료 기준 · 가장 최근 자료", "평가 · 개선 필요"]],
+    day5PresentationFocusDetail: ["조사 근거", ["사용자 조사 · 선택한 조사 기준", "원인 근거 · 조사별 상세 확인", "핵심 원인 · 발표 화면 참조", "다음 순서 · 공통 결론"]],
+    day5PresentationVerification: ["구체적인 개선안", ["개선 방향 · 선택한 방향 기준", "실행 방식 · 발표 화면 참조", "개선 원칙 · 발표 화면 참조", "다음 순서 · 적용 및 검증 계획"]],
     day5FocusReaction: ["발표 내용 확인", ["현재 문제 · 확인", "개선안 · 확인", "실행 계획 · 확인", "발표 · 결론 대기"]],
     day5PresentationNormal: ["발표 결론", ["제안 목표 · 핵심 재미 우선 경험", "검증 방식 · 일부 적용 후 확대", "확대 조건 · 도달률과 잔존율 동시 개선", "발표 상태 · 종료"]],
     day5NormalQaQuestion: ["질의응답", ["질문 · 이탈 시점 지연 여부", "확인 필요 · 도달률과 잔존율 구분", "현재 상태 · 답변 대기", "다음 순서 · 답변"]],
@@ -68,11 +68,29 @@
     day5RecoveryBasis: ["03 · 분석 기준 확인", ["대상 · 신규 가입 사용자", "기간 · 가장 최근 자료", "측정 · 가입 7일 후", "선택 · 같은 분석 기준"]],
     day5RecoveryBinding: ["04 · 원본 연결 방식", ["자동 연결 · 변경 가능", "원본 고정 · 선택 자료 유지", "자동 갱신 · 일시 중지", "목표 · 18.4% 유지"]],
     day5Resume: ["수치 정정 결과", ["현재 기준값 · 18.4%", "2024년 당시 수치 · 12.7%", "근거 자료 · 정상 복구", "보고 상태 · 정정 완료"]],
-    day5ProposalRestatement: ["제안 재정리", ["18.4% · 현재 상태 확인값", "개선안 효과 · 검증 전", "1차 목표 · 도달률 +5%p", "확대 조건 · 잔존율 동반 개선"]],
+    day5ProposalRestatement: ["제안 재정리", ["현재 잔존율 · 18.4%", "평가 · 개선 필요", "1차 목표 · 도달률 +5%p", "확대 조건 · 잔존율 동반 개선"]],
     day5ResumeContinue: ["질의응답 확인", ["현재 수치 · 정정 완료", "연결 오류 · 확인", "검증 범위 · 확인", "최종 평가 · 개선안과 사고 대응 함께"]],
     day5EvaluatorFollowUp: ["추가 질의", ["질문 · 개선안 신뢰도", "근거 자료 · 복구 완료", "판단 기준 · 사고와 개선안 분리", "현재 상태 · 답변 대기"]],
     day5ResumeAnswer: ["신뢰도 답변", ["개선안 근거 · 오늘 재검증", "사고 원인 · 자료 관리 과정", "판단 기준 · 효과와 사고 분리", "발표 상태 · 마무리 단계"]],
     day5EvaluatorClose: ["최종 확인 결과", ["제출 당시 원본 · 확인", "제출 이후 변경 · 확인", "개선안 타당성 · 평가 반영", "최종 평가 · 검토 중"]],
+  });
+  const FALLBACK_SLIDE_ALIASES = Object.freeze({
+    day5PresentationProblemScale: "day5PresentationProblem",
+    day5PresentationFocusConclusion: "day5PresentationFocusDetail",
+    day5PresentationMetricConclusion: "day5PresentationMetric",
+    day5PresentationVerificationDetail: "day5PresentationVerification",
+    day5PresentationBoundaryCriteria: "day5PresentationBoundary",
+    day5PresentationNormalConclusion: "day5PresentationNormal",
+    day5NormalQaQuestionDetail: "day5NormalQaQuestion",
+    day5NormalQaAnswerDetail: "day5NormalQaAnswer",
+    day5NormalQaAcceptedSource: "day5NormalQaAccepted",
+    day5MismatchQuestion: "day5MismatchDoyun",
+    day5PauseSequence: "day5Pause",
+    day5AuditResultReviewDetail: "day5AuditResultReview",
+    day5ResumeDetail: "day5Resume",
+    day5ProposalRestatementDetail: "day5ProposalRestatement",
+    day5ResumeContinueDetail: "day5ResumeContinue",
+    day5ResumeAnswerDetail: "day5ResumeAnswer",
   });
 
   let active = false;
@@ -104,7 +122,8 @@
   function slideFor(scene, resolvedSystem) {
     const sys = resolvedSystem || scene.system;
     if (sys) return [sys.title || "발표 자료", sys.rows || []];
-    return FALLBACK_SLIDES[scene.id] || ["발표 자료", [
+    const slideId = FALLBACK_SLIDE_ALIASES[scene.id] || scene.id;
+    return FALLBACK_SLIDES[slideId] || ["발표 자료", [
       `현재 시각 · ${scene.time || ""}`,
       `발표 단계 · ${scene.speaker || ""}`,
       "검증 기준 · 확인된 기록",
@@ -122,11 +141,9 @@
       if (danger && index < 2) article.classList.add("danger");
       const caption = document.createElement("small");
       const content = document.createElement("strong");
-      const footer = document.createElement("span");
       caption.textContent = label;
       content.textContent = value || label;
-      footer.textContent = danger ? "확인 필요" : "원본 확인 완료";
-      article.append(caption, content, footer);
+      article.append(caption, content);
       return article;
     }));
   }

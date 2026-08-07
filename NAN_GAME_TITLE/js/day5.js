@@ -882,23 +882,32 @@ function dynamicText(scene) {
   if (scene.dynamic === "day4ResultClose") return escapedDay4 ? "그럼 어제 저녁도 나름 도움이 됐네요. 너무 일찍부터 긴장하지만 말아요." : "다행이네요. 오늘은 확인한 기록을 믿고 발표에만 집중해요.";
   if (scene.dynamic === "presentationOpening") {
     const focus = Day5Story.normalizePresentationFocus(state.decisions.presentationFocus);
-    const intro = "정직원 전환 발표를 시작하겠습니다. 발표 주제는 신규 유저 첫 전투 도달률 개선안입니다.";
-    if (focus === "dropoff_scale") return `${intro} 현재 신규 설치 사용자의 31.9%는 RPG의 핵심 플레이인 첫 전투에 도달하기 전에 이탈합니다. 저는 이 구간을 줄일 수 있는 개선안을 말씀드리겠습니다.`;
-    if (focus === "user_experience") return `${intro} 현재 신규 유저는 캐릭터를 움직이고 전투를 경험하기 전에 여러 안내와 보상을 먼저 마주합니다. 저는 첫 성공 경험이 더 빨리 시작되도록 순서를 바꾸는 방안을 말씀드리겠습니다.`;
-    return `${intro} 이번 제안은 새로운 시스템 전체를 한 번에 개발하는 계획이 아닙니다. 첫 전투 이전 구간만 작은 범위에서 바꾸고, 실제 지표로 확인한 뒤 확대하는 방안입니다.`;
+    if (focus === "dropoff_scale") return "신규 유저 첫 전투 도달률 개선안입니다. 먼저 이탈 규모부터 보시죠.";
+    if (focus === "user_experience") return "신규 유저 첫 전투 도달률 개선안입니다. 첫 10분의 경험부터 보겠습니다.";
+    return "신규 유저 첫 전투 도달률 개선안입니다. 검증 가능한 범위부터 말씀드리죠.";
   }
   if (scene.dynamic === "presentationResearchEvidence") {
-    if (day2Subtask === "reviews") return "신규 유저 리뷰를 분류하자 비슷해 보이던 불만이 두 가지로 나뉘었습니다. ‘설명이 길어서 피곤하다’는 의견과 ‘다음에 무엇을 해야 할지 모르겠다’는 의견입니다. 안내를 전부 줄이면 피로는 줄어도 불안은 커질 수 있습니다. 따라서 정보량뿐 아니라 안내가 나타나는 시점과 다음 목표의 가시성을 함께 바꿔야 합니다.";
-    if (day2Subtask === "journey") return "첫 10분의 플레이 흐름을 직접 기록했습니다. 로그인 보상, 출석 보상, 패키지 안내를 차례로 닫고 캐릭터를 처음 움직이기까지 1분 42초가 걸렸습니다. 신규 유저가 RPG의 조작과 전투보다 창을 닫는 행동을 먼저 학습하고 있다는 것이 가장 큰 문제였습니다.";
-    return "동종 RPG 세 게임의 첫 전투 진입 과정을 같은 조건으로 비교했습니다. 가장 자연스러운 흐름은 튜토리얼이 무조건 짧은 게임이 아니라, 필요한 순간에 설명을 열고 다시 확인할 수 있는 게임이었습니다. 현재 문제는 설명의 양만이 아닙니다. 정해진 안내를 모두 따라가기 전까지 유저가 직접 선택할 수 없다는 점이 첫 플레이의 흐름을 끊고 있습니다.";
+    if (day2Subtask === "reviews") return "리뷰 불만은 두 갈래였습니다. ‘긴 설명’과 ‘보이지 않는 다음 목표’.";
+    if (day2Subtask === "journey") return "첫 10분 동안 보상·출석·패키지 창을 닫고, 1분 42초 뒤에야 움직였습니다.";
+    return "동종 RPG 세 게임을 비교했습니다. 차이는 튜토리얼 길이가 아니었습니다.";
+  }
+  if (scene.dynamic === "presentationResearchConclusion") {
+    if (day2Subtask === "reviews") return "따라서 안내량뿐 아니라 노출 시점과 목표 가시성도 함께 바꾸겠습니다.";
+    if (day2Subtask === "journey") return "유저가 조작보다 창 닫기를 먼저 배우는 흐름. 첫 경험이 늦어지는 이유죠.";
+    return "필요할 때 설명을 열고 다시 보는 흐름. 강제 안내와의 차이는 여기에 있습니다.";
   }
   if (scene.dynamic === "presentationProposalDetail") {
-    if (day1Direction === "shorten_tutorial") return "첫 전투 전에는 이동, 전투, 첫 목표에 필요한 안내만 남기겠습니다. 출석, 상점, 패키지, 세부 성장 안내는 첫 전투와 첫 보상 이후로 옮기겠습니다. 정보를 없애는 것이 아니라 RPG의 핵심 행동을 먼저 경험하도록 순서를 바꾸는 방식입니다.";
-    if (day1Direction === "ai_help") return "유저가 일정 시간 멈추거나 같은 구간에서 반복 실패할 때, 나나봇이 현재 상황에 맞는 도움말을 제안하도록 하겠습니다. 나나봇이 공략을 임의로 만드는 방식은 아닙니다. 기획자가 작성하고 검토한 도움말 중 필요한 항목을 찾아 주고, 최종 내용과 적용 조건은 사람이 관리합니다.";
-    return "시작 구간에서 모든 기능을 한꺼번에 설명하지 않겠습니다. 전투, 장비, 성장 기능을 처음 사용하는 순간에 해당 안내만 보여 주고, 놓친 설명은 도움말에서 다시 열 수 있게 하겠습니다. 유저가 필요할 때 설명을 선택할 수 있게 해 흐름과 이해를 함께 지키는 방식입니다.";
+    if (day1Direction === "shorten_tutorial") return "첫 전투 전에는 이동·전투·첫 목표에 필요한 안내만 남기겠습니다.";
+    if (day1Direction === "ai_help") return "나나봇의 개입 시점은 장시간 정체와 반복 실패 구간입니다.";
+    return "전투·장비·성장 기능을 처음 쓸 때, 필요한 안내만 보여 줍니다.";
+  }
+  if (scene.dynamic === "presentationProposalConclusion") {
+    if (day1Direction === "shorten_tutorial") return "출석·상점·패키지·성장 안내는 첫 보상 뒤로 옮기는 구상입니다.";
+    if (day1Direction === "ai_help") return "공략을 만들진 않습니다. 검수한 도움말만 골라 제안하죠.";
+    return "놓친 설명은 다시 열 수 있습니다. 흐름과 이해를 함께 지키는 방식이죠.";
   }
   if (scene.dynamic === "strategySetup") {
-    if (state.decisions.responseStrategy === "defend_evidence") return "정상 원본과 DAY 2 교차 검증 기록을 첫 번째 증거 창에 열어 두겠습니다.";
+    if (state.decisions.responseStrategy === "defend_evidence") return "정상 원본과 교차 검증 기록을 첫 번째 증거 창에 열어 두겠습니다.";
     if (state.decisions.responseStrategy === "clarify_scope") return "대상과 기간을 바로 확인할 수 있도록 두 자료의 산정 기준을 나란히 띄워 두겠습니다.";
     if (state.decisions.responseStrategy === "coordinate_harin") return "선배는 정상 원본 창을 맡아 주십시오. 질문이 나오면 제가 요청하고 직접 설명하겠습니다.";
     return "가능한 원인을 메모해 뒀지만, 실제 답변에서는 확인된 기록을 먼저 열겠습니다.";
@@ -910,47 +919,49 @@ function dynamicText(scene) {
     return "작은 범위에서 검증한 뒤 확대하겠다는 실행 순서는 확인했습니다. 결론을 말씀해 주세요.";
   }
   if (scene.dynamic === "strategyCallback") {
-    if (state.decisions.responseStrategy === "defend_evidence") return "정상 수치는 18.4%입니다. 지금 보존된 원본과 교차 검증 기록을 바로 제시하겠습니다.";
-    if (state.decisions.responseStrategy === "clarify_scope") return "먼저 두 자료가 같은 신규 가입 사용자와 같은 가장 최근 자료 기간을 대상으로 하는지 확인하겠습니다.";
-    if (state.decisions.responseStrategy === "coordinate_harin") return "서하린 선배, 보존한 정상 원본을 열어 주십시오. 저는 발표 흐름을 유지하며 산정 기준을 설명하겠습니다.";
-    return "자동화 과정에서 문제가 생겼을 가능성이… 잠깐, 원인을 단정하기 전에 검증된 기록부터 확인하겠습니다.";
+    if (state.decisions.responseStrategy === "defend_evidence") return "정상 수치는 18.4%입니다. 보존 원본과 교차 검증 기록을 바로 제시하겠습니다.";
+    if (state.decisions.responseStrategy === "clarify_scope") return "먼저 두 자료의 대상과 기간이 같은지부터 확인하겠습니다.";
+    if (state.decisions.responseStrategy === "coordinate_harin") return "서하린 선배, 정상 원본을 열어 주십시오. 저는 산정 기준을 설명하겠습니다.";
+    return "자동화 오류일 수 있습니다… 아닙니다. 추측 대신 기록부터 확인하겠습니다.";
   }
   if (scene.dynamic === "verificationConfront") {
-    if (verificationGrade() === "perfect") return "재실행 요청은 내가 했어. 네가 정리한 경로가 맞아. 예전 검증 자료를 빨리 다시 쓰려던 거였고, 공식 근거 자료까지 바뀔 줄은 몰랐어.";
-    if (verificationGrade() === "partial") return "재실행 요청은 내가 했어. 추가로 확인된 감사 기록까지 보니 부정할 수 없겠네. 공식 근거 자료까지 바뀔 줄은 몰랐어.";
-    return "잠깐, 재실행을 요청한 건 맞지만 내가 직접 숫자를 바꾼 건 아니잖아. 그걸 전부 내 책임이라고 할 수 있어?";
+    if (verificationGrade() === "perfect") return "재실행 요청은 내가 했어. 예전 자료를 쓰려다 공식 근거까지 바뀔 줄은 몰랐어.";
+    if (verificationGrade() === "partial") return "재실행 요청은 내가 했어. 감사 기록을 보니 더는 부정할 수 없겠네.";
+    return "요청한 건 맞지만 숫자를 직접 바꾼 건 아니잖아. 전부 내 책임이라고 할 수 있어?";
   }
   if (scene.dynamic === "verificationFollowup") {
-    if (verificationGrade() === "failed") return "시스템 담당자가 감사 로그 원문을 추가로 공개했어. 요청 직후 자료 연결이 바뀐 기록도, 이상 징후 이후 보고 안 한 기록도 다 남아 있어.";
-    return "DAY 3에 이상 징후를 봤으면서 왜 말 안 했어?";
+    if (verificationGrade() === "failed") return "감사 로그 원문이 공개됐어. 요청 직후 연결 변경과 미보고 기록도 남아 있어.";
+    return "이상 징후를 확인했으면서 왜 말하지 않았어?";
   }
   if (scene.dynamic === "verificationAdmission") {
-    if (verificationGrade() === "failed") return "…알겠어. 내 요청 뒤 연결이 바뀐 것도, 이상을 보고도 말하지 않은 것도 맞아. 평가에서 빠질까 봐 숨겼어. 지금은 일단 사실부터 정리해.";
-    return "내 요청 때문일 수도 있다고 생각했어. 평가에서 빠질까 봐… 먼저 말하지 못했어. 사과는 이거 끝나고 제대로 할게.";
+    if (verificationGrade() === "failed") return "…알겠어. 내 요청 뒤 연결이 바뀐 걸 알고도 평가가 두려워 숨겼어.";
+    return "내 요청 때문일 수 있다고 생각했어. 평가가 두려워 먼저 말하지 못했어.";
   }
   if (scene.dynamic === "supportRecoveryShock") {
-    if (verificationGrade() === "failed") return "화면이 내 손을 떠나 스스로 움직이기 시작했다. 검증조차 다 마치지 못하고 여기까지 왔다는 게 이제야 실감났다.";
-    if (state.trust < 0) return "화면이 내 손을 떠나 스스로 움직이기 시작했다. 다섯 번의 기회를 다 썼다는 것보다, 그전에 흔들렸던 판단들이 더 무겁게 남았다.";
-    return "화면이 내 손을 떠나 스스로 움직이기 시작했다. 다섯 번의 기회를 다 쓰고 나서야, 지금까지 이게 얼마나 위태로운 상태였는지 실감이 났다. 그래도 여기서 더 무너뜨리진 않았다.";
+    if (verificationGrade() === "failed") return "검증도 끝내지 못한 채 화면이 내 손을 떠났다. 상황의 무게가 이제야 실감났다.";
+    if (state.trust < 0) return "다섯 번의 기회를 모두 썼다. 그전에 흔들렸던 판단들이 더 무겁게 남았다.";
+    return "다섯 번의 기회를 모두 썼지만 검증은 지켰다. 여기서 더 무너지진 않겠다.";
   }
   if (scene.dynamic === "supportRecoveryPanic") {
-    if (verificationGrade() === "failed") return "…이거, 진짜 큰일났다. 검증부터 놓쳤으니 남은 복구도 전부 담당자 손에 달렸다. 오늘 평가는… 이미 끝난 건지도 모른다.";
+    if (verificationGrade() === "failed") return "…큰일났다. 검증을 놓쳤고 남은 복구도 담당자에게 달렸다.";
     return "그래도 검증까지 놓친 건 아니다. 지금이라도 정신을 붙잡아야 한다.";
   }
   if (scene.dynamic === "recoveryResult") return recoveryGrade() === "failed"
-    ? "담당자 지원 복구를 확인했습니다. PT와 고정된 증빙은 18.4%로 일치하지만 플레이어 직접 복구 결과는 실패입니다."
+    ? "담당자 지원으로 PT와 증빙을 18.4%로 복구했습니다. 직접 복구 결과는 실패입니다."
     : state.decisions.recoverySource === "current_week" && state.decisions.recoveryBinding === "fixed_source"
-      ? "복구 전후 검증을 완료했습니다. PT와 고정된 증빙이 모두 18.4%로 일치합니다."
-      : "복구 검증에서 불안정한 연결이 남았습니다. 정상 원본은 구두로 제시할 수 있지만 증빙 완성도가 낮아집니다.";
-  if (scene.dynamic === "resumeStatement") return recoveryGrade() === "failed"
-    ? "정상 원본에서 현재 기준값 18.4%와 2024년 당시 수치 12.7%의 출처 차이는 확인했습니다. 다만 제출 근거의 연결 복구는 시스템 담당자의 지원을 받았고, 직접 복구를 끝내지 못한 결과도 함께 보고드리겠습니다."
+      ? "복구 검증을 마쳤습니다. PT와 고정된 증빙이 모두 18.4%로 일치합니다."
+      : "불안정한 연결이 남았습니다. 정상 원본은 제시할 수 있지만 추가 검토가 필요합니다.";
+  if (scene.dynamic === "resumeStatement") return "현재 잔존율은 18.4%, 12.7%는 2024년 자료였습니다.";
+  if (scene.dynamic === "resumeStatementDetail") return recoveryGrade() === "failed"
+    ? "근거 자료는 담당자 지원으로 복구했습니다. 직접 복구 실패도 함께 보고드립니다."
     : state.decisions.recoverySource === "current_week" && state.decisions.recoveryBinding === "fixed_source"
-      ? "확인 결과, 이번 발표의 현재 기준값은 7일 차 잔존율 18.4%입니다. 제출 근거에는 2024년 당시 수치인 12.7%가 잘못 연결돼 있었습니다. 정상 원본으로 근거 자료를 복구했고, 산정 기준과 제출 이후 변경 경로도 함께 남겼습니다."
-      : "정상 원본에서 현재 기준값 18.4%와 2024년 당시 수치 12.7%의 출처 차이는 확인했습니다. 다만 제출 근거의 연결 복구에는 추가 검토가 필요해 원본과 변경 기록을 우선 제출하겠습니다.";
-  if (scene.dynamic === "proposalRestatement") return "그리고 18.4%는 이번 개선안으로 얻은 성과가 아니라 현재 상태를 설명하는 확인값입니다. 제안한 개선안의 효과는 아직 검증 전입니다. 일부 신규 유저를 대상으로 첫 전투 도달률 5%포인트 개선을 확인하고, 7일 차 잔존율과 사용자 반응이 함께 좋아질 때만 전체 적용을 제안하겠습니다.";
+      ? "정상 원본으로 복구했고, 산정 기준과 제출 이후 변경 경로도 남겼습니다."
+      : "연결 복구는 추가 검토가 필요합니다. 원본과 변경 기록부터 제출하겠습니다.";
+  if (scene.dynamic === "proposalRestatement") return "최근 신규 유저의 7일 후 잔존율은 18.4%. 개선 여지는 여전합니다.";
+  if (scene.dynamic === "proposalRestatementDetail") return "1차 목표는 73.1%. 잔존율과 사용자 반응까지 좋아져야 확대할 수 있습니다.";
   if (scene.dynamic === "evaluatorCloseResult") return neededSupport()
-    ? "정상 원본은 담당자 지원으로 복구됐습니다. 다만 직접 처리가 중단된 부분과 지원 전환을 개선안의 타당성과 함께 최종 평가에 반영하겠습니다."
-    : "발표 중 문제가 발생했지만 정상 원본과 제출 이후 변경 경로는 확인했습니다. 개선안의 타당성과 사고 대응 과정을 함께 최종 평가하겠습니다.";
+    ? "정상 원본은 복구됐습니다. 직접 처리가 중단된 점까지 최종 평가에 반영하겠습니다."
+    : "정상 원본과 변경 경로를 확인했습니다. 개선안과 대응 과정을 함께 평가하겠습니다.";
   if (scene.dynamic === "postPresentationHarin") {
     if (neededSupport()) return "끝났어요. 담당자 지원까지 받았지만 문제를 숨기지 않고 여기까지 이어 온 건 도윤 씨예요. 이제 숨 쉬어도 돼요.";
     if (calculateEnding() === "bad") return "끝나긴 했는데… 오늘 대응이 전부 매끄러웠다고는 못 하겠어요. 결과가 어떻게 나올지는 조금 더 지켜봐야 할 것 같아요.";
@@ -1001,7 +1012,7 @@ function dynamicText(scene) {
 }
 
 function dynamicSystem(scene) {
-  if (scene.dynamic === "presentationResearchEvidence") {
+  if (scene.dynamic === "presentationResearchEvidence" || scene.dynamic === "presentationResearchConclusion") {
     const byResearch = {
       competitor: { title: "조사 근거", rows: ["조사 · 동종 RPG 첫 전투 진입 비교", "공통 패턴 · 필요한 순간에 안내", "사용자 선택 · 도움말 다시 열기 가능", "핵심 원인 · 강제된 안내 순서"] },
       reviews: { title: "조사 근거", rows: ["조사 · 신규 유저 리뷰 분류", "피로 · 설명이 길다", "불안 · 다음 목표를 모르겠다", "핵심 원인 · 정보량과 노출 시점의 불일치"] },
@@ -1009,7 +1020,7 @@ function dynamicSystem(scene) {
     };
     return byResearch[day2Subtask] || byResearch.competitor;
   }
-  if (scene.dynamic === "presentationProposalDetail") {
+  if (scene.dynamic === "presentationProposalDetail" || scene.dynamic === "presentationProposalConclusion") {
     const byDirection = {
       shorten_tutorial: { title: "구체적인 개선안", rows: ["필수 유지 · 이동 / 전투 / 첫 목표", "후순위 이동 · 출석 / 상점 / 패키지 / 세부 성장", "첫 성공 · 첫 전투와 첫 보상", "개선 원칙 · 삭제보다 순서 조정"] },
       contextual_guide: { title: "구체적인 개선안", rows: ["안내 방식 · 기능 최초 사용 시 노출", "재확인 · 도움말에서 다시 열기", "다음 목표 · 화면에 지속 표시", "개선 원칙 · 필요한 순간에 필요한 설명"] },

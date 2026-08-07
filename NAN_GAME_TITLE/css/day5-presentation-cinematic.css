@@ -87,7 +87,7 @@
 
 .day5-cinematic-screen > small {
   color: #b94f5a;
-  font-size: clamp(7px, .78cqw, 12px);
+  font-size: clamp(9px, .84cqw, 13px);
   font-weight: 900;
   letter-spacing: .17em;
 }
@@ -112,8 +112,7 @@
 }
 
 .day5-cinematic-screen article small,
-.day5-cinematic-screen article strong,
-.day5-cinematic-screen article span {
+.day5-cinematic-screen article strong {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -121,18 +120,14 @@
 }
 
 .day5-cinematic-screen article small {
-  color: #a18f94;
-  font-size: clamp(7px, .72cqw, 11px);
+  color: #705e64;
+  font-size: clamp(10px, .82cqw, 13px);
+  font-weight: 800;
 }
 
 .day5-cinematic-screen article strong {
-  margin: 3px 0;
+  margin: 5px 0 0;
   font-size: clamp(13px, 1.65cqw, 27px);
-}
-
-.day5-cinematic-screen article span {
-  color: #817278;
-  font-size: clamp(7px, .68cqw, 10px);
 }
 
 .day5-cinematic-screen article.danger {
@@ -142,8 +137,7 @@
   animation: day5-cinematic-danger .8s ease-in-out infinite alternate;
 }
 
-.day5-cinematic-screen article.danger small,
-.day5-cinematic-screen article.danger span {
+.day5-cinematic-screen article.danger small {
   color: #ffd8dd;
 }
 

@@ -16,6 +16,8 @@ test("prototype is isolated from the DAY 5 production entry", () => {
 test("prototype uses the stable presentation room asset id", () => {
   assert.match(html, /\.\.\/\.\.\/\.\.\/js\/art-assets\.js/);
   assert.match(js, /background\.presentation_room\.day/);
+  assert.match(js, /document\.currentScript\?\.src/);
+  assert.match(js, /new URL\(assetPath, scriptUrl\)/);
   assert.match(css, /\.camera\{[^}]*z-index:0/);
 });
 
