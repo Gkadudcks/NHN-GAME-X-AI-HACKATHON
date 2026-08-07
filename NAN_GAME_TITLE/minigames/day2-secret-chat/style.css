@@ -111,8 +111,30 @@
 
 .sc-intro > p {
   margin: 0 0 20px;
-  color: #74636a;
+  color: #574850;
+  font-size: 15px;
   line-height: 1.7;
+}
+
+.sc-intro > p.sc-intro-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 26px;
+  padding: 10px 20px;
+  color: #b23f4c;
+  border: 1px solid #f0b7bc;
+  border-radius: 999px;
+  background: #fdeceeeb;
+  box-shadow: 0 6px 16px #d45c6826;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.sc-intro > p.sc-intro-hint::before {
+  content: "💡";
+  font-size: 14px;
 }
 
 .sc-primary,

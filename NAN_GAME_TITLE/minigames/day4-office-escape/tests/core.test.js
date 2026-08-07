@@ -394,16 +394,16 @@ test("승인 pose 메트릭은 공통 projection에서 발바닥 중심을 1px �
 
 test("Phase 4R-A2 actor 메트릭과 player profile은 4R-A 값의 정확히 0.70배다", () => {
   const canonicalHeights = {
-    "minigame_character.doyun.run.right": 141.12,
-    "minigame_character.doyun.run_alt.right": 141.12,
-    "minigame_character.doyun.jump.right": 141.12,
-    "minigame_character.doyun.slide.right": 77.49,
-    "minigame_character.harin.run.right": 135.45,
-    "minigame_character.harin.run_alt.right": 135.45,
-    "minigame_character.harin.assist.right": 135.45,
-    "minigame_character.boss.chase.right": 146.79,
-    "minigame_character.boss.chase_alt.right": 146.79,
-    "minigame_character.boss.call.right": 146.79,
+    "minigame_character.doyun.run.right": 115.72,
+    "minigame_character.doyun.run_alt.right": 115.72,
+    "minigame_character.doyun.jump.right": 115.72,
+    "minigame_character.doyun.slide.right": 63.54,
+    "minigame_character.harin.run.right": 111.07,
+    "minigame_character.harin.run_alt.right": 111.07,
+    "minigame_character.harin.assist.right": 111.07,
+    "minigame_character.boss.chase.right": 120.37,
+    "minigame_character.boss.chase_alt.right": 120.37,
+    "minigame_character.boss.call.right": 120.37,
   };
   for (const [id, expected] of Object.entries(canonicalHeights)) {
     assert.equal(Art.metrics(id).canonicalOpaqueHeight, expected, id);

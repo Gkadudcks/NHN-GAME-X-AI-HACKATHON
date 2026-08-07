@@ -403,6 +403,9 @@
     refs.score.textContent = currentScore;
     setFeedback(cup.timing === 25 ? `${cup.name}의 표정이 밝아졌습니다. 완벽한 한 잔!` : `${cup.name}에게 커피를 전달했습니다.`, cup.timing === 25 ? "success" : "normal");
     renderCups();
+    const servedCupElement = refs.cups.querySelector(`[data-cup="${cup.key}"]`);
+    if (servedCupElement) { servedCupElement.classList.remove("served-pop"); void servedCupElement.offsetWidth; servedCupElement.classList.add("served-pop"); }
+    global.UiSfx?.playMinigameCue?.("success");
     if (currentOrderIndex >= ORDERS.length - 1) {
       finishing = true;
       clearInterval(timerInterval);
@@ -511,6 +514,7 @@
     const result = { score: currentScore, grade: gradeData.grade, correctDrinks: drinks.filter((cup) => cup.served).length, mistakes: drinks.reduce((sum, cup) => sum + cup.resets, 0), workDelta: gradeData.workDelta, drinks: drinks.map((cup) => ({ key: cup.key, name: cup.name, drink: cup.drink, score: cup.score, served: cup.served })) };
     renderResult(result);
     showScreen(refs.result);
+    if (result.grade !== "messy") global.UiSfx?.playMinigameCue?.("success");
     refs.resultContinue.onclick = () => complete(result);
     refs.resultContinue.focus();
   }
@@ -523,6 +527,9 @@
     }[result.grade];
     refs.resultIcon.textContent = resultCopy.icon;
     refs.resultIcon.classList.toggle("messy", result.grade === "messy");
+    refs.resultIcon.classList.remove("pop");
+    void refs.resultIcon.offsetWidth;
+    refs.resultIcon.classList.toggle("pop", result.grade !== "messy");
     refs.resultKicker.textContent = resultCopy.kicker;
     refs.resultTitle.textContent = resultCopy.title;
     refs.resultSummary.textContent = resultCopy.summary;

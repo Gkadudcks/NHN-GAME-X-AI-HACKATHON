@@ -246,6 +246,7 @@
 .coffee-cup.error { border-color: #d94b58; animation: coffee-shake .25s; }
 .coffee-cup.ready { border-color: var(--coffee-mint); box-shadow: 0 0 0 4px #58b98724; }
 .coffee-cup.served { opacity: .62; cursor: default; transform: none; }
+.coffee-cup.served-pop { animation: coffee-serve-pop .5s ease-out; }
 .coffee-cup-head { display: flex; justify-content: space-between; gap: 8px; }
 .coffee-cup-head b { font-size: 14px; }
 .coffee-cup-head small { color: #ae969d; font-size: 9px; }
@@ -406,6 +407,7 @@
 
 .coffee-result-icon { width: 80px; height: 80px; display: grid; place-items: center; margin: 20px 0 8px; color: #fff; border-radius: 50%; background: linear-gradient(145deg, #72c997, #45a875); box-shadow: 0 13px 30px #4fa9783b; font-size: 35px; }
 .coffee-result-icon.messy { background: linear-gradient(145deg, #ec8a82, #d75a67); }
+.coffee-result-icon.pop { animation: coffee-result-pop .55s cubic-bezier(.34, 1.56, .64, 1); }
 .coffee-result-score { width: min(460px, 100%); display: flex; align-items: center; justify-content: space-between; margin: 20px 0 10px; padding: 14px 18px; border: 1px solid #ead8d3; border-radius: 13px; background: #fff; }
 .coffee-result-score span { color: #8f7a80; font-size: 12px; }
 .coffee-result-score strong { color: #d95f69; font-size: 22px; }
@@ -424,6 +426,8 @@
 @keyframes coffee-shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 @keyframes coffee-pulse { to { filter: brightness(1.12); transform: scale(1.02); } }
 @keyframes coffee-danger { to { filter: brightness(1.25); } }
+@keyframes coffee-result-pop { 0% { transform: scale(.4); opacity: 0; } 65% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes coffee-serve-pop { 0% { transform: scale(1); box-shadow: 0 0 0 0 #58b98700; } 35% { transform: scale(1.08) translateY(-6px); box-shadow: 0 0 0 10px #58b98733; } 100% { transform: scale(1); box-shadow: 0 0 0 0 #58b98700; } }
 
 @media (max-width: 760px) {
   .coffee-game { padding: 0; }

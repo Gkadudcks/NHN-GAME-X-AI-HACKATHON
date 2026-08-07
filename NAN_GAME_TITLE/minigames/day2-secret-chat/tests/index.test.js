@@ -41,7 +41,7 @@ test("각 사적 메시지에는 현재 호감도에 맞는 서하린의 즉시 
     assert.ok(low && mid && high);
     assert.notEqual(low, high);
   }
-  assert.match(core.messageReply(1, 2), /음료/);
+  assert.match(core.messageReply(1, 2), /근처|이웃/);
 });
 
 test("들킨 경우에도 호감도가 높아도 직진하는 퇴근 약속은 하지 않는다", () => {

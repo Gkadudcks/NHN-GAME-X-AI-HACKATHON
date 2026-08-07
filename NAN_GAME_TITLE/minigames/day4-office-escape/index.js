@@ -23,6 +23,7 @@
     "access-card": "prop.office.access_card",
     phone: "prop.office.phone",
     "backup-usb": "prop.office.backup_usb",
+    "obstacle-break": "prop.office.obstacle_break",
   });
   const CHARACTER_IDS = Object.freeze({
     doyunRun: "minigame_character.doyun.run.right",
@@ -31,6 +32,8 @@
     doyunSlide: "minigame_character.doyun.slide.right",
     harinRun: "minigame_character.harin.run.right",
     harinRunAlt: "minigame_character.harin.run_alt.right",
+    harinJump: "minigame_character.harin.jump.right",
+    harinSlide: "minigame_character.harin.slide.right",
     harinAssist: "minigame_character.harin.assist.right",
     bossRun: "minigame_character.boss.chase.right",
     bossRunAlt: "minigame_character.boss.chase_alt.right",
@@ -83,7 +86,10 @@
     uiElapsed: 0,
     feedbackUntil: 0,
     assistUntil: 0,
+    bossBreakFxUntil: 0,
     pressedUntil: { jump: 0, slide: 0 },
+    harinPoseWindow: { jumpFrom: 0, jumpUntil: 0, slideFrom: 0, slideUntil: 0 },
+    pendingBossBreaks: new Map(),
     hitStopUntil: 0,
     impactUntil: 0,
     wasInvulnerable: false,
@@ -188,6 +194,7 @@
           <figure class="oe2-actor oe2-harin"><img id="oe2-harin" src="${resolve(CHARACTER_IDS.harinRun)}" alt="도윤과 함께 달리는 서하린"><div class="oe2-assist-badge" id="oe2-assist-badge" aria-hidden="true">${icon("shield")}<span>하린이 막아줬다!</span></div></figure>
           <figure class="oe2-actor oe2-doyun"><img id="oe2-doyun" src="${resolve(CHARACTER_IDS.doyunRun)}" alt="오른쪽으로 달리는 도윤"></figure>
         </div>
+        <img class="oe2-boss-break-fx" id="oe2-boss-break-fx" src="${resolve(PROP_IDS["obstacle-break"])}" alt="" aria-hidden="true">
         <div class="oe2-player-reference" id="oe2-player-reference" aria-hidden="true"></div>
         <div class="oe2-player-body" id="oe2-player-body" aria-hidden="true"></div>
         <div class="oe2-telegraph" id="oe2-telegraph" hidden><strong id="oe2-telegraph-action">JUMP</strong><span id="oe2-telegraph-label"></span></div>
@@ -215,7 +222,7 @@
       routeNodes: [...root.querySelectorAll(".oe2-route li")], zoneNodes: [...root.querySelectorAll(".oe2-zone-markers li")],
       backgroundPanels: [...root.querySelectorAll(".oe2-background-panel")],
       backgroundImages: [...root.querySelectorAll(".oe2-background-panel img")],
-      objects: root.querySelector("#oe2-objects"), passedObjects: root.querySelector("#oe2-passed-objects"), boss: root.querySelector(".oe2-boss"), harin: root.querySelector(".oe2-harin"), doyun: root.querySelector(".oe2-doyun"), playerReference: root.querySelector("#oe2-player-reference"), playerBody: root.querySelector("#oe2-player-body"),
+      objects: root.querySelector("#oe2-objects"), passedObjects: root.querySelector("#oe2-passed-objects"), boss: root.querySelector(".oe2-boss"), harin: root.querySelector(".oe2-harin"), doyun: root.querySelector(".oe2-doyun"), playerReference: root.querySelector("#oe2-player-reference"), playerBody: root.querySelector("#oe2-player-body"), bossBreakFx: root.querySelector("#oe2-boss-break-fx"),
       actors: { boss: root.querySelector("#oe2-boss"), harin: root.querySelector("#oe2-harin"), doyun: root.querySelector("#oe2-doyun") },
       telegraph: root.querySelector("#oe2-telegraph"), telegraphAction: root.querySelector("#oe2-telegraph-action"), telegraphLabel: root.querySelector("#oe2-telegraph-label"),
       feedback: root.querySelector("#oe2-feedback"), assistBadge: root.querySelector("#oe2-assist-badge"), jump: root.querySelector(".oe2-jump"), slide: root.querySelector(".oe2-slide"), pause: root.querySelector(".oe2-pause"),
@@ -335,6 +342,7 @@
         height: `${Math.max(16, screen.height)}px`,
         left: `${centerX}px`,
         bottom: `${screen.bottom}px`,
+        centerX,
       };
       const previous = state.objectRender.get(object.id) || {};
       if (previous.width !== layout.width) node.style.width = layout.width;
@@ -411,6 +419,51 @@
     }
   }
 
+  function popNode(node, className) {
+    if (!node) return;
+    node.classList.remove(className);
+    void node.offsetWidth;
+    node.classList.add(className);
+  }
+
+  const HARIN_JUMP_ECHO_DELAY = 0.15;
+  const HARIN_SLIDE_ECHO_DELAY = 0.15;
+  const HARIN_SLIDE_ECHO_DURATION = 0.6;
+
+  const BOSS_BREAK_FX_HOLD = 0.65;
+
+  function queueBossBreak(object, snapshot, projection) {
+    if (!object || object.kind !== "hazard") return;
+    const render = state.objectRender.get(object.id);
+    if (!render) return;
+    const speed = Core.speedAt(snapshot.elapsed, Core.DEFAULT_DURATION, Core.DEFAULT_LENGTH);
+    const gapDistance = Core.ACTOR_FORMATION.doyunHarinGap + Core.ACTOR_FORMATION.bossHarinSteadyGap;
+    const delay = speed > 0 ? gapDistance / speed : 0.4;
+    const pxPerSec = speed * projection.scale;
+    state.pendingBossBreaks.set(object.id, {
+      fireAt: state.uiElapsed + delay,
+      left: render.centerX - pxPerSec * delay,
+      bottom: render.bottom,
+    });
+  }
+
+  function updateBossBreaks() {
+    if (!state.pendingBossBreaks.size) return;
+    state.pendingBossBreaks.forEach((entry, id) => {
+      if (state.uiElapsed < entry.fireAt) return;
+      state.pendingBossBreaks.delete(id);
+      popNode(refs.objectNodes.get(id), "boss-break");
+      popNode(refs.boss, "boss-smash");
+      global.UiSfx?.playMinigameCue?.("smash");
+      if (refs.bossBreakFx) {
+        refs.bossBreakFx.style.left = `${entry.left}px`;
+        refs.bossBreakFx.style.bottom = entry.bottom;
+        refs.bossBreakFx.classList.add("show");
+        state.bossBreakFxUntil = state.uiElapsed + BOSS_BREAK_FX_HOLD;
+      }
+    });
+  }
+
   function showFeedback(text, kind = "") {
     refs.feedback.textContent = text;
     refs.feedback.dataset.kind = kind;
@@ -445,16 +498,36 @@
       : playfieldWidth / 2;
   }
 
-  function consumeEvents(snapshot) {
+  function consumeEvents(snapshot, projection) {
     state.game.drainEvents().forEach((event) => {
-      if (event.type === "jump") state.pressedUntil.jump = state.uiElapsed + 0.16;
-      if (event.type === "slide") state.pressedUntil.slide = state.uiElapsed + 0.16;
-      if (event.type === "collect") showFeedback(`${event.object.label} 획득`, "collect");
+      if (event.type === "jump") {
+        state.pressedUntil.jump = state.uiElapsed + 0.16;
+        state.harinPoseWindow.jumpFrom = state.uiElapsed + HARIN_JUMP_ECHO_DELAY;
+        state.harinPoseWindow.jumpUntil = state.harinPoseWindow.jumpFrom + (2 * Core.JUMP_VELOCITY / Core.GRAVITY);
+      }
+      if (event.type === "slide") {
+        state.pressedUntil.slide = state.uiElapsed + 0.16;
+        state.harinPoseWindow.slideFrom = state.uiElapsed + HARIN_SLIDE_ECHO_DELAY;
+        state.harinPoseWindow.slideUntil = state.harinPoseWindow.slideFrom + HARIN_SLIDE_ECHO_DURATION;
+      }
+      if (event.type === "collect") {
+        showFeedback(`${event.object.label} 획득`, "collect");
+        global.UiSfx?.playMinigameCue?.("success");
+        popNode(refs.items.get(event.object.type), "pop");
+      }
+      if (event.type === "avoid") {
+        global.UiSfx?.playMinigameCue?.("warning");
+        popNode(refs.objectNodes.get(event.object.id), "cleared");
+        queueBossBreak(event.object, snapshot, projection);
+      }
       if (event.type === "assist") showFeedback("하린이 막아줬다!", "assist");
       if (event.type === "hit") {
         const remaining = Math.max(0, 3 - event.hitCount);
         const label = event.object?.label || "장애물";
         showFeedback(remaining > 0 ? `${label}에 부딪힘 · 남은 여유 ${remaining}회` : `${label}에 부딪힘 · 붙잡힘 확정`, "hit");
+        global.UiSfx?.playMinigameCue?.("caught");
+        popNode(refs.objectNodes.get(event.object?.id), "hit-flash");
+        queueBossBreak(event.object, snapshot, projection);
         state.hitStopUntil = state.uiElapsed + 0.09;
         state.impactUntil = state.uiElapsed + 0.3;
       }
@@ -462,6 +535,7 @@
     });
     if (state.uiElapsed > state.feedbackUntil) refs.feedback.classList.remove("show");
     if (state.uiElapsed > state.assistUntil) refs.assistBadge.classList.remove("show");
+    if (state.uiElapsed > state.bossBreakFxUntil) refs.bossBreakFx?.classList.remove("show");
     refs.jump.classList.toggle("pressed", state.uiElapsed < state.pressedUntil.jump);
     refs.slide.classList.toggle("pressed", state.uiElapsed < state.pressedUntil.slide);
     root.classList.toggle("is-impact", state.uiElapsed < state.impactUntil);
@@ -475,7 +549,7 @@
     const projection = Core.screenProjection(snapshot, width, height);
     const scale = projection.scale;
     const progress = snapshot.progress;
-    if (state.playing) consumeEvents(snapshot);
+    if (state.playing) consumeEvents(snapshot, projection);
     const scene = snapshot.finished ? "arrival" : snapshot.sliding ? "slide" : snapshot.y > 1 ? "jump" : "run";
     if (root.dataset.scene !== scene) root.dataset.scene = scene;
     if (root.dataset.zone !== snapshot.zone.id) root.dataset.zone = snapshot.zone.id;
@@ -509,7 +583,12 @@
     const harinGait = Core.gaitFrameIndex(snapshot.elapsed, Core.GAIT_PHASE_DELAY_MS.harin);
     const bossGait = Core.gaitFrameIndex(snapshot.elapsed, Core.GAIT_PHASE_DELAY_MS.boss);
     const doyunId = snapshot.sliding ? CHARACTER_IDS.doyunSlide : snapshot.y > 1 ? CHARACTER_IDS.doyunJump : doyunGait ? CHARACTER_IDS.doyunRunAlt : CHARACTER_IDS.doyunRun;
-    const harinId = snapshot.assistUsed && snapshot.invulnerable > 0 ? CHARACTER_IDS.harinAssist : harinGait ? CHARACTER_IDS.harinRunAlt : CHARACTER_IDS.harinRun;
+    const harinJumping = state.uiElapsed >= state.harinPoseWindow.jumpFrom && state.uiElapsed < state.harinPoseWindow.jumpUntil;
+    const harinSliding = state.uiElapsed >= state.harinPoseWindow.slideFrom && state.uiElapsed < state.harinPoseWindow.slideUntil;
+    const harinId = snapshot.assistUsed && snapshot.invulnerable > 0 ? CHARACTER_IDS.harinAssist
+      : harinSliding ? CHARACTER_IDS.harinSlide
+      : harinJumping ? CHARACTER_IDS.harinJump
+      : harinGait ? CHARACTER_IDS.harinRunAlt : CHARACTER_IDS.harinRun;
     const bossId = bossGait ? CHARACTER_IDS.bossRunAlt : CHARACTER_IDS.bossRun;
     const formation = Core.actorFormationGeometry(formationMetrics(), projection, snapshot.chasePressure);
     const harinRight = formation.actors.harin.silhouette.left + formation.actors.harin.silhouette.width;
@@ -519,7 +598,13 @@
       state.passedClipLeft = passedClipLeft;
     }
     const doyunMetric = setActorArt("doyun", doyunId, projection, formation.anchors.doyun);
-    setActorArt("harin", harinId, projection, formation.anchors.harin);
+    let harinAnchor = formation.anchors.harin;
+    if (harinJumping) {
+      const t = state.uiElapsed - state.harinPoseWindow.jumpFrom;
+      const y = Math.max(0, Core.JUMP_VELOCITY * t - 0.5 * Core.GRAVITY * t * t);
+      harinAnchor = { ...harinAnchor, bottom: harinAnchor.bottom + y * projection.scale };
+    }
+    setActorArt("harin", harinId, projection, harinAnchor);
     setActorArt("boss", bossId, projection, formation.anchors.boss);
     const chasePressure = String(snapshot.chasePressure);
     if (state.chaseRender.state !== snapshot.chaseState) refs.boss.dataset.chaseState = snapshot.chaseState;
@@ -534,6 +619,7 @@
       refs.playerBody.style.height = `${playerBody.height}px`;
     }
     renderObjects(snapshot, projection);
+    updateBossBreaks();
     const upcoming = snapshot.upcomingHazard;
     if (refs.telegraph.hidden === Boolean(upcoming)) refs.telegraph.hidden = !upcoming;
     if (upcoming) {
@@ -630,7 +716,11 @@
     state.uiElapsed = 0;
     state.feedbackUntil = 0;
     state.assistUntil = 0;
+    state.bossBreakFxUntil = 0;
+    refs.bossBreakFx?.classList.remove("show");
     state.pressedUntil = { jump: 0, slide: 0 };
+    state.harinPoseWindow = { jumpFrom: 0, jumpUntil: 0, slideFrom: 0, slideUntil: 0 };
+    state.pendingBossBreaks.clear();
     state.hitStopUntil = 0;
     state.impactUntil = 0;
     state.wasInvulnerable = false;
@@ -803,9 +893,12 @@
     if (event.repeat && (JUMP_KEYS.has(event.code) || SLIDE_KEYS.has(event.code))) { event.preventDefault(); return; }
     if (JUMP_KEYS.has(event.code)) { event.preventDefault(); triggerJump(); }
     else if (SLIDE_KEYS.has(event.code)) { event.preventDefault(); triggerSlide(); }
-    else if (event.code === "Escape") { event.preventDefault(); state.paused ? resume() : pause(); }
   });
   global.addEventListener("blur", () => { if (state.playing && !state.paused) pause(); });
+  document.addEventListener("nan:settings-open", pause);
+  document.addEventListener("nan:settings-close", resume);
+  document.addEventListener("nan:pause-open", pause);
+  document.addEventListener("nan:pause-close", resume);
 
   global.OfficeEscapeMinigame = Object.freeze({ start, pause, resume, preview, setComposition, debugSnapshot });
 })(window);

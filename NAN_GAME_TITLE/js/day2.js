@@ -585,7 +585,7 @@ function resolveDynamic(name) {
     subtaskSelected: `${Day2Story.SUBTASKS[subtask].title}부터 해보자. 숫자와는 다른 방식으로 신규 유저의 첫 경험을 볼 수 있을 것 같다.`,
     secretChatResult: secretChatReply.dialogue,
     secretChatReply: {
-      perfect: "부장님보다 선배 답장을 먼저 보고 싶었습니다.",
+      perfect: "부장님보다 선배 답장이 더 궁금했습니다.",
       good: "짧게 보내려던 게 생각보다 길어졌습니다.",
       caught: "다음에는 점심시간까지 기다리겠습니다.",
     }[grade],

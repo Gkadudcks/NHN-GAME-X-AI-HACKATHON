@@ -118,6 +118,14 @@
           { delay: 0.18, frequency: 783.99, duration: 0.16, type: "triangle" },
         ],
       },
+      smash: {
+        multiplier: 0.34,
+        notes: [
+          { frequency: 160, duration: 0.22, type: "sawtooth" },
+          { frequency: 90, duration: 0.3, type: "square", gain: 0.75 },
+          { delay: 0.05, frequency: 260, duration: 0.09, type: "triangle", gain: 0.5 },
+        ],
+      },
     };
     const pattern = patterns[name];
     if (!pattern) return false;

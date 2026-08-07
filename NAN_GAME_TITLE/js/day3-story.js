@@ -82,7 +82,7 @@
     { id: "day3AutomationLog", time: "13:54", speaker: "시스템", text: "자동화 실행 기록을 확인했습니다.", systemPanel: { title: "AUTOMATION LOG", rows: ["09:03 · 구버전 연결 호출", "09:03 · 나나봇 자동 정리", "실행 계정 / 기기 · 관리자 권한 필요"] }, when: { decision: "investigationFirst", notEquals: "automation" } },
     { id: "day3FolderPath", time: "14:01", speaker: "시스템", text: "현재 작업본과 이전 자료 사이의 연결 과정이 확인되었습니다.", systemPanel: { title: "자료 연결 과정", rows: ["이전 자료 · 2024_신규유저개선_이전자료", "자동 기능 · 발표 자료 자동 연결", "현재 파일 · 신규유저_초반이탈개선_발표자료_작업본"] }, clue: CLUES.accessUnconfirmed, when: { decision: "investigationFirst", notEquals: "folder" } },
     { id: "day3Wrap", time: "17:10", speaker: "한도윤", text: "변경본과 로그를 따로 보존하고 DAY 2 복원 지점은 건드리지 않았다. 실제 실행 계정과 기기는 내일 시스템 담당자에게 확인하기로 했다.", bg: "office" },
-    { id: "day3Summary", time: "18:00", speaker: "시스템", text: "오늘의 업무를 정산합니다.", bg: "office", bgm: "daily", daySummary: 3 },
+    { id: "day3Summary", time: "18:00", speaker: "시스템", text: "오늘의 업무를 정산합니다.", bg: "office", daySummary: 3 },
     { id: "day3DepartureLead", time: "18:14", speaker: "한도윤", dynamic: "departureLead", bg: "office_night", bgm: "harin", location: "게임사업실 · 퇴근" },
     { id: "day3DepartureChoice", time: "18:14", speaker: "한도윤", text: "퇴근 준비를 마쳤다. 선배에게 어떻게 말할까?", bg: "office_night", location: "게임사업실 · 퇴근", choiceKey: "elevatorPlan", relationshipChoice: true, choices: [
       { id: "wait", text: "왠지 선배가 기다리고 있을 것 같아 엘리베이터 로비로 향한다.", minAffection: 4, cg: true, delta: { affection: 1 }, reply: "로비로 내려가자, 열린 엘리베이터 앞에 익숙한 모습이 기다리고 있었다." },

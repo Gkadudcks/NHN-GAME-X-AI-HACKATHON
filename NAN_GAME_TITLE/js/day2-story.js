@@ -260,7 +260,7 @@
     { id: "day2ArchiveDoyun", time: "14:34", speaker: "한도윤", text: "선배 이름이 남아 있네요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin" },
     { id: "day2ArchiveHarin2", time: "14:35", speaker: "서하린", text: "제가 만들었으니까요. 지금 필요한 틀은 그 아래 ‘공용 발표 기본형’이에요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin" },
     { id: "day2BuildNotice", time: "14:35", speaker: "시스템", text: "윤세아에게 새 메시지가 도착했습니다.\n“오후 빌드 점검 10분 뒤 시작합니다.”", notification: "sea-build" },
-    { id: "day2ArchiveExit", time: "14:36", speaker: "서하린", text: "빌드부터 보고 와요. 이건 나중에 확인해도 돼요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin", bgm: "daily" },
+    { id: "day2ArchiveExit", time: "14:36", speaker: "서하린", text: "빌드부터 보고 와요. 이건 나중에 확인해도 돼요.", characters: [{ id: "harin", assetId: "character.harin.arms_folded.concerned" }], activeCharacter: "harin" },
 
     { id: "day2BuildSea", time: "14:45", speaker: "윤세아", text: "새 빌드에서 튜토리얼 팝업이 두 번 뜬다는 제보가 있어요. 재현되는지만 확인 부탁드려요.", bg: "qa_test_space_incident", char: "sea", location: "QA 테스트 공간 · 오후" },
     { id: "day2BuildDoyun", time: "14:48", speaker: "한도윤", text: "첫 전투 전에 같은 안내가 두 번 나옵니다.", char: "sea", placeholder: "inherit" },
