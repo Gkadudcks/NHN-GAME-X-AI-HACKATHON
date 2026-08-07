@@ -223,7 +223,14 @@ test("failed verification reopens the full audit log source instead of leaving t
 });
 
 test("security audit conclusion emphasizes the three role names inside the dialogue", () => {
-  assert.match(story, /id:\s*"day5AuditResultReview"[^]*?emphasis:\s*\["서하린",\s*"강민재",\s*"나나봇"\]/);
+  assert.match(story, /id:\s*"day5AuditResultReview"[^]*?emphasis:\s*\["서하린",\s*"강민재"\][^]*?id:\s*"day5AuditResultReviewDetail"[^]*?emphasis:\s*"나나봇"/);
+});
+
+test("DAY 5 PPT keeps exact values, removes repeated footers, and strengthens small labels", () => {
+  assert.match(cinematic, /신규 설치 · 12,480명/);
+  assert.match(cinematic, /첫 전투 도달 · 8,502명/);
+  assert.doesNotMatch(cinematic, /원본 확인 완료|article\.append\(caption, content,/);
+  assert.match(css, /\.day5-cinematic-screen article small\s*\{[^}]*color:\s*#705e64[^}]*font-size:\s*clamp\(10px,\s*\.82cqw,\s*13px\)/);
 });
 
 test("verification and recovery end on one player-confirmed result screen using the existing minigame palette", () => {

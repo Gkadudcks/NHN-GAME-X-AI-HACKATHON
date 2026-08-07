@@ -33,13 +33,16 @@ test('Day 1과 Day 2 페이지가 단서 모델 뒤에 공용 마인드맵을 �
   assert.match(fs.readFileSync(path.join(root, 'js', 'day2.js'), 'utf8'), /currentDay: 2/);
 });
 
-test('단서 보드는 원형 노드와 곡선 연결선으로 구성하고 드래그 이동을 지원한다', () => {
+test('단서 보드는 CLUE 원형 노드만 방사형으로 배치하고 드래그 이동을 지원한다', () => {
   const css = fs.readFileSync(path.join(root, 'css', 'game.css'), 'utf8');
   assert.match(source, /function enablePan\(/);
   assert.match(source, /event\.target\.closest\("\.clue-detail-orbit, \.clue-inspector"\)/);
-  assert.match(source, /clue-theme-orbit/);
   assert.match(source, /clue-detail-orbit/);
-  assert.match(source, /createElementNS\("http:\/\/www\.w3\.org\/2000\/svg", "path"\)/);
+  assert.match(source, /const itemsPerRing = 6/);
+  assert.match(source, /const ring = Math\.floor\(clueIndex \/ itemsPerRing\)/);
+  assert.match(source, /const worldSize = Math\.max\(420,/);
+  assert.doesNotMatch(source, /clue-theme-orbit|createElementNS|theme-link|detail-link|TOPIC/);
+  assert.doesNotMatch(css, /\.clue-theme-orbit|\.clue-connections|\.theme-link|\.detail-link/);
   assert.match(css, /\.clue-orbit-node\{/);
   assert.match(css, /\.clue-canvas-viewport\{/);
   assert.match(css, /\.clue-inspector\{/);
@@ -64,7 +67,8 @@ test('마인드맵은 문자열이나 배열 위치로 날짜·주제·상세를
   assert.doesNotMatch(source, /function clueDay|function clueTheme|function clueSummary|function clueDetail/);
   assert.doesNotMatch(source, /dayForIndex|map\(String\)/);
   assert.match(source, /clue\.day === day/);
-  assert.match(source, /grouped\.has\(clue\.theme\)/);
+  assert.doesNotMatch(source, /groupClues|clue\.theme/);
+  assert.match(source, /inspector\.querySelector\("small"\)\.textContent = "CLUE DETAIL"/);
 });
 
 test('상세 패널은 왼쪽 강조선 없이 은은한 핑크 외곽 글로우를 사용한다', () => {

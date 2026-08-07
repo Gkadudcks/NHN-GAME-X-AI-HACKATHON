@@ -228,14 +228,6 @@
 .clue-day-orbit span { color: #ffc8c2; }
 .clue-day-orbit strong { text-shadow: 0 2px 10px #25161d; }
 
-.clue-theme-orbit {
-  border-color: #fff8f4;
-  background: linear-gradient(145deg, #ee8582, #c95260 72%);
-  box-shadow: 0 0 0 5px #e9656e22, 0 14px 30px #71343f35;
-}
-
-.clue-theme-orbit span { color: #ffe2dd; }
-
 .clue-detail-orbit {
   color: #4c3b42;
   border: 2px solid #e7bfc0;
@@ -276,9 +268,6 @@
   outline: none;
   transform: scale(1.06);
 }
-.theme-link { stroke: #df6871; }
-.detail-link { stroke: #c9a9aa; }
-
 .clue-inspector {
   border: 1px solid #ee8da059;
   background: linear-gradient(145deg, #fffdfbf7, #fff7f5f0);

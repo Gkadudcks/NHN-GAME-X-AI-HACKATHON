@@ -28,8 +28,8 @@ test("오류 검증 강조는 추리에 사용하는 숫자 기록에만 적용�
   assert.ok(emphasized.length > 0);
   for (const scene of emphasized) {
     const phrases = Array.isArray(scene.emphasis) ? scene.emphasis : [scene.emphasis];
-    const auditRoleException = scene.id === "day5AuditResultReview"
-      && phrases.join(",") === "서하린,강민재,나나봇";
+    const auditRoleException = ["day5AuditResultReview", "day5AuditResultReviewDetail"].includes(scene.id)
+      && phrases.every((phrase) => ["서하린", "강민재", "나나봇"].includes(phrase));
     assert.ok(
       auditRoleException || phrases.every((phrase) => /\d/.test(phrase) && scene.text.includes(phrase)),
       scene.id,
@@ -38,10 +38,8 @@ test("오류 검증 강조는 추리에 사용하는 숫자 기록에만 적용�
   for (const id of ["day5HarinPrompt", "day5OwnerQuestion", "day5Responsibility"]) {
     assert.equal(story.scenes.find((scene) => scene.id === id)?.emphasis, undefined, id);
   }
-  assert.deepEqual(
-    story.scenes.find((scene) => scene.id === "day5AuditResultReview")?.emphasis,
-    ["서하린", "강민재", "나나봇"],
-  );
+  assert.deepEqual(story.scenes.find((scene) => scene.id === "day5AuditResultReview")?.emphasis, ["서하린", "강민재"]);
+  assert.equal(story.scenes.find((scene) => scene.id === "day5AuditResultReviewDetail")?.emphasis, "나나봇");
 });
 
 test("DAY 5는 확정된 사건과 세 통합 엔딩을 포함한다", () => {
@@ -146,6 +144,9 @@ test("정상 발표는 문제·개선안·검증 수치·자동화 경계를 충
   assert.ok(ids.indexOf("day5PresentationStart") < ids.indexOf("day5PresentationProblem"));
   assert.ok(ids.indexOf("day5PresentationBoundary") < ids.indexOf("day5FocusReaction"));
   assert.match(JSON.stringify(story.scenes.slice(ids.indexOf("day5PresentationStart"), ids.indexOf("day5PresentationNormal") + 1)), /18\.4%/);
+  assert.match(story.scenes.find((scene) => scene.id === "day5PresentationBoundary").text, /68\.1%.*73\.1%/);
+  assert.match(story.scenes.find((scene) => scene.id === "day5PresentationBoundaryCriteria").text, /5%포인트.*잔존율.*사용자 반응/);
+  assert.match(story.scenes.find((scene) => scene.id === "day5NormalQaAnswerDetail").text, /다음 날 복귀.*신규 유저 불편 의견/);
 });
 
 test("수치 불일치 뒤에는 확정 문서의 평가위원·부장·하린 대응이 순서대로 이어진다", () => {
@@ -300,7 +301,7 @@ test("오류 검증 결과는 민재의 인정 과정과 정직원·관계 통�
   assert.ok(ids.indexOf("day5SupportRecoveryShock") < ids.indexOf("day5SupportRecoveryPanic"));
   assert.ok(ids.indexOf("day5SupportRecoveryPanic") < ids.indexOf("day5SupportRecoveryAudit"));
   assert.match(runtime, /scene\.dynamic === "supportRecoveryPanic"/);
-  assert.match(runtime, /진짜 큰일났다/);
+  assert.match(runtime, /검증을 놓쳤고 남은 복구도 담당자에게 달렸다/);
   assert.ok(ids.indexOf("day5SupportRecoveryStart") < ids.indexOf("day5RecoveryVerify"));
   assert.ok(ids.indexOf("day5RecoveryVerify") < ids.indexOf("day5VerificationResult"));
   assert.ok(ids.indexOf("day5VerificationResult") < ids.indexOf("day5Resume"));
@@ -383,14 +384,14 @@ test("발표 강조점 선택은 이탈 규모·사용자 경험·실행 계획 
 test("본 발표는 DAY 2 조사와 DAY 1 방향에 따라 아홉 조합 모두 올바른 근거와 개선안을 출력한다", () => {
   const runtime = fs.readFileSync(path.join(root, "js/day5.js"), "utf8");
   const researchKeywords = {
-    competitor: "동종 RPG 세 게임의 첫 전투 진입 과정",
-    reviews: "신규 유저 리뷰를 분류하자",
-    journey: "첫 10분의 플레이 흐름을 직접 기록",
+    competitor: "동종 RPG 세 게임을 비교했습니다",
+    reviews: "리뷰 불만은 두 갈래였습니다",
+    journey: "첫 10분 동안 보상·출석·패키지 창을 닫고",
   };
   const proposalKeywords = {
-    shorten_tutorial: "이동, 전투, 첫 목표에 필요한 안내만 남기겠습니다",
-    contextual_guide: "시작 구간에서 모든 기능을 한꺼번에 설명하지 않겠습니다",
-    ai_help: "나나봇이 현재 상황에 맞는 도움말을 제안하도록 하겠습니다",
+    shorten_tutorial: "이동·전투·첫 목표에 필요한 안내만 남기겠습니다",
+    contextual_guide: "전투·장비·성장 기능을 처음 쓸 때",
+    ai_help: "나나봇의 개입 시점은 장시간 정체와 반복 실패 구간입니다",
   };
   for (const research of Object.keys(researchKeywords)) {
     for (const proposal of Object.keys(proposalKeywords)) {
@@ -420,9 +421,9 @@ test("선택하지 않은 조사와 개선안은 발표 화면에 노출되지 �
 
 test("발표 강조점 세 선택 모두 본래 PT 주제 안에서 도입부와 1차 반응을 제공한다", () => {
   const runtime = fs.readFileSync(path.join(root, "js/day5.js"), "utf8");
-  assert.match(runtime, /if \(focus === "dropoff_scale"\) return `\$\{intro\} 현재 신규 설치 사용자의 31\.9%는/);
-  assert.match(runtime, /if \(focus === "user_experience"\) return `\$\{intro\} 현재 신규 유저는 캐릭터를 움직이고/);
-  assert.match(runtime, /이번 제안은 새로운 시스템 전체를 한 번에 개발하는 계획이 아닙니다/);
+  assert.match(runtime, /if \(focus === "dropoff_scale"\) return "신규 유저 첫 전투 도달률 개선안입니다\. 먼저 이탈 규모부터 보시죠/);
+  assert.match(runtime, /if \(focus === "user_experience"\) return "신규 유저 첫 전투 도달률 개선안입니다\. 첫 10분의 경험부터 보겠습니다/);
+  assert.match(runtime, /검증 가능한 범위부터 말씀드리죠/);
   assert.match(runtime, /if \(focus === "dropoff_scale"\) return "첫 전투 이전에 빠져나가는 사용자 규모/);
   assert.match(runtime, /if \(focus === "user_experience"\) return "유저가 핵심 플레이보다 안내를 먼저 경험하는/);
   assert.match(runtime, /return "작은 범위에서 검증한 뒤 확대하겠다는 실행 순서는 확인했습니다/);
@@ -448,15 +449,29 @@ test("본 발표를 끝낸 뒤 정상적인 질문과 답변을 한 번 진행�
   assert.equal(story.scenes.find((scene) => scene.id === "day5NormalQaAccepted").speaker, "평가위원");
 });
 
-test("18.4%는 개선 결과가 아니라 현재 확인값으로만 표현되고, 12.7%는 2024년 당시 자료로 확정된다", () => {
+test("18.4%는 발표다운 현재 성과 지표로 설명하고, 12.7%는 2024년 당시 자료로 구분한다", () => {
   const storySource = fs.readFileSync(path.join(root, "js/day5-story.js"), "utf8");
   const engineSource = fs.readFileSync(path.join(root, "js/day5.js"), "utf8");
   assert.doesNotMatch(storySource, /개선 결과/);
   assert.doesNotMatch(storySource, /그 결과.*18\.4%/);
-  assert.match(storySource, /이 수치는 개선 후 성과가 아니라/);
-  assert.match(engineSource, /18\.4%는 이번 개선안으로 얻은 성과가 아니라 현재 상태를 설명하는 확인값/);
+  assert.doesNotMatch(storySource + engineSource, /확인값|개선 후 성과가 아니라/);
+  assert.match(storySource, /최근 신규 유저의 7일 후 잔존율은 18\.4%\. 개선 여지가 분명하죠/);
+  assert.match(engineSource, /현재 잔존율은 18\.4%, 12\.7%는 2024년 자료였습니다/);
   const mismatch = story.scenes.find((scene) => scene.id === "day5Mismatch");
-  assert.match(mismatch.text, /가장 최근 7일 차 잔존율을 18\.4%라고 설명했는데, 제출된 근거 자료에는 12\.7%로 표시됩니다/);
+  assert.match(mismatch.text, /발표 자료는 18\.4%인데 제출 근거에는 12\.7%가 표시됩니다/);
+});
+
+test("발표 대사는 60자 이하이고 말하는 인원수만 100명 단위로 반올림한다", () => {
+  const start = story.scenes.findIndex((scene) => scene.id === "day5PresentationStart");
+  const end = story.scenes.findIndex((scene) => scene.id === "day5PresentationEnd");
+  for (const scene of story.scenes.slice(start, end + 1)) {
+    const lines = [scene.text, ...(scene.choices || []).flatMap((choice) => [choice.text, choice.reply])];
+    for (const line of lines.filter((value) => typeof value === "string")) assert.ok(line.length <= 60, `${scene.id}: ${line}`);
+  }
+  const problem = story.scenes.find((scene) => scene.id === "day5PresentationProblem");
+  assert.match(problem.text, /1만 2,500여 명.*8,500여 명/);
+  assert.deepEqual(problem.system.rows.slice(0, 2), ["신규 설치 · 12,480명", "첫 전투 도달 · 8,502명"]);
+  assert.match(story.scenes.find((scene) => scene.id === "day5PresentationProblemScale").text, /약 4,000명.*31\.9%/);
 });
 
 test("미니게임 전환 장면은 검증 1단계의 정답을 먼저 말하지 않는다", () => {
@@ -469,12 +484,15 @@ test("미니게임 전환 장면은 검증 1단계의 정답을 먼저 말하지
   assert.match(factSort.choices.find((choice) => choice.id === "verified_facts").text, /제출 직후에는 발표 자료와 근거 자료 모두 18\.4%였습니다/);
 });
 
-test("day5Resume 이후 day5ProposalRestatement가 이어지고, 새 저장 데이터로 이어할 때 두 씬 모두 자동 스킵된다", () => {
+test("복구 보고와 개선안 재진술은 60자 이하 문장 화면으로 이어진다", () => {
   const ids = story.scenes.map((scene) => scene.id);
-  assert.equal(ids.indexOf("day5Resume") + 1, ids.indexOf("day5ProposalRestatement"));
+  assert.equal(ids.indexOf("day5Resume") + 1, ids.indexOf("day5ResumeDetail"));
+  assert.equal(ids.indexOf("day5ResumeDetail") + 1, ids.indexOf("day5ProposalRestatement"));
+  assert.equal(ids.indexOf("day5ProposalRestatement") + 1, ids.indexOf("day5ProposalRestatementDetail"));
   assert.ok(ids.indexOf("day5ProposalRestatement") < ids.indexOf("day5ResumeContinue"));
   const runtime = fs.readFileSync(path.join(root, "js/day5.js"), "utf8");
   assert.match(runtime, /if \(scene\.dynamic === "proposalRestatement"\) return/);
+  assert.match(runtime, /if \(scene\.dynamic === "resumeStatementDetail"\) return/);
   assert.doesNotMatch(runtime, /"day5StrategyCallback",\s*\n\s*"day5SpeculationCorrection",/);
 });
 

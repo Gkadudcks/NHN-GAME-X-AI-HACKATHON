@@ -1,0 +1,4 @@
+interface:
+  display_name: "External AI Review"
+  short_description: "Route reviews to ChatGPT and Gemini evaluators"
+  default_prompt: "Use $external-ai-review to run an external AI review or evaluation panel and verify the findings."

@@ -53,16 +53,16 @@ test("error discovery and evidence matching use separate SFX assets", () => {
   assert.match(sfx, /flashTransition:\s*new Audio\("assets\/audio\/day5-flash-transition\.wav"\)/);
   assert.match(sfx, /evidenceMatch:\s*new Audio\("assets\/audio\/day5-evidence-match\.wav"\)/);
   assert.match(sfx, /function playPresentationCue/);
-  assert.match(sfx, /getVolume\(name === "errorDiscovery" \? 0\.82 : name === "flashTransition" \? 0\.42 : name === "evaluatorSuspicion" \? 0\.68 : 0\.5\)/);
+  assert.match(sfx, /getVolume\(name === "errorDiscovery" \? 1 : name === "flashTransition" \? 0\.55 : name === "evaluatorSuspicion" \? 0\.88 : 0\.65\)/);
   assert.match(engine, /scene\.id === "day5Mismatch"[^]*?playPresentationCue\("errorDiscovery"\)/);
   assert.match(engine, /function presentEvidence[^]*?UiSfx\.playPresentationCue\("evidenceMatch"\)/);
-  assert.match(html, /ui-sfx\.js\?v=13/);
+  assert.match(html, /ui-sfx\.js\?v=14/);
 });
 
 test("every cinematic flash plays its synchronized transition cue", () => {
   const cinematic = read("js/day5-presentation-cinematic.js");
   assert.match(cinematic, /function flash\(\)[^]*?classList\.add\("day5-cine-flash"\);\s*UiSfx\.playPresentationCue\("flashTransition"\)/);
-  assert.match(html, /day5-presentation-cinematic\.js\?v=18/);
+  assert.match(html, /day5-presentation-cinematic\.js\?v=20/);
 });
 
 test("the evaluator pause silences BGM for two seconds before the urgent reversal", () => {
@@ -71,7 +71,7 @@ test("the evaluator pause silences BGM for two seconds before the urgent reversa
   assert.ok(suspicion.size > 50_000 && suspicion.size < 60_000);
   assert.match(sfx, /evaluatorSuspicion:\s*new Audio\("assets\/audio\/day5-evaluator-confused-cut-v1\.mp3"\)/);
   assert.match(story, /id:\s*"day5EvaluatorHold"[^]*?text:\s*"잠시만요……\."[^]*?holdDelay:\s*2000[^]*?stopBgm:\s*true/);
-  assert.match(story, /id:\s*"day5Mismatch"[^]*?text:\s*"잠시만요\. 발표에서는 가장 최근 7일 차 잔존율을 18\.4%라고 설명했는데/);
+  assert.match(story, /id:\s*"day5Mismatch"[^]*?text:\s*"발표 자료는 18\.4%인데 제출 근거에는 12\.7%가 표시됩니다/);
   assert.match(engine, /scene\.id === "day5EvaluatorHold"[^]*?bgmManager\.stop\(\);[^]*?playPresentationCue\("evaluatorSuspicion"\)/);
   assert.match(engine, /if \(scene\.stopBgm\) bgmManager\.stop\(\)/);
   assert.match(cinematic, /if \(scene\.holdDelay\)[^]*?setTimeout\([^]*?scene\.holdDelay/);
