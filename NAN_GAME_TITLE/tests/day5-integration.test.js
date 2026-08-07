@@ -144,6 +144,9 @@ test("정상 발표는 문제·개선안·검증 수치·자동화 경계를 충
   assert.ok(ids.indexOf("day5PresentationStart") < ids.indexOf("day5PresentationProblem"));
   assert.ok(ids.indexOf("day5PresentationBoundary") < ids.indexOf("day5FocusReaction"));
   assert.match(JSON.stringify(story.scenes.slice(ids.indexOf("day5PresentationStart"), ids.indexOf("day5PresentationNormal") + 1)), /18\.4%/);
+  assert.match(story.scenes.find((scene) => scene.id === "day5PresentationBoundary").text, /68\.1%.*73\.1%/);
+  assert.match(story.scenes.find((scene) => scene.id === "day5PresentationBoundaryCriteria").text, /5%포인트.*잔존율.*사용자 반응/);
+  assert.match(story.scenes.find((scene) => scene.id === "day5NormalQaAnswerDetail").text, /다음 날 복귀.*신규 유저 불편 의견/);
 });
 
 test("수치 불일치 뒤에는 확정 문서의 평가위원·부장·하린 대응이 순서대로 이어진다", () => {
@@ -381,14 +384,14 @@ test("발표 강조점 선택은 이탈 규모·사용자 경험·실행 계획 
 test("본 발표는 DAY 2 조사와 DAY 1 방향에 따라 아홉 조합 모두 올바른 근거와 개선안을 출력한다", () => {
   const runtime = fs.readFileSync(path.join(root, "js/day5.js"), "utf8");
   const researchKeywords = {
-    competitor: "동종 RPG 세 게임의 첫 전투 진입 과정",
-    reviews: "신규 유저 리뷰는 ‘설명이 길다’",
-    journey: "첫 10분을 기록하니",
+    competitor: "동종 RPG 세 게임을 비교했습니다",
+    reviews: "리뷰 불만은 두 갈래였습니다",
+    journey: "첫 10분 동안 보상·출석·패키지 창을 닫고",
   };
   const proposalKeywords = {
-    shorten_tutorial: "이동, 전투, 첫 목표에 필요한 안내만 남기겠습니다",
-    contextual_guide: "기능을 처음 사용할 때 필요한 안내만 보여 주겠습니다",
-    ai_help: "나나봇이 필요한 도움말을 제안하게 하겠습니다",
+    shorten_tutorial: "이동·전투·첫 목표에 필요한 안내만 남기겠습니다",
+    contextual_guide: "전투·장비·성장 기능을 처음 쓸 때",
+    ai_help: "나나봇의 개입 시점은 장시간 정체와 반복 실패 구간입니다",
   };
   for (const research of Object.keys(researchKeywords)) {
     for (const proposal of Object.keys(proposalKeywords)) {
@@ -418,9 +421,9 @@ test("선택하지 않은 조사와 개선안은 발표 화면에 노출되지 �
 
 test("발표 강조점 세 선택 모두 본래 PT 주제 안에서 도입부와 1차 반응을 제공한다", () => {
   const runtime = fs.readFileSync(path.join(root, "js/day5.js"), "utf8");
-  assert.match(runtime, /if \(focus === "dropoff_scale"\) return "신규 유저 첫 전투 도달률 개선안을 말씀드리겠습니다\. 신규 설치자의 31\.9%가/);
-  assert.match(runtime, /if \(focus === "user_experience"\) return "신규 유저 첫 전투 도달률 개선안을 말씀드리겠습니다\. 핵심 플레이보다 안내를/);
-  assert.match(runtime, /첫 전투 이전 구간을 작게 검증한 뒤 확대하겠습니다/);
+  assert.match(runtime, /if \(focus === "dropoff_scale"\) return "신규 유저 첫 전투 도달률 개선안입니다\. 먼저 이탈 규모부터 보시죠/);
+  assert.match(runtime, /if \(focus === "user_experience"\) return "신규 유저 첫 전투 도달률 개선안입니다\. 첫 10분의 경험부터 보겠습니다/);
+  assert.match(runtime, /검증 가능한 범위부터 말씀드리죠/);
   assert.match(runtime, /if \(focus === "dropoff_scale"\) return "첫 전투 이전에 빠져나가는 사용자 규모/);
   assert.match(runtime, /if \(focus === "user_experience"\) return "유저가 핵심 플레이보다 안내를 먼저 경험하는/);
   assert.match(runtime, /return "작은 범위에서 검증한 뒤 확대하겠다는 실행 순서는 확인했습니다/);
@@ -452,8 +455,8 @@ test("18.4%는 발표다운 현재 성과 지표로 설명하고, 12.7%는 2024�
   assert.doesNotMatch(storySource, /개선 결과/);
   assert.doesNotMatch(storySource, /그 결과.*18\.4%/);
   assert.doesNotMatch(storySource + engineSource, /확인값|개선 후 성과가 아니라/);
-  assert.match(storySource, /최근 신규 유저의 7일 후 잔존율은 18\.4%로, 개선이 필요합니다/);
-  assert.match(engineSource, /현재 잔존율은 18\.4%, 2024년 자료는 12\.7%로 출처가 다릅니다/);
+  assert.match(storySource, /최근 신규 유저의 7일 후 잔존율은 18\.4%\. 개선 여지가 분명하죠/);
+  assert.match(engineSource, /현재 잔존율은 18\.4%, 12\.7%는 2024년 자료였습니다/);
   const mismatch = story.scenes.find((scene) => scene.id === "day5Mismatch");
   assert.match(mismatch.text, /발표 자료는 18\.4%인데 제출 근거에는 12\.7%가 표시됩니다/);
 });

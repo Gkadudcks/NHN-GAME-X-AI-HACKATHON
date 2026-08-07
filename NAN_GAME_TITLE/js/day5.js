@@ -870,29 +870,29 @@ function dynamicText(scene) {
   if (scene.dynamic === "day4ResultClose") return escapedDay4 ? "그럼 어제 저녁도 나름 도움이 됐네요. 너무 일찍부터 긴장하지만 말아요." : "다행이네요. 오늘은 확인한 기록을 믿고 발표에만 집중해요.";
   if (scene.dynamic === "presentationOpening") {
     const focus = Day5Story.normalizePresentationFocus(state.decisions.presentationFocus);
-    if (focus === "dropoff_scale") return "신규 유저 첫 전투 도달률 개선안을 말씀드리겠습니다. 신규 설치자의 31.9%가 첫 전투 전에 이탈합니다.";
-    if (focus === "user_experience") return "신규 유저 첫 전투 도달률 개선안을 말씀드리겠습니다. 핵심 플레이보다 안내를 먼저 만나는 흐름이 문제입니다.";
-    return "신규 유저 첫 전투 도달률 개선안을 말씀드리겠습니다. 첫 전투 이전 구간을 작게 검증한 뒤 확대하겠습니다.";
+    if (focus === "dropoff_scale") return "신규 유저 첫 전투 도달률 개선안입니다. 먼저 이탈 규모부터 보시죠.";
+    if (focus === "user_experience") return "신규 유저 첫 전투 도달률 개선안입니다. 첫 10분의 경험부터 보겠습니다.";
+    return "신규 유저 첫 전투 도달률 개선안입니다. 검증 가능한 범위부터 말씀드리죠.";
   }
   if (scene.dynamic === "presentationResearchEvidence") {
-    if (day2Subtask === "reviews") return "신규 유저 리뷰는 ‘설명이 길다’와 ‘다음 목표를 모르겠다’로 나뉘었습니다.";
-    if (day2Subtask === "journey") return "첫 10분을 기록하니 캐릭터를 움직이기까지 1분 42초가 걸렸습니다.";
-    return "동종 RPG 세 게임의 첫 전투 진입 과정을 같은 조건으로 비교했습니다.";
+    if (day2Subtask === "reviews") return "리뷰 불만은 두 갈래였습니다. ‘긴 설명’과 ‘보이지 않는 다음 목표’.";
+    if (day2Subtask === "journey") return "첫 10분 동안 보상·출석·패키지 창을 닫고, 1분 42초 뒤에야 움직였습니다.";
+    return "동종 RPG 세 게임을 비교했습니다. 차이는 튜토리얼 길이가 아니었습니다.";
   }
   if (scene.dynamic === "presentationResearchConclusion") {
-    if (day2Subtask === "reviews") return "정보량뿐 아니라 안내 시점과 다음 목표의 가시성을 함께 바꿔야 합니다.";
-    if (day2Subtask === "journey") return "신규 유저가 조작보다 보상과 안내 창을 닫는 행동을 먼저 배우고 있었습니다.";
-    return "필요할 때 안내를 여는 흐름이 자연스러웠고, 강제된 안내 순서는 플레이를 끊었습니다.";
+    if (day2Subtask === "reviews") return "따라서 안내량뿐 아니라 노출 시점과 목표 가시성도 함께 바꾸겠습니다.";
+    if (day2Subtask === "journey") return "유저가 조작보다 창 닫기를 먼저 배우는 흐름. 첫 경험이 늦어지는 이유죠.";
+    return "필요할 때 설명을 열고 다시 보는 흐름. 강제 안내와의 차이는 여기에 있습니다.";
   }
   if (scene.dynamic === "presentationProposalDetail") {
-    if (day1Direction === "shorten_tutorial") return "첫 전투 전에는 이동, 전투, 첫 목표에 필요한 안내만 남기겠습니다.";
-    if (day1Direction === "ai_help") return "유저가 멈추거나 반복 실패할 때 나나봇이 필요한 도움말을 제안하게 하겠습니다.";
-    return "기능을 처음 사용할 때 필요한 안내만 보여 주겠습니다.";
+    if (day1Direction === "shorten_tutorial") return "첫 전투 전에는 이동·전투·첫 목표에 필요한 안내만 남기겠습니다.";
+    if (day1Direction === "ai_help") return "나나봇의 개입 시점은 장시간 정체와 반복 실패 구간입니다.";
+    return "전투·장비·성장 기능을 처음 쓸 때, 필요한 안내만 보여 줍니다.";
   }
   if (scene.dynamic === "presentationProposalConclusion") {
-    if (day1Direction === "shorten_tutorial") return "상점과 성장 안내는 첫 보상 뒤로 옮겨 핵심 행동을 먼저 경험하게 하겠습니다.";
-    if (day1Direction === "ai_help") return "도움말은 기획자가 작성·검토하고, 적용 조건도 사람이 관리하겠습니다.";
-    return "놓친 설명은 다시 열 수 있게 해 흐름과 이해를 함께 지키겠습니다.";
+    if (day1Direction === "shorten_tutorial") return "출석·상점·패키지·성장 안내는 첫 보상 뒤로 옮기는 구상입니다.";
+    if (day1Direction === "ai_help") return "공략을 만들진 않습니다. 검수한 도움말만 골라 제안하죠.";
+    return "놓친 설명은 다시 열 수 있습니다. 흐름과 이해를 함께 지키는 방식이죠.";
   }
   if (scene.dynamic === "strategySetup") {
     if (state.decisions.responseStrategy === "defend_evidence") return "정상 원본과 교차 검증 기록을 첫 번째 증거 창에 열어 두겠습니다.";
@@ -907,10 +907,10 @@ function dynamicText(scene) {
     return "작은 범위에서 검증한 뒤 확대하겠다는 실행 순서는 확인했습니다. 결론을 말씀해 주세요.";
   }
   if (scene.dynamic === "strategyCallback") {
-    if (state.decisions.responseStrategy === "defend_evidence") return "정상 수치는 18.4%입니다. 지금 보존된 원본과 교차 검증 기록을 바로 제시하겠습니다.";
-    if (state.decisions.responseStrategy === "clarify_scope") return "먼저 두 자료가 같은 신규 가입 사용자와 같은 가장 최근 자료 기간을 대상으로 하는지 확인하겠습니다.";
-    if (state.decisions.responseStrategy === "coordinate_harin") return "서하린 선배, 보존한 정상 원본을 열어 주십시오. 저는 발표 흐름을 유지하며 산정 기준을 설명하겠습니다.";
-    return "자동화 과정에서 문제가 생겼을 가능성이… 잠깐, 원인을 단정하기 전에 검증된 기록부터 확인하겠습니다.";
+    if (state.decisions.responseStrategy === "defend_evidence") return "정상 수치는 18.4%입니다. 보존 원본과 교차 검증 기록을 바로 제시하겠습니다.";
+    if (state.decisions.responseStrategy === "clarify_scope") return "먼저 두 자료의 대상과 기간이 같은지부터 확인하겠습니다.";
+    if (state.decisions.responseStrategy === "coordinate_harin") return "서하린 선배, 정상 원본을 열어 주십시오. 저는 산정 기준을 설명하겠습니다.";
+    return "자동화 오류일 수 있습니다… 아닙니다. 추측 대신 기록부터 확인하겠습니다.";
   }
   if (scene.dynamic === "verificationConfront") {
     if (verificationGrade() === "perfect") return "재실행 요청은 내가 했어. 예전 자료를 쓰려다 공식 근거까지 바뀔 줄은 몰랐어.";
@@ -939,14 +939,14 @@ function dynamicText(scene) {
     : state.decisions.recoverySource === "current_week" && state.decisions.recoveryBinding === "fixed_source"
       ? "복구 검증을 마쳤습니다. PT와 고정된 증빙이 모두 18.4%로 일치합니다."
       : "불안정한 연결이 남았습니다. 정상 원본은 제시할 수 있지만 추가 검토가 필요합니다.";
-  if (scene.dynamic === "resumeStatement") return "현재 잔존율은 18.4%, 2024년 자료는 12.7%로 출처가 다릅니다.";
+  if (scene.dynamic === "resumeStatement") return "현재 잔존율은 18.4%, 12.7%는 2024년 자료였습니다.";
   if (scene.dynamic === "resumeStatementDetail") return recoveryGrade() === "failed"
-    ? "근거 자료는 담당자 지원으로 복구했고 직접 복구 실패도 함께 보고드립니다."
+    ? "근거 자료는 담당자 지원으로 복구했습니다. 직접 복구 실패도 함께 보고드립니다."
     : state.decisions.recoverySource === "current_week" && state.decisions.recoveryBinding === "fixed_source"
-      ? "정상 원본으로 복구했으며 산정 기준과 제출 이후 변경 경로도 남겼습니다."
-      : "연결 복구에 추가 검토가 필요해 원본과 변경 기록을 우선 제출하겠습니다.";
-  if (scene.dynamic === "proposalRestatement") return "최근 신규 유저의 7일 후 잔존율은 18.4%로, 개선이 필요합니다.";
-  if (scene.dynamic === "proposalRestatementDetail") return "도달률과 잔존율, 사용자 반응이 함께 좋아질 때만 전체 적용하겠습니다.";
+      ? "정상 원본으로 복구했고, 산정 기준과 제출 이후 변경 경로도 남겼습니다."
+      : "연결 복구는 추가 검토가 필요합니다. 원본과 변경 기록부터 제출하겠습니다.";
+  if (scene.dynamic === "proposalRestatement") return "최근 신규 유저의 7일 후 잔존율은 18.4%. 개선 여지는 여전합니다.";
+  if (scene.dynamic === "proposalRestatementDetail") return "1차 목표는 73.1%. 잔존율과 사용자 반응까지 좋아져야 확대할 수 있습니다.";
   if (scene.dynamic === "evaluatorCloseResult") return neededSupport()
     ? "정상 원본은 복구됐습니다. 직접 처리가 중단된 점까지 최종 평가에 반영하겠습니다."
     : "정상 원본과 변경 경로를 확인했습니다. 개선안과 대응 과정을 함께 평가하겠습니다.";
